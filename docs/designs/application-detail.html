@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Application Detail / Review</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .role-badge select { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .role-badge select option { color: #1a1a1a; }
+
+  /* Nav */
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .nav a:hover { color: white; background: rgba(255,255,255,0.05); }
+  .nav a.active { color: white; border-bottom-color: white; }
+
+  /* Content */
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Breadcrumb */
+  .breadcrumb { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+  .breadcrumb a { color: #0057A8; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  /* Layout */
+  .detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+
+  /* Main column */
+  .main-col { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Card */
+  .card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 24px; }
+  .card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+  /* Org header */
+  .org-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .org-name { font-size: 24px; font-weight: 700; }
+  .org-meta { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+  .org-meta-item { font-size: 13px; color: #6b7280; display: flex; align-items: center; gap: 4px; }
+
+  /* Status */
+  .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; }
+  .status-submitted { background: #eff6ff; color: #0057A8; }
+  .status-review { background: #fef3c7; color: #92400e; }
+  .status-approved { background: #ecfdf5; color: #059669; }
+  .status-returned { background: #fef2f2; color: #dc2626; }
+
+  /* Flag banner */
+  .flag-banner { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .flag-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .flag-content { flex: 1; }
+  .flag-title { font-size: 14px; font-weight: 600; color: #92400e; }
+  .flag-desc { font-size: 13px; color: #92400e; margin-top: 2px; }
+  .flag-match { background: white; border: 1px solid #fbbf24; border-radius: 6px; padding: 10px 12px; margin-top: 8px; font-size: 13px; }
+  .flag-match-name { font-weight: 600; }
+  .flag-match-detail { color: #6b7280; margin-top: 2px; font-size: 12px; }
+
+  /* Data grid */
+  .data-grid { display: grid; grid-template-columns: 140px 1fr; gap: 0; }
+  .data-label { padding: 8px 0; font-size: 13px; color: #6b7280; font-weight: 500; border-bottom: 1px solid #f3f4f6; }
+  .data-value { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f3f4f6; }
+  .data-value a { color: #0057A8; text-decoration: none; }
+  .data-value a:hover { text-decoration: underline; }
+
+  /* About text */
+  .about-text { font-size: 14px; line-height: 1.6; color: #374151; }
+
+  /* Category badge */
+  .cat-badge { font-size: 13px; color: #0057A8; background: #eff6ff; padding: 3px 10px; border-radius: 6px; font-weight: 500; display: inline-block; }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+  /* Actions card */
+  .actions-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px; }
+  .actions-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .action-btn { width: 100%; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin-bottom: 8px; transition: all 0.15s; }
+  .action-btn:last-child { margin-bottom: 0; }
+  .btn-approve { background: #22c55e; color: white; }
+  .btn-approve:hover { background: #16a34a; }
+  .btn-return { background: white; color: #f59e0b; border: 2px solid #f59e0b; }
+  .btn-return:hover { background: #fef3c7; }
+  .btn-reject { background: white; color: #ef4444; border: 2px solid #ef4444; }
+  .btn-reject:hover { background: #fef2f2; }
+  .action-note { font-size: 12px; color: #9ca3af; margin-top: 8px; }
+
+  /* Return reason (initially hidden concept) */
+  .return-reason { margin-top: 12px; display: block; }
+  .return-reason label { font-size: 13px; font-weight: 500; display: block; margin-bottom: 4px; }
+  .return-reason textarea { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 80px; resize: vertical; }
+  .return-reason textarea:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.1); }
+  .return-reason .hint { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+  /* Reject zone — low prominence, separated from main actions */
+  .reject-zone { margin-top: 16px; padding-top: 14px; border-top: 1px solid #f3f4f6; }
+  .reject-link { background: none; border: none; color: #9ca3af; font-size: 13px; cursor: pointer; padding: 0; text-decoration: underline; text-decoration-style: dotted; }
+  .reject-link:hover { color: #ef4444; }
+  .reject-reason-zone { margin-top: 10px; display: none; }
+  .reject-reason-zone label { font-size: 13px; font-weight: 500; display: block; margin-bottom: 4px; color: #374151; }
+  .reject-reason-zone textarea { width: 100%; padding: 8px 10px; border: 1px solid #fca5a5; border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 80px; resize: vertical; }
+  .reject-reason-zone textarea:focus { outline: none; border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+  .reject-warning { font-size: 12px; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 8px 10px; margin-top: 8px; line-height: 1.5; }
+  .btn-reject-confirm { width: 100%; margin-top: 10px; padding: 9px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-reject-confirm:hover { background: #dc2626; }
+
+  /* Timeline */
+  .timeline { list-style: none; }
+  .timeline-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; margin-top: 5px; flex-shrink: 0; }
+  .timeline-dot.green { background: #22c55e; }
+  .timeline-dot.blue { background: #0057A8; }
+  .timeline-dot.amber { background: #f59e0b; }
+  .timeline-content { flex: 1; }
+  .timeline-action { font-size: 13px; font-weight: 500; }
+  .timeline-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+  /* Org history */
+  .history-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 12px; background: #f3f4f6; color: #6b7280; }
+  .history-badge.known { background: #ecfdf5; color: #059669; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">
+      Role:
+      <select>
+        <option selected>NOC Admin - United States (USOPC)</option>
+        <option>IOC Media Operations</option>
+      </select>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#" class="active">Applications</a>
+      <a href="#">Org Directory</a>
+      <a href="#">Export</a>
+      <a href="#">Audit Log</a>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="#">Applications</a> &rsaquo; Associated Press
+  </div>
+
+  <div class="detail-layout">
+    <!-- Main Column -->
+    <div class="main-col">
+
+      <!-- Org Header -->
+      <div class="card">
+        <div class="org-header">
+          <div>
+            <div class="org-name">Associated Press</div>
+            <div class="org-meta">
+              <span class="org-meta-item">News Agency</span>
+              <span class="org-meta-item">&bull; United States</span>
+              <span class="org-meta-item">&bull; <a href="#">apnews.com</a></span>
+              <span class="history-badge known">Known org (Paris 2024, Tokyo 2020)</span>
+            </div>
+          </div>
+          <span class="status status-submitted">Submitted</span>
+        </div>
+      </div>
+
+      <!-- Dedup Flag -->
+      <div class="flag-banner">
+        <div class="flag-icon">&#9888;</div>
+        <div class="flag-content">
+          <div class="flag-title">Possible duplicate detected</div>
+          <div class="flag-desc">Domain match: apnews.com is already registered in another territory</div>
+          <div class="flag-match">
+            <div class="flag-match-name">Associated Press (France) &mdash; CNOSF territory</div>
+            <div class="flag-match-detail">Submitted Mar 18, 2026 &bull; Status: Approved &bull; Same domain: apnews.com</div>
+          </div>
+          <div class="flag-match" style="margin-top: 6px;">
+            <div class="flag-match-name">Associated Press (Japan) &mdash; JOC territory</div>
+            <div class="flag-match-detail">Submitted Mar 20, 2026 &bull; Status: Under Review &bull; Same domain: apnews.com</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Application Details -->
+      <div class="card">
+        <div class="card-title">Application Details</div>
+        <div class="data-grid">
+          <div class="data-label">Organization</div>
+          <div class="data-value">Associated Press</div>
+          <div class="data-label">Country</div>
+          <div class="data-value">United States</div>
+          <div class="data-label">Type</div>
+          <div class="data-value">News Agency</div>
+          <div class="data-label">Website</div>
+          <div class="data-value"><a href="#">https://apnews.com</a></div>
+          <div class="data-label">Category</div>
+          <div class="data-value"><span class="cat-badge">Press</span></div>
+          <div class="data-label">Contact Name</div>
+          <div class="data-value">Sarah Chen</div>
+          <div class="data-label">Contact Email</div>
+          <div class="data-value">press@apnews.com</div>
+          <div class="data-label">Submitted</div>
+          <div class="data-value">March 25, 2026 at 2:14 PM UTC</div>
+          <div class="data-label">Application ID</div>
+          <div class="data-value" style="font-family: monospace; font-size: 13px; color: #6b7280;">APP-2028-US-00047</div>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="card">
+        <div class="card-title">About the Organization</div>
+        <p class="about-text">
+          The Associated Press is an American not-for-profit news agency headquartered in New York City. Founded in 1846, AP operates 248 bureaus in 99 countries. AP has covered every Olympic Games since 1912, providing wire copy, photography, and video content to member news organizations worldwide. For LA 2028, AP plans to deploy approximately 120 journalists and photographers for comprehensive coverage of all sports and ceremonies.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Actions -->
+      <div class="actions-card">
+        <div class="actions-title">Review Actions</div>
+        <button class="action-btn btn-approve">Approve Application</button>
+        <button class="action-btn btn-return">Return for Edits</button>
+        <div class="return-reason">
+          <label>Reason for returning (visible to applicant)</label>
+          <textarea placeholder="e.g., Please provide your organization's website URL..."></textarea>
+          <div class="hint">The applicant will see this message and can resubmit.</div>
+        </div>
+        <p class="action-note">Actions are logged to the audit trail. Approvals flow to Common Codes export.</p>
+
+        <div class="reject-zone">
+          <button class="reject-link" onclick="toggleReject(this)">Reject this application</button>
+          <div class="reject-reason-zone">
+            <label>Reason for rejection <span style="color:#ef4444;">*</span></label>
+            <textarea placeholder="Required: state the specific reason for rejection..."></textarea>
+            <div class="reject-warning">&#9888; Rejection is permanent and cannot be undone. The applicant will be notified and cannot resubmit for LA 2028.</div>
+            <button class="btn-reject-confirm">Confirm Rejection</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Timeline -->
+      <div class="card">
+        <div class="card-title">Status History</div>
+        <ul class="timeline">
+          <li class="timeline-item">
+            <div class="timeline-dot blue"></div>
+            <div class="timeline-content">
+              <div class="timeline-action">Application submitted</div>
+              <div class="timeline-meta">Mar 25, 2026 2:14 PM &bull; by applicant</div>
+            </div>
+          </li>
+          <li class="timeline-item">
+            <div class="timeline-dot amber"></div>
+            <div class="timeline-content">
+              <div class="timeline-action">Duplicate flag raised</div>
+              <div class="timeline-meta">Mar 25, 2026 2:14 PM &bull; system (domain match)</div>
+            </div>
+          </li>
+          <li class="timeline-item">
+            <div class="timeline-dot green"></div>
+            <div class="timeline-content">
+              <div class="timeline-action">Email verified</div>
+              <div class="timeline-meta">Mar 25, 2026 2:10 PM &bull; press@apnews.com</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Org Cross-Games History -->
+      <div class="card">
+        <div class="card-title">Cross-Games History</div>
+        <div style="font-size: 13px; color: #6b7280; margin-bottom: 10px;">This organization has applied to previous Games:</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f9fafb; border-radius: 6px;">
+            <div>
+              <div style="font-size: 13px; font-weight: 500;">Paris 2024</div>
+              <div style="font-size: 12px; color: #6b7280;">Press &bull; Approved</div>
+            </div>
+            <span class="status status-approved" style="font-size: 11px; padding: 2px 8px;">Approved</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f9fafb; border-radius: 6px;">
+            <div>
+              <div style="font-size: 13px; font-weight: 500;">Tokyo 2020</div>
+              <div style="font-size: 12px; color: #6b7280;">Press &bull; Approved</div>
+            </div>
+            <span class="status status-approved" style="font-size: 11px; padding: 2px 8px;">Approved</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleReject(btn) {
+  var zone = btn.nextElementSibling;
+  var visible = zone.style.display === 'block';
+  zone.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? 'Reject this application' : '\u2191 Cancel';
+  btn.style.color = visible ? '' : '#ef4444';
+}
+</script>
+</body>
+</html>

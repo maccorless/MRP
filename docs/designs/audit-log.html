@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Audit Log</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .role-badge select { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .role-badge select option { color: #1a1a1a; }
+
+  /* Nav */
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; }
+  .nav a:hover { color: white; background: rgba(255,255,255,0.05); }
+  .nav a.active { color: white; border-bottom-color: white; }
+
+  /* Content */
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Page header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+  .page-desc { font-size: 14px; color: #6b7280; margin-top: 4px; }
+  .immutability-note { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #6b7280; max-width: 360px; line-height: 1.5; }
+  .immutability-note strong { color: #374151; }
+
+  /* Filter bar */
+  .filter-bar { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-label { font-size: 12px; font-weight: 500; color: #6b7280; }
+  .filter-select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: white; color: #374151; }
+  .filter-input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; width: 200px; background: white; }
+  .filter-divider { width: 1px; height: 24px; background: #e5e7eb; margin: 0 4px; }
+  .export-btn { margin-left: auto; padding: 7px 16px; border: 1px solid #d1d5db; border-radius: 7px; font-size: 13px; font-weight: 500; background: white; cursor: pointer; }
+
+  /* Table */
+  .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 11px 16px; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f9fafb; }
+
+  /* Timestamp */
+  .timestamp { font-size: 12px; color: #1a1a1a; font-weight: 500; white-space: nowrap; }
+  .timestamp-rel { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  /* Actor */
+  .actor-name { font-weight: 500; color: #1a1a1a; }
+  .actor-role { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  /* Action badge */
+  .action-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 5px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .action-approved   { background: #ecfdf5; color: #059669; }
+  .action-returned   { background: #fef3c7; color: #92400e; }
+  .action-rejected   { background: #fef2f2; color: #dc2626; }
+  .action-submitted  { background: #eff6ff; color: #0057A8; }
+  .action-resubmitted { background: #f0fdf4; color: #16a34a; }
+  .action-system     { background: #f3f4f6; color: #6b7280; }
+  .action-export     { background: #faf5ff; color: #7c3aed; }
+  .action-login      { background: #f9fafb; color: #9ca3af; }
+
+  /* Target */
+  .target-org { color: #0057A8; font-weight: 500; text-decoration: none; }
+  .target-org:hover { text-decoration: underline; }
+  .target-ref { font-size: 11px; color: #9ca3af; font-family: monospace; margin-top: 2px; }
+
+  /* Detail */
+  .detail-text { font-size: 12px; color: #374151; line-height: 1.5; max-width: 300px; }
+  .detail-reason { background: #f9fafb; border-left: 2px solid #d1d5db; padding: 4px 8px; margin-top: 4px; font-size: 11px; color: #6b7280; font-style: italic; line-height: 1.4; max-width: 300px; }
+
+  /* Table footer */
+  .table-footer { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">
+      Role:
+      <select>
+        <option>IOC Media Operations</option>
+        <option>NOC Admin - United States (USOPC)</option>
+        <option>NOC Admin - France (CNOSF)</option>
+        <option>IOC Admin (Read-only)</option>
+      </select>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#">Applications</a>
+      <a href="#">Press by Number</a>
+      <a href="#">Org Directory</a>
+      <a href="#">Export</a>
+      <a href="#" class="active">Audit Log</a>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Audit Log</div>
+      <div class="page-desc">Permanent, tamper-proof record of every action taken in the portal. Cannot be edited or deleted.</div>
+    </div>
+    <div class="immutability-note">
+      <strong>Immutable record.</strong> Every entry is written once and locked. No administrator — including IOC super-admins — can edit or delete audit entries. This log is the authoritative record if any decision is disputed.
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <span class="filter-label">From</span>
+      <input type="text" class="filter-input" value="Mar 01, 2026" style="width: 130px;" />
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">To</span>
+      <input type="text" class="filter-input" value="Mar 29, 2026" style="width: 130px;" />
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-group">
+      <span class="filter-label">Action</span>
+      <select class="filter-select">
+        <option>All actions</option>
+        <option>Application submitted</option>
+        <option>Approved</option>
+        <option>Returned</option>
+        <option>Rejected</option>
+        <option>Resubmitted</option>
+        <option>Flag raised</option>
+        <option>Export triggered</option>
+        <option>Sign in</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">User</span>
+      <select class="filter-select">
+        <option>All users</option>
+        <option>IOC system</option>
+        <option>J. Martinez (IOC)</option>
+        <option>S. Kim (USOPC)</option>
+        <option>M. Dupont (CNOSF)</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Org</span>
+      <input type="text" class="filter-input" placeholder="Search org name..." />
+    </div>
+    <button class="export-btn">Export CSV</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Actor</th>
+          <th>Action</th>
+          <th>Organization</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 28, 2026<br>11:42 AM UTC</div>
+            <div class="timestamp-rel">1 day ago</div>
+          </td>
+          <td>
+            <div class="actor-name">J. Martinez</div>
+            <div class="actor-role">IOC Media Operations</div>
+          </td>
+          <td><span class="action-badge action-export">&#8593; Export triggered</span></td>
+          <td>
+            <div class="detail-text" style="color: #7c3aed;">Common Codes export — 12 approved organizations</div>
+          </td>
+          <td>
+            <div class="detail-text">Batch export to Common Codes coding workflow. 10 known orgs updated, 2 new orgs submitted for coding review.</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 28, 2026<br>10:17 AM UTC</div>
+            <div class="timestamp-rel">1 day ago</div>
+          </td>
+          <td>
+            <div class="actor-name">S. Kim</div>
+            <div class="actor-role">NOC Admin &mdash; USOPC</div>
+          </td>
+          <td><span class="action-badge action-approved">&#10003; Approved</span></td>
+          <td>
+            <a class="target-org" href="#">New York Times</a>
+            <div class="target-ref">APP-2028-US-00039</div>
+          </td>
+          <td>
+            <div class="detail-text">Application approved. Organization verified against Common Codes (known org, Paris 2024 history).</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 27, 2026<br>3:54 PM UTC</div>
+            <div class="timestamp-rel">2 days ago</div>
+          </td>
+          <td>
+            <div class="actor-name">S. Kim</div>
+            <div class="actor-role">NOC Admin &mdash; USOPC</div>
+          </td>
+          <td><span class="action-badge action-returned">&#8617; Returned</span></td>
+          <td>
+            <a class="target-org" href="#">Fox Sports Digital</a>
+            <div class="target-ref">APP-2028-US-00051</div>
+          </td>
+          <td>
+            <div class="detail-text">Returned for corrections. Applicant notified by email.</div>
+            <div class="detail-reason">"Please update your organization's website URL — the current entry redirects and cannot be verified as an independent editorial entity."</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 26, 2026<br>9:08 AM UTC</div>
+            <div class="timestamp-rel">3 days ago</div>
+          </td>
+          <td>
+            <div class="actor-name">MRP System</div>
+            <div class="actor-role">Automated &mdash; dedup</div>
+          </td>
+          <td><span class="action-badge action-system">&#9873; Flag raised</span></td>
+          <td>
+            <a class="target-org" href="#">Associated Press</a>
+            <div class="target-ref">APP-2028-US-00047</div>
+          </td>
+          <td>
+            <div class="detail-text">Possible duplicate flag raised. Domain match: apnews.com found in CNOSF territory (APP-2028-FR-00018, approved) and JOC territory (APP-2028-JP-00031, under review).</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 25, 2026<br>2:14 PM UTC</div>
+            <div class="timestamp-rel">4 days ago</div>
+          </td>
+          <td>
+            <div class="actor-name">press@apnews.com</div>
+            <div class="actor-role">Applicant</div>
+          </td>
+          <td><span class="action-badge action-submitted">&#8679; Submitted</span></td>
+          <td>
+            <a class="target-org" href="#">Associated Press</a>
+            <div class="target-ref">APP-2028-US-00047</div>
+          </td>
+          <td>
+            <div class="detail-text">EoI application submitted. Category: Press. Email verified Mar 25, 2:10 PM UTC. Token: K7M2.</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 25, 2026<br>2:10 PM UTC</div>
+            <div class="timestamp-rel">4 days ago</div>
+          </td>
+          <td>
+            <div class="actor-name">press@apnews.com</div>
+            <div class="actor-role">Applicant</div>
+          </td>
+          <td><span class="action-badge action-system">&#9993; Email verified</span></td>
+          <td>
+            <div class="detail-text" style="color: #6b7280;">press@apnews.com</div>
+          </td>
+          <td>
+            <div class="detail-text">Magic link token used (K7M2). Email address confirmed. Token expired after use.</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 24, 2026<br>8:30 AM UTC</div>
+            <div class="timestamp-rel">5 days ago</div>
+          </td>
+          <td>
+            <div class="actor-name">S. Kim</div>
+            <div class="actor-role">NOC Admin &mdash; USOPC</div>
+          </td>
+          <td><span class="action-badge action-rejected">&#10005; Rejected</span></td>
+          <td>
+            <a class="target-org" href="#">US Olympic News Network</a>
+            <div class="target-ref">APP-2028-US-00033</div>
+          </td>
+          <td>
+            <div class="detail-text">Application permanently rejected.</div>
+            <div class="detail-reason">"Organization does not meet bona fide journalist credential requirements. Website shows no original reporting — content appears to be entirely aggregated."</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 23, 2026<br>4:01 PM UTC</div>
+            <div class="timestamp-rel">6 days ago</div>
+          </td>
+          <td>
+            <div class="actor-name">S. Kim</div>
+            <div class="actor-role">NOC Admin &mdash; USOPC</div>
+          </td>
+          <td><span class="action-badge action-login">&#128274; Sign in</span></td>
+          <td>&mdash;</td>
+          <td>
+            <div class="detail-text">Administrator signed in. Session: USOPC dashboard.</div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="timestamp">Mar 22, 2026<br>11:14 AM UTC</div>
+            <div class="timestamp-rel">7 days ago</div>
+          </td>
+          <td>
+            <div class="actor-name">fox@foxsports.com</div>
+            <div class="actor-role">Applicant</div>
+          </td>
+          <td><span class="action-badge action-submitted">&#8679; Submitted</span></td>
+          <td>
+            <a class="target-org" href="#">Fox Sports Digital</a>
+            <div class="target-ref">APP-2028-US-00051</div>
+          </td>
+          <td>
+            <div class="detail-text">EoI application submitted. Category: ENR. Email verified Mar 22, 11:10 AM UTC. Token: P4QR.</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-footer">
+      <span>Showing 9 of 1,284 log entries</span>
+      <span>Filtered: Mar 1 &ndash; Mar 29, 2026 &nbsp;&bull;&nbsp; All actions &nbsp;&bull;&nbsp; All users</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

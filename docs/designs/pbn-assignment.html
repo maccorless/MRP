@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Press by Number — Quota Assignment</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .role-badge select { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .role-badge select option { color: #1a1a1a; }
+
+  /* Nav */
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; }
+  .nav a.active { color: white; border-bottom-color: white; }
+
+  /* Content */
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Phase banner */
+  .phase-banner { background: #eff6ff; border: 1px solid #93c5fd; border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .phase-label { font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px; }
+  .phase-title { font-size: 15px; font-weight: 600; color: #1e3a8a; margin-top: 2px; }
+  .phase-desc { font-size: 13px; color: #1e40af; margin-top: 2px; }
+  .phase-deadline { text-align: right; }
+  .phase-deadline-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .phase-deadline-date { font-size: 16px; font-weight: 700; color: #1e3a8a; margin-top: 2px; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px; }
+  .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .stat-value { font-size: 32px; font-weight: 700; margin-top: 4px; }
+  .stat-value.blue { color: #0057A8; }
+  .stat-value.green { color: #22c55e; }
+  .stat-value.amber { color: #f59e0b; }
+  .stat-value.gray { color: #6b7280; }
+  .stat-detail { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+  /* Quota progress bar */
+  .quota-bar-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px; margin-bottom: 24px; }
+  .quota-bar-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .quota-bar-title { font-size: 14px; font-weight: 600; }
+  .quota-bar-nums { font-size: 13px; color: #6b7280; }
+  .quota-bar-nums strong { color: #1a1a1a; }
+  .quota-bar-track { height: 12px; background: #f3f4f6; border-radius: 6px; overflow: hidden; display: flex; }
+  .quota-bar-allocated { background: #0057A8; height: 100%; border-radius: 6px 0 0 6px; }
+  .quota-bar-reserved { background: #f59e0b; height: 100%; }
+  .quota-bar-legend { display: flex; gap: 20px; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Reserve trigger affordance */
+  .reserve-trigger { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; }
+  .reserve-trigger:hover { color: #92400e; }
+
+  /* Reserve modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center; z-index: 200; }
+  .modal-overlay.open { display: flex; }
+  .modal-card { background: white; border-radius: 12px; width: 480px; box-shadow: 0 20px 48px rgba(0,0,0,0.18); position: relative; overflow: hidden; }
+  .modal-header { background: #fffbeb; border-bottom: 1px solid #fde68a; padding: 18px 24px; }
+  .modal-title { font-size: 15px; font-weight: 600; color: #92400e; }
+  .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; color: #9ca3af; cursor: pointer; line-height: 1; }
+  .modal-close:hover { color: #374151; }
+  .modal-body { padding: 20px 24px; }
+  .modal-desc { font-size: 13px; color: #b45309; margin-bottom: 16px; line-height: 1.6; }
+  .modal-control { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .modal-control-label { font-size: 14px; font-weight: 600; color: #92400e; }
+  .reserve-stepper { display: flex; align-items: center; gap: 0; border: 1px solid #fde68a; border-radius: 8px; overflow: hidden; background: white; }
+  .stepper-btn { width: 36px; height: 40px; background: #fef3c7; border: none; font-size: 18px; color: #92400e; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .stepper-input { width: 60px; height: 40px; border: none; text-align: center; font-size: 16px; font-weight: 700; color: #92400e; background: white; }
+  .stepper-input:focus { outline: none; }
+  .modal-of-total { font-size: 13px; color: #b45309; }
+  .modal-hint { font-size: 12px; color: #9ca3af; margin-bottom: 20px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid #f3f4f6; }
+  .btn-modal-cancel { padding: 8px 18px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; color: #374151; cursor: pointer; }
+  .btn-modal-save { padding: 8px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; background: #f59e0b; color: white; cursor: pointer; }
+  .btn-modal-save:hover { background: #d97706; }
+
+  /* Toolbar */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; }
+  .search-box { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 260px; background: white; }
+  .filter-btn { padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; }
+  .filter-btn.active { border-color: #0057A8; background: #eff6ff; color: #0057A8; }
+  .toolbar-right { display: flex; gap: 8px; }
+  .action-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-secondary { border: 1px solid #d1d5db; background: white; color: #374151; }
+  .btn-primary { border: none; background: #0057A8; color: white; }
+
+  /* Table */
+  .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 11px 16px; font-size: 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f9fafb; }
+
+  /* Org link */
+  .org-link { color: #0057A8; text-decoration: none; font-weight: 500; }
+  .org-link:hover { text-decoration: underline; }
+  .org-history { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  /* Category badge */
+  .cat-badge { font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; }
+
+  /* Prior games */
+  .prior-val { font-size: 13px; color: #6b7280; }
+
+  /* Allocation input */
+  .alloc-stepper { display: flex; align-items: center; gap: 0; border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; width: 112px; }
+  .alloc-stepper .stepper-btn { width: 28px; height: 32px; background: #f9fafb; border: none; font-size: 16px; color: #374151; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .alloc-stepper .stepper-btn:hover { background: #e5e7eb; }
+  .alloc-stepper input { width: 56px; height: 32px; border: none; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; text-align: center; font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .alloc-stepper input:focus { outline: none; background: #eff6ff; }
+  .alloc-stepper.over-quota .stepper-btn { background: #fef2f2; color: #dc2626; }
+  .alloc-stepper.over-quota input { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+
+  /* Max hint */
+  .max-hint { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+  .max-hint.warning { color: #f59e0b; }
+
+  /* Row highlight — changed */
+  tr.changed td { background: #f0f9ff; }
+
+  /* Status badge */
+  .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .status-draft { background: #f3f4f6; color: #6b7280; }
+  .status-set { background: #ecfdf5; color: #059669; }
+
+  /* Table footer */
+  .table-footer { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #6b7280; border-top: 2px solid #e5e7eb; background: #f9fafb; }
+  .footer-total { font-weight: 700; color: #1a1a1a; font-size: 14px; }
+  .footer-total span { color: #0057A8; }
+  .footer-warn { color: #f59e0b; font-weight: 600; }
+
+  /* History icon button */
+  .history-btn { background: none; border: 1px solid #d1d5db; border-radius: 4px; padding: 1px 5px; font-size: 11px; color: #9ca3af; cursor: pointer; margin-left: 6px; vertical-align: middle; line-height: 1.4; }
+  .history-btn:hover { border-color: #0057A8; color: #0057A8; background: #eff6ff; }
+
+  /* History popover */
+  .history-popover { position: fixed; background: white; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 16px; width: 280px; z-index: 1000; display: none; }
+  .history-popover-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; color: #1a1a1a; border-bottom: 1px solid #f3f4f6; padding-bottom: 8px; }
+  .history-popover table { width: 100%; border-collapse: collapse; }
+  .history-popover th { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; padding: 4px 0; text-align: left; font-weight: 600; }
+  .history-popover td { font-size: 13px; padding: 5px 0; border-bottom: 1px solid #f9fafb; }
+  .history-popover td:last-child { text-align: right; }
+  .history-popover-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 16px; color: #9ca3af; cursor: pointer; line-height: 1; }
+  .history-popover-close:hover { color: #374151; }
+
+  /* Save bar */
+  .save-bar { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 20px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .save-status { font-size: 13px; color: #6b7280; }
+  .save-status strong { color: #f59e0b; }
+  .save-actions { display: flex; gap: 10px; }
+  .btn-save-draft { padding: 9px 20px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-weight: 500; background: white; color: #374151; cursor: pointer; }
+  .btn-submit { padding: 9px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; background: #0057A8; color: white; cursor: pointer; }
+  .submit-note { font-size: 12px; color: #9ca3af; margin-top: 6px; text-align: right; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">
+      Role:
+      <select>
+        <option>NOC Admin - United States (USOPC)</option>
+        <option>NOC Admin - France (CNOSF)</option>
+        <option>IOC Media Operations</option>
+      </select>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#">Applications</a>
+      <a href="#" class="active">Press by Number</a>
+      <a href="#">Org Directory</a>
+      <a href="#">Export</a>
+      <a href="#">Audit Log</a>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Phase banner -->
+  <div class="phase-banner">
+    <div>
+      <div class="phase-label">Phase 2 of 2 — Active</div>
+      <div class="phase-title">Press by Number — Quota Allocation</div>
+      <div class="phase-desc">Assign your IOC-granted quota among the 47 approved organizations in your territory.</div>
+    </div>
+    <div class="phase-deadline">
+      <div class="phase-deadline-label">Submission Deadline</div>
+      <div class="phase-deadline-date">Nov 14, 2026</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">IOC Quota — Total</div>
+      <div class="stat-value blue">200</div>
+      <div class="stat-detail">Assigned to USOPC by IOC</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Allocated to Orgs</div>
+      <div class="stat-value green">152</div>
+      <div class="stat-detail">Across 38 organizations</div>
+    </div>
+    <div class="stat-card" onclick="openReserveModal()" title="Click to manage reserved quota" style="cursor:pointer;">
+      <div class="stat-label">Reserved (held back)</div>
+      <div class="stat-value amber">10</div>
+      <div class="stat-detail reserve-trigger">Set aside for late changes &nbsp;&#9998;</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Available to Assign</div>
+      <div class="stat-value blue">38</div>
+      <div class="stat-detail">200 − 152 − 10 remaining</div>
+    </div>
+  </div>
+
+  <!-- Quota progress bar -->
+  <div class="quota-bar-card">
+    <div class="quota-bar-header">
+      <div class="quota-bar-title">Quota Usage — United States (USOPC)</div>
+      <div class="quota-bar-nums"><strong>152</strong> allocated &nbsp;+&nbsp; <strong class="reserve-trigger" onclick="openReserveModal()" title="Click to manage reserve">10 reserved &#9998;</strong> &nbsp;=&nbsp; <strong>162 of 200</strong> used &nbsp;&nbsp;|&nbsp;&nbsp; <strong>38</strong> available</div>
+    </div>
+    <div class="quota-bar-track">
+      <div class="quota-bar-allocated" style="width: 76%;"></div>
+      <div class="quota-bar-reserved" style="width: 5%;"></div>
+    </div>
+    <div class="quota-bar-legend">
+      <div class="legend-item"><div class="legend-dot" style="background: #0057A8;"></div> Allocated to organizations (152)</div>
+      <div class="legend-item" onclick="openReserveModal()" title="Click to manage reserve" style="cursor:pointer;"><div class="legend-dot" style="background: #f59e0b;"></div> <span class="reserve-trigger">Reserved — held back (10) &#9998;</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background: #f3f4f6; border: 1px solid #e5e7eb;"></div> Available (38)</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-box" placeholder="Search organizations..." />
+      <button class="filter-btn active">All (47)</button>
+      <button class="filter-btn">Unallocated (9)</button>
+      <button class="filter-btn">Press (28)</button>
+      <button class="filter-btn">Photo (11)</button>
+      <button class="filter-btn">ENR (8)</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="action-btn btn-secondary">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Organization</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Paris 2024</th>
+          <th>Tokyo 2020</th>
+          <th>Allocation</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Associated Press</a>
+            <button class="history-btn" onclick="showHistory(event, 'Associated Press', [['LA 2028','Press','Pending'],['Paris 2024','Press','24 slots'],['Tokyo 2020','Press','22 slots'],['Rio 2016','Press','20 slots'],['London 2012','Press','18 slots'],['Beijing 2008','Press','16 slots']])">&#128336; History</button>
+            <div class="org-history">US territory · Multi-NOC flag resolved</div>
+          </td>
+          <td>News Agency</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td class="prior-val">24</td>
+          <td class="prior-val">22</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="24" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint">Prev: 24</div>
+          </td>
+          <td><span class="status status-set">Set</span></td>
+        </tr>
+        <tr class="changed">
+          <td>
+            <a class="org-link" href="#">New York Times</a>
+            <button class="history-btn" onclick="showHistory(event, 'New York Times', [['LA 2028','Press','Pending'],['Paris 2024','Press','8 slots'],['Tokyo 2020','Press','6 slots'],['Rio 2016','Press','5 slots'],['London 2012','Press','4 slots']])">&#128336; History</button>
+            <div class="org-history">US territory · Known org</div>
+          </td>
+          <td>Media — Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td class="prior-val">8</td>
+          <td class="prior-val">6</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="10" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint warning">Changed from 8 ↑</div>
+          </td>
+          <td><span class="status status-set">Set</span></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">NBC Sports</a>
+            <button class="history-btn" onclick="showHistory(event, 'NBC Sports', [['LA 2028','ENR','Pending'],['Paris 2024','ENR','18 slots'],['Tokyo 2020','ENR','20 slots'],['Rio 2016','ENR','22 slots']])">&#128336; History</button>
+            <div class="org-history">US territory · Rights holder</div>
+          </td>
+          <td>Media — Broadcast</td>
+          <td><span class="cat-badge">ENR</span></td>
+          <td class="prior-val">18</td>
+          <td class="prior-val">20</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="18" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint">Prev: 18</div>
+          </td>
+          <td><span class="status status-set">Set</span></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Washington Post</a>
+            <button class="history-btn" onclick="showHistory(event, 'Washington Post', [['LA 2028','Press','Pending'],['Paris 2024','Press','5 slots'],['Tokyo 2020','Press','4 slots'],['Rio 2016','Press','4 slots'],['London 2012','Press','3 slots']])">&#128336; History</button>
+            <div class="org-history">US territory · Known org</div>
+          </td>
+          <td>Media — Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td class="prior-val">5</td>
+          <td class="prior-val">4</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="5" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint">Prev: 5</div>
+          </td>
+          <td><span class="status status-set">Set</span></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Getty Images</a>
+            <button class="history-btn" onclick="showHistory(event, 'Getty Images', [['LA 2028','Photo','Pending'],['Paris 2024','Photo','12 slots'],['Tokyo 2020','Photo','14 slots'],['Rio 2016','Photo','12 slots'],['London 2012','Photo','10 slots'],['Beijing 2008','Photo','8 slots']])">&#128336; History</button>
+            <div class="org-history">US territory · Known org</div>
+          </td>
+          <td>Photo Agency</td>
+          <td><span class="cat-badge">Photo</span></td>
+          <td class="prior-val">12</td>
+          <td class="prior-val">14</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="12" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint">Prev: 12</div>
+          </td>
+          <td><span class="status status-set">Set</span></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Sports Illustrated</a>
+            <button class="history-btn" onclick="showHistory(event, 'Sports Illustrated', [['LA 2028','Press','Pending']])">&#128336; History</button>
+            <div class="org-history">US territory · New org (LA28 first)</div>
+          </td>
+          <td>Media — Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td class="prior-val" style="color: #d1d5db;">—</td>
+          <td class="prior-val" style="color: #d1d5db;">—</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="3" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint">New org</div>
+          </td>
+          <td><span class="status status-set">Set</span></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">ESPN Digital</a>
+            <button class="history-btn" onclick="showHistory(event, 'ESPN Digital', [['LA 2028','ENR','Pending'],['Paris 2024','ENR','7 slots'],['Tokyo 2020','ENR','6 slots'],['Rio 2016','ENR','5 slots']])">&#128336; History</button>
+            <div class="org-history">US territory · Known org</div>
+          </td>
+          <td>Media — Broadcast</td>
+          <td><span class="cat-badge">ENR</span></td>
+          <td class="prior-val">7</td>
+          <td class="prior-val">6</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="0" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint">Prev: 7</div>
+          </td>
+          <td><span class="status status-draft">Not set</span></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">USA Today Sports</a>
+            <button class="history-btn" onclick="showHistory(event, 'USA Today Sports', [['LA 2028','Press','Pending'],['Paris 2024','Press','4 slots'],['Tokyo 2020','Press','4 slots'],['Rio 2016','Press','3 slots']])">&#128336; History</button>
+            <div class="org-history">US territory · Known org</div>
+          </td>
+          <td>Media — Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td class="prior-val">4</td>
+          <td class="prior-val">4</td>
+          <td>
+            <div class="alloc-stepper">
+              <button class="stepper-btn">−</button>
+              <input type="number" value="0" />
+              <button class="stepper-btn">+</button>
+            </div>
+            <div class="max-hint">Prev: 4</div>
+          </td>
+          <td><span class="status status-draft">Not set</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-footer">
+      <div class="footer-total">Total allocated: <span>152</span> &nbsp;+&nbsp; reserved: <span style="color: #f59e0b;">10</span> &nbsp;=&nbsp; <span>162</span> of <span>200</span></div>
+      <div>Showing 8 of 47 approved organizations &nbsp;·&nbsp; 9 with no allocation set</div>
+    </div>
+  </div>
+
+  <!-- Save bar -->
+  <div class="save-bar">
+    <div>
+      <div class="save-status">Status: <strong>Draft — not yet submitted to IOC</strong></div>
+      <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Last saved automatically: today at 11:34 AM &nbsp;·&nbsp; 9 organizations have no allocation — set to 0 or assign before submitting</div>
+    </div>
+    <div>
+      <div class="save-actions">
+        <button class="btn-save-draft">Save Draft</button>
+        <button class="btn-submit">Submit to IOC</button>
+      </div>
+      <div class="submit-note">Submission locks all allocations. You can request changes from IOC after submitting.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Reserve Modal -->
+<div class="modal-overlay" id="reserve-modal" onclick="handleModalOverlayClick(event)">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">Reserved quota — held back from allocation</div>
+      <button class="modal-close" onclick="closeReserveModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc">Slots in reserve are not shown as available when assigning to organizations. Use this to hold capacity for late applications or last-minute IOC-directed changes. You can adjust the reserve at any time before submitting your final allocation.</p>
+      <div class="modal-control">
+        <div class="modal-control-label">Reserve</div>
+        <div class="reserve-stepper">
+          <button class="stepper-btn">−</button>
+          <input type="number" class="stepper-input" value="10" id="reserve-input" />
+          <button class="stepper-btn">+</button>
+        </div>
+        <div class="modal-of-total">of 200 total</div>
+      </div>
+      <div class="modal-hint">38 slots currently available to assign &nbsp;·&nbsp; reserve can be set to 0 to make all available</div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeReserveModal()">Cancel</button>
+        <button class="btn-modal-save" onclick="closeReserveModal()">Save Reserve</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- History Popover -->
+<div class="history-popover" id="history-popover">
+  <button class="history-popover-close" onclick="closeHistory()">&times;</button>
+  <div class="history-popover-title" id="history-popover-title">Games History</div>
+  <table>
+    <thead><tr><th>Games</th><th>Category</th><th style="text-align:right;">Allocation</th></tr></thead>
+    <tbody id="history-popover-body"></tbody>
+  </table>
+</div>
+
+<script>
+function openReserveModal() {
+  document.getElementById('reserve-modal').classList.add('open');
+}
+function closeReserveModal() {
+  document.getElementById('reserve-modal').classList.remove('open');
+}
+function handleModalOverlayClick(e) {
+  if (e.target === document.getElementById('reserve-modal')) closeReserveModal();
+}
+// Auto-open for ?reserve=open (used in confirmation doc embed)
+if (new URLSearchParams(window.location.search).get('reserve') === 'open') {
+  window.addEventListener('DOMContentLoaded', function() { openReserveModal(); });
+}
+
+function showHistory(event, orgName, rows) {
+  event.stopPropagation();
+  var popover = document.getElementById('history-popover');
+  document.getElementById('history-popover-title').textContent = orgName + ' — All Games';
+  var tbody = document.getElementById('history-popover-body');
+  tbody.innerHTML = '';
+  rows.forEach(function(r) {
+    var tr = document.createElement('tr');
+    var style = r[0] === 'LA 2028' ? ' style="color:#0057A8;font-weight:600;"' : '';
+    tr.innerHTML = '<td' + style + '>' + r[0] + '</td><td' + style + '>' + r[1] + '</td><td style="text-align:right;' + (r[0]==='LA 2028'?'color:#0057A8;font-weight:600;':'') + '">' + r[2] + '</td>';
+    tbody.appendChild(tr);
+  });
+  var rect = event.target.getBoundingClientRect();
+  popover.style.display = 'block';
+  popover.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+  var left = rect.left + window.scrollX;
+  if (left + 280 > window.innerWidth) left = window.innerWidth - 296;
+  popover.style.left = left + 'px';
+}
+function closeHistory() {
+  document.getElementById('history-popover').style.display = 'none';
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#history-popover') && !e.target.classList.contains('history-btn')) {
+    closeHistory();
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Application Submitted</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 16px 0; }
+  .header-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 16px; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+  /* Progress */
+  .progress-bar { background: white; border-bottom: 1px solid #e5e7eb; padding: 12px 0; }
+  .progress-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
+  .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280; }
+  .step.completed .dot { background: #22c55e; color: white; }
+  .step .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: #e5e7eb; }
+  .step.completed { color: #22c55e; }
+  .step-line { width: 40px; height: 2px; background: #e5e7eb; }
+  .step-line.done { background: #22c55e; }
+
+  /* Confirmation */
+  .confirm-container { max-width: 640px; margin: 32px auto; padding: 0 24px; }
+  .confirm-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 40px 32px; text-align: center; }
+
+  .success-icon { width: 64px; height: 64px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; color: #22c55e; }
+
+  .confirm-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .confirm-subtitle { font-size: 15px; color: #6b7280; margin-bottom: 28px; line-height: 1.5; }
+
+  /* Reference box */
+  .ref-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 28px; }
+  .ref-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .ref-value { font-size: 20px; font-weight: 700; font-family: monospace; color: #0057A8; margin-top: 4px; }
+  .ref-hint { font-size: 12px; color: #9ca3af; margin-top: 6px; }
+
+  /* Summary */
+  .summary { text-align: left; margin-bottom: 28px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label { color: #6b7280; }
+  .summary-value { font-weight: 500; }
+
+  /* Next steps */
+  .next-steps { text-align: left; margin-bottom: 28px; }
+  .next-steps-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+  .step-item { display: flex; gap: 12px; padding: 10px 0; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: #eff6ff; color: #0057A8; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .step-text { font-size: 14px; color: #374151; line-height: 1.5; }
+  .step-text strong { font-weight: 600; }
+
+  /* Email notice */
+  .email-notice { background: #eff6ff; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #0057A8; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+
+  /* Button */
+  .done-btn { display: inline-block; padding: 12px 32px; background: #0057A8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; }
+  .done-btn:hover { background: #004690; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games - Expression of Interest</div>
+    </div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <div class="progress-inner">
+    <div class="step completed">
+      <div class="dot">&#10003;</div>
+      <span>Email Verified</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step completed">
+      <div class="dot">&#10003;</div>
+      <span>Complete Application</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step completed">
+      <div class="dot">&#10003;</div>
+      <span>Confirmation</span>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation -->
+<div class="confirm-container">
+  <div class="confirm-card">
+
+    <div class="success-icon">&#10003;</div>
+
+    <h2 class="confirm-title">Application Submitted</h2>
+    <p class="confirm-subtitle">Your Expression of Interest has been received and will be reviewed by your National Olympic Committee (USOPC).</p>
+
+    <!-- Reference number -->
+    <div class="ref-box">
+      <div class="ref-label">Application Reference</div>
+      <div class="ref-value">APP-2028-US-00047</div>
+      <div class="ref-hint">Save this number for your records</div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary">
+      <div class="summary-row">
+        <span class="summary-label">Organization</span>
+        <span class="summary-value">Associated Press</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Territory</span>
+        <span class="summary-value">United States</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Category</span>
+        <span class="summary-value">Press</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Contact Email</span>
+        <span class="summary-value">press@apnews.com</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Submitted</span>
+        <span class="summary-value">March 25, 2026</span>
+      </div>
+    </div>
+
+    <!-- What happens next -->
+    <div class="next-steps">
+      <div class="next-steps-title">What happens next</div>
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>NOC Review.</strong> Your National Olympic Committee (USOPC) will review your application. This typically takes 2-4 weeks.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Decision notification.</strong> You will be notified by email at press@apnews.com when a decision has been made.</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>If approved,</strong> your organization will be registered in the accreditation system. Individual press credentials are managed separately through the NOC.</div>
+      </div>
+    </div>
+
+    <!-- Email confirmation -->
+    <div class="email-notice">
+      A confirmation email has been sent to press@apnews.com with these details.
+    </div>
+
+    <a href="#" class="done-btn">Done</a>
+
+  </div>
+</div>
+
+</body>
+</html>

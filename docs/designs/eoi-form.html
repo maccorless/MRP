@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Expression of Interest Form</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 16px 0; }
+  .header-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 16px; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .rings { font-size: 24px; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+  /* Progress */
+  .progress-bar { background: white; border-bottom: 1px solid #e5e7eb; padding: 12px 0; }
+  .progress-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
+  .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280; }
+  .step.completed .dot { background: #22c55e; color: white; }
+  .step.active .dot { background: #0057A8; color: white; }
+  .step .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: #e5e7eb; }
+  .step.active { color: #0057A8; font-weight: 500; }
+  .step.completed { color: #22c55e; }
+  .step-line { width: 40px; height: 2px; background: #e5e7eb; }
+  .step-line.done { background: #22c55e; }
+
+  /* Form */
+  .form-container { max-width: 640px; margin: 32px auto; padding: 0 24px; }
+  .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 32px; }
+  .form-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .form-subtitle { font-size: 14px; color: #6b7280; margin-bottom: 32px; }
+
+  .section-heading { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #0057A8; margin-bottom: 16px; margin-top: 32px; padding-bottom: 8px; border-bottom: 2px solid #0057A8; }
+  .section-heading:first-of-type { margin-top: 0; }
+
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .field .required { color: #ef4444; }
+  .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: white; transition: border-color 0.15s; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.1); }
+  .field textarea { min-height: 100px; resize: vertical; }
+  .field .hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+  .field .prefilled { background: #f3f4f6; color: #6b7280; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Category chips */
+  .category-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .category-chip { padding: 8px 16px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 14px; cursor: pointer; transition: all 0.15s; background: white; }
+  .category-chip:hover { border-color: #0057A8; }
+  .category-chip.selected { border-color: #0057A8; background: #eff6ff; color: #0057A8; font-weight: 500; }
+
+  /* Submit */
+  .submit-section { margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; }
+  .submit-btn { width: 100%; padding: 14px; background: #0057A8; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .submit-btn:hover { background: #004690; }
+  .legal-note { font-size: 12px; color: #9ca3af; margin-top: 12px; text-align: center; }
+
+  /* Verified badge */
+  .verified-badge { display: inline-flex; align-items: center; gap: 4px; background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+
+  /* Responsive — mobile (375px) */
+  @media (max-width: 640px) {
+    .category-options { flex-direction: column; gap: 6px; }
+    .category-chip { width: 100%; text-align: center; padding: 12px 16px; }
+    .field-row { grid-template-columns: 1fr; }
+    .form-card { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games - Expression of Interest</div>
+    </div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <div class="progress-inner">
+    <div class="step completed">
+      <div class="dot">&#10003;</div>
+      <span>Email Verified</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step active">
+      <div class="dot">2</div>
+      <span>Complete Application</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="dot">3</div>
+      <span>Confirmation</span>
+    </div>
+  </div>
+</div>
+
+<!-- Form -->
+<div class="form-container">
+  <div class="form-card">
+    <h2 class="form-title">Expression of Interest</h2>
+    <p class="form-subtitle">Register your media organization for press accreditation consideration at the LA 2028 Olympic Games.</p>
+
+    <div class="section-heading">Organization Details</div>
+
+    <div class="field">
+      <label>Organization Name <span class="required">*</span></label>
+      <input type="text" placeholder="e.g., Associated Press" />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Country <span class="required">*</span></label>
+        <select>
+          <option value="">Select country...</option>
+          <option>Australia</option>
+          <option>Brazil</option>
+          <option>Canada</option>
+          <option>France</option>
+          <option>Germany</option>
+          <option>Japan</option>
+          <option selected>United States</option>
+          <option>United Kingdom</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Organization Type <span class="required">*</span></label>
+        <select>
+          <option value="">Select type...</option>
+          <option selected>Media - Print/Online</option>
+          <option>Media - Broadcast</option>
+          <option>News Agency</option>
+          <option>Non-Rights Broadcaster (ENR)</option>
+          <option>Freelance</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Website URL</label>
+      <input type="url" placeholder="https://www.example.com" value="https://apnews.com" />
+      <div class="hint">Used for organization verification. Include the full URL with https://</div>
+    </div>
+
+    <div class="section-heading">Primary Contact</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Contact Name <span class="required">*</span></label>
+        <input type="text" placeholder="Full name" />
+      </div>
+      <div class="field">
+        <label>Contact Email <span class="verified-badge">&#10003; Verified</span></label>
+        <input type="email" value="press@apnews.com" class="prefilled" readonly />
+      </div>
+    </div>
+
+    <div class="section-heading">Accreditation</div>
+
+    <div class="field">
+      <label>Category Requested <span class="required">*</span></label>
+      <div class="category-options">
+        <div class="category-chip selected">Press</div>
+        <div class="category-chip">Photographer</div>
+        <div class="category-chip">Non-Rights Broadcaster (ENR)</div>
+      </div>
+      <div class="hint">Select the primary accreditation category for your organization</div>
+    </div>
+
+    <div class="field">
+      <label>About Your Organization <span class="required">*</span></label>
+      <textarea placeholder="Briefly describe your organization's media coverage activities and interest in covering the LA 2028 Olympic Games..."></textarea>
+      <div class="hint">This information helps the National Olympic Committee evaluate your application</div>
+    </div>
+
+    <div class="submit-section">
+      <button class="submit-btn">Submit Expression of Interest</button>
+      <p class="legal-note">By submitting, you confirm the information provided is accurate. Your application will be reviewed by your National Olympic Committee.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

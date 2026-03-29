@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - IOC Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .role-badge select { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .role-badge select option { color: #1a1a1a; }
+
+  /* Nav */
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .nav a:hover { color: white; background: rgba(255,255,255,0.05); }
+  .nav a.active { color: white; border-bottom-color: white; }
+
+  /* Content */
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Stats row */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px; }
+  .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .stat-value { font-size: 32px; font-weight: 700; margin-top: 4px; }
+  .stat-value.blue { color: #0057A8; }
+  .stat-value.green { color: #22c55e; }
+  .stat-value.amber { color: #f59e0b; }
+  .stat-value.red { color: #ef4444; }
+  .stat-value.purple { color: #7c3aed; }
+  .stat-detail { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+  /* Anomaly banner */
+  .anomaly-banner { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .anomaly-text { font-size: 14px; color: #92400e; font-weight: 500; }
+  .anomaly-text span { font-weight: 400; }
+  .anomaly-action { font-size: 13px; color: #0057A8; text-decoration: none; font-weight: 500; cursor: pointer; }
+  .anomaly-action:hover { text-decoration: underline; }
+
+  /* Section title */
+  .section-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .section-title .count { background: #e5e7eb; color: #6b7280; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+
+  /* NOC grid */
+  .noc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-bottom: 32px; }
+
+  /* Toolbar */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; }
+  .search-box { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 280px; background: white; }
+  .search-box:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.1); }
+  .filter-btn { padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; }
+  .filter-btn:hover { border-color: #0057A8; }
+  .filter-btn.active { border-color: #0057A8; background: #eff6ff; color: #0057A8; }
+  .toolbar-right { display: flex; gap: 8px; }
+  .export-btn { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; font-weight: 500; }
+  .export-btn:hover { border-color: #0057A8; }
+
+  /* NOC card */
+  .noc-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 16px; cursor: pointer; transition: all 0.15s; }
+  .noc-card:hover { border-color: #0057A8; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .noc-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .noc-name { font-size: 14px; font-weight: 600; }
+  .noc-code { font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+  .noc-stats { display: flex; gap: 16px; }
+  .noc-stat { text-align: center; }
+  .noc-stat-val { font-size: 18px; font-weight: 700; }
+  .noc-stat-label { font-size: 11px; color: #9ca3af; }
+  .noc-bar { height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 10px; overflow: hidden; display: flex; }
+  .noc-bar-fill-approved { background: #22c55e; }
+  .noc-bar-fill-pending { background: #f59e0b; }
+  .noc-bar-fill-returned { background: #ef4444; }
+
+  /* Flags on card */
+  .noc-flags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .noc-flag { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+  .noc-flag-inactive { background: #fef2f2; color: #dc2626; }
+  .noc-flag-high { background: #fef3c7; color: #92400e; }
+  .noc-flag-anomaly { background: #fce7f3; color: #be185d; }
+
+  /* Table for aggregate view */
+  .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 10px 14px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; cursor: pointer; }
+  th:hover { color: #0057A8; }
+  td { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; }
+  tr:hover { background: #f9fafb; }
+
+  /* View toggle */
+  .view-toggle { display: flex; border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; }
+  .view-toggle button { padding: 6px 14px; font-size: 13px; border: none; background: white; cursor: pointer; }
+  .view-toggle button.active { background: #0057A8; color: white; }
+  .view-toggle button:hover:not(.active) { background: #f3f4f6; }
+
+  /* Audit preview */
+  .audit-section { margin-top: 32px; }
+  .audit-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+  .audit-time { color: #9ca3af; font-size: 12px; min-width: 100px; }
+  .audit-actor { font-weight: 500; min-width: 120px; }
+  .audit-action { color: #6b7280; flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">
+      Role:
+      <select>
+        <option>IOC Media Operations</option>
+        <option>IOC Admin (Read-only)</option>
+        <option>NOC Admin - United States (USOPC)</option>
+      </select>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#" class="active">NOC Overview</a>
+      <a href="#">All Applications</a>
+      <a href="#">Anomalies</a>
+      <a href="#">Org Directory</a>
+      <a href="#">Export</a>
+      <a href="#">Audit Log</a>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Active NOCs</div>
+      <div class="stat-value blue">142</div>
+      <div class="stat-detail">of 206 total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Applications</div>
+      <div class="stat-value blue">1,847</div>
+      <div class="stat-detail">across all territories</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Review</div>
+      <div class="stat-value amber">312</div>
+      <div class="stat-detail">87 flagged</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Approved</div>
+      <div class="stat-value green">1,203</div>
+      <div class="stat-detail">65% approval rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Anomalies</div>
+      <div class="stat-value red">4</div>
+      <div class="stat-detail">2 new today</div>
+    </div>
+  </div>
+
+  <!-- Anomaly Banner -->
+  <div class="anomaly-banner">
+    <div class="anomaly-text">2 anomalies detected: <span>1 concentration risk (Japan: 89 apps), 1 cross-NOC duplicate (Reuters appears in 3 territories)</span></div>
+    <a class="anomaly-action">View anomalies &#8594;</a>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-box" placeholder="Search NOCs..." />
+      <button class="filter-btn active">All NOCs (206)</button>
+      <button class="filter-btn">Active (142)</button>
+      <button class="filter-btn">Inactive (64)</button>
+      <button class="filter-btn">With anomalies (4)</button>
+    </div>
+    <div class="toolbar-right">
+      <div class="view-toggle">
+        <button class="active">Cards</button>
+        <button>Table</button>
+      </div>
+      <button class="export-btn">Export All</button>
+    </div>
+  </div>
+
+  <!-- NOC Cards (aggregate-first) -->
+  <div class="section-title">NOCs by Application Volume <span class="count">showing top 8</span></div>
+  <div class="noc-grid">
+
+    <div class="noc-card">
+      <div class="noc-card-header">
+        <div class="noc-name">United States (USOPC)</div>
+        <div class="noc-code">USA</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">94</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">61</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">28</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">5</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar">
+        <div class="noc-bar-fill-approved" style="width: 65%"></div>
+        <div class="noc-bar-fill-pending" style="width: 30%"></div>
+        <div class="noc-bar-fill-returned" style="width: 5%"></div>
+      </div>
+    </div>
+
+    <div class="noc-card">
+      <div class="noc-card-header">
+        <div class="noc-name">Japan (JOC)</div>
+        <div class="noc-code">JPN</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">89</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">42</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">45</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">2</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar">
+        <div class="noc-bar-fill-approved" style="width: 47%"></div>
+        <div class="noc-bar-fill-pending" style="width: 51%"></div>
+        <div class="noc-bar-fill-returned" style="width: 2%"></div>
+      </div>
+      <div class="noc-flags">
+        <span class="noc-flag noc-flag-anomaly">Concentration risk</span>
+      </div>
+    </div>
+
+    <div class="noc-card">
+      <div class="noc-card-header">
+        <div class="noc-name">United Kingdom (BOA)</div>
+        <div class="noc-code">GBR</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">78</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">55</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">18</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">5</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar">
+        <div class="noc-bar-fill-approved" style="width: 71%"></div>
+        <div class="noc-bar-fill-pending" style="width: 23%"></div>
+        <div class="noc-bar-fill-returned" style="width: 6%"></div>
+      </div>
+    </div>
+
+    <div class="noc-card">
+      <div class="noc-card-header">
+        <div class="noc-name">France (CNOSF)</div>
+        <div class="noc-code">FRA</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">72</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">48</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">20</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">4</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar">
+        <div class="noc-bar-fill-approved" style="width: 67%"></div>
+        <div class="noc-bar-fill-pending" style="width: 28%"></div>
+        <div class="noc-bar-fill-returned" style="width: 5%"></div>
+      </div>
+    </div>
+
+    <div class="noc-card">
+      <div class="noc-card-header">
+        <div class="noc-name">Germany (DOSB)</div>
+        <div class="noc-code">GER</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">65</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">40</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">22</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">3</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar">
+        <div class="noc-bar-fill-approved" style="width: 62%"></div>
+        <div class="noc-bar-fill-pending" style="width: 34%"></div>
+        <div class="noc-bar-fill-returned" style="width: 4%"></div>
+      </div>
+    </div>
+
+    <div class="noc-card">
+      <div class="noc-card-header">
+        <div class="noc-name">Australia (AOC)</div>
+        <div class="noc-code">AUS</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">51</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">35</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">14</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">2</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar">
+        <div class="noc-bar-fill-approved" style="width: 69%"></div>
+        <div class="noc-bar-fill-pending" style="width: 27%"></div>
+        <div class="noc-bar-fill-returned" style="width: 4%"></div>
+      </div>
+    </div>
+
+    <div class="noc-card" style="border-color: #fef3c7;">
+      <div class="noc-card-header">
+        <div class="noc-name">Tonga (TASANOC)</div>
+        <div class="noc-code">TGA</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">0</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">0</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">0</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">0</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar"></div>
+      <div class="noc-flags">
+        <span class="noc-flag noc-flag-inactive">No activity</span>
+      </div>
+    </div>
+
+    <div class="noc-card">
+      <div class="noc-card-header">
+        <div class="noc-name">Brazil (COB)</div>
+        <div class="noc-code">BRA</div>
+      </div>
+      <div class="noc-stats">
+        <div class="noc-stat"><div class="noc-stat-val">44</div><div class="noc-stat-label">Total</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#22c55e">30</div><div class="noc-stat-label">Approved</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#f59e0b">12</div><div class="noc-stat-label">Pending</div></div>
+        <div class="noc-stat"><div class="noc-stat-val" style="color:#ef4444">2</div><div class="noc-stat-label">Other</div></div>
+      </div>
+      <div class="noc-bar">
+        <div class="noc-bar-fill-approved" style="width: 68%"></div>
+        <div class="noc-bar-fill-pending" style="width: 27%"></div>
+        <div class="noc-bar-fill-returned" style="width: 5%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent audit -->
+  <div class="audit-section">
+    <div class="section-title">Recent Activity</div>
+    <div class="audit-row">
+      <div class="audit-time">10:42 AM</div>
+      <div class="audit-actor">USOPC Admin</div>
+      <div class="audit-action">Approved application from <strong>Washington Post</strong></div>
+    </div>
+    <div class="audit-row">
+      <div class="audit-time">10:15 AM</div>
+      <div class="audit-actor">System</div>
+      <div class="audit-action">Anomaly detected: concentration risk for <strong>Japan (JOC)</strong> - 89 applications</div>
+    </div>
+    <div class="audit-row">
+      <div class="audit-time">9:58 AM</div>
+      <div class="audit-actor">CNOSF Admin</div>
+      <div class="audit-action">Returned application from <strong>Le Monde Sport</strong> - reason: missing website URL</div>
+    </div>
+    <div class="audit-row">
+      <div class="audit-time">9:30 AM</div>
+      <div class="audit-actor">System</div>
+      <div class="audit-action">Cross-NOC duplicate flagged: <strong>Reuters</strong> registered in GBR, FRA, JPN</div>
+    </div>
+    <div class="audit-row">
+      <div class="audit-time">Yesterday</div>
+      <div class="audit-actor">IOC Admin</div>
+      <div class="audit-action">Exported JSON for all approved orgs (1,203 records)</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Administrator Sign In</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f0f4f8; color: #1a1a1a; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+  /* Main */
+  .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+  .main-inner { width: 100%; max-width: 400px; }
+
+  /* Login card */
+  .login-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 36px 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .login-icon { width: 48px; height: 48px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; }
+  .login-title { font-size: 21px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .login-subtitle { font-size: 14px; color: #6b7280; margin-bottom: 28px; line-height: 1.5; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #374151; }
+  .field input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; color: #1a1a1a; }
+  .field input:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.1); }
+
+  .sign-in-btn { width: 100%; padding: 12px; background: #0057A8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background 0.15s; }
+  .sign-in-btn:hover { background: #004690; }
+
+  /* v0.09 test credential panel */
+  .proto-panel { margin-top: 24px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; overflow: hidden; }
+  .proto-header { background: #fef3c7; border-bottom: 1px solid #fde68a; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
+  .proto-label { font-size: 11px; font-weight: 700; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px; }
+  .proto-body { padding: 4px 0; }
+  .cred-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; border-bottom: 1px solid #fef9c3; }
+  .cred-row:last-child { border-bottom: none; }
+  .cred-role { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 2px; }
+  .cred-vals { font-size: 11px; font-family: monospace; color: #6b7280; }
+  .cred-use-btn { padding: 4px 10px; background: #0057A8; color: white; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+  .cred-use-btn:hover { background: #004690; }
+
+  /* SSO note */
+  .sso-note { margin-top: 20px; text-align: center; font-size: 12px; color: #9ca3af; line-height: 1.5; }
+  .sso-note strong { color: #6b7280; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Media Registration Portal</h1>
+    <div class="subtitle">LA 2028 Olympic Games</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="main-inner">
+
+    <div class="login-card">
+      <div class="login-icon">&#128274;</div>
+      <div class="login-title">Administrator Sign In</div>
+      <div class="login-subtitle">For IOC Media Operations and NOC staff. Media organizations applying for accreditation use the separate applicant portal.</div>
+
+      <div class="field">
+        <label>Email address</label>
+        <input type="email" id="email-input" placeholder="you@example.com" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password-input" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" />
+      </div>
+
+      <button class="sign-in-btn" onclick="this.textContent='Signing in...'">Sign In</button>
+
+      <div class="proto-panel">
+        <div class="proto-header">
+          <span>&#9888;</span>
+          <span class="proto-label">v0.09 Prototype &mdash; Test Credentials</span>
+        </div>
+        <div class="proto-body">
+          <div class="cred-row">
+            <div>
+              <div class="cred-role">IOC Media Operations</div>
+              <div class="cred-vals">ioc@test.mrp &nbsp;/&nbsp; test1234</div>
+            </div>
+            <button class="cred-use-btn" onclick="fillCreds('ioc@test.mrp')">Use</button>
+          </div>
+          <div class="cred-row">
+            <div>
+              <div class="cred-role">NOC Admin &mdash; United States (USOPC)</div>
+              <div class="cred-vals">usopc@test.mrp &nbsp;/&nbsp; test1234</div>
+            </div>
+            <button class="cred-use-btn" onclick="fillCreds('usopc@test.mrp')">Use</button>
+          </div>
+          <div class="cred-row">
+            <div>
+              <div class="cred-role">NOC Admin &mdash; France (CNOSF)</div>
+              <div class="cred-vals">cnosf@test.mrp &nbsp;/&nbsp; test1234</div>
+            </div>
+            <button class="cred-use-btn" onclick="fillCreds('cnosf@test.mrp')">Use</button>
+          </div>
+          <div class="cred-row">
+            <div>
+              <div class="cred-role">NOC Admin &mdash; Japan (JOC)</div>
+              <div class="cred-vals">joc@test.mrp &nbsp;/&nbsp; test1234</div>
+            </div>
+            <button class="cred-use-btn" onclick="fillCreds('joc@test.mrp')">Use</button>
+          </div>
+          <div class="cred-row">
+            <div>
+              <div class="cred-role">IOC Admin (Read-Only)</div>
+              <div class="cred-vals">ioc-ro@test.mrp &nbsp;/&nbsp; test1234</div>
+            </div>
+            <button class="cred-use-btn" onclick="fillCreds('ioc-ro@test.mrp')">Use</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sso-note">
+      In v1.0, staff sign in via <strong>D.TEC/DGP SSO</strong> &mdash; no new password needed.
+    </div>
+
+  </div>
+</div>
+
+<script>
+function fillCreds(email) {
+  document.getElementById('email-input').value = email;
+  document.getElementById('password-input').value = 'test1234';
+  document.getElementById('email-input').focus();
+}
+</script>
+
+</body>
+</html>

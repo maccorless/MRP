@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Organization Directory</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .role-badge select { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .role-badge select option { color: #1a1a1a; }
+
+  /* Nav */
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; }
+  .nav a:hover { color: white; background: rgba(255,255,255,0.05); }
+  .nav a.active { color: white; border-bottom-color: white; }
+
+  /* Content */
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Page header */
+  .page-header { margin-bottom: 20px; }
+  .page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+  .page-desc { font-size: 14px; color: #6b7280; margin-top: 4px; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 18px 20px; }
+  .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .stat-value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat-value.blue { color: #0057A8; }
+  .stat-value.green { color: #059669; }
+  .stat-value.gray { color: #6b7280; }
+  .stat-detail { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+  /* Toolbar */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .search-box { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 260px; background: white; }
+  .filter-select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; color: #374151; }
+  .filter-btn { padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; }
+  .filter-btn.active { border-color: #0057A8; background: #eff6ff; color: #0057A8; }
+  .toolbar-right { display: flex; gap: 8px; }
+  .action-btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #d1d5db; background: white; }
+
+  /* Table */
+  .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 11px 16px; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f9fafb; }
+
+  /* Org link */
+  .org-link { color: #0057A8; text-decoration: none; font-weight: 600; }
+  .org-link:hover { text-decoration: underline; }
+  .org-territory { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  /* Games history badges */
+  .games-history { display: flex; gap: 4px; flex-wrap: wrap; }
+  .games-badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .games-badge.approved { background: #ecfdf5; color: #059669; }
+  .games-badge.pending { background: #eff6ff; color: #0057A8; }
+  .games-badge.none { background: #f3f4f6; color: #9ca3af; }
+
+  /* Common Codes status */
+  .cc-status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .cc-coded { background: #ecfdf5; color: #059669; }
+  .cc-pending { background: #fef3c7; color: #92400e; }
+  .cc-new { background: #f3f4f6; color: #6b7280; }
+
+  /* Org type badge */
+  .type-badge { font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; }
+
+  /* Table footer */
+  .table-footer { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">
+      Role:
+      <select>
+        <option>IOC Media Operations</option>
+        <option>NOC Admin - United States (USOPC)</option>
+        <option>NOC Admin - France (CNOSF)</option>
+        <option>IOC Admin (Read-only)</option>
+      </select>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#">Applications</a>
+      <a href="#">Press by Number</a>
+      <a href="#" class="active">Org Directory</a>
+      <a href="#">Export</a>
+      <a href="#">Audit Log</a>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <div class="page-header">
+    <div class="page-title">Organization Directory</div>
+    <div class="page-desc">Persistent cross-Games registry of all media organizations that have applied or been accredited. Records carry forward from one Games to the next.</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Organizations</div>
+      <div class="stat-value blue">1,847</div>
+      <div class="stat-detail">Across all Games editions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">In Common Codes</div>
+      <div class="stat-value green">1,612</div>
+      <div class="stat-detail">Fully coded and active</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">LA 2028 Applicants</div>
+      <div class="stat-value blue">423</div>
+      <div class="stat-detail">Submitted EoI this cycle</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">New to MRP</div>
+      <div class="stat-value gray">211</div>
+      <div class="stat-detail">First-time applicants</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-box" placeholder="Search organizations..." />
+      <select class="filter-select">
+        <option>All Countries</option>
+        <option>United States</option>
+        <option>France</option>
+        <option>Japan</option>
+        <option>United Kingdom</option>
+        <option>Germany</option>
+        <option>Australia</option>
+      </select>
+      <select class="filter-select">
+        <option>All Types</option>
+        <option>News Agency</option>
+        <option>Media - Print/Online</option>
+        <option>Media - Broadcast</option>
+        <option>Non-Rights Broadcaster (ENR)</option>
+        <option>Photo Agency</option>
+        <option>Freelance</option>
+      </select>
+      <select class="filter-select">
+        <option>All Games</option>
+        <option>LA 2028 (current)</option>
+        <option>Paris 2024</option>
+        <option>Tokyo 2020</option>
+        <option>Rio 2016</option>
+      </select>
+      <button class="filter-btn active">All</button>
+      <button class="filter-btn">In Common Codes</button>
+      <button class="filter-btn">Pending Coding</button>
+      <button class="filter-btn">New</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="action-btn">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Organization</th>
+          <th>Type</th>
+          <th>Country</th>
+          <th>Games History</th>
+          <th>Common Codes</th>
+          <th>LA 2028 Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Associated Press</a>
+            <div class="org-territory">Multi-territory &nbsp;&bull;&nbsp; 12 active territories</div>
+          </td>
+          <td><span class="type-badge">News Agency</span></td>
+          <td>United States</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge pending">LA28</span>
+              <span class="games-badge approved">PAR24</span>
+              <span class="games-badge approved">TOK20</span>
+              <span class="games-badge approved">RIO16</span>
+              <span class="games-badge approved">LON12</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-coded">&#10003; Coded</span></td>
+          <td><span style="font-size: 13px; color: #0057A8; font-weight: 500;">Submitted</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Reuters</a>
+            <div class="org-territory">Multi-territory &nbsp;&bull;&nbsp; 18 active territories</div>
+          </td>
+          <td><span class="type-badge">News Agency</span></td>
+          <td>United Kingdom</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge pending">LA28</span>
+              <span class="games-badge approved">PAR24</span>
+              <span class="games-badge approved">TOK20</span>
+              <span class="games-badge approved">RIO16</span>
+              <span class="games-badge approved">LON12</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-coded">&#10003; Coded</span></td>
+          <td><span style="font-size: 13px; color: #059669; font-weight: 500;">Approved</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">New York Times</a>
+            <div class="org-territory">United States territory</div>
+          </td>
+          <td><span class="type-badge">Media &mdash; Print/Online</span></td>
+          <td>United States</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge pending">LA28</span>
+              <span class="games-badge approved">PAR24</span>
+              <span class="games-badge approved">TOK20</span>
+              <span class="games-badge approved">RIO16</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-coded">&#10003; Coded</span></td>
+          <td><span style="font-size: 13px; color: #059669; font-weight: 500;">Approved</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Getty Images</a>
+            <div class="org-territory">Multi-territory &nbsp;&bull;&nbsp; 9 active territories</div>
+          </td>
+          <td><span class="type-badge">Photo Agency</span></td>
+          <td>United States</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge pending">LA28</span>
+              <span class="games-badge approved">PAR24</span>
+              <span class="games-badge approved">TOK20</span>
+              <span class="games-badge approved">RIO16</span>
+              <span class="games-badge approved">LON12</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-coded">&#10003; Coded</span></td>
+          <td><span style="font-size: 13px; color: #059669; font-weight: 500;">Approved</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Le Monde</a>
+            <div class="org-territory">France territory</div>
+          </td>
+          <td><span class="type-badge">Media &mdash; Print/Online</span></td>
+          <td>France</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge pending">LA28</span>
+              <span class="games-badge approved">PAR24</span>
+              <span class="games-badge approved">TOK20</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-coded">&#10003; Coded</span></td>
+          <td><span style="font-size: 13px; color: #6b7280; font-weight: 500;">Not applied</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Sports Illustrated</a>
+            <div class="org-territory">United States territory</div>
+          </td>
+          <td><span class="type-badge">Media &mdash; Print/Online</span></td>
+          <td>United States</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge pending">LA28</span>
+              <span class="games-badge none">No prior history</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-pending">&#9679; Pending coding</span></td>
+          <td><span style="font-size: 13px; color: #059669; font-weight: 500;">Approved</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">NHK</a>
+            <div class="org-territory">Japan territory</div>
+          </td>
+          <td><span class="type-badge">Media &mdash; Broadcast</span></td>
+          <td>Japan</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge approved">PAR24</span>
+              <span class="games-badge approved">TOK20</span>
+              <span class="games-badge approved">RIO16</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-coded">&#10003; Coded</span></td>
+          <td><span style="font-size: 13px; color: #6b7280; font-weight: 500;">Not applied</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a class="org-link" href="#">Olympic Digital Weekly</a>
+            <div class="org-territory">Canada territory &nbsp;&bull;&nbsp; New org</div>
+          </td>
+          <td><span class="type-badge">Media &mdash; Print/Online</span></td>
+          <td>Canada</td>
+          <td>
+            <div class="games-history">
+              <span class="games-badge pending">LA28</span>
+              <span class="games-badge none">New</span>
+            </div>
+          </td>
+          <td><span class="cc-status cc-new">Not in CC yet</span></td>
+          <td><span style="font-size: 13px; color: #0057A8; font-weight: 500;">Under Review</span></td>
+          <td><a class="org-link" href="#" style="font-weight: 400; font-size: 13px;">View</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-footer">
+      <span>Showing 8 of 1,847 organizations</span>
+      <span>Last updated: Mar 29, 2026 9:15 AM</span>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

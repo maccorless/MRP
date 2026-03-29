@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Resubmit Application</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 16px 0; }
+  .header-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+  /* Progress */
+  .progress-bar { background: white; border-bottom: 1px solid #e5e7eb; padding: 12px 0; }
+  .progress-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
+  .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280; }
+  .step.completed .dot { background: #22c55e; color: white; }
+  .step.active .dot { background: #f59e0b; color: white; }
+  .step .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: #e5e7eb; }
+  .step.completed { color: #22c55e; }
+  .step.active { color: #92400e; font-weight: 500; }
+  .step-line { width: 32px; height: 2px; background: #e5e7eb; flex-shrink: 0; }
+  .step-line.done { background: #22c55e; }
+
+  /* Main */
+  .form-container { max-width: 640px; margin: 28px auto; padding: 0 24px; }
+
+  /* Return reason banner */
+  .return-banner { background: #fffbeb; border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; }
+  .return-banner-header { display: flex; align-items: flex-start; gap: 12px; }
+  .return-banner-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .return-banner-title { font-size: 14px; font-weight: 700; color: #92400e; margin-bottom: 2px; }
+  .return-banner-meta { font-size: 12px; color: #b45309; margin-bottom: 10px; }
+  .return-banner-reason { background: white; border: 1px solid #fde68a; border-radius: 6px; padding: 12px 14px; font-size: 14px; color: #78350f; line-height: 1.6; }
+  .return-banner-reason-label { font-size: 11px; font-weight: 600; color: #b45309; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+  /* Form card */
+  .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 28px 32px; }
+  .form-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .form-subtitle { font-size: 14px; color: #6b7280; margin-bottom: 28px; }
+
+  .section-heading { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #0057A8; margin-bottom: 14px; margin-top: 28px; padding-bottom: 8px; border-bottom: 2px solid #0057A8; }
+  .section-heading:first-of-type { margin-top: 0; }
+
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .field .required { color: #ef4444; }
+  .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: inherit; background: white; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.1); }
+  .field textarea { min-height: 100px; resize: vertical; }
+  .field .hint { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+  .field .prefilled { background: #f3f4f6; color: #6b7280; }
+
+  /* Changed field highlight */
+  .field.changed input, .field.changed select, .field.changed textarea { border-color: #f59e0b; background: #fffbeb; }
+  .changed-note { font-size: 11px; color: #b45309; font-weight: 500; margin-top: 4px; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* Category chips */
+  .category-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .category-chip { padding: 8px 16px; border: 2px solid #d1d5db; border-radius: 8px; font-size: 14px; cursor: pointer; background: white; }
+  .category-chip.selected { border-color: #0057A8; background: #eff6ff; color: #0057A8; font-weight: 500; }
+
+  /* Verified badge */
+  .verified-badge { display: inline-flex; align-items: center; gap: 4px; background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+
+  /* Resubmit section */
+  .submit-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+  .resubmit-btn { width: 100%; padding: 14px; background: #f59e0b; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .resubmit-btn:hover { background: #d97706; }
+  .legal-note { font-size: 12px; color: #9ca3af; margin-top: 10px; text-align: center; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .category-options { flex-direction: column; gap: 6px; }
+    .category-chip { width: 100%; text-align: center; padding: 12px 16px; }
+    .field-row { grid-template-columns: 1fr; }
+    .form-card { padding: 20px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <h1>Media Registration Portal</h1>
+    <div class="subtitle">LA 2028 Olympic Games &mdash; Expression of Interest</div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <div class="progress-inner">
+    <div class="step completed">
+      <div class="dot">&#10003;</div>
+      <span>Email Verified</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step completed">
+      <div class="dot">&#10003;</div>
+      <span>Submitted</span>
+    </div>
+    <div class="step-line done"></div>
+    <div class="step active">
+      <div class="dot">&#9888;</div>
+      <span>Returned &mdash; Corrections Needed</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="dot">4</div>
+      <span>Resubmitted</span>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="form-container">
+
+  <!-- Return reason banner -->
+  <div class="return-banner">
+    <div class="return-banner-header">
+      <div class="return-banner-icon">&#9888;</div>
+      <div style="flex: 1;">
+        <div class="return-banner-title">Your application was returned for corrections</div>
+        <div class="return-banner-meta">Returned by USOPC &mdash; United States &nbsp;&bull;&nbsp; March 27, 2026 &nbsp;&bull;&nbsp; Reference: APP-2028-US-00051</div>
+        <div class="return-banner-reason-label">Reviewer's note (visible only to you)</div>
+        <div class="return-banner-reason">Please update your organization's website URL &mdash; the current entry (foxsportsdigital.com) redirects to a Fox Sports domain and cannot be verified as an independent digital entity. Please provide the URL for your specific editorial operation, along with a brief description confirming Fox Sports Digital is a distinct editorial unit from Fox Sports broadcast.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-card">
+    <div class="form-title">Correct and Resubmit</div>
+    <p class="form-subtitle">Review the note above and update the relevant fields. All fields from your original submission are pre-filled.</p>
+
+    <div class="section-heading">Organization Details</div>
+
+    <div class="field">
+      <label>Organization Name <span class="required">*</span></label>
+      <input type="text" value="Fox Sports Digital" />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Country <span class="required">*</span></label>
+        <select>
+          <option selected>United States</option>
+          <option>Australia</option>
+          <option>Canada</option>
+          <option>France</option>
+          <option>United Kingdom</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Organization Type <span class="required">*</span></label>
+        <select>
+          <option>Media - Print/Online</option>
+          <option selected>Media - Broadcast</option>
+          <option>News Agency</option>
+          <option>Non-Rights Broadcaster (ENR)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Changed field highlighted -->
+    <div class="field changed">
+      <label>Website URL</label>
+      <input type="url" value="https://www.foxsports.com/digital" />
+      <div class="hint">Used for organization verification. Include the full URL with https://</div>
+      <div class="changed-note">&#9998; Updated from original submission &mdash; make sure this reflects the reviewer's request above.</div>
+    </div>
+
+    <div class="section-heading">Primary Contact</div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Contact Name <span class="required">*</span></label>
+        <input type="text" value="Marcus Rivera" />
+      </div>
+      <div class="field">
+        <label>Contact Email <span class="verified-badge">&#10003; Verified</span></label>
+        <input type="email" value="press@foxsports.com" class="prefilled" readonly />
+      </div>
+    </div>
+
+    <div class="section-heading">Accreditation</div>
+
+    <div class="field">
+      <label>Category Requested <span class="required">*</span></label>
+      <div class="category-options">
+        <div class="category-chip">Press</div>
+        <div class="category-chip">Photographer</div>
+        <div class="category-chip selected">Non-Rights Broadcaster (ENR)</div>
+      </div>
+      <div class="hint" style="margin-top: 8px;">Select the primary accreditation category for your organization</div>
+    </div>
+
+    <!-- Changed field highlighted -->
+    <div class="field changed">
+      <label>About Your Organization <span class="required">*</span></label>
+      <textarea>Fox Sports Digital is the standalone digital editorial division of Fox Sports, operating foxsports.com and associated digital properties. It functions as an independent editorial unit producing written, video, and multimedia sports journalism across all platforms. For LA 2028, Fox Sports Digital plans to deploy a dedicated team of digital journalists and producers covering all Olympic sports, ceremonies, and athlete stories for our 40 million monthly digital readers.</textarea>
+      <div class="changed-note">&#9998; Updated to address reviewer's question about editorial independence.</div>
+    </div>
+
+    <div class="submit-section">
+      <button class="resubmit-btn">Resubmit Application &rarr;</button>
+      <p class="legal-note">By resubmitting, you confirm all information is accurate. Your application will return to the USOPC review queue. This is resubmission 1 &mdash; you may resubmit up to 3 times.</p>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

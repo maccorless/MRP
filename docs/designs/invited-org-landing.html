@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Invited Organization Landing</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+  /* Progress */
+  .progress-bar { background: #004690; padding: 0 24px; }
+  .progress-inner { max-width: 640px; margin: 0 auto; display: flex; align-items: center; padding: 12px 0; gap: 0; }
+  .step { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .step.active .step-num { background: white; color: #0057A8; }
+  .step.done .step-num { background: #22c55e; color: white; }
+  .step.inactive .step-num { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+  .step-label { color: white; font-weight: 500; }
+  .step.inactive .step-label { opacity: 0.5; }
+  .step-connector { flex: 1; height: 1px; background: rgba(255,255,255,0.2); margin: 0 12px; }
+
+  /* Main */
+  .main { max-width: 640px; margin: 48px auto; padding: 0 24px; }
+
+  /* Welcome card */
+  .welcome-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .welcome-header { background: #eff6ff; border-bottom: 1px solid #dbeafe; padding: 24px 32px; }
+  .welcome-badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1e40af; margin-bottom: 8px; }
+  .welcome-title { font-size: 22px; font-weight: 600; color: #1e3a8a; margin-bottom: 4px; }
+  .welcome-org { font-size: 15px; color: #374151; }
+  .welcome-body { padding: 28px 32px; }
+
+  /* Info message */
+  .info-msg { display: flex; gap: 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 14px 16px; margin-bottom: 24px; }
+  .info-msg-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .info-msg-text { font-size: 14px; color: #166534; line-height: 1.6; }
+
+  /* Pre-filled data */
+  .prefilled-section { margin-bottom: 24px; }
+  .prefilled-label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .prefilled-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .prefilled-item { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; }
+  .prefilled-item-label { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .prefilled-item-value { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+  .prefilled-item-full { grid-column: 1 / -1; }
+
+  /* CTA */
+  .cta-section { border-top: 1px solid #f3f4f6; padding-top: 24px; }
+  .cta-btn { width: 100%; padding: 14px; background: #0057A8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .cta-btn:hover { background: #004690; }
+  .cta-note { font-size: 13px; color: #6b7280; text-align: center; margin-top: 10px; }
+  .cta-note a { color: #0057A8; text-decoration: none; }
+  .cta-note a:hover { text-decoration: underline; }
+
+  /* Wrong org */
+  .wrong-org { margin-top: 20px; padding: 14px 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 13px; color: #6b7280; text-align: center; }
+  .wrong-org a { color: #0057A8; text-decoration: none; }
+
+  /* Footer */
+  .footer { text-align: center; margin-top: 32px; font-size: 12px; color: #9ca3af; }
+
+  /* State tabs (for prototype) */
+  .state-tabs { display: flex; gap: 8px; margin-bottom: 24px; justify-content: center; }
+  .state-tab { padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-weight: 500; background: white; cursor: pointer; color: #6b7280; }
+  .state-tab.active { border-color: #0057A8; background: #eff6ff; color: #0057A8; }
+
+  /* Expired state */
+  .expired-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 48px 32px; text-align: center; display: none; }
+  .expired-icon { font-size: 40px; margin-bottom: 16px; }
+  .expired-title { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
+  .expired-desc { font-size: 14px; color: #6b7280; margin-bottom: 24px; line-height: 1.6; }
+  .expired-btn { padding: 12px 24px; background: #0057A8; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <h1>Media Registration Portal</h1>
+    <div class="subtitle">LA 2028 Olympic Games</div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <div class="progress-inner">
+    <div class="step active">
+      <div class="step-num">1</div>
+      <div class="step-label">Confirm Organization</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step inactive">
+      <div class="step-num">2</div>
+      <div class="step-label">Complete Application</div>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step inactive">
+      <div class="step-num">3</div>
+      <div class="step-label">Confirmation</div>
+    </div>
+  </div>
+</div>
+
+<!-- Prototype state switcher -->
+<div class="main">
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('active')">Link Active</button>
+    <button class="state-tab" onclick="showState('expired')">Link Expired</button>
+  </div>
+
+  <!-- Active state -->
+  <div id="state-active">
+    <div class="welcome-card">
+      <div class="welcome-header">
+        <div class="welcome-badge">&#127775; Invitation from IOC Media Operations</div>
+        <div class="welcome-title">Welcome, Associated Press</div>
+        <div class="welcome-org">You have been invited to submit your Expression of Interest for LA 2028 press accreditation.</div>
+      </div>
+      <div class="welcome-body">
+
+        <div class="info-msg">
+          <div class="info-msg-icon">&#10003;</div>
+          <div class="info-msg-text">Your organization is already registered with the IOC from prior Games. The details below have been pre-filled — please review and confirm before proceeding to your application.</div>
+        </div>
+
+        <div class="prefilled-section">
+          <div class="prefilled-label">Your organization on file</div>
+          <div class="prefilled-grid">
+            <div class="prefilled-item prefilled-item-full">
+              <div class="prefilled-item-label">Organization Name</div>
+              <div class="prefilled-item-value">Associated Press</div>
+            </div>
+            <div class="prefilled-item">
+              <div class="prefilled-item-label">Country</div>
+              <div class="prefilled-item-value">United States</div>
+            </div>
+            <div class="prefilled-item">
+              <div class="prefilled-item-label">Organization Type</div>
+              <div class="prefilled-item-value">News Agency</div>
+            </div>
+            <div class="prefilled-item prefilled-item-full">
+              <div class="prefilled-item-label">Contact Email</div>
+              <div class="prefilled-item-value">press@ap.org</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cta-section">
+          <button class="cta-btn">Confirm &amp; Start Application &rarr;</button>
+          <div class="cta-note">You can update any of these details on the next screen.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="wrong-org">
+      Not the right organization, or you received this by mistake?<br>
+      <a href="#">Contact your National Olympic Committee</a> &nbsp;or&nbsp; <a href="#">IOC Media Operations</a>
+    </div>
+
+    <div class="footer">This invitation link is personal and single-use. Do not share it.<br>It will expire 7 days after it was sent.</div>
+  </div>
+
+  <!-- Expired state -->
+  <div id="state-expired" style="display:none;">
+    <div class="expired-card">
+      <div class="expired-icon">&#8987;</div>
+      <div class="expired-title">This invitation link has expired</div>
+      <div class="expired-desc">Invitation links are valid for 7 days. This one was sent on March 22, 2026 and has now expired.<br><br>To receive a new invitation link, contact your National Olympic Committee or IOC Media Operations.</div>
+      <button class="expired-btn">Contact IOC Media Operations</button>
+    </div>
+    <div class="footer" style="margin-top: 16px;">Reference: Associated Press / United States / MRP-INV-2026-AP-001</div>
+  </div>
+
+</div>
+
+<script>
+function showState(s) {
+  document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('state-active').style.display = s === 'active' ? '' : 'none';
+  document.getElementById('state-expired').style.display = s === 'expired' ? '' : 'none';
+}
+</script>
+
+</body>
+</html>

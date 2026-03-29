@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - NOC Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  /* Header */
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .role-badge select { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  .role-badge select option { color: #1a1a1a; }
+
+  /* Nav */
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .nav a:hover { color: white; background: rgba(255,255,255,0.05); }
+  .nav a.active { color: white; border-bottom-color: white; }
+
+  /* Content */
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* Stats row */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px; }
+  .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .stat-value { font-size: 32px; font-weight: 700; margin-top: 4px; }
+  .stat-value.blue { color: #0057A8; }
+  .stat-value.green { color: #22c55e; }
+  .stat-value.amber { color: #f59e0b; }
+  .stat-value.red { color: #ef4444; }
+  .stat-detail { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+  /* Toolbar */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; }
+  .search-box { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 280px; background: white; }
+  .search-box:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.1); }
+  .filter-btn { padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .filter-btn:hover { border-color: #0057A8; }
+  .filter-btn.active { border-color: #0057A8; background: #eff6ff; color: #0057A8; }
+  .toolbar-right { display: flex; gap: 8px; }
+  .export-btn { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; font-weight: 500; }
+  .export-btn:hover { border-color: #0057A8; }
+
+  /* Table */
+  .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; cursor: pointer; }
+  th:hover { color: #0057A8; }
+  th .sort { opacity: 0.4; margin-left: 4px; }
+  td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid #f3f4f6; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f9fafb; }
+
+  /* Status badges */
+  .status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .status-submitted { background: #eff6ff; color: #0057A8; }
+  .status-review { background: #fef3c7; color: #92400e; }
+  .status-approved { background: #ecfdf5; color: #059669; }
+  .status-returned { background: #fef2f2; color: #dc2626; }
+  .status-withdrawn { background: #f3f4f6; color: #6b7280; }
+
+  /* Flags */
+  .flag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .flag-dedup { background: #fef3c7; color: #92400e; }
+  .flag-new { background: #ecfdf5; color: #059669; }
+
+  /* Org name link */
+  .org-link { color: #0057A8; text-decoration: none; font-weight: 500; }
+  .org-link:hover { text-decoration: underline; }
+
+  /* Category */
+  .cat-badge { font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; }
+
+  /* Table footer */
+  .table-footer { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">
+      Role:
+      <select>
+        <option>NOC Admin - United States (USOPC)</option>
+        <option>NOC Admin - France (CNOSF)</option>
+        <option>IOC Media Operations</option>
+        <option>IOC Admin (Read-only)</option>
+      </select>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#" class="active">Applications</a>
+      <a href="#">Press by Number</a>
+      <a href="#">Org Directory</a>
+      <a href="#">Export</a>
+      <a href="#">Audit Log</a>
+    </div>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Applications</div>
+      <div class="stat-value blue">23</div>
+      <div class="stat-detail">For United States territory</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pending Review</div>
+      <div class="stat-value amber">8</div>
+      <div class="stat-detail">3 flagged for review</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Approved</div>
+      <div class="stat-value green">12</div>
+      <div class="stat-detail">52% approval rate</div>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #0057A8;">
+      <div class="stat-label">IOC Quota — Total</div>
+      <div class="stat-value blue">200</div>
+      <div class="stat-detail" style="display: flex; align-items: center; justify-content: space-between;">
+        <span>0 allocated &nbsp;·&nbsp; 200 available</span>
+        <a href="#" style="font-size: 11px; color: #0057A8; text-decoration: none; font-weight: 600;">Assign →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-box" placeholder="Search organizations..." />
+      <button class="filter-btn active">All (23)</button>
+      <button class="filter-btn">Pending (8)</button>
+      <button class="filter-btn">Flagged (3)</button>
+      <button class="filter-btn">Approved (12)</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="export-btn">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Organization <span class="sort">&#9650;</span></th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Status</th>
+          <th>Flags</th>
+          <th>Submitted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a class="org-link" href="#">Associated Press</a></td>
+          <td>News Agency</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td><span class="status status-submitted">Submitted</span></td>
+          <td><span class="flag flag-dedup">Possible duplicate</span></td>
+          <td>Mar 25, 2026</td>
+          <td><a class="org-link" href="#">Review</a></td>
+        </tr>
+        <tr>
+          <td><a class="org-link" href="#">ESPN</a></td>
+          <td>Media - Broadcast</td>
+          <td><span class="cat-badge">ENR</span></td>
+          <td><span class="status status-review">Under Review</span></td>
+          <td></td>
+          <td>Mar 24, 2026</td>
+          <td><a class="org-link" href="#">Review</a></td>
+        </tr>
+        <tr>
+          <td><a class="org-link" href="#">New York Times</a></td>
+          <td>Media - Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td><span class="status status-approved">Approved</span></td>
+          <td></td>
+          <td>Mar 22, 2026</td>
+          <td><a class="org-link" href="#">View</a></td>
+        </tr>
+        <tr>
+          <td><a class="org-link" href="#">Sports Illustrated</a></td>
+          <td>Media - Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td><span class="status status-approved">Approved</span></td>
+          <td><span class="flag flag-new">New org</span></td>
+          <td>Mar 21, 2026</td>
+          <td><a class="org-link" href="#">View</a></td>
+        </tr>
+        <tr>
+          <td><a class="org-link" href="#">Fox Sports Digital</a></td>
+          <td>Media - Broadcast</td>
+          <td><span class="cat-badge">ENR</span></td>
+          <td><span class="status status-returned">Returned</span></td>
+          <td></td>
+          <td>Mar 20, 2026</td>
+          <td><a class="org-link" href="#">Review</a></td>
+        </tr>
+        <tr>
+          <td><a class="org-link" href="#">USA Today Sports</a></td>
+          <td>Media - Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td><span class="status status-submitted">Submitted</span></td>
+          <td><span class="flag flag-dedup">Possible duplicate</span></td>
+          <td>Mar 19, 2026</td>
+          <td><a class="org-link" href="#">Review</a></td>
+        </tr>
+        <tr>
+          <td><a class="org-link" href="#">Washington Post</a></td>
+          <td>Media - Print/Online</td>
+          <td><span class="cat-badge">Press</span></td>
+          <td><span class="status status-approved">Approved</span></td>
+          <td></td>
+          <td>Mar 18, 2026</td>
+          <td><a class="org-link" href="#">View</a></td>
+        </tr>
+        <tr>
+          <td><a class="org-link" href="#">NBC Sports</a></td>
+          <td>Media - Broadcast</td>
+          <td><span class="cat-badge">ENR</span></td>
+          <td><span class="status status-approved">Approved</span></td>
+          <td></td>
+          <td>Mar 17, 2026</td>
+          <td><a class="org-link" href="#">View</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-footer">
+      <span>Showing 8 of 23 applications</span>
+      <span>Last updated: Mar 28, 2026 10:42 AM</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

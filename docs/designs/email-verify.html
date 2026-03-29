@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - Email Verification</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  .header { background: #0057A8; color: white; padding: 16px 0; }
+  .header-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+
+  .progress-bar { background: white; border-bottom: 1px solid #e5e7eb; padding: 12px 0; }
+  .progress-inner { max-width: 640px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; }
+  .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280; }
+  .step.active .dot { background: #0057A8; color: white; }
+  .step .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: #e5e7eb; }
+  .step.active { color: #0057A8; font-weight: 500; }
+  .step-line { width: 40px; height: 2px; background: #e5e7eb; }
+
+  .form-container { max-width: 640px; margin: 48px auto; padding: 0 24px; }
+  .form-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; padding: 40px 32px; text-align: center; }
+  .form-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .form-subtitle { font-size: 15px; color: #6b7280; margin-bottom: 32px; line-height: 1.5; }
+
+  .email-field { text-align: left; margin-bottom: 20px; }
+  .email-field label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .email-field .required { color: #ef4444; }
+  .email-field input { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px; font-family: inherit; }
+  .email-field input:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.1); }
+  .email-field .hint { font-size: 12px; color: #9ca3af; margin-top: 6px; }
+
+  .verify-btn { width: 100%; padding: 14px; background: #0057A8; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .verify-btn:hover { background: #004690; }
+
+  .info-box { background: #f9fafb; border-radius: 8px; padding: 16px; margin-top: 24px; text-align: left; }
+  .info-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .info-text { font-size: 13px; color: #6b7280; line-height: 1.5; }
+
+  /* State tabs (v0.09 prototype only) */
+  .state-tabs { display: flex; gap: 0; margin-bottom: 24px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+  .state-tab { flex: 1; padding: 8px 12px; font-size: 12px; font-weight: 600; text-align: center; cursor: pointer; background: #f9fafb; color: #9ca3af; border: none; font-family: inherit; }
+  .state-tab.active { background: #fffbeb; color: #92400e; border-bottom: 2px solid #f59e0b; }
+  .state-tab-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; color: #b45309; margin-bottom: 2px; }
+
+  /* Proto banner */
+  .proto-banner { background: #fffbeb; border: 1px solid #f59e0b; border-radius: 8px; padding: 8px 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: #92400e; }
+  .proto-banner strong { font-weight: 700; }
+
+  /* Code issued state */
+  .code-icon { width: 64px; height: 64px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 28px; }
+  .code-display { display: inline-flex; align-items: center; gap: 0; margin: 16px auto 28px; }
+  .code-char { width: 56px; height: 64px; background: #1a1a1a; color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 0; border-radius: 0; }
+  .code-char:first-child { border-radius: 8px 0 0 8px; }
+  .code-char:last-child { border-radius: 0 8px 8px 0; }
+  .code-char + .code-char { border-left: 2px solid #374151; }
+  .code-label { font-size: 12px; color: #9ca3af; margin-bottom: 4px; }
+
+  .continue-btn { display: inline-block; padding: 14px 32px; background: #0057A8; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.15s; margin-bottom: 8px; width: 100%; }
+  .continue-btn:hover { background: #004690; }
+
+  .code-email-shown { font-family: monospace; font-size: 14px; color: #0057A8; background: #eff6ff; padding: 3px 10px; border-radius: 4px; display: inline-block; margin-bottom: 20px; }
+
+  .expire-note { font-size: 12px; color: #9ca3af; margin-top: 12px; }
+
+  .code-instructions { background: #f9fafb; border-radius: 8px; padding: 16px; margin-top: 20px; text-align: left; }
+  .code-instructions .info-title { margin-bottom: 8px; }
+  .code-instructions ol { padding-left: 16px; font-size: 13px; color: #6b7280; line-height: 2; }
+  .code-instructions li { margin-bottom: 2px; }
+
+  /* Production note */
+  .prod-note { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 16px; margin-top: 16px; text-align: left; font-size: 12px; color: #075985; line-height: 1.6; }
+  .prod-note strong { color: #0c4a6e; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <h1>Media Registration Portal</h1>
+    <div class="subtitle">LA 2028 Olympic Games &mdash; Expression of Interest</div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-bar">
+  <div class="progress-inner">
+    <div class="step active">
+      <div class="dot">1</div>
+      <span>Verify Email</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="dot">2</div>
+      <span>Complete Application</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="dot">3</div>
+      <span>Confirmation</span>
+    </div>
+  </div>
+</div>
+
+<!-- State tab switcher (prototype only) -->
+<div class="form-container" style="margin-bottom: 0; padding-bottom: 0;">
+  <div class="proto-banner">
+    <span>&#9888;</span>
+    <span><strong>v0.09 Prototype</strong> &mdash; Use tabs below to preview both screen states.</span>
+  </div>
+  <div class="state-tabs">
+    <button class="state-tab active" onclick="showState('enter-email')">
+      <span class="state-tab-label">State 1</span>Enter Email
+    </button>
+    <button class="state-tab" onclick="showState('code-issued')">
+      <span class="state-tab-label">State 2</span>Code Issued
+    </button>
+  </div>
+</div>
+
+<!-- STATE 1: Enter email -->
+<div id="state-enter-email" class="form-container" style="margin-top: 12px;">
+  <div class="form-card">
+    <h2 class="form-title">Start Your Application</h2>
+    <p class="form-subtitle">Enter your organization's contact email to begin the Expression of Interest process for press accreditation at the LA 2028 Olympic Games.</p>
+
+    <div class="email-field">
+      <label>Organization Email <span class="required">*</span></label>
+      <input type="email" placeholder="press@yourorganization.com" />
+      <div class="hint">Use your organization's official email address. This will be the primary contact for your application.</div>
+    </div>
+
+    <button class="verify-btn" onclick="showState('code-issued')">Send Access Code &rarr;</button>
+
+    <div class="info-box">
+      <div class="info-title">How it works</div>
+      <div class="info-text">We'll send a 4-character access code to verify your email address. Enter the code on the next screen to continue to the application form.</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATE 2: Code issued (v0.09 — token shown on screen instead of emailed) -->
+<div id="state-code-issued" class="form-container" style="margin-top: 12px; display: none;">
+  <div class="form-card">
+    <div class="code-icon">&#128274;</div>
+    <h2 class="form-title">Your Access Code</h2>
+    <p class="form-subtitle">A code has been issued for:</p>
+    <div class="code-email-shown">press@apnews.com</div>
+
+    <div class="code-label">Your 4-character access code</div>
+    <div class="code-display">
+      <div class="code-char">K</div>
+      <div class="code-char">7</div>
+      <div class="code-char">M</div>
+      <div class="code-char">2</div>
+    </div>
+
+    <a href="eoi-form.html" class="continue-btn">Continue to Application &rarr;</a>
+
+    <p class="expire-note">Code expires in 24 hours &bull; One-time use only</p>
+
+    <div class="prod-note">
+      <strong>v0.09 prototype only:</strong> In production, this code is sent to the applicant's email inbox &mdash; it is never displayed on screen. The applicant enters the code on a separate sign-in page to authenticate before accessing the form. This on-screen display is for prototype testing only.
+    </div>
+
+    <div class="code-instructions">
+      <div class="info-title">What happens next</div>
+      <ol>
+        <li>Copy your 4-character code above</li>
+        <li>Click "Continue to Application"</li>
+        <li>The code authenticates your session automatically</li>
+        <li>Complete and submit the Expression of Interest form</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+function showState(state) {
+  document.getElementById('state-enter-email').style.display = state === 'enter-email' ? 'block' : 'none';
+  document.getElementById('state-code-issued').style.display = state === 'code-issued' ? 'block' : 'none';
+  document.querySelectorAll('.state-tab').forEach(function(tab, i) {
+    tab.classList.toggle('active', (i === 0 && state === 'enter-email') || (i === 1 && state === 'code-issued'));
+  });
+}
+
+// Support ?state=code-issued in URL for direct linking from confirmation doc
+var params = new URLSearchParams(window.location.search);
+if (params.get('state') === 'code-issued') {
+  showState('code-issued');
+}
+</script>
+
+</body>
+</html>
