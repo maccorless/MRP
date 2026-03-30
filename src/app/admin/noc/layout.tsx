@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/admin/noc", label: "EoI Queue" },
-  { href: "/admin/noc/pbn", label: "PbN Allocations" },
-  { href: "/admin/noc/enr", label: "ENR Requests" },
+  { href: "/admin/noc/home",  label: "Home" },
+  { href: "/admin/noc/queue", label: "EoI Queue" },
+  { href: "/admin/noc/pbn",   label: "PbN Allocations" },
+  { href: "/admin/noc/enr",   label: "ENR Requests" },
 ];
 
 export default function NocLayout({ children }: { children: React.ReactNode }) {
@@ -17,9 +18,7 @@ export default function NocLayout({ children }: { children: React.ReactNode }) {
         <div className="max-w-5xl mx-auto flex gap-0">
           {NAV.map(({ href, label }) => {
             // Active if exact match or (for non-root) pathname starts with href
-            const active = href === "/admin/noc"
-              ? pathname === "/admin/noc" || pathname.startsWith("/admin/noc/") && !pathname.startsWith("/admin/noc/pbn")
-              : pathname.startsWith(href);
+            const active = pathname === href || (href !== "/admin/noc/home" && pathname.startsWith(href));
             return (
               <Link
                 key={href}

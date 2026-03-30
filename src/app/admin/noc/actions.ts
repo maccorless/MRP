@@ -20,7 +20,7 @@ export async function approveApplication(formData: FormData) {
 
   const app = await getApplicationForNoc(id, session.nocCode);
   if (!app || (app.status !== "pending" && app.status !== "resubmitted")) {
-    redirect("/admin/noc");
+    redirect("/admin/noc/queue");
   }
 
   await db
@@ -42,7 +42,7 @@ export async function approveApplication(formData: FormData) {
     organizationId: app.organizationId,
   });
 
-  redirect("/admin/noc?success=approved");
+  redirect("/admin/noc/queue?success=approved");
 }
 
 export async function returnApplication(formData: FormData) {
@@ -54,7 +54,7 @@ export async function returnApplication(formData: FormData) {
 
   const app = await getApplicationForNoc(id, session.nocCode);
   if (!app || (app.status !== "pending" && app.status !== "resubmitted")) {
-    redirect("/admin/noc");
+    redirect("/admin/noc/queue");
   }
 
   await db
@@ -78,7 +78,7 @@ export async function returnApplication(formData: FormData) {
     detail: note,
   });
 
-  redirect("/admin/noc?success=returned");
+  redirect("/admin/noc/queue?success=returned");
 }
 
 export async function rejectApplication(formData: FormData) {
@@ -90,7 +90,7 @@ export async function rejectApplication(formData: FormData) {
 
   const app = await getApplicationForNoc(id, session.nocCode);
   if (!app || (app.status !== "pending" && app.status !== "resubmitted")) {
-    redirect("/admin/noc");
+    redirect("/admin/noc/queue");
   }
 
   await db
@@ -114,5 +114,5 @@ export async function rejectApplication(formData: FormData) {
     detail: note,
   });
 
-  redirect("/admin/noc?success=rejected");
+  redirect("/admin/noc/queue?success=rejected");
 }

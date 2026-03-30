@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
+  { href: "/admin/ocog",     label: "Home" },
   { href: "/admin/ocog/pbn", label: "PbN Approvals" },
 ];
 
@@ -14,7 +15,7 @@ export default function OcogLayout({ children }: { children: React.ReactNode }) 
       <nav className="bg-white border-b border-gray-200 px-6">
         <div className="max-w-5xl mx-auto flex gap-0">
           {NAV.map(({ href, label }) => {
-            const active = pathname.startsWith(href);
+            const active = pathname === href || (href !== "/admin/ocog" && pathname.startsWith(href));
             return (
               <Link
                 key={href}

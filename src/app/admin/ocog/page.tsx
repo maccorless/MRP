@@ -1,0 +1,74 @@
+import Link from "next/link";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { nocQuotas, orgSlotAllocations } from "@/db/schema";
+import { requireOcogSession } from "@/lib/session";
+
+export default async function OcogHomePage() {
+  const session = await requireOcogSession();
+
+  const quotas = await db.select({ nocCode: nocQuotas.nocCode }).from(nocQuotas).where(eq(nocQuotas.eventId, "LA28"));
+
+  const allAllocs = await db
+    .select({ nocCode: orgSlotAllocations.nocCode, pbnState: orgSlotAllocations.pbnState })
+    .from(orgSlotAllocations)
+    .where(eq(orgSlotAllocations.eventId, "LA28"));
+
+  // Per-NOC status
+  const nocStateMap: Record<string, string> = {};
+  for (const alloc of allAllocs) {
+    const cur = nocStateMap[alloc.nocCode];
+    // Priority: ocog_approved > noc_submitted > draft
+    if (!cur || (alloc.pbnState === "noc_submitted" && cur === "draft") || alloc.pbnState === "ocog_approved") {
+      nocStateMap[alloc.nocCode] = alloc.pbnState;
+    }
+  }
+
+  const submitted = Object.values(nocStateMap).filter((s) => s === "noc_submitted").length;
+  const approved  = Object.values(nocStateMap).filter((s) => s === "ocog_approved").length;
+  const notStarted = quotas.length - Object.keys(nocStateMap).length;
+
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Welcome, {session.displayName}</h1>
+        <p className="text-sm text-gray-500 mt-1">OCOG Admin · LA 2028</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5">
+        {/* PbN Approvals card */}
+        <Link href="/admin/ocog/pbn" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-orange-500 p-6 transition-all hover:shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">PbN</span>
+                </div>
+                <h2 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+                  Press by Number Approvals
+                </h2>
+              </div>
+              <p className="text-xs text-gray-500 ml-10">
+                Review, adjust, and approve NOC slot allocations before sending to ACR
+              </p>
+            </div>
+            {submitted > 0 ? (
+              <span className="shrink-0 px-3 py-1 rounded-full text-sm font-bold bg-yellow-100 text-yellow-800">
+                {submitted} awaiting approval
+              </span>
+            ) : (
+              <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                All clear
+              </span>
+            )}
+          </div>
+          <div className="mt-4 ml-10 flex gap-6 text-xs text-gray-500">
+            <span><strong className="text-yellow-700">{submitted}</strong> submitted by NOC</span>
+            <span><strong className="text-green-700">{approved}</strong> approved</span>
+            <span><strong className="text-gray-400">{notStarted}</strong> not started</span>
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+}

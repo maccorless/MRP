@@ -80,7 +80,7 @@ export default async function ApplicationDetailPage({
       {/* Back + header */}
       <div className="mb-6">
         <Link
-          href="/admin/noc"
+          href="/admin/noc/queue"
           className="text-xs text-gray-500 hover:text-gray-700 mb-3 inline-block"
         >
           ← Back to queue
