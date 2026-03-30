@@ -63,6 +63,12 @@ export async function submitApplication(formData: FormData) {
   const { categoryPress, categoryPhoto } = parseCategoryFlags(categoryRaw);
   const about = (formData.get("about") as string).trim();
 
+  // Requested quantities
+  const requestedPressRaw = formData.get("requested_press") as string | null;
+  const requestedPhotoRaw = formData.get("requested_photo") as string | null;
+  const requestedPress = categoryPress && requestedPressRaw ? parseInt(requestedPressRaw, 10) : null;
+  const requestedPhoto = categoryPhoto && requestedPhotoRaw ? parseInt(requestedPhotoRaw, 10) : null;
+
   // Must select at least one category
   if (!categoryPress && !categoryPhoto) {
     redirect("/apply?error=invalid_category");
@@ -89,6 +95,8 @@ export async function submitApplication(formData: FormData) {
         contactName,
         categoryPress,
         categoryPhoto,
+        requestedPress,
+        requestedPhoto,
         about,
         status: "resubmitted",
         resubmissionCount: returnedApp.resubmissionCount + 1,
@@ -191,6 +199,8 @@ export async function submitApplication(formData: FormData) {
       contactEmail: email,
       categoryPress,
       categoryPhoto,
+      requestedPress,
+      requestedPhoto,
       about,
       status: "pending",
     })

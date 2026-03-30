@@ -118,6 +118,10 @@ export const applications = pgTable("applications", {
   categoryPress: boolean("category_press").notNull().default(false),
   categoryPhoto: boolean("category_photo").notNull().default(false),
 
+  // Requested slot quantities (from EoI form)
+  requestedPress: integer("requested_press"),   // null for pre-v2 applications
+  requestedPhoto: integer("requested_photo"),
+
   about: text("about").notNull(),
 
   // Status
@@ -126,6 +130,7 @@ export const applications = pgTable("applications", {
 
   // NOC review
   reviewNote: text("review_note"),             // latest return/rejection reason
+  internalNote: text("internal_note"),         // NOC-only, never shown to applicant
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   reviewedBy: text("reviewed_by"),             // admin user id
 
@@ -222,13 +227,21 @@ export const enrRequests = pgTable("enr_requests", {
   id: uuid("id").primaryKey().defaultRandom(),
   nocCode: text("noc_code").notNull(),
   eventId: text("event_id").notNull().default("LA28"),
-  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
+  organizationId: uuid("organization_id").references(() => organizations.id), // nullable for direct nominations
   priorityRank: integer("priority_rank").notNull(),
-  slotsRequested: integer("slots_requested").notNull(),
+  slotsRequested: integer("slots_requested").notNull(), // kept for backward compat; = mustHave + niceToHave
   slotsGranted: integer("slots_granted"),      // null until IOC decides
   decision: enrDecisionEnum("decision"),   // null until IOC decides
   decisionNotes: text("decision_notes"),
   reviewedBy: text("reviewed_by"),             // IOC admin user id
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow(),
+
+  // v2: independent nomination fields (org may not exist in organizations table)
+  enrOrgName: text("enr_org_name"),
+  enrWebsite: text("enr_website"),
+  enrDescription: text("enr_description"),
+  enrJustification: text("enr_justification"),
+  mustHaveSlots: integer("must_have_slots"),
+  niceToHaveSlots: integer("nice_to_have_slots"),
 });

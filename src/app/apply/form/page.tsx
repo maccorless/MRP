@@ -5,6 +5,7 @@ import { magicLinkTokens, applications, organizations } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 import { submitApplication } from "../actions";
 import { COUNTRY_CODES, NOC_CODES } from "@/lib/codes";
+import { CategoryQuantityFields } from "./CategoryQuantityFields";
 
 export default async function FormPage({
   searchParams,
@@ -256,50 +257,19 @@ export default async function FormPage({
             Accreditation Request
           </h2>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category <span className="text-red-500">*</span>
-              </label>
-              <p className="text-xs text-gray-500 mb-3">
-                Select all that apply. Press = journalists, writers, reporters. Photo = still photographers.
-              </p>
-              <div className="space-y-2">
-                {(
-                  [
-                    { value: "press", label: "Press", desc: "Journalists, writers, reporters" },
-                    { value: "photo", label: "Photo", desc: "Still photographers" },
-                    { value: "both", label: "Both — Press &amp; Photo", desc: "Organisation covers both press and photography" },
-                  ] as const
-                ).map(({ value, label, desc }) => {
-                  const prefillValue = prefill?.app
-                    ? prefill.app.categoryPress && prefill.app.categoryPhoto
-                      ? "both"
-                      : prefill.app.categoryPress
-                      ? "press"
-                      : "photo"
-                    : undefined;
-                  return (
-                    <label
-                      key={value}
-                      className="flex items-start gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#0057A8] has-[:checked]:bg-blue-50"
-                    >
-                      <input
-                        type="radio"
-                        name="category"
-                        value={value}
-                        required
-                        defaultChecked={prefillValue === value}
-                        className="mt-0.5 accent-[#0057A8]"
-                      />
-                      <div>
-                        <div className="text-sm font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: label }} />
-                        <div className="text-xs text-gray-500">{desc}</div>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
+            <CategoryQuantityFields
+              defaultCategory={
+                prefill?.app
+                  ? prefill.app.categoryPress && prefill.app.categoryPhoto
+                    ? "both"
+                    : prefill.app.categoryPress
+                    ? "press"
+                    : "photo"
+                  : undefined
+              }
+              defaultRequestedPress={prefill?.app.requestedPress}
+              defaultRequestedPhoto={prefill?.app.requestedPhoto}
+            />
 
             <div>
               <label

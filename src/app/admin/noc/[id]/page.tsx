@@ -167,11 +167,24 @@ export default async function ApplicationDetailPage({
                 <dd className="text-gray-900">{app.contactEmail}</dd>
               </div>
             </div>
-            <div>
-              <dt className="text-gray-500">Category</dt>
-              <dd className="text-gray-900">
-                {categoryDisplayLabel(app.categoryPress, app.categoryPhoto)}
-              </dd>
+            <div className="grid grid-cols-2 gap-x-6">
+              <div>
+                <dt className="text-gray-500">Category</dt>
+                <dd className="text-gray-900">
+                  {categoryDisplayLabel(app.categoryPress, app.categoryPhoto)}
+                </dd>
+              </div>
+              {(app.requestedPress || app.requestedPhoto) && (
+                <div>
+                  <dt className="text-gray-500">Requested</dt>
+                  <dd className="text-gray-900">
+                    {[
+                      app.requestedPress ? `${app.requestedPress} press` : null,
+                      app.requestedPhoto ? `${app.requestedPhoto} photo` : null,
+                    ].filter(Boolean).join(", ")}
+                  </dd>
+                </div>
+              )}
             </div>
             <div>
               <dt className="text-gray-500 mb-1">About</dt>
@@ -187,6 +200,14 @@ export default async function ApplicationDetailPage({
             )}
           </dl>
         </section>
+
+        {/* Internal note (NOC-only) */}
+        {app.internalNote && (
+          <div className="p-4 rounded-lg border border-yellow-200 bg-yellow-50 text-sm">
+            <div className="font-semibold text-yellow-800 mb-1">Internal note (NOC only)</div>
+            <p className="text-yellow-900">{app.internalNote}</p>
+          </div>
+        )}
 
         {/* Audit trail */}
         {logs.length > 0 && (
@@ -239,10 +260,16 @@ export default async function ApplicationDetailPage({
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
               <h3 className="text-sm font-semibold text-gray-900 mb-1">Approve</h3>
               <p className="text-xs text-gray-500 mb-3">
-                Marks the application as approved and forwards it to the IOC queue.
+                Marks the application as approved. The organisation becomes eligible for PbN slot allocation.
               </p>
-              <form action={approveApplication}>
+              <form action={approveApplication} className="space-y-3">
                 <input type="hidden" name="id" value={app.id} />
+                <textarea
+                  name="internal_note"
+                  rows={2}
+                  placeholder="Internal note (optional, NOC only — not visible to applicant)"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none"
+                />
                 <button
                   type="submit"
                   className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer"

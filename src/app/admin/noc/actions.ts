@@ -23,10 +23,13 @@ export async function approveApplication(formData: FormData) {
     redirect("/admin/noc/queue");
   }
 
+  const internalNote = (formData.get("internal_note") as string)?.trim() || null;
+
   await db
     .update(applications)
     .set({
       status: "approved",
+      internalNote,
       reviewedAt: new Date(),
       reviewedBy: session.userId,
       updatedAt: new Date(),

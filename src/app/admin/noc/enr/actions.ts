@@ -6,50 +6,68 @@ import { db } from "@/db";
 import { enrRequests, auditLog } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 
-/** Add an org to the NOC's ENR list. org_id must be an existing organization. */
-export async function addEnrOrg(formData: FormData) {
+/** Add an ENR nomination (independent of EoI — NOC enters org details directly). */
+export async function addEnrNomination(formData: FormData) {
   const session = await requireNocSession();
   const nocCode = session.nocCode;
-  const orgId = formData.get("org_id") as string;
-  const slotsRaw = parseInt(formData.get("slots_requested") as string, 10);
-  const slots = isNaN(slotsRaw) || slotsRaw < 1 ? 1 : slotsRaw;
 
-  if (!orgId) redirect("/admin/noc/enr?error=no_org");
+  const enrOrgName = (formData.get("enr_org_name") as string)?.trim();
+  const enrWebsite = (formData.get("enr_website") as string)?.trim() || null;
+  const enrDescription = (formData.get("enr_description") as string)?.trim();
+  const enrJustification = (formData.get("enr_justification") as string)?.trim();
+  const mustHaveRaw = parseInt(formData.get("must_have_slots") as string, 10);
+  const niceToHaveRaw = parseInt(formData.get("nice_to_have_slots") as string, 10);
 
-  // Already on list?
-  const [existing] = await db
+  if (!enrOrgName || !enrDescription || !enrJustification) {
+    redirect("/admin/noc/enr?error=missing_fields");
+  }
+
+  const mustHaveSlots = isNaN(mustHaveRaw) || mustHaveRaw < 1 ? 1 : mustHaveRaw;
+  const niceToHaveSlots = isNaN(niceToHaveRaw) ? 0 : Math.max(0, niceToHaveRaw);
+
+  // Duplicate check by org name (case-insensitive)
+  const existing = await db
     .select({ id: enrRequests.id })
     .from(enrRequests)
     .where(
       and(
         eq(enrRequests.nocCode, nocCode),
-        eq(enrRequests.eventId, "LA28"),
-        eq(enrRequests.organizationId, orgId)
+        eq(enrRequests.eventId, "LA28")
       )
     );
-  if (existing) redirect("/admin/noc/enr?error=already_added");
 
-  // Assign next priority rank
-  const current = await db
-    .select({ rank: enrRequests.priorityRank })
+  // Check name collision
+  const allReqs = await db
+    .select({ id: enrRequests.id, enrOrgName: enrRequests.enrOrgName })
     .from(enrRequests)
-    .where(and(eq(enrRequests.nocCode, nocCode), eq(enrRequests.eventId, "LA28")))
-    .orderBy(asc(enrRequests.priorityRank));
+    .where(and(eq(enrRequests.nocCode, nocCode), eq(enrRequests.eventId, "LA28")));
 
-  const nextRank = current.length > 0 ? current[current.length - 1].rank + 1 : 1;
+  const duplicate = allReqs.some(
+    (r) => r.enrOrgName?.toLowerCase() === enrOrgName.toLowerCase()
+  );
+  if (duplicate) redirect("/admin/noc/enr?error=already_added");
+
+  // Next priority rank
+  const nextRank = existing.length + 1;
 
   await db.insert(enrRequests).values({
     nocCode,
-    organizationId: orgId,
+    organizationId: null,
     priorityRank: nextRank,
-    slotsRequested: slots,
+    slotsRequested: mustHaveSlots + niceToHaveSlots,
+    enrOrgName,
+    enrWebsite,
+    enrDescription,
+    enrJustification,
+    mustHaveSlots,
+    niceToHaveSlots,
     submittedAt: null, // draft
   });
 
   redirect("/admin/noc/enr?success=added");
 }
 
-/** Remove a draft org from the ENR list (not allowed after submission). */
+/** Remove a draft nomination (not allowed after submission). */
 export async function removeEnrOrg(formData: FormData) {
   const session = await requireNocSession();
   const nocCode = session.nocCode;
@@ -81,7 +99,37 @@ export async function removeEnrOrg(formData: FormData) {
   redirect("/admin/noc/enr?success=removed");
 }
 
-/** Submit the ENR list to IOC. Sets submittedAt on all draft records, locking the list. */
+/** Update priority ranks (for drag-and-drop or rank-number editing). */
+export async function updateEnrRanks(formData: FormData) {
+  const session = await requireNocSession();
+  const nocCode = session.nocCode;
+
+  const ranksJson = formData.get("ranks") as string;
+  if (!ranksJson) redirect("/admin/noc/enr");
+
+  const ranks: { id: string; rank: number }[] = JSON.parse(ranksJson);
+
+  // Validate all belong to this NOC and are draft
+  for (const { id, rank } of ranks) {
+    const [req] = await db
+      .select({ nocCode: enrRequests.nocCode, submittedAt: enrRequests.submittedAt })
+      .from(enrRequests)
+      .where(eq(enrRequests.id, id));
+
+    if (!req || req.nocCode !== nocCode || req.submittedAt !== null) {
+      redirect("/admin/noc/enr?error=invalid_rank");
+    }
+
+    await db
+      .update(enrRequests)
+      .set({ priorityRank: rank })
+      .where(eq(enrRequests.id, id));
+  }
+
+  redirect("/admin/noc/enr?success=reordered");
+}
+
+/** Submit the ENR list to IOC. */
 export async function submitEnrToIoc() {
   const session = await requireNocSession();
   const nocCode = session.nocCode;
