@@ -1,6 +1,5 @@
 [build]
 builder = "nixpacks"
-installCommand = "bun install"
 
 [deploy]
 startCommand = "bun run db:migrate && npm run start"
