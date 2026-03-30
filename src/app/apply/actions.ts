@@ -10,6 +10,7 @@ import {
   auditLog,
 } from "@/db/schema";
 import { generateToken, hashToken } from "@/lib/tokens";
+import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";
 
 export async function requestToken(formData: FormData) {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
@@ -107,8 +108,18 @@ export async function submitApplication(formData: FormData) {
 
   // ── NEW APPLICATION PATH ───────────────────────────────────────────────────
   const orgName = (formData.get("org_name") as string).trim();
-  const country = (formData.get("country") as string).trim().toUpperCase();
-  const nocCode = (formData.get("noc_code") as string).trim().toUpperCase();
+  // Accept either "US — United States" (datalist selection) or bare "US"
+  const countryRaw = (formData.get("country") as string).trim();
+  const country = countryRaw.split(" — ")[0].trim().toUpperCase();
+  const nocRaw = (formData.get("noc_code") as string).trim();
+  const nocCode = nocRaw.split(" — ")[0].trim().toUpperCase();
+
+  if (!COUNTRY_CODE_SET.has(country)) {
+    redirect("/apply?error=invalid_country");
+  }
+  if (!NOC_CODE_SET.has(nocCode)) {
+    redirect("/apply?error=invalid_noc");
+  }
   const orgType = formData.get("org_type") as
     | "media_print_online"
     | "media_broadcast"

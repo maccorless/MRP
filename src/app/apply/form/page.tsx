@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { magicLinkTokens, applications, organizations } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 import { submitApplication } from "../actions";
+import { COUNTRY_CODES, NOC_CODES } from "@/lib/codes";
 
 export default async function FormPage({
   searchParams,
@@ -172,11 +173,16 @@ export default async function FormPage({
                     name="country"
                     type="text"
                     required
-                    maxLength={2}
-                    placeholder="US"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+                    list="country-codes"
+                    placeholder="US — United States"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
                   />
-                  <p className="text-xs text-gray-400 mt-1">ISO 2-letter code</p>
+                  <datalist id="country-codes">
+                    {COUNTRY_CODES.map(({ code, name }) => (
+                      <option key={code} value={`${code} — ${name}`} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-gray-400 mt-1">Type a code or country name</p>
                 </div>
                 <div>
                   <label
@@ -190,11 +196,16 @@ export default async function FormPage({
                     name="noc_code"
                     type="text"
                     required
-                    maxLength={3}
-                    placeholder="USA"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+                    list="noc-codes"
+                    placeholder="USA — United States of America"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
                   />
-                  <p className="text-xs text-gray-400 mt-1">3-letter Olympic code</p>
+                  <datalist id="noc-codes">
+                    {NOC_CODES.map(({ code, name }) => (
+                      <option key={code} value={`${code} — ${name}`} />
+                    ))}
+                  </datalist>
+                  <p className="text-xs text-gray-400 mt-1">Type a code or country name</p>
                 </div>
               </div>
 

@@ -28,6 +28,16 @@ export default async function ApplyPage({
           a new one.
         </div>
       )}
+      {error === "invalid_country" && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+          Please select a valid country from the list (2-letter ISO code).
+        </div>
+      )}
+      {error === "invalid_noc" && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+          Please select a valid NOC code from the list (3-letter Olympic code).
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <form action={requestToken}>
