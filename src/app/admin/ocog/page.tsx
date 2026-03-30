@@ -42,6 +42,17 @@ export default async function OcogHomePage() {
         <p className="text-sm text-gray-500 mt-1">OCOG Admin · LA 2028</p>
       </div>
 
+      {/* Attention banner */}
+      {submitted > 0 && (
+        <div className="mb-5 flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
+          <span className="shrink-0 mt-0.5">⚠</span>
+          <span>
+            <strong>{submitted} NOC{submitted !== 1 ? "s" : ""} {submitted === 1 ? "has" : "have"} submitted PbN allocations awaiting your approval.</strong>
+            {" "}Review them in PbN Approvals.
+          </span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-5">
         {/* PbN Approvals card */}
         <Link href="/admin/ocog/pbn" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-orange-500 p-6 transition-all hover:shadow-sm">

@@ -23,6 +23,7 @@ export function IocNav() {
             <Link
               key={href}
               href={href}
+              aria-current={active ? "page" : undefined}
               className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 active
                   ? "border-[#0057A8] text-[#0057A8]"

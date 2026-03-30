@@ -72,6 +72,17 @@ export default async function NocHomePage() {
         <p className="text-sm text-gray-500 mt-1">NOC Admin · {nocCode} · LA 2028</p>
       </div>
 
+      {/* Attention banner */}
+      {pendingReview > 0 && (
+        <div className="mb-5 flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
+          <span className="shrink-0 mt-0.5">⚠</span>
+          <span>
+            <strong>{pendingReview} application{pendingReview !== 1 ? "s" : ""} need{pendingReview === 1 ? "s" : ""} your review.</strong>
+            {" "}Check the EoI Queue to action them.
+          </span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-5">
         {/* EoI Queue card */}
         <Link href="/admin/noc/queue" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-[#0057A8] p-6 transition-all hover:shadow-sm">
