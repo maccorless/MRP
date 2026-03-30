@@ -4,6 +4,13 @@ import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
 
+const MILESTONES = [
+  { label: "NOC EoI review window",          date: "Feb–Apr 2028", state: "done"     },
+  { label: "NOC PbN submissions due",        date: "May 2028",     state: "active"   },
+  { label: "OCOG approval deadline",         date: "Jun 2028",     state: "upcoming" },
+  { label: "Push to ACR",                    date: "Jun 2028",     state: "upcoming" },
+] as const;
+
 export default async function OcogHomePage() {
   const session = await requireOcogSession();
 
@@ -68,6 +75,29 @@ export default async function OcogHomePage() {
             <span><strong className="text-gray-400">{notStarted}</strong> not started</span>
           </div>
         </Link>
+      </div>
+
+      {/* Phase timeline */}
+      <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5">
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">LA 2028 — Key Milestones</h2>
+        <div className="flex flex-col gap-3">
+          {MILESTONES.map((m) => (
+            <div key={m.label} className="flex items-center gap-3">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${
+                m.state === "done"   ? "bg-green-500" :
+                m.state === "active" ? "bg-orange-500 ring-2 ring-orange-200" :
+                "bg-gray-200"
+              }`} />
+              <span className={`text-sm flex-1 ${m.state === "active" ? "font-medium text-gray-900" : "text-gray-500"}`}>
+                {m.label}
+              </span>
+              <span className={`text-xs ${m.state === "active" ? "font-semibold text-orange-600" : "text-gray-400"}`}>
+                {m.date}
+              </span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-gray-400">Dates are indicative — confirm with IOC.</p>
       </div>
     </div>
   );

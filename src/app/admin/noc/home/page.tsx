@@ -1,8 +1,16 @@
 import Link from "next/link";
-import { eq, and, inArray, isNull, isNotNull } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, orgSlotAllocations, enrRequests, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+
+const MILESTONES = [
+  { label: "EoI application window opens",  date: "Feb 2028",  state: "done"     },
+  { label: "NOC EoI review deadline",        date: "Apr 2028",  state: "active"   },
+  { label: "PbN submission deadline",        date: "May 2028",  state: "upcoming" },
+  { label: "ENR nominations deadline",       date: "Jun 2028",  state: "upcoming" },
+  { label: "Final accreditation confirmed",  date: "Jan 2028",  state: "upcoming" },
+] as const;
 
 export default async function NocHomePage() {
   const session = await requireNocSession();
@@ -155,6 +163,29 @@ export default async function NocHomePage() {
             )}
           </div>
         </Link>
+      </div>
+
+      {/* Phase timeline */}
+      <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5">
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">LA 2028 — Key Milestones</h2>
+        <div className="flex flex-col gap-3">
+          {MILESTONES.map((m) => (
+            <div key={m.label} className="flex items-center gap-3">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${
+                m.state === "done"    ? "bg-green-500" :
+                m.state === "active"  ? "bg-[#0057A8] ring-2 ring-blue-200" :
+                "bg-gray-200"
+              }`} />
+              <span className={`text-sm flex-1 ${m.state === "active" ? "font-medium text-gray-900" : "text-gray-500"}`}>
+                {m.label}
+              </span>
+              <span className={`text-xs ${m.state === "active" ? "font-semibold text-[#0057A8]" : "text-gray-400"}`}>
+                {m.date}
+              </span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-gray-400">Dates are indicative — confirm with your IOC liaison.</p>
       </div>
     </div>
   );
