@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { href: "/admin/ioc", label: "Dashboard" },
   { href: "/admin/ioc/quotas", label: "Quotas" },
+  { href: "/admin/ioc/enr", label: "ENR Review" },
   { href: "/admin/ioc/orgs", label: "Org Directory" },
   { href: "/admin/ioc/audit", label: "Audit Trail" },
   { href: "/admin/ioc/export", label: "PBN Export" },

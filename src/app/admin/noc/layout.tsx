@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { href: "/admin/noc", label: "EoI Queue" },
   { href: "/admin/noc/pbn", label: "PbN Allocations" },
+  { href: "/admin/noc/enr", label: "ENR Requests" },
 ];
 
 export default function NocLayout({ children }: { children: React.ReactNode }) {
