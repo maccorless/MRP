@@ -1,24 +1,41 @@
 import { login } from "./actions";
 
+const ROLE_LABELS: Record<string, string> = {
+  noc_admin:  "NOC Admin",
+  ocog_admin: "OCOG Admin",
+  if_admin:   "IF Admin",
+  ioc_admin:  "IOC Admin",
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; role?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, role } = await searchParams;
+  const roleLabel = role && ROLE_LABELS[role] ? ROLE_LABELS[role] : null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 bg-[#0057A8] rounded-lg flex items-center justify-center mx-auto mb-3">
-            <span className="text-white font-bold text-lg">M</span>
+            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7" aria-hidden="true">
+              <circle cx="8" cy="12" r="5" stroke="white" strokeWidth="1.75"/>
+              <circle cx="16" cy="12" r="5" stroke="white" strokeWidth="1.75"/>
+            </svg>
           </div>
           <h1 className="text-xl font-bold text-gray-900">
             Media Registration Portal
           </h1>
-          <p className="text-sm text-gray-500 mt-1">Administrator Sign In</p>
+          {roleLabel ? (
+            <p className="text-sm text-gray-500 mt-1">
+              Signing in as <span className="font-semibold text-gray-700">{roleLabel}</span>
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500 mt-1">Administrator Sign In</p>
+          )}
         </div>
 
         {/* Form */}
@@ -79,9 +96,14 @@ export default async function LoginPage({
           </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
-          LA 2028 · IOC Media Registration Portal
-        </p>
+        <div className="mt-4 text-center space-y-1">
+          <p className="text-xs text-gray-400">LA 2028 · IOC Media Registration Portal</p>
+          {roleLabel && (
+            <a href="/admin" className="text-xs text-gray-400 hover:text-gray-600 underline">
+              ← Choose a different role
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP — Admin Role Portal (v2 design)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f1f5f9; color: #1a1a1a; min-height: 100vh; }
+
+  /* ── Header ── */
+  .page-header {
+    background: #0057A8;
+    padding: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .page-header-inner {
+    max-width: 960px; margin: 0 auto;
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .portal-name {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .portal-logo {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .portal-logo svg { width: 18px; height: 18px; }
+  .portal-title { font-size: 15px; font-weight: 600; color: white; letter-spacing: -0.01em; }
+  .portal-subtitle { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 1px; }
+  .portal-event { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; }
+
+  /* ── Main ── */
+  .main {
+    max-width: 960px; margin: 0 auto;
+    padding: 48px 24px 64px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .intro { text-align: center; margin-bottom: 40px; max-width: 520px; }
+  .intro h1 { font-size: 22px; font-weight: 700; color: #111827; letter-spacing: -0.02em; }
+  .intro p { font-size: 14px; color: #6b7280; margin-top: 8px; line-height: 1.5; }
+  .intro a { color: #0057A8; text-decoration: none; }
+  .intro a:hover { text-decoration: underline; }
+
+  /* ── Role grid ── */
+  .role-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 720px;
+  }
+
+  .role-card {
+    background: white;
+    border-radius: 14px;
+    border: 2px solid #e5e7eb;
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    cursor: pointer;
+  }
+  .role-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-1px); }
+  .role-card.noc:hover { border-color: #0057A8; }
+  .role-card.ocog:hover { border-color: #f97316; }
+  .role-card.if:hover { border-color: #7c3aed; }
+  .role-card.ioc:hover { border-color: #16a34a; }
+
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+
+  /* Role icons — distinct shapes instead of letters */
+  .role-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .role-icon.noc { background: #eff6ff; }
+  .role-icon.ocog { background: #fff7ed; }
+  .role-icon.if { background: #f5f3ff; }
+  .role-icon.ioc { background: #f0fdf4; }
+
+  .role-icon svg { width: 22px; height: 22px; }
+
+  .card-titles { flex: 1; }
+  .card-title { font-size: 15px; font-weight: 700; color: #111827; }
+  .card-subtitle { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+  /* Role color accent on title hover */
+  .role-card.noc:hover .card-title { color: #0057A8; }
+  .role-card.ocog:hover .card-title { color: #ea580c; }
+  .role-card.if:hover .card-title { color: #7c3aed; }
+  .role-card.ioc:hover .card-title { color: #16a34a; }
+
+  .task-list { list-style: none; space-y: 6px; }
+  .task-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 13px; color: #4b5563; line-height: 1.4;
+    padding: 4px 0;
+  }
+  .task-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+  .noc .task-dot { background: #0057A8; }
+  .ocog .task-dot { background: #f97316; }
+  .if .task-dot { background: #7c3aed; }
+  .ioc .task-dot { background: #16a34a; }
+
+  .card-cta {
+    margin-top: 16px;
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap-4px;
+  }
+  .role-card.noc .card-cta { color: #0057A8; }
+  .role-card.ocog .card-cta { color: #ea580c; }
+  .role-card.if .card-cta { color: #7c3aed; }
+  .role-card.ioc .card-cta { color: #16a34a; }
+
+  .footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="page-header">
+  <div class="page-header-inner">
+    <div class="portal-name">
+      <div class="portal-logo">
+        <!-- Simplified Olympic rings-inspired mark -->
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="9" r="4" stroke="white" stroke-width="1.5" fill="none"/>
+          <circle cx="12" cy="9" r="4" stroke="white" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <div>
+        <div class="portal-title">Media Registration Portal</div>
+        <div class="portal-subtitle">Admin Access</div>
+      </div>
+    </div>
+    <span class="portal-event">LA 2028</span>
+  </div>
+</header>
+
+<!-- Main -->
+<main class="main">
+  <div class="intro">
+    <h1>Select your role to sign in</h1>
+    <p>Each role has a dedicated workflow. If you're a media organization applying for credentials, use the <a href="#">media application form</a> instead.</p>
+  </div>
+
+  <div class="role-grid">
+
+    <!-- NOC Admin -->
+    <a href="/admin/login?role=noc_admin" class="role-card noc">
+      <div class="card-head">
+        <div class="role-icon noc">
+          <!-- Flag/NOC icon -->
+          <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 3v16M4 5l10-2v7L4 12" stroke="#0057A8" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="card-titles">
+          <div class="card-title">NOC Admin</div>
+          <div class="card-subtitle">National Olympic Committee</div>
+        </div>
+      </div>
+      <ul class="task-list">
+        <li><span class="task-dot"></span>Review and approve EoI applications from media organisations</li>
+        <li><span class="task-dot"></span>Allocate press and photo slots (Press by Number)</li>
+        <li><span class="task-dot"></span>Submit ENR organisation nominations to IOC</li>
+      </ul>
+      <div class="card-cta">Sign in as NOC Admin →</div>
+    </a>
+
+    <!-- OCOG Admin -->
+    <a href="/admin/login?role=ocog_admin" class="role-card ocog">
+      <div class="card-head">
+        <div class="role-icon ocog">
+          <!-- City/organising committee icon -->
+          <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="10" width="4" height="9" rx="1" stroke="#f97316" stroke-width="1.75"/>
+            <rect x="9" y="6" width="4" height="13" rx="1" stroke="#f97316" stroke-width="1.75"/>
+            <rect x="15" y="8" width="4" height="11" rx="1" stroke="#f97316" stroke-width="1.75"/>
+          </svg>
+        </div>
+        <div class="card-titles">
+          <div class="card-title">OCOG Admin</div>
+          <div class="card-subtitle">LA28 Organising Committee</div>
+        </div>
+      </div>
+      <ul class="task-list">
+        <li><span class="task-dot"></span>Review NOC slot allocations before finalisation</li>
+        <li><span class="task-dot"></span>Adjust and approve PbN submissions</li>
+        <li><span class="task-dot"></span>Push approved allocations to the Accreditation system</li>
+      </ul>
+      <div class="card-cta">Sign in as OCOG Admin →</div>
+    </a>
+
+    <!-- IF Admin -->
+    <a href="/admin/login?role=if_admin" class="role-card if">
+      <div class="card-head">
+        <div class="role-icon if">
+          <!-- Trophy/federation icon -->
+          <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 3v12M8 18h6M6 3h10l-1.5 8a3.5 3.5 0 01-7 0L6 3z" stroke="#7c3aed" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 6H3a2 2 0 002 4" stroke="#7c3aed" stroke-width="1.75" stroke-linecap="round"/>
+            <path d="M16 6h3a2 2 0 01-2 4" stroke="#7c3aed" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-titles">
+          <div class="card-title">IF Admin</div>
+          <div class="card-subtitle">International Federation</div>
+        </div>
+      </div>
+      <ul class="task-list">
+        <li><span class="task-dot"></span>Review ENR accreditation requests for your sport</li>
+        <li><span class="task-dot"></span>Grant, partially grant, or deny per-organisation slots</li>
+        <li><span class="task-dot"></span>Track holdback pool usage across your NOCs</li>
+      </ul>
+      <div class="card-cta">Sign in as IF Admin →</div>
+    </a>
+
+    <!-- IOC Admin -->
+    <a href="/admin/login?role=ioc_admin" class="role-card ioc">
+      <div class="card-head">
+        <div class="role-icon ioc">
+          <!-- Globe/IOC icon -->
+          <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="8" stroke="#16a34a" stroke-width="1.75"/>
+            <path d="M3 11h16M11 3c-2.5 2-4 4.8-4 8s1.5 6 4 8M11 3c2.5 2 4 4.8 4 8s-1.5 6-4 8" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="card-titles">
+          <div class="card-title">IOC Admin</div>
+          <div class="card-subtitle">International Olympic Committee</div>
+        </div>
+      </div>
+      <ul class="task-list">
+        <li><span class="task-dot"></span>Set and manage quota allocations per NOC</li>
+        <li><span class="task-dot"></span>Review and decide on ENR accreditation requests</li>
+        <li><span class="task-dot"></span>Export approved PbN data for ACR integration</li>
+      </ul>
+      <div class="card-cta">Sign in as IOC Admin →</div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    MRP v0.1 · Credentials are managed by your IOC liaison
+  </div>
+</main>
+
+</body>
+</html>

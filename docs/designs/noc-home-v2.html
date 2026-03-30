@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP — NOC Home Dashboard (v2 design)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f1f5f9; color: #1a1a1a; }
+
+  /* ── Shared header ── */
+  .app-header { background: #0057A8; }
+  .app-header-inner {
+    max-width: 960px; margin: 0 auto; padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .app-brand { display: flex; align-items: center; gap: 10px; }
+  .app-brand-logo {
+    width: 28px; height: 28px; background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .app-brand-logo svg { width: 16px; height: 16px; }
+  .app-brand-text { font-size: 14px; font-weight: 600; color: white; }
+  .app-brand-event { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+  .app-user { display: flex; align-items: center; gap: 10px; }
+  .app-user-name { font-size: 13px; color: rgba(255,255,255,0.85); }
+  .app-user-badge {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+    padding: 3px 10px; border-radius: 20px; color: white;
+  }
+  .app-signout { font-size: 12px; color: rgba(255,255,255,0.5); text-decoration: none; margin-left: 8px; }
+  .app-signout:hover { color: rgba(255,255,255,0.85); }
+
+  /* ── Nav ── */
+  .app-nav { background: #004690; }
+  .app-nav-inner { max-width: 960px; margin: 0 auto; display: flex; }
+  .app-nav a {
+    padding: 10px 18px; font-size: 13px; font-weight: 500;
+    color: rgba(255,255,255,0.6); text-decoration: none;
+    border-bottom: 2px solid transparent; transition: all 0.15s;
+  }
+  .app-nav a:hover { color: rgba(255,255,255,0.9); }
+  .app-nav a.active { color: white; border-bottom-color: white; }
+
+  /* ── Content ── */
+  .content { max-width: 960px; margin: 0 auto; padding: 28px 24px 48px; }
+
+  /* Welcome */
+  .welcome { margin-bottom: 24px; }
+  .welcome h1 { font-size: 20px; font-weight: 700; color: #111827; letter-spacing: -0.02em; }
+  .welcome-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+
+  /* ── Attention banner (shown when there are items to action) ── */
+  .attention-banner {
+    background: #fffbeb; border: 1px solid #fbbf24;
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+    font-size: 13px; color: #92400e;
+  }
+  .attention-icon { font-size: 16px; flex-shrink: 0; }
+  .attention-text strong { font-weight: 600; }
+
+  /* ── Workflow cards ── */
+  .workflow-grid { display: flex; flex-direction: column; gap: 12px; }
+
+  .workflow-card {
+    background: white; border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    padding: 20px 24px;
+    display: block; text-decoration: none; color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .workflow-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+  .workflow-card.attention { border-color: #fbbf24; }
+  .workflow-card.complete { border-color: #86efac; }
+  .workflow-card:hover.eoi { border-color: #0057A8; }
+  .workflow-card:hover.pbn { border-color: #4f46e5; }
+  .workflow-card:hover.enr { border-color: #7c3aed; }
+
+  .card-row { display: flex; align-items: center; gap-12px; justify-content: space-between; }
+  .card-left { display: flex; align-items: center; gap: 14px; }
+
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .card-icon.eoi { background: #eff6ff; }
+  .card-icon.pbn { background: #eef2ff; }
+  .card-icon.enr { background: #f5f3ff; }
+  .card-icon svg { width: 20px; height: 20px; }
+
+  .card-info { }
+  .card-title { font-size: 15px; font-weight: 600; color: #111827; }
+  .card-desc { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+  /* Status badges */
+  .badge {
+    flex-shrink: 0;
+    font-size: 12px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+  }
+  .badge.action-required { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+  .badge.submitted { background: #fef9c3; color: #713f12; }
+  .badge.approved { background: #dcfce7; color: #14532d; }
+  .badge.draft { background: #f3f4f6; color: #6b7280; }
+  .badge.not-started { background: #f3f4f6; color: #9ca3af; }
+  .badge.decided { background: #dcfce7; color: #14532d; }
+
+  /* Stats row */
+  .card-stats {
+    display: flex; gap: 20px;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+    font-size: 12px; color: #6b7280;
+  }
+  .stat-item strong { font-weight: 600; color: #374151; }
+  .stat-item.warn strong { color: #d97706; }
+  .stat-item.good strong { color: #16a34a; }
+  .stat-item.blue strong { color: #0057A8; }
+
+  /* ── Phase timeline (optional, right side) ── */
+  .phase-timeline {
+    background: white; border-radius: 12px; border: 1px solid #e5e7eb;
+    padding: 16px 20px; margin-top: 20px;
+  }
+  .phase-title { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  .phase-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .phase-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .phase-dot.done { background: #22c55e; }
+  .phase-dot.active { background: #0057A8; box-shadow: 0 0 0 3px rgba(0,87,168,0.15); }
+  .phase-dot.upcoming { background: #e5e7eb; }
+  .phase-name { font-size: 13px; color: #374151; flex: 1; }
+  .phase-date { font-size: 12px; color: #9ca3af; }
+  .phase-date.active { color: #0057A8; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Shared header -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="app-brand">
+      <div class="app-brand-logo">
+        <svg viewBox="0 0 16 16" fill="none">
+          <circle cx="5" cy="8" r="3.5" stroke="white" stroke-width="1.25" fill="none"/>
+          <circle cx="11" cy="8" r="3.5" stroke="white" stroke-width="1.25" fill="none"/>
+        </svg>
+      </div>
+      <div>
+        <div class="app-brand-text">Media Registration Portal</div>
+        <div class="app-brand-event">LA 2028</div>
+      </div>
+    </div>
+    <div class="app-user">
+      <span class="app-user-name">Maria Santos</span>
+      <span class="app-user-badge">NOC Admin · BRA</span>
+      <a href="/admin/logout" class="app-signout">Sign out</a>
+    </div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav class="app-nav">
+  <div class="app-nav-inner">
+    <a href="/admin/noc/home" class="active">Home</a>
+    <a href="/admin/noc/queue">EoI Queue</a>
+    <a href="/admin/noc/pbn">PbN Allocations</a>
+    <a href="/admin/noc/enr">ENR Requests</a>
+  </div>
+</nav>
+
+<!-- Content -->
+<main class="content">
+
+  <div class="welcome">
+    <h1>Welcome back, Maria</h1>
+    <div class="welcome-sub">NOC Admin · Brazil (BRA) · LA 2028</div>
+  </div>
+
+  <!-- Attention callout — shown when action is needed -->
+  <div class="attention-banner">
+    <span class="attention-icon">⚠</span>
+    <span><strong>3 applications need your review.</strong> Two are resubmissions — check the EoI Queue to action them before the submission deadline.</span>
+  </div>
+
+  <div class="workflow-grid">
+
+    <!-- EoI Queue — has items to review -->
+    <a href="/admin/noc/queue" class="workflow-card eoi attention">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="card-icon eoi">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M3 5h14M3 9h10M3 13h7" stroke="#0057A8" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="16" cy="13" r="3" stroke="#0057A8" stroke-width="1.5"/>
+              <path d="M16 12v1.5l.75.75" stroke="#0057A8" stroke-width="1.25" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Expression of Interest Queue</div>
+            <div class="card-desc">Review and action media organisation applications</div>
+          </div>
+        </div>
+        <span class="badge action-required">3 to review</span>
+      </div>
+      <div class="card-stats">
+        <span class="stat-item good"><strong>12</strong> approved</span>
+        <span class="stat-item warn"><strong>2</strong> pending</span>
+        <span class="stat-item"><strong>1</strong> resubmitted</span>
+        <span class="stat-item"><strong>1</strong> returned</span>
+      </div>
+    </a>
+
+    <!-- PbN — draft in progress -->
+    <a href="/admin/noc/pbn" class="workflow-card pbn">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="card-icon pbn">
+            <svg viewBox="0 0 20 20" fill="none">
+              <rect x="2" y="4" width="16" height="12" rx="2" stroke="#4f46e5" stroke-width="1.5"/>
+              <path d="M2 8h16M6 8v8M6 12h8" stroke="#4f46e5" stroke-width="1.25" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Press by Number — Slot Allocations</div>
+            <div class="card-desc">Assign press and photo slots to approved organisations</div>
+          </div>
+        </div>
+        <span class="badge draft">Draft</span>
+      </div>
+      <div class="card-stats">
+        <span class="stat-item blue"><strong>8</strong> / 15 press allocated</span>
+        <span class="stat-item blue"><strong>3</strong> / 8 photo allocated</span>
+        <span class="stat-item"><strong>12</strong> orgs in scope</span>
+      </div>
+    </a>
+
+    <!-- ENR — not started -->
+    <a href="/admin/noc/enr" class="workflow-card enr">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="card-icon enr">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M10 3v14M3 10h14" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="10" cy="10" r="7" stroke="#7c3aed" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">ENR Nominations</div>
+            <div class="card-desc">Submit non-rights broadcaster nominations to IOC</div>
+          </div>
+        </div>
+        <span class="badge not-started">Not started</span>
+      </div>
+      <div class="card-stats">
+        <span class="stat-item" style="color:#9ca3af; font-style: italic;">No organisations added yet. Nominations open when EoI approvals are complete.</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Phase timeline (compact, at bottom) -->
+  <div class="phase-timeline">
+    <div class="phase-title">LA 2028 — Milestones</div>
+    <div class="phase-item">
+      <div class="phase-dot done"></div>
+      <div class="phase-name">EoI application window open</div>
+      <div class="phase-date">Feb 1, 2028</div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot active"></div>
+      <div class="phase-name">NOC review deadline</div>
+      <div class="phase-date active">Apr 30, 2028</div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot upcoming"></div>
+      <div class="phase-name">PbN submission deadline</div>
+      <div class="phase-date">May 31, 2028</div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot upcoming"></div>
+      <div class="phase-name">ENR nominations deadline</div>
+      <div class="phase-date">Jun 30, 2028</div>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>
