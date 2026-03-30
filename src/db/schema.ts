@@ -226,7 +226,7 @@ export const enrRequests = pgTable("enr_requests", {
   priorityRank: integer("priority_rank").notNull(),
   slotsRequested: integer("slots_requested").notNull(),
   slotsGranted: integer("slots_granted"),      // null until IOC decides
-  decision: enrDecisionEnum("enr_decision"),   // null until IOC decides
+  decision: enrDecisionEnum("decision"),   // null until IOC decides
   decisionNotes: text("decision_notes"),
   reviewedBy: text("reviewed_by"),             // IOC admin user id
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
