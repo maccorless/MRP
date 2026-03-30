@@ -3,11 +3,13 @@ import { redirect } from "next/navigation";
 export default async function SubmittedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ref?: string }>;
+  searchParams: Promise<{ ref?: string; resubmit?: string }>;
 }) {
-  const { ref } = await searchParams;
+  const { ref, resubmit } = await searchParams;
 
   if (!ref) redirect("/apply");
+
+  const isResubmission = resubmit === "1";
 
   return (
     <div className="text-center py-8">
@@ -28,10 +30,12 @@ export default async function SubmittedPage({
       </div>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-2">
-        Application Submitted
+        {isResubmission ? "Application Resubmitted" : "Application Submitted"}
       </h1>
       <p className="text-gray-500 mb-8">
-        Your application has been received and is pending review by your NOC.
+        {isResubmission
+          ? "Your corrections have been received. Your NOC will review the updated application."
+          : "Your application has been received and is pending review by your NOC."}
       </p>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 inline-block text-left min-w-64">

@@ -31,6 +31,7 @@ export async function requestToken(formData: FormData) {
 export async function submitApplication(formData: FormData) {
   const token = (formData.get("token") as string)?.toUpperCase().trim();
   const email = (formData.get("email") as string)?.trim().toLowerCase();
+  const resubmitId = (formData.get("resubmit_id") as string) || null;
 
   if (!token || !email) redirect("/apply");
 
@@ -54,8 +55,57 @@ export async function submitApplication(formData: FormData) {
     redirect("/apply?error=invalid_token");
   }
 
-  // Form fields
+  // Common form fields
   const contactName = (formData.get("contact_name") as string).trim();
+  const category = formData.get("category") as "press" | "photographer" | "enr";
+  const about = (formData.get("about") as string).trim();
+
+  // ── RESUBMISSION PATH ─────────────────────────────────────────────────────
+  if (resubmitId) {
+    const [returnedApp] = await db
+      .select()
+      .from(applications)
+      .where(
+        and(
+          eq(applications.id, resubmitId),
+          eq(applications.contactEmail, email),
+          eq(applications.status, "returned")
+        )
+      );
+
+    if (!returnedApp) redirect("/apply?error=invalid_token");
+
+    await db
+      .update(applications)
+      .set({
+        contactName,
+        category,
+        about,
+        status: "resubmitted",
+        resubmissionCount: returnedApp.resubmissionCount + 1,
+        reviewNote: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(applications.id, resubmitId));
+
+    await db.insert(auditLog).values({
+      actorType: "applicant",
+      actorId: email,
+      actorLabel: contactName,
+      action: "application_resubmitted",
+      applicationId: returnedApp.id,
+      organizationId: returnedApp.organizationId,
+    });
+
+    await db
+      .update(magicLinkTokens)
+      .set({ usedAt: new Date() })
+      .where(eq(magicLinkTokens.id, tokenRecord.id));
+
+    redirect(`/apply/submitted?ref=${returnedApp.referenceNumber}&resubmit=1`);
+  }
+
+  // ── NEW APPLICATION PATH ───────────────────────────────────────────────────
   const orgName = (formData.get("org_name") as string).trim();
   const country = (formData.get("country") as string).trim().toUpperCase();
   const nocCode = (formData.get("noc_code") as string).trim().toUpperCase();
@@ -66,15 +116,9 @@ export async function submitApplication(formData: FormData) {
     | "enr";
   const websiteRaw = (formData.get("website") as string)?.trim();
   const website = websiteRaw || null;
-  const category = formData.get("category") as
-    | "press"
-    | "photographer"
-    | "enr";
-  const about = (formData.get("about") as string).trim();
 
   const emailDomain = email.split("@")[1];
 
-  // Find or create org (same domain + same NOC = same org record)
   const [existingOrg] = await db
     .select()
     .from(organizations)
@@ -89,7 +133,6 @@ export async function submitApplication(formData: FormData) {
   if (existingOrg) {
     org = existingOrg;
   } else {
-    // Check if any org from same domain exists under a different NOC → multi-territory
     const samedomainOrgs = await db
       .select()
       .from(organizations)
@@ -111,7 +154,6 @@ export async function submitApplication(formData: FormData) {
       .returning();
   }
 
-  // Reference number: APP-2028-{NOC}-{5-digit seq}
   const nocApps = await db
     .select({ id: applications.id })
     .from(applications)
@@ -119,7 +161,6 @@ export async function submitApplication(formData: FormData) {
   const seq = String(nocApps.length + 1).padStart(5, "0");
   const referenceNumber = `APP-2028-${nocCode}-${seq}`;
 
-  // Create application
   const [app] = await db
     .insert(applications)
     .values({
@@ -134,7 +175,6 @@ export async function submitApplication(formData: FormData) {
     })
     .returning();
 
-  // Audit log
   await db.insert(auditLog).values([
     {
       actorType: "applicant",
@@ -154,7 +194,6 @@ export async function submitApplication(formData: FormData) {
     },
   ]);
 
-  // Mark token used
   await db
     .update(magicLinkTokens)
     .set({ usedAt: new Date() })
