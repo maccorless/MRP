@@ -11,6 +11,7 @@ import {
 } from "@/db/schema";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";
+import { parseCategoryFlags } from "@/lib/category";
 
 export async function requestToken(formData: FormData) {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
@@ -58,8 +59,14 @@ export async function submitApplication(formData: FormData) {
 
   // Common form fields
   const contactName = (formData.get("contact_name") as string).trim();
-  const category = formData.get("category") as "press" | "photographer" | "enr";
+  const categoryRaw = formData.get("category") as string | null;
+  const { categoryPress, categoryPhoto } = parseCategoryFlags(categoryRaw);
   const about = (formData.get("about") as string).trim();
+
+  // Must select at least one category
+  if (!categoryPress && !categoryPhoto) {
+    redirect("/apply?error=invalid_category");
+  }
 
   // ── RESUBMISSION PATH ─────────────────────────────────────────────────────
   if (resubmitId) {
@@ -80,7 +87,8 @@ export async function submitApplication(formData: FormData) {
       .update(applications)
       .set({
         contactName,
-        category,
+        categoryPress,
+        categoryPhoto,
         about,
         status: "resubmitted",
         resubmissionCount: returnedApp.resubmissionCount + 1,
@@ -123,8 +131,7 @@ export async function submitApplication(formData: FormData) {
   const orgType = formData.get("org_type") as
     | "media_print_online"
     | "media_broadcast"
-    | "news_agency"
-    | "enr";
+    | "news_agency";
   const websiteRaw = (formData.get("website") as string)?.trim();
   const website = websiteRaw || null;
 
@@ -144,6 +151,8 @@ export async function submitApplication(formData: FormData) {
   if (existingOrg) {
     org = existingOrg;
   } else {
+    // CRIT-04: detect multi-territory but do NOT surface it in UI.
+    // Flag is stored for future IOC analysis (Open Question #16).
     const samedomainOrgs = await db
       .select()
       .from(organizations)
@@ -180,7 +189,8 @@ export async function submitApplication(formData: FormData) {
       nocCode,
       contactName,
       contactEmail: email,
-      category,
+      categoryPress,
+      categoryPhoto,
       about,
       status: "pending",
     })

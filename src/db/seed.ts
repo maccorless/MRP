@@ -20,6 +20,8 @@ import {
   applications,
   auditLog,
   magicLinkTokens,
+  nocQuotas,
+  orgSlotAllocations,
 } from "./schema";
 import { createHash } from "crypto";
 
@@ -37,8 +39,10 @@ async function main() {
   // Delete in FK-safe order
   await db.delete(auditLog);
   await db.delete(magicLinkTokens);
+  await db.delete(orgSlotAllocations);
   await db.delete(applications);
   await db.delete(organizations);
+  await db.delete(nocQuotas);
   await db.delete(adminUsers);
 
   // ─── Admin Users ────────────────────────────────────────────────────────────
@@ -97,6 +101,21 @@ async function main() {
       passwordHash: PROTO_PW_HASH,
     })
     .returning();
+
+  await db.insert(adminUsers).values({
+    email: "ocog.admin@la28.org",
+    role: "ocog_admin",
+    displayName: "LA28 OCOG Admin",
+    passwordHash: PROTO_PW_HASH,
+  });
+
+  await db.insert(adminUsers).values({
+    email: "if.admin@worldathletics.org",
+    role: "if_admin",
+    ifCode: "ATH",
+    displayName: "World Athletics IF Admin",
+    passwordHash: PROTO_PW_HASH,
+  });
 
   // ─── Organizations ───────────────────────────────────────────────────────────
 
@@ -214,7 +233,8 @@ async function main() {
       nocCode: "USA",
       contactName: "Jane Holloway",
       contactEmail: "j.holloway@ap.org",
-      category: "press",
+      categoryPress: true,
+      categoryPhoto: false,
       about:
         "AP has covered every Olympic Games since 1896. We are requesting accreditation for 12 journalists and photographers covering athletics, swimming, and gymnastics.",
       status: "pending",
@@ -229,7 +249,8 @@ async function main() {
       nocCode: "USA",
       contactName: "Marcus Webb",
       contactEmail: "m.webb@nytimes.com",
-      category: "press",
+      categoryPress: true,
+      categoryPhoto: false,
       about:
         "The New York Times sports desk requests accreditation for coverage across all major Olympic venues. Our team of 8 includes 5 writers and 3 photographers.",
       status: "pending",
@@ -244,7 +265,8 @@ async function main() {
       nocCode: "GBR",
       contactName: "Priya Nair",
       contactEmail: "p.nair@theguardian.com",
-      category: "press",
+      categoryPress: true,
+      categoryPhoto: false,
       about:
         "The Guardian requests accreditation for our Olympic coverage team. We have attended every Summer Olympics since 1988 with full editorial and photographic teams.",
       status: "pending",
@@ -260,9 +282,10 @@ async function main() {
       nocCode: "USA",
       contactName: "Dana Kowalski",
       contactEmail: "d.kowalski@nbcuni.com",
-      category: "enr",
+      categoryPress: false,
+      categoryPhoto: true,
       about:
-        "NBC holds exclusive US broadcast rights. This application covers our technical and production team requesting ENR accreditation across all competition venues.",
+        "NBC Sports requests photographer accreditation for our production team covering all competition venues.",
       status: "approved",
       reviewedBy: nocAdminUS.id,
       reviewedAt: new Date("2026-02-15T10:30:00Z"),
@@ -277,9 +300,10 @@ async function main() {
       nocCode: "GBR",
       contactName: "Tom Ashford",
       contactEmail: "t.ashford@bbc.co.uk",
-      category: "enr",
+      categoryPress: true,
+      categoryPhoto: true,
       about:
-        "BBC holds UK broadcast rights for the 2028 Games. Application covers broadcasting team and technical crew requiring ENR accreditation.",
+        "BBC Sport requests accreditation for our editorial and photography teams covering the 2028 Games across all major venues.",
       status: "approved",
       reviewedBy: nocAdminGB.id,
       reviewedAt: new Date("2026-02-20T09:00:00Z"),
@@ -294,7 +318,8 @@ async function main() {
       nocCode: "FRA",
       contactName: "Claire Fontaine",
       contactEmail: "c.fontaine@lequipe.fr",
-      category: "photographer",
+      categoryPress: false,
+      categoryPhoto: true,
       about:
         "L'Équipe requests photographer accreditation for our team of 6 sports photographers covering athletics, cycling, and team sports.",
       status: "approved",
@@ -312,7 +337,8 @@ async function main() {
       nocCode: "USA",
       contactName: "Sam Okafor",
       contactEmail: "s.okafor@reuters.com",
-      category: "press",
+      categoryPress: true,
+      categoryPhoto: false,
       about: "Reuters newswire coverage.",
       status: "returned",
       reviewNote:
@@ -330,7 +356,8 @@ async function main() {
       nocCode: "GBR",
       contactName: "Helen Brooks",
       contactEmail: "h.brooks@reuters.com",
-      category: "photographer",
+      categoryPress: false,
+      categoryPhoto: true,
       about: "Reuters photo desk.",
       status: "returned",
       reviewNote:
@@ -349,7 +376,8 @@ async function main() {
       nocCode: "USA",
       contactName: "Jane Holloway",
       contactEmail: "j.holloway@ap.org",
-      category: "photographer",
+      categoryPress: true,
+      categoryPhoto: true,
       about:
         "AP photo desk requests photographer accreditation for 4 photographers covering athletics and aquatics at SoFi Stadium and the Olympic Aquatics Center. Updated from original submission to reflect confirmed venue assignments.",
       status: "resubmitted",
@@ -370,7 +398,8 @@ async function main() {
       nocCode: "FRA",
       contactName: "Pierre Martin",
       contactEmail: "p.martin@lequipe.fr",
-      category: "press",
+      categoryPress: true,
+      categoryPhoto: false,
       about: "Additional press pass request.",
       status: "rejected",
       reviewNote:
@@ -570,14 +599,55 @@ async function main() {
     },
   ]);
 
+  // ─── NOC Quota Fixtures (Paris 2024 comparison data) ─────────────────────────
+
+  console.log("Seeding NOC quota fixtures...");
+
+  const quotaFixtures = [
+    // Tier 1
+    { nocCode: "USA", pressTotal: 150, photoTotal: 50 },
+    { nocCode: "GBR", pressTotal: 95,  photoTotal: 32 },
+    { nocCode: "GER", pressTotal: 82,  photoTotal: 28 },
+    { nocCode: "FRA", pressTotal: 88,  photoTotal: 30 },
+    { nocCode: "JPN", pressTotal: 88,  photoTotal: 30 },
+    { nocCode: "AUS", pressTotal: 72,  photoTotal: 24 },
+    { nocCode: "CAN", pressTotal: 65,  photoTotal: 22 },
+    { nocCode: "ITA", pressTotal: 70,  photoTotal: 23 },
+    // Tier 2
+    { nocCode: "NED", pressTotal: 52,  photoTotal: 18 },
+    { nocCode: "ESP", pressTotal: 58,  photoTotal: 19 },
+    { nocCode: "BRA", pressTotal: 60,  photoTotal: 20 },
+    { nocCode: "CHN", pressTotal: 90,  photoTotal: 30 },
+    { nocCode: "KOR", pressTotal: 55,  photoTotal: 18 },
+    { nocCode: "SWE", pressTotal: 42,  photoTotal: 14 },
+    { nocCode: "NOR", pressTotal: 38,  photoTotal: 13 },
+    // Tier 3
+    { nocCode: "KEN", pressTotal: 12,  photoTotal: 0  },
+    { nocCode: "NZL", pressTotal: 22,  photoTotal: 8  },
+    { nocCode: "POR", pressTotal: 18,  photoTotal: 6  },
+  ];
+
+  await db.insert(nocQuotas).values(
+    quotaFixtures.map((q) => ({
+      nocCode: q.nocCode,
+      eventId: "LA28",
+      pressTotal: q.pressTotal,
+      photoTotal: q.photoTotal,
+      setBy: iocAdmin.id,
+      notes: "Paris 2024 fixture data — replace with real IOC import before July 2026",
+    }))
+  );
+
   console.log("✓ Seed complete.");
   console.log("");
   console.log("Admin accounts (all password: Password1!):");
-  console.log("  ioc.admin@olympics.org      — IOC Admin");
-  console.log("  ioc.readonly@olympics.org   — IOC Viewer");
-  console.log("  noc.admin@usopc.org         — NOC Admin (USA)");
-  console.log("  noc.admin@teamgb.org        — NOC Admin (GBR)");
-  console.log("  noc.admin@franceolympique.fr — NOC Admin (FRA)");
+  console.log("  ioc.admin@olympics.org        — IOC Admin");
+  console.log("  ioc.readonly@olympics.org     — IOC Viewer");
+  console.log("  noc.admin@usopc.org           — NOC Admin (USA)");
+  console.log("  noc.admin@teamgb.org          — NOC Admin (GBR)");
+  console.log("  noc.admin@franceolympique.fr  — NOC Admin (FRA)");
+  console.log("  ocog.admin@la28.org           — OCOG Admin");
+  console.log("  if.admin@worldathletics.org   — IF Admin (ATH)");
   console.log("");
   console.log("Magic link tokens:");
   console.log("  K7M2 — valid 24h  (demo@test.com)");

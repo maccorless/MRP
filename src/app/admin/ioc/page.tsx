@@ -2,6 +2,7 @@ import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
+import { categoryDisplayLabel } from "@/lib/category";
 
 const STATUS_BADGE: Record<string, string> = {
   pending:     "bg-yellow-100 text-yellow-800",
@@ -16,10 +17,6 @@ const STATUS_LABEL: Record<string, string> = {
   returned: "Returned", rejected: "Rejected",
 };
 
-const CATEGORY_LABEL: Record<string, string> = {
-  press: "Press", photographer: "Photographer", enr: "ENR",
-};
-
 export default async function IocDashboard() {
   const rows = await db
     .select({
@@ -27,7 +24,8 @@ export default async function IocDashboard() {
       referenceNumber: applications.referenceNumber,
       nocCode: applications.nocCode,
       status: applications.status,
-      category: applications.category,
+      categoryPress: applications.categoryPress,
+      categoryPhoto: applications.categoryPhoto,
       contactName: applications.contactName,
       submittedAt: applications.submittedAt,
       orgName: organizations.name,
@@ -139,7 +137,7 @@ export default async function IocDashboard() {
                   <div className="text-xs text-gray-400">{row.contactName}</div>
                 </td>
                 <td className="px-5 py-2.5 font-mono text-xs text-gray-600">{row.nocCode}</td>
-                <td className="px-5 py-2.5 text-gray-600">{CATEGORY_LABEL[row.category] ?? row.category}</td>
+                <td className="px-5 py-2.5 text-gray-600">{categoryDisplayLabel(row.categoryPress, row.categoryPhoto)}</td>
                 <td className="px-5 py-2.5">
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[row.status]}`}>
                     {STATUS_LABEL[row.status]}

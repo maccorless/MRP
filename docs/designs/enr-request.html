@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - ENR Request Submission</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; }
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; }
+  .nav a.active { color: white; border-bottom-color: white; }
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-size: 20px; font-weight: 700; }
+  .page-subtitle { font-size: 14px; color: #6b7280; margin-top: 4px; }
+
+  .info-banner { background: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px; padding: 14px 18px; margin-bottom: 24px; font-size: 13px; color: #1e40af; line-height: 1.6; }
+  .info-banner strong { font-weight: 600; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 20px; }
+  .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .stat-value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat-detail { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+  .list-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; margin-bottom: 24px; }
+  .list-card-header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; }
+  .list-card-title { font-size: 14px; font-weight: 600; }
+  .list-card-hint { font-size: 12px; color: #9ca3af; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 10px 16px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f9fafb; }
+
+  .priority-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; background: #eff6ff; color: #0057A8; border: 2px solid #bfdbfe; cursor: grab; }
+  .priority-badge.top3 { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+
+  .org-link { color: #0057A8; text-decoration: none; font-weight: 500; }
+  .org-link:hover { text-decoration: underline; }
+  .org-type { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+  .status-badge { display: inline-flex; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .status-draft { background: #f3f4f6; color: #6b7280; }
+  .status-submitted { background: #eff6ff; color: #1d4ed8; }
+  .status-granted { background: #ecfdf5; color: #059669; }
+  .status-denied { background: #fef2f2; color: #dc2626; }
+
+  .slots-input { width: 70px; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; text-align: center; }
+  .slots-input:focus { outline: none; border-color: #0057A8; box-shadow: 0 0 0 2px rgba(0,87,168,0.1); }
+
+  .reorder-hint { font-size: 11px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
+
+  .add-org-row { padding: 12px 16px; border-top: 1px solid #f3f4f6; }
+  .add-org-btn { padding: 8px 14px; border: 1px dashed #d1d5db; border-radius: 8px; font-size: 13px; color: #6b7280; background: white; cursor: pointer; width: 100%; text-align: left; }
+  .add-org-btn:hover { border-color: #0057A8; color: #0057A8; background: #f8faff; }
+
+  .save-bar { position: sticky; bottom: 0; background: white; border-top: 1px solid #e5e7eb; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); max-width: 100%; }
+  .save-status { font-size: 14px; color: #6b7280; }
+  .save-status strong { color: #1a1a1a; }
+  .save-actions { display: flex; gap: 10px; align-items: center; }
+  .btn-draft { padding: 9px 18px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; font-weight: 500; }
+  .btn-submit { padding: 9px 18px; border: none; border-radius: 8px; font-size: 14px; background: #0057A8; color: white; cursor: pointer; font-weight: 600; }
+  .btn-submit:hover { background: #004690; }
+  .submit-note { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+  .ioc-response { background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 12px 16px; margin-bottom: 24px; font-size: 13px; color: #166534; }
+  .ioc-response strong { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">NOC Admin — United States (USOPC)</div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#">EoI Applications</a>
+      <a href="#">Press by Number</a>
+      <a href="#" class="active">ENR Requests</a>
+      <a href="#">Org Directory</a>
+      <a href="#">Export</a>
+      <a href="#">Audit Log</a>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="page-header">
+    <h1 class="page-title">ENR Request Submission</h1>
+    <p class="page-subtitle">Submit your prioritised list of Extended Non-Rights Broadcaster (ENR) organisations to the IOC. The IOC will grant or deny allocations from the ENR holdback pool.</p>
+  </div>
+
+  <div class="info-banner">
+    <strong>How ENR works:</strong> Unlike EoI applications (where media orgs apply directly), ENR requests are submitted by your NOC on behalf of ENR organisations. Rank your list by priority — the IOC will work down the list when allocating from the ENR pool. ENR quota is completely separate from your press and photo quotas.
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">ENR Orgs Requested</div>
+      <div class="stat-value" style="color:#0057A8;">8</div>
+      <div class="stat-detail">In your current list</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Slots Requested</div>
+      <div class="stat-value" style="color:#f59e0b;">94</div>
+      <div class="stat-detail">Total across all orgs</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">IOC Response</div>
+      <div class="stat-value" style="color:#6b7280;">—</div>
+      <div class="stat-detail">Pending IOC review</div>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+      <div class="stat-label">Submission State</div>
+      <div style="margin-top:8px;">
+        <span class="status-badge status-draft">Draft</span>
+        <div style="font-size:11px; color:#9ca3af; margin-top:6px;">Not yet submitted to IOC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENR List -->
+  <div class="list-card">
+    <div class="list-card-header">
+      <div>
+        <div class="list-card-title">ENR Organisation Priority List</div>
+        <div class="list-card-hint">Drag rows to reorder. Rank 1 = highest priority. IOC allocates down the list.</div>
+      </div>
+      <div class="reorder-hint">&#9660;&#9650; drag to reorder</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:50px;">Rank</th>
+          <th>Organisation</th>
+          <th>Type</th>
+          <th>Slots Requested</th>
+          <th>Justification</th>
+          <th>IOC Decision</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="priority-badge top3">1</div></td>
+          <td>
+            <div class="org-link">ESPN</div>
+            <div class="org-type">Media - Broadcast</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="22" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Primary US broadcast partner covering all major venues</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+        <tr>
+          <td><div class="priority-badge top3">2</div></td>
+          <td>
+            <div class="org-link">NBC Sports Digital</div>
+            <div class="org-type">Media - Broadcast</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="18" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Digital streaming team; separate from NBC rights coverage</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+        <tr>
+          <td><div class="priority-badge top3">3</div></td>
+          <td>
+            <div class="org-link">Fox Sports Digital</div>
+            <div class="org-type">Media - Broadcast</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="15" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Online-only coverage; no broadcast rights</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+        <tr>
+          <td><div class="priority-badge">4</div></td>
+          <td>
+            <div class="org-link">CBS Sports Network</div>
+            <div class="org-type">Media - Broadcast</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="12" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Cable coverage; US rights held by another entity</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+        <tr>
+          <td><div class="priority-badge">5</div></td>
+          <td>
+            <div class="org-link">Amazon Prime Video Sports</div>
+            <div class="org-type">Media - Broadcast</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="10" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Streaming platform; growing Olympics coverage</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+        <tr>
+          <td><div class="priority-badge">6</div></td>
+          <td>
+            <div class="org-link">Peacock / NBCUniversal Streaming</div>
+            <div class="org-type">Media - Broadcast</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="8" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Streaming-only arm; separate credential needs</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+        <tr>
+          <td><div class="priority-badge">7</div></td>
+          <td>
+            <div class="org-link">The Athletic</div>
+            <div class="org-type">Media - Print/Online</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="5" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Online sports journalism; video production team</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+        <tr>
+          <td><div class="priority-badge">8</div></td>
+          <td>
+            <div class="org-link">Bleacher Report Live</div>
+            <div class="org-type">Media - Broadcast</div>
+          </td>
+          <td>ENR</td>
+          <td><input class="slots-input" type="number" value="4" min="1" /></td>
+          <td><span style="font-size:12px; color:#6b7280;">Digital-first sports video platform</span></td>
+          <td><span class="status-badge status-draft">Pending</span></td>
+          <td><a style="font-size:12px; color:#dc2626; cursor:pointer;">Remove</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="add-org-row">
+      <button class="add-org-btn">+ Add ENR organisation to list</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Save bar -->
+<div class="save-bar">
+  <div>
+    <div class="save-status">Status: <strong>Draft — 8 organisations, 94 slots requested</strong></div>
+    <div class="submit-note">Submitting locks this list for IOC review. You can request amendments from the IOC after submitting.</div>
+  </div>
+  <div class="save-actions">
+    <button class="btn-draft">Save Draft</button>
+    <button class="btn-submit">Submit ENR List to IOC</button>
+  </div>
+</div>
+
+</body>
+</html>

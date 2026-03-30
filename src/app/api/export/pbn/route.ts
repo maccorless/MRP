@@ -3,6 +3,7 @@ import { eq, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { getSession } from "@/lib/session";
+import { categoryDisplayLabel } from "@/lib/category";
 
 function csvEscape(val: string | null | undefined): string {
   return `"${String(val ?? "").replace(/"/g, '""')}"`;
@@ -26,7 +27,8 @@ export async function GET() {
       commonCodesId: organizations.commonCodesId,
       contactName: applications.contactName,
       contactEmail: applications.contactEmail,
-      category: applications.category,
+      categoryPress: applications.categoryPress,
+      categoryPhoto: applications.categoryPhoto,
       about: applications.about,
       resubmissionCount: applications.resubmissionCount,
       submittedAt: applications.submittedAt,
@@ -48,7 +50,7 @@ export async function GET() {
     [
       r.referenceNumber, r.nocCode, r.orgName, r.country, r.orgType,
       r.emailDomain, r.website, r.commonCodesId,
-      r.contactName, r.contactEmail, r.category, r.about,
+      r.contactName, r.contactEmail, categoryDisplayLabel(r.categoryPress, r.categoryPhoto), r.about,
       String(r.resubmissionCount),
       r.submittedAt.toISOString(),
       r.reviewedAt?.toISOString() ?? "",

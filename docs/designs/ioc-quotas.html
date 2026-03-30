@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - IOC Quota Management</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+
+  .header { background: #0057A8; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; }
+
+  .nav { background: #004690; }
+  .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; }
+  .nav a.active { color: white; border-bottom-color: white; }
+  .nav a:hover { color: white; }
+
+  .content { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  .page-header { margin-bottom: 20px; display: flex; align-items: flex-start; justify-content: space-between; }
+  .page-title { font-size: 20px; font-weight: 700; }
+  .page-subtitle { font-size: 14px; color: #6b7280; margin-top: 4px; max-width: 600px; line-height: 1.5; }
+
+  /* Import banner */
+  .import-card { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
+  .import-info { display: flex; align-items: center; gap: 16px; }
+  .import-icon { width: 40px; height: 40px; background: #ecfdf5; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .import-title { font-size: 14px; font-weight: 600; }
+  .import-detail { font-size: 13px; color: #6b7280; margin-top: 2px; }
+  .import-actions { display: flex; gap: 10px; }
+  .btn-import { padding: 9px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; background: #0057A8; color: white; cursor: pointer; }
+  .btn-import:hover { background: #004690; }
+  .btn-download-template { padding: 9px 18px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-weight: 500; background: white; color: #374151; cursor: pointer; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 16px 18px; }
+  .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .stat-value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat-value.blue { color: #0057A8; }
+  .stat-value.purple { color: #7c3aed; }
+  .stat-value.green { color: #22c55e; }
+  .stat-value.amber { color: #f59e0b; }
+  .stat-detail { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+  /* Edit mode banner */
+  .edit-banner { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: none; align-items: center; justify-content: space-between; font-size: 13px; color: #92400e; }
+  .edit-banner.active { display: flex; }
+  .edit-banner strong { font-weight: 600; }
+  .btn-cancel-edit { padding: 6px 14px; border: 1px solid #fcd34d; border-radius: 6px; font-size: 13px; background: white; color: #92400e; cursor: pointer; margin-right: 8px; }
+  .btn-save-edit { padding: 6px 14px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; background: #f59e0b; color: white; cursor: pointer; }
+
+  /* Toolbar */
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; }
+  .search-box { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; width: 260px; background: white; }
+  .filter-btn { padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; }
+  .filter-btn.active { border-color: #0057A8; background: #eff6ff; color: #0057A8; }
+  .filter-btn.missing { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+  .toolbar-right { display: flex; gap: 8px; }
+  .btn-edit-mode { padding: 8px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; font-weight: 500; }
+  .btn-edit-mode:hover { border-color: #0057A8; color: #0057A8; }
+
+  /* Table */
+  .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  th.press { color: #0057A8; }
+  th.photo { color: #7c3aed; }
+  td { padding: 11px 16px; font-size: 14px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f9fafb; }
+
+  .noc-name { font-weight: 500; }
+  .noc-code { font-size: 11px; color: #9ca3af; font-family: monospace; background: #f3f4f6; padding: 1px 5px; border-radius: 3px; margin-left: 6px; }
+
+  /* Quota cells — display and edit modes */
+  .quota-cell { font-size: 14px; font-weight: 600; }
+  .quota-cell.press { color: #0057A8; }
+  .quota-cell.photo { color: #7c3aed; }
+  .quota-cell.not-set { color: #d1d5db; font-weight: 400; }
+  .quota-input { width: 72px; padding: 5px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-weight: 600; text-align: center; display: none; }
+  .quota-input.press { color: #0057A8; }
+  .quota-input.photo { color: #7c3aed; border-color: #c4b5fd; }
+  .quota-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(0,87,168,0.1); }
+  .edit-mode .quota-cell { display: none; }
+  .edit-mode .quota-input { display: inline-block; }
+
+  /* Changed highlight */
+  tr.changed td { background: #fffbeb; }
+
+  /* State badges */
+  .state-badge { display: inline-flex; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .state-set { background: #ecfdf5; color: #059669; }
+  .state-partial { background: #eff6ff; color: #1d4ed8; }
+  .state-missing { background: #fef2f2; color: #dc2626; }
+  .state-unset { background: #f3f4f6; color: #9ca3af; }
+
+  /* Prior comparison */
+  .prior-val { font-size: 12px; color: #9ca3af; }
+  .prior-val.higher { color: #dc2626; }
+  .prior-val.lower { color: #22c55e; }
+
+  /* Table footer */
+  .table-footer { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #6b7280; border-top: 2px solid #e5e7eb; background: #f9fafb; font-weight: 600; }
+  .footer-totals { display: flex; gap: 24px; }
+  .footer-press { color: #0057A8; }
+  .footer-photo { color: #7c3aed; }
+
+  /* Audit note */
+  .audit-note { font-size: 12px; color: #9ca3af; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games</div>
+    </div>
+    <div class="role-badge">IOC Admin — Media Operations</div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#">EoI Overview</a>
+      <a href="#">PbN Overview</a>
+      <a href="#">ENR Review</a>
+      <a href="#" class="active">Quota Management</a>
+      <a href="#">Audit Log</a>
+      <a href="#">Export</a>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Quota Management — Press &amp; Photo per NOC</h1>
+      <p class="page-subtitle">Press and photo quota totals per NOC. Import from Excel or edit individual values directly. All changes are audit-logged. NOCs cannot allocate more slots than their IOC-assigned totals.</p>
+    </div>
+  </div>
+
+  <!-- Import card -->
+  <div class="import-card">
+    <div class="import-info">
+      <div class="import-icon">📥</div>
+      <div>
+        <div class="import-title">Last import: Jul 14, 2026 at 11:22 AM — IOC_PressPhoto_Quotas_LA28_v3.xlsx</div>
+        <div class="import-detail">206 NOCs · 198 with press quota set · 198 with photo quota set · Imported by J. Müller (IOC Media Ops)</div>
+      </div>
+    </div>
+    <div class="import-actions">
+      <button class="btn-download-template">Download Template</button>
+      <button class="btn-import">Re-import from Excel</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card" style="border-top: 3px solid #0057A8;">
+      <div class="stat-label">Total Press Quota</div>
+      <div class="stat-value blue">14,820</div>
+      <div class="stat-detail">Across all 198 NOCs set</div>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #7c3aed;">
+      <div class="stat-label">Total Photo Quota</div>
+      <div class="stat-value purple">5,640</div>
+      <div class="stat-detail">Across all 198 NOCs set</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">NOCs with Quotas Set</div>
+      <div class="stat-value green">198</div>
+      <div class="stat-detail">of 206 total NOCs</div>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+      <div class="stat-label">Missing Quotas</div>
+      <div class="stat-value amber">8</div>
+      <div class="stat-detail">Press or photo not yet set</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Manual Edits Since Import</div>
+      <div class="stat-value" style="color:#6b7280;">3</div>
+      <div class="stat-detail">All changes audit-logged</div>
+    </div>
+  </div>
+
+  <!-- Edit mode banner -->
+  <div class="edit-banner" id="edit-banner">
+    <div><strong>Edit mode active.</strong> Changes are saved per-row and logged in the audit trail with your user ID and timestamp.</div>
+    <div>
+      <button class="btn-cancel-edit" onclick="document.getElementById('edit-banner').classList.remove('active'); document.getElementById('quota-table').classList.remove('edit-mode');">Cancel</button>
+      <button class="btn-save-edit">Save All Changes</button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-box" placeholder="Search NOC by name or code…" />
+      <button class="filter-btn active">All (206)</button>
+      <button class="filter-btn missing">Missing Quota (8)</button>
+      <button class="filter-btn">Edited Since Import (3)</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn-edit-mode" onclick="document.getElementById('edit-banner').classList.add('active'); document.getElementById('quota-table').classList.add('edit-mode');">✎ Edit Quotas</button>
+      <button style="padding:8px 16px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; background:white; cursor:pointer; font-weight:500;">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table id="quota-table">
+      <thead>
+        <tr>
+          <th>NOC</th>
+          <th class="press">Press Quota</th>
+          <th>Paris 2024 Press</th>
+          <th class="photo">Photo Quota</th>
+          <th>Paris 2024 Photo</th>
+          <th>Status</th>
+          <th>Last Modified</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <span class="noc-name">United States</span>
+            <span class="noc-code">USA</span>
+          </td>
+          <td><span class="quota-cell press">150</span><input class="quota-input press" type="number" value="150" min="0" /></td>
+          <td><span class="prior-val">142</span></td>
+          <td><span class="quota-cell photo">50</span><input class="quota-input photo" type="number" value="50" min="0" /></td>
+          <td><span class="prior-val">48</span></td>
+          <td><span class="state-badge state-set">Set</span></td>
+          <td style="font-size:12px; color:#9ca3af;">Jul 14 (import)</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="noc-name">France</span>
+            <span class="noc-code">FRA</span>
+          </td>
+          <td><span class="quota-cell press">95</span><input class="quota-input press" type="number" value="95" min="0" /></td>
+          <td><span class="prior-val">90</span></td>
+          <td><span class="quota-cell photo">32</span><input class="quota-input photo" type="number" value="32" min="0" /></td>
+          <td><span class="prior-val">30</span></td>
+          <td><span class="state-badge state-set">Set</span></td>
+          <td style="font-size:12px; color:#9ca3af;">Jul 14 (import)</td>
+        </tr>
+        <tr class="changed">
+          <td>
+            <span class="noc-name">Germany</span>
+            <span class="noc-code">GER</span>
+          </td>
+          <td><span class="quota-cell press" title="Edited: Jul 22 by J. Müller — was 78">82 ✎</span><input class="quota-input press" type="number" value="82" min="0" /></td>
+          <td><span class="prior-val lower">78 ↑</span></td>
+          <td><span class="quota-cell photo">28</span><input class="quota-input photo" type="number" value="28" min="0" /></td>
+          <td><span class="prior-val">28</span></td>
+          <td><span class="state-badge state-set">Set</span></td>
+          <td style="font-size:12px; color:#f59e0b;">Jul 22 (manual edit)</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="noc-name">Japan</span>
+            <span class="noc-code">JPN</span>
+          </td>
+          <td><span class="quota-cell press">88</span><input class="quota-input press" type="number" value="88" min="0" /></td>
+          <td><span class="prior-val">85</span></td>
+          <td><span class="quota-cell photo">30</span><input class="quota-input photo" type="number" value="30" min="0" />
+          </td>
+          <td><span class="prior-val">29</span></td>
+          <td><span class="state-badge state-set">Set</span></td>
+          <td style="font-size:12px; color:#9ca3af;">Jul 14 (import)</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="noc-name">Brazil</span>
+            <span class="noc-code">BRA</span>
+          </td>
+          <td><span class="quota-cell press not-set">—</span><input class="quota-input press" type="number" value="" min="0" placeholder="0" /></td>
+          <td><span class="prior-val">42</span></td>
+          <td><span class="quota-cell photo not-set">—</span><input class="quota-input photo" type="number" value="" min="0" placeholder="0" /></td>
+          <td><span class="prior-val">16</span></td>
+          <td><span class="state-badge state-missing">Missing</span></td>
+          <td style="font-size:12px; color:#9ca3af;">—</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="noc-name">Australia</span>
+            <span class="noc-code">AUS</span>
+          </td>
+          <td><span class="quota-cell press">72</span><input class="quota-input press" type="number" value="72" min="0" /></td>
+          <td><span class="prior-val">68</span></td>
+          <td><span class="quota-cell photo">24</span><input class="quota-input photo" type="number" value="24" min="0" /></td>
+          <td><span class="prior-val">22</span></td>
+          <td><span class="state-badge state-set">Set</span></td>
+          <td style="font-size:12px; color:#9ca3af;">Jul 14 (import)</td>
+        </tr>
+        <tr>
+          <td>
+            <span class="noc-name">Kenya</span>
+            <span class="noc-code">KEN</span>
+          </td>
+          <td><span class="quota-cell press">12</span><input class="quota-input press" type="number" value="12" min="0" /></td>
+          <td><span class="prior-val">10</span></td>
+          <td><span class="quota-cell photo not-set">—</span><input class="quota-input photo" type="number" value="" min="0" placeholder="0" /></td>
+          <td><span class="prior-val">4</span></td>
+          <td><span class="state-badge state-partial">Press only</span></td>
+          <td style="font-size:12px; color:#9ca3af;">Jul 14 (partial import)</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-footer">
+      <div class="footer-totals">
+        <span>Showing 7 of 206 NOCs</span>
+        <span class="footer-press">Press total: 14,820</span>
+        <span class="footer-photo">Photo total: 5,640</span>
+      </div>
+      <div style="font-size:13px; color:#9ca3af;">Last import: Jul 14, 2026</div>
+    </div>
+  </div>
+
+  <div class="audit-note">All quota changes — whether from Excel import or in-app edits — are logged in the Audit Log with actor ID, previous value, new value, and timestamp. NOCs see updated totals on the PbN allocation screen immediately.</div>
+
+</div>
+</body>
+</html>

@@ -4,6 +4,7 @@ import { eq, and, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+import { categoryDisplayLabel } from "@/lib/category";
 import {
   approveApplication,
   returnApplication,
@@ -31,12 +32,6 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   media_broadcast:    "Broadcast",
   news_agency:        "News Agency",
   enr:                "ENR (Non-Rights Broadcaster)",
-};
-
-const CATEGORY_LABEL: Record<string, string> = {
-  press:        "Press",
-  photographer: "Photographer",
-  enr:          "ENR",
 };
 
 const AUDIT_ACTION_LABEL: Record<string, string> = {
@@ -152,13 +147,7 @@ export default async function ApplicationDetailPage({
                 </dd>
               </div>
             )}
-            {org.isMultiTerritoryFlag && (
-              <div className="col-span-2">
-                <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                  Multi-territory flag
-                </span>
-              </div>
-            )}
+            {/* isMultiTerritoryFlag intentionally not shown — CRIT-04 / Open Question #16 */}
           </dl>
         </section>
 
@@ -181,7 +170,7 @@ export default async function ApplicationDetailPage({
             <div>
               <dt className="text-gray-500">Category</dt>
               <dd className="text-gray-900">
-                {CATEGORY_LABEL[app.category] ?? app.category}
+                {categoryDisplayLabel(app.categoryPress, app.categoryPhoto)}
               </dd>
             </div>
             <div>

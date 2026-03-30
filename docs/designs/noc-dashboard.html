@@ -98,15 +98,14 @@
       <select>
         <option>NOC Admin - United States (USOPC)</option>
         <option>NOC Admin - France (CNOSF)</option>
-        <option>IOC Media Operations</option>
-        <option>IOC Admin (Read-only)</option>
       </select>
     </div>
   </div>
   <div class="nav">
     <div class="nav-inner">
-      <a href="#" class="active">Applications</a>
+      <a href="#" class="active">EoI Applications</a>
       <a href="#">Press by Number</a>
+      <a href="#">ENR Requests</a>
       <a href="#">Org Directory</a>
       <a href="#">Export</a>
       <a href="#">Audit Log</a>
@@ -125,9 +124,9 @@
       <div class="stat-detail">For United States territory</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Pending Review</div>
+      <div class="stat-label">Awaiting Review</div>
       <div class="stat-value amber">8</div>
-      <div class="stat-detail">3 flagged for review</div>
+      <div class="stat-detail">6 submitted · 2 under review</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Approved</div>
@@ -135,12 +134,12 @@
       <div class="stat-detail">52% approval rate</div>
     </div>
     <div class="stat-card" style="border-top: 3px solid #0057A8;">
-      <div class="stat-label">IOC Quota — Total</div>
-      <div class="stat-value blue">200</div>
-      <div class="stat-detail" style="display: flex; align-items: center; justify-content: space-between;">
-        <span>0 allocated &nbsp;·&nbsp; 200 available</span>
-        <a href="#" style="font-size: 11px; color: #0057A8; text-decoration: none; font-weight: 600;">Assign →</a>
+      <div class="stat-label">IOC Quota (EoI phase)</div>
+      <div style="font-size: 12px; color: #6b7280; margin-top: 8px; line-height: 1.8;">
+        <div style="display:flex; justify-content:space-between;"><span>Press</span><span style="color:#1a1a1a; font-weight:600;">0 of 150 allocated</span></div>
+        <div style="display:flex; justify-content:space-between;"><span>Photo</span><span style="color:#1a1a1a; font-weight:600;">0 of 50 allocated</span></div>
       </div>
+      <div style="margin-top:8px;"><a href="#" style="font-size: 11px; color: #0057A8; text-decoration: none; font-weight: 600;">Go to Press by Number →</a></div>
     </div>
   </div>
 
@@ -149,9 +148,10 @@
     <div class="toolbar-left">
       <input type="text" class="search-box" placeholder="Search organizations..." />
       <button class="filter-btn active">All (23)</button>
-      <button class="filter-btn">Pending (8)</button>
-      <button class="filter-btn">Flagged (3)</button>
+      <button class="filter-btn">Submitted (6)</button>
+      <button class="filter-btn">Under Review (2)</button>
       <button class="filter-btn">Approved (12)</button>
+      <button class="filter-btn">Returned (2)</button>
     </div>
     <div class="toolbar-right">
       <button class="export-btn">Export CSV</button>
@@ -167,7 +167,7 @@
           <th>Type</th>
           <th>Category</th>
           <th>Status</th>
-          <th>Flags</th>
+          <th>Notes</th>
           <th>Submitted</th>
           <th>Actions</th>
         </tr>
@@ -178,14 +178,14 @@
           <td>News Agency</td>
           <td><span class="cat-badge">Press</span></td>
           <td><span class="status status-submitted">Submitted</span></td>
-          <td><span class="flag flag-dedup">Possible duplicate</span></td>
+          <td></td>
           <td>Mar 25, 2026</td>
           <td><a class="org-link" href="#">Review</a></td>
         </tr>
         <tr>
-          <td><a class="org-link" href="#">ESPN</a></td>
-          <td>Media - Broadcast</td>
-          <td><span class="cat-badge">ENR</span></td>
+          <td><a class="org-link" href="#">Getty Images</a></td>
+          <td>News Agency</td>
+          <td><span class="cat-badge">Photo</span></td>
           <td><span class="status status-review">Under Review</span></td>
           <td></td>
           <td>Mar 24, 2026</td>
@@ -210,9 +210,9 @@
           <td><a class="org-link" href="#">View</a></td>
         </tr>
         <tr>
-          <td><a class="org-link" href="#">Fox Sports Digital</a></td>
-          <td>Media - Broadcast</td>
-          <td><span class="cat-badge">ENR</span></td>
+          <td><a class="org-link" href="#">Reuters Photography</a></td>
+          <td>News Agency</td>
+          <td><span class="cat-badge">Both</span></td>
           <td><span class="status status-returned">Returned</span></td>
           <td></td>
           <td>Mar 20, 2026</td>
@@ -223,7 +223,7 @@
           <td>Media - Print/Online</td>
           <td><span class="cat-badge">Press</span></td>
           <td><span class="status status-submitted">Submitted</span></td>
-          <td><span class="flag flag-dedup">Possible duplicate</span></td>
+          <td></td>
           <td>Mar 19, 2026</td>
           <td><a class="org-link" href="#">Review</a></td>
         </tr>
@@ -237,9 +237,9 @@
           <td><a class="org-link" href="#">View</a></td>
         </tr>
         <tr>
-          <td><a class="org-link" href="#">NBC Sports</a></td>
-          <td>Media - Broadcast</td>
-          <td><span class="cat-badge">ENR</span></td>
+          <td><a class="org-link" href="#">Sports Photographer Collective</a></td>
+          <td>Freelance</td>
+          <td><span class="cat-badge">Photo</span></td>
           <td><span class="status status-approved">Approved</span></td>
           <td></td>
           <td>Mar 17, 2026</td>

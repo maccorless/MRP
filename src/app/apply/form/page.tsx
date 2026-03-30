@@ -227,7 +227,6 @@ export default async function FormPage({
                   <option value="media_print_online">Print / Online Media</option>
                   <option value="media_broadcast">Broadcast</option>
                   <option value="news_agency">News Agency</option>
-                  <option value="enr">ENR (Non-Rights Broadcaster)</option>
                 </select>
               </div>
 
@@ -261,32 +260,44 @@ export default async function FormPage({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category <span className="text-red-500">*</span>
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Select all that apply. Press = journalists, writers, reporters. Photo = still photographers.
+              </p>
               <div className="space-y-2">
                 {(
                   [
                     { value: "press", label: "Press", desc: "Journalists, writers, reporters" },
-                    { value: "photographer", label: "Photographer", desc: "Still photographers" },
-                    { value: "enr", label: "ENR", desc: "Non-Rights Broadcaster — technical and production staff" },
+                    { value: "photo", label: "Photo", desc: "Still photographers" },
+                    { value: "both", label: "Both — Press &amp; Photo", desc: "Organisation covers both press and photography" },
                   ] as const
-                ).map(({ value, label, desc }) => (
-                  <label
-                    key={value}
-                    className="flex items-start gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#0057A8] has-[:checked]:bg-blue-50"
-                  >
-                    <input
-                      type="radio"
-                      name="category"
-                      value={value}
-                      required
-                      defaultChecked={prefill?.app.category === value}
-                      className="mt-0.5 accent-[#0057A8]"
-                    />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{label}</div>
-                      <div className="text-xs text-gray-500">{desc}</div>
-                    </div>
-                  </label>
-                ))}
+                ).map(({ value, label, desc }) => {
+                  const prefillValue = prefill?.app
+                    ? prefill.app.categoryPress && prefill.app.categoryPhoto
+                      ? "both"
+                      : prefill.app.categoryPress
+                      ? "press"
+                      : "photo"
+                    : undefined;
+                  return (
+                    <label
+                      key={value}
+                      className="flex items-start gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#0057A8] has-[:checked]:bg-blue-50"
+                    >
+                      <input
+                        type="radio"
+                        name="category"
+                        value={value}
+                        required
+                        defaultChecked={prefillValue === value}
+                        className="mt-0.5 accent-[#0057A8]"
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: label }} />
+                        <div className="text-xs text-gray-500">{desc}</div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 

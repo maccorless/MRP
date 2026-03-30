@@ -2,9 +2,11 @@ import { logout } from "./login/actions";
 import { getSession } from "@/lib/session";
 
 const ROLE_LABELS: Record<string, string> = {
-  ioc_admin: "IOC Admin",
+  ioc_admin:    "IOC Admin",
   ioc_readonly: "IOC Viewer",
-  noc_admin: "NOC Admin",
+  noc_admin:    "NOC Admin",
+  ocog_admin:   "OCOG Admin",
+  if_admin:     "IF Admin",
 };
 
 export default async function AdminLayout({

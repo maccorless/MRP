@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP - OCOG PbN Quota Approval</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #1a1a1a; }
+  .header { background: #1e3a5f; color: white; padding: 0; }
+  .header-top { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; }
+  .header h1 { font-size: 18px; font-weight: 600; }
+  .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+  .role-badge { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; font-size: 13px; }
+  .nav { background: #162e4a; }
+  .nav-inner { max-width: 1400px; margin: 0 auto; display: flex; }
+  .nav a { color: rgba(255,255,255,0.7); padding: 10px 20px; font-size: 13px; font-weight: 500; text-decoration: none; border-bottom: 2px solid transparent; }
+  .nav a.active { color: white; border-bottom-color: white; }
+  .content { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+  .page-header { margin-bottom: 20px; display: flex; align-items: flex-start; justify-content: space-between; }
+  .page-title { font-size: 20px; font-weight: 700; }
+  .page-subtitle { font-size: 14px; color: #6b7280; margin-top: 4px; }
+
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; padding: 16px; }
+  .stat-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+  .stat-value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+  .stat-detail { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+  .toolbar-left { display: flex; gap: 8px; align-items: center; flex: 1; }
+  .search-box { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; width: 260px; }
+  .filter-btn { padding: 7px 13px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px; background: white; cursor: pointer; white-space: nowrap; }
+  .filter-btn.active { border-color: #1e3a5f; background: #eff6ff; color: #1e3a5f; font-weight: 600; }
+  .filter-btn.pending { border-color: #f59e0b; background: #fef3c7; color: #92400e; }
+
+  .table-card { background: white; border-radius: 10px; border: 1px solid #e5e7eb; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; background: #f9fafb; border-bottom: 1px solid #e5e7eb; cursor: pointer; }
+  td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f9fafb; }
+
+  .noc-name { font-weight: 600; color: #1a1a1a; }
+  .noc-code { font-size: 11px; color: #9ca3af; font-family: monospace; margin-top: 1px; }
+
+  .state-badge { display: inline-flex; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .state-draft { background: #f3f4f6; color: #6b7280; }
+  .state-submitted { background: #fef3c7; color: #92400e; }
+  .state-approved { background: #ecfdf5; color: #059669; }
+  .state-adjusted { background: #f0fdf4; color: #059669; border: 1px solid #86efac; }
+
+  .quota-pair { display: flex; gap: 10px; }
+  .quota-pill { font-size: 12px; padding: 3px 8px; border-radius: 4px; background: #f3f4f6; color: #374151; }
+  .quota-pill.press { background: #eff6ff; color: #1d4ed8; }
+  .quota-pill.photo { background: #f5f3ff; color: #6d28d9; }
+
+  .action-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; border: 1px solid; }
+  .btn-review { background: white; border-color: #d1d5db; color: #374151; }
+  .btn-review:hover { border-color: #1e3a5f; color: #1e3a5f; }
+  .btn-approve { background: #ecfdf5; border-color: #86efac; color: #059669; }
+  .btn-approve:hover { background: #d1fae5; }
+
+  /* Drill-down panel (shown inline for prototype) */
+  .drill-panel { background: #f8f9fa; border-top: 2px solid #1e3a5f; padding: 20px 24px; }
+  .drill-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .drill-close { font-size: 12px; color: #9ca3af; cursor: pointer; margin-left: auto; }
+  .drill-table { background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; }
+  .drill-table table th { background: #f9fafb; font-size: 11px; }
+  .drill-table table td { font-size: 12px; padding: 8px 12px; }
+  .adj-input { width: 60px; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; text-align: center; }
+  .adj-input.changed { border-color: #f59e0b; background: #fef3c7; }
+  .drill-actions { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; }
+  .btn-approve-noc { padding: 8px 18px; background: #059669; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-approve-noc:hover { background: #047857; }
+  .btn-adjust { padding: 8px 18px; background: #f59e0b; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>Media Registration Portal</h1>
+      <div class="subtitle">LA 2028 Olympic Games — OCOG Administration</div>
+    </div>
+    <div class="role-badge">OCOG Admin — LA28 Media Operations</div>
+  </div>
+  <div class="nav">
+    <div class="nav-inner">
+      <a href="#">EoI Overview</a>
+      <a href="#" class="active">PbN Quota Approval</a>
+      <a href="#">ENR (IOC)</a>
+      <a href="#">Org Directory</a>
+      <a href="#">Audit Log</a>
+      <a href="#">Export</a>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Press by Number — Quota Approval</h1>
+      <p class="page-subtitle">Review and formally approve NOC quota allocations. You may adjust individual org allocations before approving. IOC has read-only visibility.</p>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button style="padding:9px 16px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; background:white; cursor:pointer; font-weight:500;">Export All CSV</button>
+      <button style="padding:9px 16px; background:#059669; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Approve All Submitted (12)</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total NOCs</div>
+      <div class="stat-value" style="color:#1e3a5f;">206</div>
+      <div class="stat-detail">All territories</div>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+      <div class="stat-label">Awaiting Approval</div>
+      <div class="stat-value" style="color:#f59e0b;">34</div>
+      <div class="stat-detail">NOC-submitted, not yet approved</div>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #059669;">
+      <div class="stat-label">OCOG Approved</div>
+      <div class="stat-value" style="color:#059669;">58</div>
+      <div class="stat-detail">Ready for ACR export</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">In Draft</div>
+      <div class="stat-value" style="color:#6b7280;">114</div>
+      <div class="stat-detail">NOC working on allocations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Not Started</div>
+      <div class="stat-value" style="color:#9ca3af;">0</div>
+      <div class="stat-detail">No quota imported</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input class="search-box" type="text" placeholder="Search NOC by name or code…" />
+      <button class="filter-btn active">All (206)</button>
+      <button class="filter-btn pending">Awaiting Approval (34)</button>
+      <button class="filter-btn">OCOG Approved (58)</button>
+      <button class="filter-btn">Draft (114)</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>NOC &#9650;</th>
+          <th>Press Quota</th>
+          <th>Photo Quota</th>
+          <th>Orgs Allocated</th>
+          <th>Submission State</th>
+          <th>Last Updated</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Submitted rows -->
+        <tr>
+          <td>
+            <div class="noc-name">United States</div>
+            <div class="noc-code">USA / USOPC</div>
+          </td>
+          <td><div class="quota-pair"><span class="quota-pill press">150 total · 120 alloc</span></div></td>
+          <td><div class="quota-pair"><span class="quota-pill photo">50 total · 32 alloc</span></div></td>
+          <td>47 orgs</td>
+          <td><span class="state-badge state-submitted">NOC Submitted</span></td>
+          <td>Mar 30, 2026</td>
+          <td style="display:flex; gap:6px;">
+            <button class="action-btn btn-review">Review</button>
+            <button class="action-btn btn-approve">Approve</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="noc-name">Great Britain</div>
+            <div class="noc-code">GBR / BOA</div>
+          </td>
+          <td><div class="quota-pair"><span class="quota-pill press">120 total · 118 alloc</span></div></td>
+          <td><div class="quota-pair"><span class="quota-pill photo">40 total · 38 alloc</span></div></td>
+          <td>39 orgs</td>
+          <td><span class="state-badge state-submitted">NOC Submitted</span></td>
+          <td>Mar 29, 2026</td>
+          <td style="display:flex; gap:6px;">
+            <button class="action-btn btn-review">Review</button>
+            <button class="action-btn btn-approve">Approve</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="noc-name">Australia</div>
+            <div class="noc-code">AUS / AOC</div>
+          </td>
+          <td><div class="quota-pair"><span class="quota-pill press">90 total · 90 alloc</span></div></td>
+          <td><div class="quota-pair"><span class="quota-pill photo">30 total · 28 alloc</span></div></td>
+          <td>28 orgs</td>
+          <td><span class="state-badge state-submitted">NOC Submitted</span></td>
+          <td>Mar 29, 2026</td>
+          <td style="display:flex; gap:6px;">
+            <button class="action-btn btn-review">Review</button>
+            <button class="action-btn btn-approve">Approve</button>
+          </td>
+        </tr>
+        <!-- Approved rows -->
+        <tr>
+          <td>
+            <div class="noc-name">France</div>
+            <div class="noc-code">FRA / CNOSF</div>
+          </td>
+          <td><div class="quota-pair"><span class="quota-pill press">110 total · 98 alloc</span></div></td>
+          <td><div class="quota-pair"><span class="quota-pill photo">35 total · 30 alloc</span></div></td>
+          <td>33 orgs</td>
+          <td><span class="state-badge state-approved">OCOG Approved</span></td>
+          <td>Mar 28, 2026</td>
+          <td><button class="action-btn btn-review">View</button></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="noc-name">Germany</div>
+            <div class="noc-code">GER / DOSB</div>
+          </td>
+          <td><div class="quota-pair"><span class="quota-pill press">100 total · 95 alloc</span></div></td>
+          <td><div class="quota-pair"><span class="quota-pill photo">30 total · 30 alloc</span></div></td>
+          <td>31 orgs</td>
+          <td><span class="state-badge state-adjusted">OCOG Approved (adjusted)</span></td>
+          <td>Mar 27, 2026</td>
+          <td><button class="action-btn btn-review">View</button></td>
+        </tr>
+        <!-- Draft rows -->
+        <tr>
+          <td>
+            <div class="noc-name">Japan</div>
+            <div class="noc-code">JPN / JOC</div>
+          </td>
+          <td><div class="quota-pair"><span class="quota-pill press">80 total · 45 alloc</span></div></td>
+          <td><div class="quota-pair"><span class="quota-pill photo">25 total · 12 alloc</span></div></td>
+          <td>19 orgs</td>
+          <td><span class="state-badge state-draft">Draft</span></td>
+          <td>Mar 26, 2026</td>
+          <td><button class="action-btn btn-review">View</button></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="noc-name">Brazil</div>
+            <div class="noc-code">BRA / COB</div>
+          </td>
+          <td><div class="quota-pair"><span class="quota-pill press">70 total · 0 alloc</span></div></td>
+          <td><div class="quota-pair"><span class="quota-pill photo">20 total · 0 alloc</span></div></td>
+          <td>0 orgs</td>
+          <td><span class="state-badge state-draft">Draft</span></td>
+          <td>—</td>
+          <td><button class="action-btn btn-review">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Drill-down panel — inline prototype of the USA review -->
+  <div class="drill-panel" style="margin-top:24px; border-radius:10px;">
+    <div class="drill-title">
+      United States (USOPC) — Quota Allocation Review
+      <span style="font-size:12px; color:#6b7280; font-weight:400; margin-left:6px;">NOC Submitted · 47 orgs · Press: 120/150 · Photo: 32/50</span>
+      <span class="drill-close">✕ Close panel</span>
+    </div>
+    <div class="drill-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Organisation</th>
+            <th>Type</th>
+            <th>EoI Category</th>
+            <th>Press (NOC)</th>
+            <th>Press (OCOG adj.)</th>
+            <th>Photo (NOC)</th>
+            <th>Photo (OCOG adj.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Associated Press</strong></td>
+            <td>News Agency</td>
+            <td><span style="font-size:11px; background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px;">Both</span></td>
+            <td>24</td>
+            <td><input class="adj-input" type="number" value="24" /></td>
+            <td>8</td>
+            <td><input class="adj-input" type="number" value="8" /></td>
+          </tr>
+          <tr>
+            <td><strong>New York Times</strong></td>
+            <td>Media - Print/Online</td>
+            <td><span style="font-size:11px; background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px;">Press</span></td>
+            <td>8</td>
+            <td><input class="adj-input" type="number" value="8" /></td>
+            <td>—</td>
+            <td><input class="adj-input" type="number" value="0" disabled style="background:#f9fafb; color:#d1d5db;" /></td>
+          </tr>
+          <tr>
+            <td><strong>Reuters</strong></td>
+            <td>News Agency</td>
+            <td><span style="font-size:11px; background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px;">Both</span></td>
+            <td>20</td>
+            <td><input class="adj-input changed" type="number" value="16" /></td>
+            <td>6</td>
+            <td><input class="adj-input" type="number" value="6" /></td>
+          </tr>
+          <tr>
+            <td><strong>Getty Images</strong></td>
+            <td>News Agency</td>
+            <td><span style="font-size:11px; background:#f5f3ff; color:#6d28d9; padding:2px 6px; border-radius:4px;">Photo</span></td>
+            <td>—</td>
+            <td><input class="adj-input" type="number" value="0" disabled style="background:#f9fafb; color:#d1d5db;" /></td>
+            <td>12</td>
+            <td><input class="adj-input" type="number" value="12" /></td>
+          </tr>
+          <tr>
+            <td><strong>Washington Post</strong></td>
+            <td>Media - Print/Online</td>
+            <td><span style="font-size:11px; background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px;">Press</span></td>
+            <td>5</td>
+            <td><input class="adj-input" type="number" value="5" /></td>
+            <td>—</td>
+            <td><input class="adj-input" type="number" value="0" disabled style="background:#f9fafb; color:#d1d5db;" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:12px; color:#9ca3af; margin-top:8px;">Highlighted cells (amber) indicate OCOG adjustments from NOC submission. All changes are audit-logged.</div>
+    <div class="drill-actions">
+      <button class="btn-adjust">Save Adjustments (Draft)</button>
+      <button class="btn-approve-noc">Approve USA Allocations</button>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

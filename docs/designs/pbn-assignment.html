@@ -204,7 +204,7 @@
     <div>
       <div class="phase-label">Phase 2 of 2 — Active</div>
       <div class="phase-title">Press by Number — Quota Allocation</div>
-      <div class="phase-desc">Assign your IOC-granted quota among the 47 approved organizations in your territory.</div>
+      <div class="phase-desc">Assign your IOC-granted quota among the 45 EoI-approved organizations in your territory.</div>
     </div>
     <div class="phase-deadline">
       <div class="phase-deadline-label">Submission Deadline</div>
@@ -212,44 +212,53 @@
     </div>
   </div>
 
-  <!-- Stats -->
+  <!-- Stats — Press and Photo tracked separately -->
   <div class="stats">
-    <div class="stat-card">
-      <div class="stat-label">IOC Quota — Total</div>
-      <div class="stat-value blue">200</div>
-      <div class="stat-detail">Assigned to USOPC by IOC</div>
+    <div class="stat-card" style="border-top: 3px solid #0057A8;">
+      <div class="stat-label">Press Quota</div>
+      <div class="stat-value blue">150</div>
+      <div class="stat-detail">120 allocated &nbsp;·&nbsp; 30 available</div>
+    </div>
+    <div class="stat-card" style="border-top: 3px solid #7c3aed;">
+      <div class="stat-label">Photo Quota</div>
+      <div class="stat-value" style="color:#7c3aed;">50</div>
+      <div class="stat-detail">32 allocated &nbsp;·&nbsp; 18 available</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">Allocated to Orgs</div>
-      <div class="stat-value green">152</div>
-      <div class="stat-detail">Across 38 organizations</div>
+      <div class="stat-label">EoI-Approved Orgs</div>
+      <div class="stat-value green">45</div>
+      <div class="stat-detail">Eligible for press/photo slot assignment</div>
     </div>
-    <div class="stat-card" onclick="openReserveModal()" title="Click to manage reserved quota" style="cursor:pointer;">
-      <div class="stat-label">Reserved (held back)</div>
-      <div class="stat-value amber">10</div>
-      <div class="stat-detail reserve-trigger">Set aside for late changes &nbsp;&#9998;</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Available to Assign</div>
-      <div class="stat-value blue">38</div>
-      <div class="stat-detail">200 − 152 − 10 remaining</div>
+    <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+      <div class="stat-label">Submission State</div>
+      <div style="margin-top:8px; font-size:13px;">
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span> <strong>Draft</strong> — not yet submitted</div>
+        <a href="#" style="font-size:12px; color:#0057A8; font-weight:600;">Submit to OCOG for approval →</a>
+      </div>
     </div>
   </div>
 
-  <!-- Quota progress bar -->
+  <!-- Quota progress bars — Press and Photo separately -->
   <div class="quota-bar-card">
-    <div class="quota-bar-header">
-      <div class="quota-bar-title">Quota Usage — United States (USOPC)</div>
-      <div class="quota-bar-nums"><strong>152</strong> allocated &nbsp;+&nbsp; <strong class="reserve-trigger" onclick="openReserveModal()" title="Click to manage reserve">10 reserved &#9998;</strong> &nbsp;=&nbsp; <strong>162 of 200</strong> used &nbsp;&nbsp;|&nbsp;&nbsp; <strong>38</strong> available</div>
-    </div>
-    <div class="quota-bar-track">
-      <div class="quota-bar-allocated" style="width: 76%;"></div>
-      <div class="quota-bar-reserved" style="width: 5%;"></div>
-    </div>
-    <div class="quota-bar-legend">
-      <div class="legend-item"><div class="legend-dot" style="background: #0057A8;"></div> Allocated to organizations (152)</div>
-      <div class="legend-item" onclick="openReserveModal()" title="Click to manage reserve" style="cursor:pointer;"><div class="legend-dot" style="background: #f59e0b;"></div> <span class="reserve-trigger">Reserved — held back (10) &#9998;</span></div>
-      <div class="legend-item"><div class="legend-dot" style="background: #f3f4f6; border: 1px solid #e5e7eb;"></div> Available (38)</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+      <div>
+        <div class="quota-bar-header">
+          <div class="quota-bar-title">Press — United States (USOPC)</div>
+          <div class="quota-bar-nums"><strong>120</strong> allocated &nbsp;·&nbsp; <strong>30</strong> available of 150</div>
+        </div>
+        <div class="quota-bar-track">
+          <div class="quota-bar-allocated" style="width: 80%;"></div>
+        </div>
+      </div>
+      <div>
+        <div class="quota-bar-header">
+          <div class="quota-bar-title" style="color:#7c3aed;">Photo — United States (USOPC)</div>
+          <div class="quota-bar-nums"><strong>32</strong> allocated &nbsp;·&nbsp; <strong>18</strong> available of 50</div>
+        </div>
+        <div class="quota-bar-track">
+          <div style="background:#7c3aed; height:100%; border-radius:6px 0 0 6px; width:64%;"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -257,11 +266,11 @@
   <div class="toolbar">
     <div class="toolbar-left">
       <input type="text" class="search-box" placeholder="Search organizations..." />
-      <button class="filter-btn active">All (47)</button>
-      <button class="filter-btn">Unallocated (9)</button>
-      <button class="filter-btn">Press (28)</button>
-      <button class="filter-btn">Photo (11)</button>
-      <button class="filter-btn">ENR (8)</button>
+      <button class="filter-btn active">All (45)</button>
+      <button class="filter-btn">Unallocated (7)</button>
+      <button class="filter-btn">Press only (22)</button>
+      <button class="filter-btn">Photo only (11)</button>
+      <button class="filter-btn">Both (12)</button>
     </div>
     <div class="toolbar-right">
       <button class="action-btn btn-secondary">Export CSV</button>
@@ -320,26 +329,6 @@
               <button class="stepper-btn">+</button>
             </div>
             <div class="max-hint warning">Changed from 8 ↑</div>
-          </td>
-          <td><span class="status status-set">Set</span></td>
-        </tr>
-        <tr>
-          <td>
-            <a class="org-link" href="#">NBC Sports</a>
-            <button class="history-btn" onclick="showHistory(event, 'NBC Sports', [['LA 2028','ENR','Pending'],['Paris 2024','ENR','18 slots'],['Tokyo 2020','ENR','20 slots'],['Rio 2016','ENR','22 slots']])">&#128336; History</button>
-            <div class="org-history">US territory · Rights holder</div>
-          </td>
-          <td>Media — Broadcast</td>
-          <td><span class="cat-badge">ENR</span></td>
-          <td class="prior-val">18</td>
-          <td class="prior-val">20</td>
-          <td>
-            <div class="alloc-stepper">
-              <button class="stepper-btn">−</button>
-              <input type="number" value="18" />
-              <button class="stepper-btn">+</button>
-            </div>
-            <div class="max-hint">Prev: 18</div>
           </td>
           <td><span class="status status-set">Set</span></td>
         </tr>
@@ -405,26 +394,6 @@
         </tr>
         <tr>
           <td>
-            <a class="org-link" href="#">ESPN Digital</a>
-            <button class="history-btn" onclick="showHistory(event, 'ESPN Digital', [['LA 2028','ENR','Pending'],['Paris 2024','ENR','7 slots'],['Tokyo 2020','ENR','6 slots'],['Rio 2016','ENR','5 slots']])">&#128336; History</button>
-            <div class="org-history">US territory · Known org</div>
-          </td>
-          <td>Media — Broadcast</td>
-          <td><span class="cat-badge">ENR</span></td>
-          <td class="prior-val">7</td>
-          <td class="prior-val">6</td>
-          <td>
-            <div class="alloc-stepper">
-              <button class="stepper-btn">−</button>
-              <input type="number" value="0" />
-              <button class="stepper-btn">+</button>
-            </div>
-            <div class="max-hint">Prev: 7</div>
-          </td>
-          <td><span class="status status-draft">Not set</span></td>
-        </tr>
-        <tr>
-          <td>
             <a class="org-link" href="#">USA Today Sports</a>
             <button class="history-btn" onclick="showHistory(event, 'USA Today Sports', [['LA 2028','Press','Pending'],['Paris 2024','Press','4 slots'],['Tokyo 2020','Press','4 slots'],['Rio 2016','Press','3 slots']])">&#128336; History</button>
             <div class="org-history">US territory · Known org</div>
@@ -446,23 +415,48 @@
       </tbody>
     </table>
     <div class="table-footer">
-      <div class="footer-total">Total allocated: <span>152</span> &nbsp;+&nbsp; reserved: <span style="color: #f59e0b;">10</span> &nbsp;=&nbsp; <span>162</span> of <span>200</span></div>
-      <div>Showing 8 of 47 approved organizations &nbsp;·&nbsp; 9 with no allocation set</div>
+      <div class="footer-total">Press allocated: <span>120</span> of 150 &nbsp;·&nbsp; Photo allocated: <span>32</span> of 50</div>
+      <div>Showing 6 of 45 EoI-approved organizations &nbsp;·&nbsp; 7 with no allocation set</div>
     </div>
   </div>
 
-  <!-- Save bar -->
+  <!-- Save bar — Draft state (active when allocating) -->
   <div class="save-bar">
     <div>
-      <div class="save-status">Status: <strong>Draft — not yet submitted to IOC</strong></div>
-      <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Last saved automatically: today at 11:34 AM &nbsp;·&nbsp; 9 organizations have no allocation — set to 0 or assign before submitting</div>
+      <div class="save-status">Status: <strong>Draft — not yet submitted to OCOG</strong></div>
+      <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Last saved automatically: today at 11:34 AM &nbsp;·&nbsp; 7 organizations have no allocation — set to 0 or assign before submitting</div>
     </div>
     <div>
       <div class="save-actions">
         <button class="btn-save-draft">Save Draft</button>
-        <button class="btn-submit">Submit to IOC</button>
+        <button class="btn-submit">Submit to OCOG for Approval</button>
       </div>
-      <div class="submit-note">Submission locks all allocations. You can request changes from IOC after submitting.</div>
+      <div class="submit-note">Submission locks your allocations for OCOG review. OCOG may adjust before final approval.</div>
+    </div>
+  </div>
+
+  <!-- Save bar — OCOG Approved state (shown after OCOG approves; table becomes read-only) -->
+  <div class="save-bar" style="background:#f0fdf4; border-color:#86efac; margin-top:8px; display:none;">
+    <div>
+      <div class="save-status" style="font-size:14px; display:flex; align-items:center; gap:8px;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;flex-shrink:0;"></span>
+        <strong style="color:#166534;">OCOG Approved</strong>
+        <span style="font-weight:400; color:#6b7280;">— Nov 18, 2026 at 2:14 PM</span>
+      </div>
+      <div style="font-size:12px; color:#6b7280; margin-top:6px;">
+        OCOG adjusted 2 allocations before approving: Associated Press (24→20), Getty Images (12→10).
+        All changes are audit-logged.
+        <a href="#" style="color:#0057A8; font-weight:600; margin-left:6px;">View OCOG adjustments →</a>
+      </div>
+      <div style="font-size:12px; color:#059669; margin-top:4px; font-weight:500;">
+        ✓ Data sent to ACR — Nov 19, 2026 at 9:00 AM
+      </div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:13px; color:#166534; font-weight:600; background:#dcfce7; padding:8px 16px; border-radius:8px; border:1px solid #86efac;">
+        Allocation complete
+      </div>
+      <div style="font-size:11px; color:#9ca3af; margin-top:6px;">Read-only after OCOG approval</div>
     </div>
   </div>
 

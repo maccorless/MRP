@@ -14,13 +14,7 @@ export const orgTypeEnum = pgEnum("org_type", [
   "media_print_online",
   "media_broadcast",
   "news_agency",
-  "enr", // Non-Rights Broadcaster
-]);
-
-export const accreditationCategoryEnum = pgEnum("accreditation_category", [
-  "press",
-  "photographer",
-  "enr",
+  "enr", // Non-Rights Broadcaster — set by ENR workflow, not EoI self-nomination
 ]);
 
 export const applicationStatusEnum = pgEnum("application_status", [
@@ -35,6 +29,8 @@ export const actorTypeEnum = pgEnum("actor_type", [
   "applicant",
   "noc_admin",
   "ioc_admin",
+  "ocog_admin",
+  "if_admin",
   "system",
 ]);
 
@@ -49,6 +45,31 @@ export const auditActionEnum = pgEnum("audit_action", [
   "duplicate_flag_raised",
   "export_generated",
   "pbn_submitted",
+  "pbn_approved",
+  "pbn_sent_to_acr",
+  "quota_changed",
+  "enr_submitted",
+  "enr_decision_made",
+]);
+
+export const pbnStateEnum = pgEnum("pbn_state", [
+  "draft",
+  "noc_submitted",
+  "ocog_approved",
+  "sent_to_acr",
+]);
+
+export const enrDecisionEnum = pgEnum("enr_decision", [
+  "granted",
+  "partial",
+  "denied",
+]);
+
+export const orgStatusEnum = pgEnum("org_status", [
+  "active",
+  "inactive",
+  "banned",
+  "pending_review",
 ]);
 
 // ─── Magic Link Tokens (applicant auth) ──────────────────────────────────────
@@ -66,6 +87,7 @@ export const magicLinkTokens = pgTable("magic_link_tokens", {
 
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
+  eventId: text("event_id").notNull().default("LA28"),
   name: text("name").notNull(),
   country: text("country").notNull(),         // ISO 3166-1 alpha-2
   nocCode: text("noc_code").notNull(),         // e.g. USA, FRA, JPN
@@ -73,6 +95,7 @@ export const organizations = pgTable("organizations", {
   website: text("website"),
   emailDomain: text("email_domain").notNull(), // extracted from contact email for dedup
   commonCodesId: text("common_codes_id"),      // null until coded
+  status: orgStatusEnum("org_status").notNull().default("active"),
   isMultiTerritoryFlag: boolean("is_multi_territory_flag").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
@@ -82,14 +105,19 @@ export const organizations = pgTable("organizations", {
 
 export const applications = pgTable("applications", {
   id: uuid("id").primaryKey().defaultRandom(),
-  referenceNumber: text("reference_number").notNull().unique(), // e.g. APP-2028-US-00051
+  eventId: text("event_id").notNull().default("LA28"),
+  referenceNumber: text("reference_number").notNull().unique(), // e.g. APP-2028-USA-00051
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   nocCode: text("noc_code").notNull(),
 
   // Contact (MICO26 provisional fields)
   contactName: text("contact_name").notNull(),
   contactEmail: text("contact_email").notNull(),
-  category: accreditationCategoryEnum("category").notNull(),
+
+  // Category — Press / Photo / Both (at least one must be true)
+  categoryPress: boolean("category_press").notNull().default(false),
+  categoryPhoto: boolean("category_photo").notNull().default(false),
+
   about: text("about").notNull(),
 
   // Status
@@ -124,10 +152,83 @@ export const auditLog = pgTable("audit_log", {
 export const adminUsers = pgTable("admin_users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
-  role: text("role").notNull(),                // "ioc_admin" | "noc_admin" | "ioc_readonly"
-  nocCode: text("noc_code"),                   // null for IOC roles
+  // "ioc_admin" | "ioc_readonly" | "noc_admin" | "ocog_admin" | "if_admin"
+  role: text("role").notNull(),
+  nocCode: text("noc_code"),                   // set for noc_admin
+  ifCode: text("if_code"),                     // set for if_admin (e.g. "ATH")
   displayName: text("display_name").notNull(),
   // v1.0: replaced by D.TEC/DGP SSO — no password stored in production
   passwordHash: text("password_hash"),         // prototype only
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── NOC Quotas (IOC-assigned press/photo totals per NOC) ─────────────────────
+
+export const nocQuotas = pgTable("noc_quotas", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  pressTotal: integer("press_total").notNull().default(0),
+  photoTotal: integer("photo_total").notNull().default(0),
+  setBy: text("set_by"),                       // IOC admin user id
+  setAt: timestamp("set_at", { withTimezone: true }).defaultNow(),
+  notes: text("notes"),
+});
+
+// ─── Org Slot Allocations (NOC assigns slots per approved org in PbN) ─────────
+
+export const orgSlotAllocations = pgTable("org_slot_allocations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  pressSlots: integer("press_slots").notNull().default(0),
+  photoSlots: integer("photo_slots").notNull().default(0),
+  allocatedBy: text("allocated_by"),           // NOC admin user id
+  allocatedAt: timestamp("allocated_at", { withTimezone: true }).defaultNow(),
+  pbnState: pbnStateEnum("pbn_state").notNull().default("draft"),
+  ocogReviewedBy: text("ocog_reviewed_by"),
+  ocogReviewedAt: timestamp("ocog_reviewed_at", { withTimezone: true }),
+});
+
+// ─── Quota Changes (audit log for import + manual edits) ─────────────────────
+
+export const quotaChanges = pgTable("quota_changes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  quotaType: text("quota_type").notNull(),     // "press" | "photo"
+  oldValue: integer("old_value").notNull(),
+  newValue: integer("new_value").notNull(),
+  changedBy: text("changed_by").notNull(),     // IOC admin user id
+  changedAt: timestamp("changed_at", { withTimezone: true }).defaultNow(),
+  changeSource: text("change_source").notNull(), // "import" | "manual_edit"
+});
+
+// ─── ENR Quotas (IOC holdback pool per NOC) ───────────────────────────────────
+
+export const enrQuotas = pgTable("enr_quotas", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  enrTotal: integer("enr_total").notNull().default(0),
+  grantedBy: text("granted_by"),               // IOC admin user id
+  grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow(),
+});
+
+// ─── ENR Requests (NOC prioritised list, IOC decides per org) ─────────────────
+
+export const enrRequests = pgTable("enr_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
+  priorityRank: integer("priority_rank").notNull(),
+  slotsRequested: integer("slots_requested").notNull(),
+  slotsGranted: integer("slots_granted"),      // null until IOC decides
+  decision: enrDecisionEnum("enr_decision"),   // null until IOC decides
+  decisionNotes: text("decision_notes"),
+  reviewedBy: text("reviewed_by"),             // IOC admin user id
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow(),
 });

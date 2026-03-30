@@ -2,14 +2,11 @@ import Link from "next/link";
 import { eq, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
+import { categoryDisplayLabel } from "@/lib/category";
 
 const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online", media_broadcast: "Broadcast",
   news_agency: "News Agency", enr: "ENR",
-};
-
-const CATEGORY_LABEL: Record<string, string> = {
-  press: "Press", photographer: "Photographer", enr: "ENR",
 };
 
 export default async function ExportPage() {
@@ -22,7 +19,8 @@ export default async function ExportPage() {
       orgType: organizations.orgType,
       contactName: applications.contactName,
       contactEmail: applications.contactEmail,
-      category: applications.category,
+      categoryPress: applications.categoryPress,
+      categoryPhoto: applications.categoryPhoto,
       reviewedAt: applications.reviewedAt,
     })
     .from(applications)
@@ -84,7 +82,7 @@ export default async function ExportPage() {
                       <div className="font-medium text-gray-900">{row.orgName}</div>
                       <div className="text-xs text-gray-400">{ORG_TYPE_LABEL[row.orgType] ?? row.orgType} · {row.country}</div>
                     </td>
-                    <td className="px-5 py-2.5 text-gray-600">{CATEGORY_LABEL[row.category] ?? row.category}</td>
+                    <td className="px-5 py-2.5 text-gray-600">{categoryDisplayLabel(row.categoryPress, row.categoryPhoto)}</td>
                     <td className="px-5 py-2.5">
                       <div className="text-gray-900">{row.contactName}</div>
                       <div className="text-xs text-gray-400">{row.contactEmail}</div>
