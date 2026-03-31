@@ -30,8 +30,12 @@ export default async function OcogPbnNocPage({
       alloc: orgSlotAllocations,
       orgName: organizations.name,
       orgType: organizations.orgType,
-      categoryPress: applications.categoryPress,
-      categoryPhoto: applications.categoryPhoto,
+      categoryE:   applications.categoryE,
+      categoryEs:  applications.categoryEs,
+      categoryEp:  applications.categoryEp,
+      categoryEps: applications.categoryEps,
+      categoryEt:  applications.categoryEt,
+      categoryEc:  applications.categoryEc,
     })
     .from(orgSlotAllocations)
     .innerJoin(organizations, eq(orgSlotAllocations.organizationId, organizations.id))
@@ -118,11 +122,11 @@ export default async function OcogPbnNocPage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {rows.map(({ alloc, orgName, categoryPress, categoryPhoto }) => (
+                {rows.map(({ alloc, orgName, categoryE, categoryEs, categoryEp, categoryEps, categoryEt, categoryEc }) => (
                   <tr key={alloc.id} className="hover:bg-gray-50">
                     <td className="px-5 py-3 font-medium text-gray-900">{orgName}</td>
                     <td className="px-5 py-3 text-xs text-gray-600">
-                      {categoryDisplayLabel(categoryPress, categoryPhoto)}
+                      {categoryDisplayLabel(categoryE, categoryEs, categoryEp, categoryEps, categoryEt, categoryEc)}
                     </td>
                     <td className="px-5 py-3 text-right">
                       {isSubmitted ? (

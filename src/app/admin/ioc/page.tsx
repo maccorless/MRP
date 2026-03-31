@@ -24,8 +24,12 @@ export default async function IocDashboard() {
       referenceNumber: applications.referenceNumber,
       nocCode: applications.nocCode,
       status: applications.status,
-      categoryPress: applications.categoryPress,
-      categoryPhoto: applications.categoryPhoto,
+      categoryE:   applications.categoryE,
+      categoryEs:  applications.categoryEs,
+      categoryEp:  applications.categoryEp,
+      categoryEps: applications.categoryEps,
+      categoryEt:  applications.categoryEt,
+      categoryEc:  applications.categoryEc,
       contactName: applications.contactName,
       submittedAt: applications.submittedAt,
       orgName: organizations.name,
@@ -145,7 +149,7 @@ export default async function IocDashboard() {
                   <div className="text-xs text-gray-400">{row.contactName}</div>
                 </td>
                 <td className="px-5 py-2.5 font-mono text-xs text-gray-600">{row.nocCode}</td>
-                <td className="px-5 py-2.5 text-gray-600">{categoryDisplayLabel(row.categoryPress, row.categoryPhoto)}</td>
+                <td className="px-5 py-2.5 text-gray-600">{categoryDisplayLabel(row.categoryE, row.categoryEs, row.categoryEp, row.categoryEps, row.categoryEt, row.categoryEc)}</td>
                 <td className="px-5 py-2.5">
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[row.status]}`}>
                     {STATUS_LABEL[row.status]}

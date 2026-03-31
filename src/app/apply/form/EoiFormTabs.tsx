@@ -27,11 +27,19 @@ export type PrefillData = {
   secondaryEmail?: string | null;
   secondaryPhone?: string | null;
   secondaryCell?: string | null;
-  // Accreditation
-  categoryPress?: boolean;
-  categoryPhoto?: boolean;
-  requestedPress?: number | null;
-  requestedPhoto?: number | null;
+  // Accreditation — per E-category flags
+  categoryE?: boolean;
+  categoryEs?: boolean;
+  categoryEp?: boolean;
+  categoryEps?: boolean;
+  categoryEt?: boolean;
+  categoryEc?: boolean;
+  requestedE?: number | null;
+  requestedEs?: number | null;
+  requestedEp?: number | null;
+  requestedEps?: number | null;
+  requestedEt?: number | null;
+  requestedEc?: number | null;
   about?: string;
   // Publication
   publicationTypes?: string[] | null;
@@ -60,7 +68,7 @@ const TABS = [
 const REQUIRED_FIELDS: Record<number, string[]> = {
   0: ["org_name", "org_type", "country", "noc_code"],
   1: ["contact_first_name", "contact_last_name"],
-  2: ["category", "about"],
+  2: ["about"],
   3: [],
   4: [],
 };

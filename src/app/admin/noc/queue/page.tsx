@@ -37,8 +37,12 @@ export default async function NocQueuePage({
       id: applications.id,
       referenceNumber: applications.referenceNumber,
       status: applications.status,
-      categoryPress: applications.categoryPress,
-      categoryPhoto: applications.categoryPhoto,
+      categoryE:   applications.categoryE,
+      categoryEs:  applications.categoryEs,
+      categoryEp:  applications.categoryEp,
+      categoryEps: applications.categoryEps,
+      categoryEt:  applications.categoryEt,
+      categoryEc:  applications.categoryEc,
       contactName: applications.contactName,
       submittedAt: applications.submittedAt,
       orgName: organizations.name,
@@ -152,7 +156,7 @@ export default async function NocQueuePage({
                     <div className="text-xs text-gray-400">{row.contactName}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">
-                    {categoryDisplayLabel(row.categoryPress, row.categoryPhoto)}
+                    {categoryDisplayLabel(row.categoryE, row.categoryEs, row.categoryEp, row.categoryEps, row.categoryEt, row.categoryEc)}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[row.status]}`}>

@@ -8,10 +8,15 @@ import {
   organizations,
   applications,
   auditLog,
+  reservedOrganizations,
 } from "@/db/schema";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";
-import { parseCategoryFlags } from "@/lib/category";
+import {
+  parseCategorySelections,
+  parseRequestedQuantities,
+  deriveLegacyFlags,
+} from "@/lib/category";
 
 export async function requestToken(formData: FormData) {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
@@ -74,13 +79,10 @@ export async function submitApplication(formData: FormData) {
   const secondaryCell = (formData.get("secondary_cell") as string)?.trim() || null;
 
   // Category + quantities
-  const categoryRaw = formData.get("category") as string | null;
-  const { categoryPress, categoryPhoto } = parseCategoryFlags(categoryRaw);
+  const cats = parseCategorySelections(formData);
+  const quantities = parseRequestedQuantities(formData, cats);
+  const { categoryPress, categoryPhoto } = deriveLegacyFlags(cats);
   const about = (formData.get("about") as string).trim();
-  const requestedPressRaw = formData.get("requested_press") as string | null;
-  const requestedPhotoRaw = formData.get("requested_photo") as string | null;
-  const requestedPress = categoryPress && requestedPressRaw ? parseInt(requestedPressRaw, 10) : null;
-  const requestedPhoto = categoryPhoto && requestedPhotoRaw ? parseInt(requestedPhotoRaw, 10) : null;
 
   // Publication details
   const publicationTypesRaw = formData.getAll("publication_types") as string[];
@@ -103,7 +105,7 @@ export async function submitApplication(formData: FormData) {
   const accessibilityNeeds = formData.get("accessibility_needs") === "yes" ? true : null;
 
   // Must select at least one category
-  if (!categoryPress && !categoryPhoto) {
+  if (!Object.values(cats).some(Boolean)) {
     redirect("/apply?error=invalid_category");
   }
 
@@ -120,6 +122,19 @@ export async function submitApplication(formData: FormData) {
     secondaryEmail,
     secondaryPhone,
     secondaryCell,
+    // Per-category E accreditation flags + quantities
+    categoryE:   cats.E,
+    categoryEs:  cats.Es,
+    categoryEp:  cats.EP,
+    categoryEps: cats.EPs,
+    categoryEt:  cats.ET,
+    categoryEc:  cats.EC,
+    requestedE:   quantities.E   ?? null,
+    requestedEs:  quantities.Es  ?? null,
+    requestedEp:  quantities.EP  ?? null,
+    requestedEps: quantities.EPs ?? null,
+    requestedEt:  quantities.ET  ?? null,
+    requestedEc:  quantities.EC  ?? null,
     publicationTypes,
     circulation,
     publicationFrequency,
@@ -154,8 +169,6 @@ export async function submitApplication(formData: FormData) {
         contactName,
         categoryPress,
         categoryPhoto,
-        requestedPress,
-        requestedPhoto,
         about,
         ...expandedFields,
         status: "resubmitted",
@@ -204,6 +217,20 @@ export async function submitApplication(formData: FormData) {
   const website = websiteRaw || null;
 
   const emailDomain = email.split("@")[1];
+
+  // Block reserved IOC-direct organizations (AFP, AP, Reuters, Xinhua, etc.)
+  const [reservedMatch] = await db
+    .select({ name: reservedOrganizations.name })
+    .from(reservedOrganizations)
+    .where(
+      and(
+        eq(reservedOrganizations.eventId, "LA28"),
+        eq(reservedOrganizations.emailDomain, emailDomain)
+      )
+    );
+  if (reservedMatch) {
+    redirect("/apply?error=reserved_org");
+  }
 
   const [existingOrg] = await db
     .select()
@@ -273,8 +300,6 @@ export async function submitApplication(formData: FormData) {
       contactEmail: email,
       categoryPress,
       categoryPhoto,
-      requestedPress,
-      requestedPhoto,
       about,
       ...expandedFields,
       status: "pending",

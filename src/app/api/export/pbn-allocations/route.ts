@@ -18,10 +18,14 @@ export async function GET() {
       nocCode: applications.nocCode,
       orgName: organizations.name,
       referenceNumber: applications.referenceNumber,
-      categoryPress: applications.categoryPress,
-      categoryPhoto: applications.categoryPhoto,
-      requestedPress: applications.requestedPress,
-      requestedPhoto: applications.requestedPhoto,
+      categoryE:   applications.categoryE,
+      categoryEs:  applications.categoryEs,
+      categoryEp:  applications.categoryEp,
+      categoryEps: applications.categoryEps,
+      categoryEt:  applications.categoryEt,
+      categoryEc:  applications.categoryEc,
+      requestedE:   applications.requestedE,
+      requestedEp:  applications.requestedEp,
       pressSlots: orgSlotAllocations.pressSlots,
       photoSlots: orgSlotAllocations.photoSlots,
       pbnState: orgSlotAllocations.pbnState,
@@ -46,16 +50,16 @@ export async function GET() {
   const rows = await query;
 
   const header = [
-    "NOC", "Organisation", "Reference", "Category",
-    "Press Requested", "Photo Requested",
+    "NOC", "Organisation", "Reference", "Categories",
+    "E Requested", "EP Requested",
     "Press Allocated", "Photo Allocated",
     "PbN State", "Allocated At",
   ];
 
   const csvRows = rows.map((r) => [
     r.nocCode, r.orgName, r.referenceNumber,
-    categoryDisplayLabel(r.categoryPress, r.categoryPhoto),
-    r.requestedPress, r.requestedPhoto,
+    categoryDisplayLabel(r.categoryE, r.categoryEs, r.categoryEp, r.categoryEps, r.categoryEt, r.categoryEc),
+    r.requestedE, r.requestedEp,
     r.pressSlots, r.photoSlots,
     r.pbnState, r.allocatedAt?.toISOString() ?? "",
   ]);

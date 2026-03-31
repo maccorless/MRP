@@ -212,15 +212,19 @@ export default async function ApplicationDetailPage({
             <div className="grid grid-cols-2 gap-x-6">
               <div>
                 <dt className="text-gray-500 text-xs">Category</dt>
-                <dd className="text-gray-900 mt-0.5">{categoryDisplayLabel(app.categoryPress, app.categoryPhoto)}</dd>
+                <dd className="text-gray-900 mt-0.5">{categoryDisplayLabel(app.categoryE, app.categoryEs, app.categoryEp, app.categoryEps, app.categoryEt, app.categoryEc)}</dd>
               </div>
-              {(app.requestedPress || app.requestedPhoto) && (
+              {(app.requestedE || app.requestedEs || app.requestedEp || app.requestedEps || app.requestedEt || app.requestedEc) && (
                 <div>
                   <dt className="text-gray-500 text-xs">Requested</dt>
                   <dd className="text-gray-900 mt-0.5">
                     {[
-                      app.requestedPress ? `${app.requestedPress} press` : null,
-                      app.requestedPhoto ? `${app.requestedPhoto} photo` : null,
+                      app.requestedE   ? `${app.requestedE} E`   : null,
+                      app.requestedEs  ? `${app.requestedEs} Es`  : null,
+                      app.requestedEp  ? `${app.requestedEp} EP`  : null,
+                      app.requestedEps ? `${app.requestedEps} EPs` : null,
+                      app.requestedEt  ? `${app.requestedEt} ET`  : null,
+                      app.requestedEc  ? `${app.requestedEc} EC`  : null,
                     ].filter(Boolean).join(", ")}
                   </dd>
                 </div>

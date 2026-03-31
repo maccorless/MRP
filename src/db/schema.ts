@@ -137,13 +137,27 @@ export const applications = pgTable("applications", {
   secondaryPhone: text("secondary_phone"),
   secondaryCell: text("secondary_cell"),
 
-  // Category — Press / Photo / Both (at least one must be true)
+  // Category — legacy press/photo flags (kept for backward compat; derived from E-category flags below)
   categoryPress: boolean("category_press").notNull().default(false),
   categoryPhoto: boolean("category_photo").notNull().default(false),
 
-  // Requested slot quantities (from EoI form)
-  requestedPress: integer("requested_press"),
-  requestedPhoto: integer("requested_photo"),
+  // E-category accreditation types (checkboxes on EoI form)
+  categoryE:   boolean("category_e").notNull().default(false),   // Journalist
+  categoryEs:  boolean("category_es").notNull().default(false),  // Sport-specific journalist
+  categoryEp:  boolean("category_ep").notNull().default(false),  // Photographer
+  categoryEps: boolean("category_eps").notNull().default(false), // Sport-specific photographer
+  categoryEt:  boolean("category_et").notNull().default(false),  // Technician
+  categoryEc:  boolean("category_ec").notNull().default(false),  // Support staff
+
+  // Requested slot quantities per category (from EoI form)
+  requestedPress: integer("requested_press"),   // legacy
+  requestedPhoto: integer("requested_photo"),   // legacy
+  requestedE:   integer("requested_e"),
+  requestedEs:  integer("requested_es"),
+  requestedEp:  integer("requested_ep"),
+  requestedEps: integer("requested_eps"),
+  requestedEt:  integer("requested_et"),
+  requestedEc:  integer("requested_ec"),
 
   about: text("about").notNull(),
 
@@ -211,8 +225,17 @@ export const nocQuotas = pgTable("noc_quotas", {
   id: uuid("id").primaryKey().defaultRandom(),
   nocCode: text("noc_code").notNull(),
   eventId: text("event_id").notNull().default("LA28"),
+  // Legacy totals (kept for compat; = eTotal + esTotal + etTotal + ecTotal and epTotal + epsTotal respectively)
   pressTotal: integer("press_total").notNull().default(0),
   photoTotal: integer("photo_total").notNull().default(0),
+  // Per-category quota totals (IOC-assigned)
+  eTotal:   integer("e_total").notNull().default(0),   // Journalist
+  esTotal:  integer("es_total").notNull().default(0),  // Sport-specific journalist
+  epTotal:  integer("ep_total").notNull().default(0),  // Photographer
+  epsTotal: integer("eps_total").notNull().default(0), // Sport-specific photographer
+  etTotal:  integer("et_total").notNull().default(0),  // Technician
+  ecTotal:  integer("ec_total").notNull().default(0),  // Support staff
+  nocETotal: integer("noc_e_total").notNull().default(0), // Press attachés (separate formula-based pool)
   setBy: text("set_by"),                       // IOC admin user id
   setAt: timestamp("set_at", { withTimezone: true }).defaultNow(),
   notes: text("notes"),
@@ -225,8 +248,17 @@ export const orgSlotAllocations = pgTable("org_slot_allocations", {
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   nocCode: text("noc_code").notNull(),
   eventId: text("event_id").notNull().default("LA28"),
+  // Legacy slot counts (kept for compat)
   pressSlots: integer("press_slots").notNull().default(0),
   photoSlots: integer("photo_slots").notNull().default(0),
+  // Per-category slot allocations (NOC-assigned in PbN)
+  eSlots:   integer("e_slots").notNull().default(0),   // Journalist
+  esSlots:  integer("es_slots").notNull().default(0),  // Sport-specific journalist
+  epSlots:  integer("ep_slots").notNull().default(0),  // Photographer
+  epsSlots: integer("eps_slots").notNull().default(0), // Sport-specific photographer
+  etSlots:  integer("et_slots").notNull().default(0),  // Technician
+  ecSlots:  integer("ec_slots").notNull().default(0),  // Support staff
+  nocESlots: integer("noc_e_slots").notNull().default(0), // Press attachés
   allocatedBy: text("allocated_by"),           // NOC admin user id
   allocatedAt: timestamp("allocated_at", { withTimezone: true }).defaultNow(),
   pbnState: pbnStateEnum("pbn_state").notNull().default("draft"),
@@ -282,4 +314,26 @@ export const enrRequests = pgTable("enr_requests", {
   enrJustification: text("enr_justification"),
   mustHaveSlots: integer("must_have_slots"),
   niceToHaveSlots: integer("nice_to_have_slots"),
+});
+
+// ─── Reserved Organizations (IOC-direct — bypass NOC quota) ──────────────────
+//
+// AFP, AP, Reuters, Xinhua, and similar orgs are allocated directly by the IOC.
+// The IOC acts as their "NOC" using noc_code = 'IOC_DIRECT'.
+// When a real NOC submits an EoI from an org whose email domain or name matches
+// a reserved entry, they receive a dedup warning and the application is blocked.
+// The IOC admin manages this list before the EoI window opens.
+
+export const reservedOrganizations = pgTable("reserved_organizations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: text("event_id").notNull().default("LA28"),
+  name: text("name").notNull(),                     // canonical org name
+  emailDomain: text("email_domain"),                // primary domain for dedup (nullable for orgs with many domains)
+  alternateNames: jsonb("alternate_names"),          // string[] — other known names/variants
+  website: text("website"),
+  country: text("country"),                         // ISO 3166-1 alpha-2
+  notes: text("notes"),                             // e.g. "IOC recognised world news agency"
+  addedBy: text("added_by"),                        // IOC admin user id
+  addedAt: timestamp("added_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
