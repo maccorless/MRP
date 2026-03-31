@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { PrefillData } from "../EoiFormTabs";
+import type { FormErrors, PrefillData } from "../EoiFormTabs";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 
-const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
+const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
+const INPUT = BASE_INPUT + " border-gray-300";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 const HELP = "text-xs text-gray-400 mt-1";
 
@@ -30,7 +31,7 @@ function InfoTooltip({ text }: { text: string }) {
   );
 }
 
-export function AccreditationTab({ prefill }: { prefill: PrefillData | null }) {
+export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | null; errors?: FormErrors }) {
   // Initialise selected state from prefill
   const initSelected = (): Record<AccredCategory, boolean> => {
     if (!prefill) return { E: false, Es: false, EP: false, EPs: false, ET: false, EC: false };
@@ -134,8 +135,10 @@ export function AccreditationTab({ prefill }: { prefill: PrefillData | null }) {
             );
           })}
         </div>
-        {!anySelected && (
-          <p className="mt-2 text-xs text-red-500">Please select at least one accreditation category.</p>
+        {(errors?.category || !anySelected) && (
+          <p className="mt-2 text-xs text-red-500" role="alert">
+            {errors?.category ?? "Please select at least one accreditation category."}
+          </p>
         )}
       </div>
 
@@ -159,8 +162,9 @@ export function AccreditationTab({ prefill }: { prefill: PrefillData | null }) {
           data-tab="2"
           defaultValue={prefill?.about ?? ""}
           placeholder="Describe your organisation's editorial focus, the events and sports you plan to cover, the size of your on-site team, and any specific venue access requirements."
-          className={`${INPUT} resize-none`}
+          className={`${errors?.about ? BASE_INPUT + " border-red-500" : INPUT} resize-none`}
         />
+        {errors?.about && <p className="text-xs text-red-500 mt-1" role="alert">{errors.about}</p>}
         <p className={HELP}>
           Be specific. Your NOC uses this to evaluate and prioritise your request. Include
           details about your audience reach and how you plan to cover LA 2028.

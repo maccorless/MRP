@@ -8,6 +8,8 @@ import { AccreditationTab } from "./tabs/AccreditationTab";
 import { PublicationTab } from "./tabs/PublicationTab";
 import { HistoryTab } from "./tabs/HistoryTab";
 
+export type FormErrors = Record<string, string>;
+
 export type PrefillData = {
   // Organization
   orgName?: string;
@@ -95,6 +97,7 @@ export function EoiFormTabs({
   const [tabStatus, setTabStatus] = useState<("empty" | "partial" | "complete")[]>(
     TABS.map(() => "empty")
   );
+  const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
 
   // localStorage key scoped to this email
   const storageKey = `eoi-draft-${email}`;
@@ -196,8 +199,56 @@ export function EoiFormTabs({
     setTabStatus(newStatus);
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const form = formRef.current;
+    if (!form) return;
+
+    const errs: FormErrors = {};
+
+    // Validate all required non-checkbox fields in DOM order (which == tab order)
+    const requiredEls = Array.from(
+      form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+        "input[required]:not([type='checkbox']), select[required], textarea[required]"
+      )
+    );
+    for (const el of requiredEls) {
+      const empty = el instanceof HTMLSelectElement ? !el.value : !el.value.trim();
+      if (empty) errs[el.name] = "This field is required.";
+    }
+
+    // Custom: at least one category checkbox must be checked
+    const catChecked = Array.from(
+      form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
+    ).some((cb) => cb.checked);
+    if (!catChecked) errs["category"] = "Please select at least one accreditation category.";
+
+    if (Object.keys(errs).length === 0) {
+      setFieldErrors({});
+      return; // valid — let the form action proceed
+    }
+
+    e.preventDefault();
+    setFieldErrors(errs);
+
+    // Navigate to the tab containing the first error
+    const firstErrEl = requiredEls.find((el) => errs[el.name]) ?? null;
+    const firstErrTab = firstErrEl
+      ? parseInt(firstErrEl.getAttribute("data-tab") ?? "0", 10)
+      : errs["category"] ? 2 : 0;
+    setActiveTab(firstErrTab);
+
+    // After React re-renders the correct tab, scroll to + focus first invalid field
+    setTimeout(() => {
+      const target: HTMLElement | null =
+        firstErrEl ??
+        form.querySelector<HTMLElement>('[name^="category_"]');
+      target?.scrollIntoView({ behavior: "smooth", block: "center" });
+      target?.focus();
+    }, 60);
+  }
+
   return (
-    <form ref={formRef} action={submitApplication} onInput={handleInput} className="space-y-0">
+    <form ref={formRef} action={submitApplication} onInput={handleInput} onSubmit={handleSubmit} className="space-y-0">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
@@ -235,13 +286,13 @@ export function EoiFormTabs({
       {/* Tab panels — all rendered, only active visible */}
       <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-8">
         <div className={activeTab === 0 ? "" : "hidden"}>
-          <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} />
+          <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} errors={fieldErrors} />
         </div>
         <div className={activeTab === 1 ? "" : "hidden"}>
-          <ContactsTab prefill={prefill} email={email} />
+          <ContactsTab prefill={prefill} email={email} errors={fieldErrors} />
         </div>
         <div className={activeTab === 2 ? "" : "hidden"}>
-          <AccreditationTab prefill={prefill} />
+          <AccreditationTab prefill={prefill} errors={fieldErrors} />
         </div>
         <div className={activeTab === 3 ? "" : "hidden"}>
           <PublicationTab prefill={prefill} />

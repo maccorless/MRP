@@ -114,7 +114,7 @@ async function run() {
 
     await sql.begin(async (tx) => {
       await tx.unsafe(content);
-      await tx`INSERT INTO _migrations (filename) VALUES (${file})`;
+      await tx.unsafe(`INSERT INTO _migrations (filename) VALUES ($1)`, [file]);
     });
 
     count++;

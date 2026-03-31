@@ -1,18 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import type { PrefillData } from "../EoiFormTabs";
+import type { FormErrors, PrefillData } from "../EoiFormTabs";
 
-const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
+const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
+const INPUT = BASE_INPUT + " border-gray-300";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 const HELP = "text-xs text-gray-400 mt-1";
+
+function inp(name: string, errors?: FormErrors) {
+  return `${BASE_INPUT} ${errors?.[name] ? "border-red-500" : "border-gray-300"}`;
+}
+function Err({ name, errors }: { name: string; errors?: FormErrors }) {
+  if (!errors?.[name]) return null;
+  return <p className="text-xs text-red-500 mt-1" role="alert">{errors[name]}</p>;
+}
 
 export function ContactsTab({
   prefill,
   email,
+  errors,
 }: {
   prefill: PrefillData | null;
   email: string;
+  errors?: FormErrors;
 }) {
   const hasSecondary = !!(prefill?.secondaryFirstName || prefill?.secondaryLastName);
   const [showSecondary, setShowSecondary] = useState(hasSecondary);
@@ -31,12 +42,14 @@ export function ContactsTab({
             <div>
               <label htmlFor="contact_first_name" className={LABEL}>First name <span className="text-red-500">*</span></label>
               <input id="contact_first_name" name="contact_first_name" type="text" required data-tab="1"
-                defaultValue={prefill?.contactFirstName ?? ""} placeholder="First" className={INPUT} />
+                defaultValue={prefill?.contactFirstName ?? ""} placeholder="First" className={inp("contact_first_name", errors)} />
+              <Err name="contact_first_name" errors={errors} />
             </div>
             <div>
               <label htmlFor="contact_last_name" className={LABEL}>Last name <span className="text-red-500">*</span></label>
               <input id="contact_last_name" name="contact_last_name" type="text" required data-tab="1"
-                defaultValue={prefill?.contactLastName ?? ""} placeholder="Last" className={INPUT} />
+                defaultValue={prefill?.contactLastName ?? ""} placeholder="Last" className={inp("contact_last_name", errors)} />
+              <Err name="contact_last_name" errors={errors} />
             </div>
           </div>
           <div>

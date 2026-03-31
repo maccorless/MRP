@@ -1,19 +1,29 @@
-import type { PrefillData } from "../EoiFormTabs";
+import type { FormErrors, PrefillData } from "../EoiFormTabs";
 
-const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
+const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 const HELP = "text-xs text-gray-400 mt-1";
+
+function inp(name: string, errors?: FormErrors) {
+  return `${BASE_INPUT} ${errors?.[name] ? "border-red-500" : "border-gray-300"}`;
+}
+function Err({ name, errors }: { name: string; errors?: FormErrors }) {
+  if (!errors?.[name]) return null;
+  return <p className="text-xs text-red-500 mt-1" role="alert">{errors[name]}</p>;
+}
 
 export function OrganisationTab({
   prefill,
   isResubmission,
   countryCodes,
   nocCodes,
+  errors,
 }: {
   prefill: PrefillData | null;
   isResubmission: boolean;
   countryCodes: { code: string; name: string }[];
   nocCodes: { code: string; name: string }[];
+  errors?: FormErrors;
 }) {
   if (isResubmission && prefill) {
     return (
@@ -44,12 +54,13 @@ export function OrganisationTab({
             Organisation name <span className="text-red-500">*</span>
           </label>
           <input id="org_name" name="org_name" type="text" required data-tab="0"
-            defaultValue={prefill?.orgName ?? ""} placeholder="e.g. The Associated Press" className={INPUT} />
+            defaultValue={prefill?.orgName ?? ""} placeholder="e.g. The Associated Press" className={inp("org_name", errors)} />
+          <Err name="org_name" errors={errors} />
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label htmlFor="website" className={LABEL}>Website</label>
           <input id="website" name="website" type="url" data-tab="0"
-            defaultValue={prefill?.orgWebsite ?? ""} placeholder="https://" className={INPUT} />
+            defaultValue={prefill?.orgWebsite ?? ""} placeholder="https://" className={BASE_INPUT + " border-gray-300"} />
         </div>
       </div>
 
@@ -58,35 +69,38 @@ export function OrganisationTab({
           Organisation type <span className="text-red-500">*</span>
         </label>
         <select id="org_type" name="org_type" required data-tab="0"
-          defaultValue={prefill?.orgType ?? ""} className={INPUT}>
+          defaultValue={prefill?.orgType ?? ""} className={inp("org_type", errors)}>
           <option value="" disabled>Select type...</option>
           <option value="media_print_online">Print / Online Media</option>
           <option value="media_broadcast">Broadcast</option>
           <option value="news_agency">News Agency</option>
         </select>
+        <Err name="org_type" errors={errors} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="country" className={LABEL}>Country <span className="text-red-500">*</span></label>
           <input id="country" name="country" type="text" required data-tab="0"
-            list="country-codes" placeholder="US — United States" className={INPUT} />
+            list="country-codes" placeholder="US — United States" className={inp("country", errors)} />
           <datalist id="country-codes">
             {countryCodes.map(({ code, name }) => (
               <option key={code} value={`${code} — ${name}`} />
             ))}
           </datalist>
+          <Err name="country" errors={errors} />
           <p className={HELP}>Type a code or country name</p>
         </div>
         <div>
           <label htmlFor="noc_code" className={LABEL}>NOC code <span className="text-red-500">*</span></label>
           <input id="noc_code" name="noc_code" type="text" required data-tab="0"
-            list="noc-codes" placeholder="USA — United States of America" className={INPUT} />
+            list="noc-codes" placeholder="USA — United States of America" className={inp("noc_code", errors)} />
           <datalist id="noc-codes">
             {nocCodes.map(({ code, name }) => (
               <option key={code} value={`${code} — ${name}`} />
             ))}
           </datalist>
+          <Err name="noc_code" errors={errors} />
           <p className={HELP}>Type a code or country name</p>
         </div>
       </div>
@@ -95,12 +109,12 @@ export function OrganisationTab({
       <div className="border-t border-gray-100 pt-6">
         <h3 className="text-sm font-medium text-gray-700 mb-3">Mailing Address <span className="text-gray-400 font-normal">(optional)</span></h3>
         <div className="space-y-3">
-          <input name="address" type="text" data-tab="0" placeholder="Street address" className={INPUT} />
-          <input name="address2" type="text" data-tab="0" placeholder="Suite, floor, building (optional)" className={INPUT} />
+          <input name="address" type="text" data-tab="0" placeholder="Street address" className={BASE_INPUT + " border-gray-300"} />
+          <input name="address2" type="text" data-tab="0" placeholder="Suite, floor, building (optional)" className={BASE_INPUT + " border-gray-300"} />
           <div className="grid grid-cols-3 gap-3">
-            <input name="city" type="text" data-tab="0" placeholder="City" className={INPUT} />
-            <input name="state_province" type="text" data-tab="0" placeholder="State / Province" className={INPUT} />
-            <input name="postal_code" type="text" data-tab="0" placeholder="Postal code" className={INPUT} />
+            <input name="city" type="text" data-tab="0" placeholder="City" className={BASE_INPUT + " border-gray-300"} />
+            <input name="state_province" type="text" data-tab="0" placeholder="State / Province" className={BASE_INPUT + " border-gray-300"} />
+            <input name="postal_code" type="text" data-tab="0" placeholder="Postal code" className={BASE_INPUT + " border-gray-300"} />
           </div>
         </div>
       </div>
