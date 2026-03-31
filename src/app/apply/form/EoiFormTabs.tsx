@@ -7,6 +7,7 @@ import { ContactsTab } from "./tabs/ContactsTab";
 import { AccreditationTab } from "./tabs/AccreditationTab";
 import { PublicationTab } from "./tabs/PublicationTab";
 import { HistoryTab } from "./tabs/HistoryTab";
+import { COUNTRY_TO_NOC } from "@/lib/codes";
 
 export type FormErrors = Record<string, string>;
 
@@ -45,6 +46,7 @@ export type PrefillData = {
   about?: string;
   // Publication
   publicationTypes?: string[] | null;
+  publicationTypeOther?: string | null;
   circulation?: string | null;
   publicationFrequency?: string | null;
   sportsToCover?: string | null;
@@ -98,6 +100,7 @@ export function EoiFormTabs({
     TABS.map(() => "empty")
   );
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+  const autoSuggestedNocRef = useRef<string | null>(null);
 
   // localStorage key scoped to this email
   const storageKey = `eoi-draft-${email}`;
@@ -124,7 +127,8 @@ export function EoiFormTabs({
         } else if (elements instanceof HTMLInputElement) {
           if (elements.type === "checkbox") {
             elements.checked = value === "true";
-          } else if (elements.type !== "hidden") {
+          } else {
+            // Covers text, url, hidden (prior_olympic_years, prior_paralympic_years, publication_type_other, etc.)
             elements.value = value;
           }
         } else if (elements instanceof HTMLTextAreaElement || elements instanceof HTMLSelectElement) {
@@ -137,6 +141,10 @@ export function EoiFormTabs({
 
   // Auto-save to localStorage on input (debounced)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Keys that may appear multiple times in FormData and should be joined with commas
+  const MULTI_VALUE_KEYS = new Set(["publication_types"]);
+
   const handleInput = useCallback(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
@@ -145,17 +153,19 @@ export function EoiFormTabs({
       const data: Record<string, string> = {};
       for (const [key, val] of fd.entries()) {
         if (key === "token" || key === "email" || key === "resubmit_id") continue;
-        if (key === "publication_types") {
+        if (MULTI_VALUE_KEYS.has(key)) {
           // Collect all checked values
           data[key] = (data[key] ? data[key] + "," : "") + String(val);
         } else {
+          // For hidden inputs (prior_olympic_years, prior_paralympic_years) this picks up
+          // the comma-joined value from the hidden input directly — no special handling needed
           data[key] = String(val);
         }
       }
       try { localStorage.setItem(storageKey, JSON.stringify(data)); } catch { /* full */ }
       updateTabStatus();
     }, 500);
-  }, [storageKey]);
+  }, [storageKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function updateTabStatus() {
     if (!formRef.current) return;
@@ -199,6 +209,29 @@ export function EoiFormTabs({
     setTabStatus(newStatus);
   }
 
+  function handleCountryChange(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.name !== "country") return;
+
+    const countryCode = target.value.split(" — ")[0].trim().toUpperCase();
+    const suggestedNocCode = COUNTRY_TO_NOC[countryCode];
+    if (!suggestedNocCode) return;
+
+    const nocInput = formRef.current?.elements.namedItem("noc_code") as HTMLInputElement | null;
+    if (!nocInput) return;
+
+    // Only auto-fill if empty or if it was previously auto-suggested
+    if (!nocInput.value || nocInput.value === autoSuggestedNocRef.current) {
+      const nocEntry = nocCodes.find((n) => n.code === suggestedNocCode);
+      if (nocEntry) {
+        const newVal = `${nocEntry.code} — ${nocEntry.name}`;
+        nocInput.value = newVal;
+        autoSuggestedNocRef.current = newVal;
+        updateTabStatus();
+      }
+    }
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     const form = formRef.current;
     if (!form) return;
@@ -221,6 +254,14 @@ export function EoiFormTabs({
       form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
     ).some((cb) => cb.checked);
     if (!catChecked) errs["category"] = "Please select at least one accreditation category.";
+
+    // Validate URL fields (type="url" browser validation is bypassed by preventDefault)
+    const urlInputs = form.querySelectorAll<HTMLInputElement>('input[type="url"]');
+    for (const input of urlInputs) {
+      if (input.value && !input.value.match(/^https?:\/\/.+\..+/)) {
+        errs[input.name] = "Please enter a valid URL (e.g. https://www.example.com)";
+      }
+    }
 
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
@@ -248,7 +289,27 @@ export function EoiFormTabs({
   }
 
   return (
-    <form ref={formRef} action={submitApplication} onInput={handleInput} onSubmit={handleSubmit} className="space-y-0">
+    <>
+      {/* How does this work? collapsible intro */}
+      <details className="mb-4 bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <summary className="px-5 py-3.5 text-sm font-medium text-[#0057A8] cursor-pointer select-none hover:bg-gray-50 flex items-center gap-2">
+          <span className="text-base leading-none">ℹ️</span> How does this work?
+        </summary>
+        <div className="px-5 py-4 border-t border-gray-100 text-sm text-gray-700 space-y-2">
+          <p>
+            <strong>This is an Expression of Interest (EoI)</strong>, not a final accreditation decision.
+            Submitting does not guarantee press credentials for LA 2028.
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-gray-600">
+            <li>Your <strong>National Olympic Committee (NOC)</strong> reviews your organisation&apos;s eligibility and approves or declines your EoI.</li>
+            <li>If approved, your NOC enters a <strong>Press by Numbers (PbN)</strong> phase where slot quantities are negotiated with the IOC.</li>
+            <li>Final accreditation decisions are made by the IOC and communicated via your NOC.</li>
+            <li>You will be <strong>notified by email</strong> at each stage of the process.</li>
+          </ul>
+        </div>
+      </details>
+
+    <form ref={formRef} action={submitApplication} onInput={handleInput} onChange={(e) => handleCountryChange(e.nativeEvent)} onSubmit={handleSubmit} className="space-y-0">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
@@ -338,5 +399,6 @@ export function EoiFormTabs({
         Your progress is saved automatically. By submitting you confirm this information is accurate.
       </p>
     </form>
+    </>
   );
 }

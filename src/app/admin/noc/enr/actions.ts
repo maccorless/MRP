@@ -4,10 +4,11 @@ import { redirect } from "next/navigation";
 import { eq, and, asc, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { enrRequests, auditLog } from "@/db/schema";
-import { requireNocSession } from "@/lib/session";
+import { requireNocSession, requireWritable } from "@/lib/session";
 
 /** Add an ENR nomination (independent of EoI — NOC enters org details directly). */
 export async function addEnrNomination(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   const nocCode = session.nocCode;
 
@@ -69,6 +70,7 @@ export async function addEnrNomination(formData: FormData) {
 
 /** Remove a draft nomination (not allowed after submission). */
 export async function removeEnrOrg(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   const nocCode = session.nocCode;
   const requestId = formData.get("request_id") as string;
@@ -101,6 +103,7 @@ export async function removeEnrOrg(formData: FormData) {
 
 /** Update priority ranks (for drag-and-drop or rank-number editing). */
 export async function updateEnrRanks(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   const nocCode = session.nocCode;
 
@@ -131,6 +134,7 @@ export async function updateEnrRanks(formData: FormData) {
 
 /** Submit the ENR list to IOC. */
 export async function submitEnrToIoc() {
+  await requireWritable();
   const session = await requireNocSession();
   const nocCode = session.nocCode;
 

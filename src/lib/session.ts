@@ -21,10 +21,15 @@ export type SessionPayload = {
   nocCode: string | null;  // set for noc_admin
   ifCode: string | null;   // set for if_admin
   displayName: string;
+  // Sudo fields — present only when an IOC admin is acting as another user
+  isSudo?: boolean;
+  sudoActorLabel?: string; // display name of the IOC admin who initiated the sudo
 };
 
 const COOKIE_NAME = "mrp_session";
+const SUDO_COOKIE_NAME = "mrp_sudo_session";
 const SESSION_MAX_AGE = 60 * 60 * 8; // 8 hours
+const SUDO_MAX_AGE = 60 * 60; // 1 hour
 
 function getSecret(): string {
   const secret = process.env.NEXTAUTH_SECRET;
@@ -83,16 +88,65 @@ export async function setSession(payload: SessionPayload): Promise<void> {
   });
 }
 
+export async function clearSession(): Promise<void> {
+  const jar = await cookies();
+  jar.delete(COOKIE_NAME);
+}
+
+export async function setSudoSession(payload: SessionPayload): Promise<void> {
+  const value = await encodeSession(payload);
+  const jar = await cookies();
+  jar.set(SUDO_COOKIE_NAME, value, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: SUDO_MAX_AGE,
+    path: "/",
+  });
+}
+
+export async function clearSudoSession(): Promise<void> {
+  const jar = await cookies();
+  jar.delete(SUDO_COOKIE_NAME);
+}
+
+/**
+ * Returns the active session, preferring the sudo session when present.
+ * This means a window where sudo was activated will use the target user's
+ * identity automatically.
+ */
 export async function getSession(): Promise<SessionPayload | null> {
+  const jar = await cookies();
+  const sudoCookie = jar.get(SUDO_COOKIE_NAME);
+  if (sudoCookie) {
+    const sudoPayload = await decodeSession(sudoCookie.value);
+    if (sudoPayload) return sudoPayload;
+  }
+  const cookie = jar.get(COOKIE_NAME);
+  if (!cookie) return null;
+  return decodeSession(cookie.value);
+}
+
+/**
+ * Returns the IOC admin's own session, bypassing any active sudo session.
+ * Use this to verify the initiating admin's identity when generating a sudo token.
+ */
+export async function getBaseSession(): Promise<SessionPayload | null> {
   const jar = await cookies();
   const cookie = jar.get(COOKIE_NAME);
   if (!cookie) return null;
   return decodeSession(cookie.value);
 }
 
-export async function clearSession(): Promise<void> {
-  const jar = await cookies();
-  jar.delete(COOKIE_NAME);
+/**
+ * Throws a redirect if the current session is a sudo session.
+ * Call at the top of any Server Action that writes data.
+ */
+export async function requireWritable(): Promise<void> {
+  const session = await getSession();
+  if (session?.isSudo) {
+    throw new Error("SUDO_READ_ONLY");
+  }
 }
 
 /** Use in server components/layouts that require auth. Redirects if not authenticated. */

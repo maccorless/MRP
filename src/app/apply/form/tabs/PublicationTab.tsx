@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { PrefillData } from "../EoiFormTabs";
 
 const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
+const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 const HELP = "text-xs text-gray-400 mt-1";
 
@@ -16,12 +18,17 @@ const PUBLICATION_TYPES = [
   "Podcast",
   "Print Newsletter",
   "Social Media",
+  "Television / Broadcast",
+  "Online Video / Streaming",
   "Freelancer with confirmed assignment",
   "Other",
 ];
 
 export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
   const defaultTypes = (prefill?.publicationTypes as string[] | null) ?? [];
+  const [otherChecked, setOtherChecked] = useState(
+    prefill?.publicationTypes?.includes("other") ?? false
+  );
 
   return (
     <div className="space-y-6">
@@ -36,6 +43,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
         <div className="grid grid-cols-2 gap-2 mt-2">
           {PUBLICATION_TYPES.map((type) => {
             const value = type.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            const isOther = value === "other";
             return (
               <label key={value} className="flex items-center gap-2 p-2.5 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#0057A8] has-[:checked]:bg-blue-50 transition-colors text-sm">
                 <input
@@ -45,12 +53,23 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
                   defaultChecked={defaultTypes.includes(value)}
                   data-tab="3"
                   className="accent-[#0057A8]"
+                  onChange={isOther ? (e) => setOtherChecked(e.target.checked) : undefined}
                 />
                 {type}
               </label>
             );
           })}
         </div>
+        {otherChecked && (
+          <input
+            name="publication_type_other"
+            type="text"
+            placeholder="Please specify..."
+            className={BASE_INPUT + " border-gray-300 mt-2"}
+            defaultValue={prefill?.publicationTypeOther ?? ""}
+            data-tab="3"
+          />
+        )}
       </div>
 
       {/* Circulation + frequency */}

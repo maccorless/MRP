@@ -4,13 +4,14 @@ import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { nocQuotas, quotaChanges } from "@/db/schema";
-import { requireIocAdminSession } from "@/lib/session";
+import { requireIocAdminSession, requireWritable } from "@/lib/session";
 
 /**
  * Import quotas from a CSV payload (newline-separated rows: NOC,press,photo).
  * Upserts noc_quotas and writes a quota_changes record for each changed value.
  */
 export async function importQuotas(formData: FormData) {
+  await requireWritable();
   const session = await requireIocAdminSession();
   const raw = (formData.get("csv") as string)?.trim();
   if (!raw) redirect("/admin/ioc/quotas?error=empty");
@@ -83,6 +84,7 @@ export async function importQuotas(formData: FormData) {
  * Writes quota_changes records with changeSource="manual_edit".
  */
 export async function saveQuotaEdits(formData: FormData) {
+  await requireWritable();
   const session = await requireIocAdminSession();
 
   // Form fields are named press_{nocCode} and photo_{nocCode}

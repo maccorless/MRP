@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { eq, and, asc } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, organizations, auditLog } from "@/db/schema";
+import { applications, organizations, auditLog, nocQuotas, orgSlotAllocations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 import { categoryDisplayLabel } from "@/lib/category";
 import {
@@ -68,6 +68,29 @@ function Field({ label, value }: { label: string; value: string | number | null 
   );
 }
 
+function QuotaBar({ label, requested, allocated, total }: {
+  label: string; requested: number; allocated: number; total: number;
+}) {
+  const afterApproval = allocated + requested;
+  const pctAllocated = Math.min((allocated / total) * 100, 100);
+  const pctRequest   = Math.min((requested / total) * 100, Math.max(0, 100 - pctAllocated));
+  const overQuota    = afterApproval > total;
+
+  return (
+    <div className="flex items-center gap-2 text-xs">
+      <span className="w-8 font-mono text-gray-600">{label}</span>
+      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden flex">
+        <div className="h-full bg-blue-400 transition-all" style={{ width: `${pctAllocated}%` }} />
+        <div className={`h-full transition-all ${overQuota ? "bg-red-400" : "bg-amber-300"}`} style={{ width: `${pctRequest}%` }} />
+      </div>
+      <span className={`tabular-nums ${overQuota ? "text-red-600 font-semibold" : "text-gray-600"}`}>
+        {allocated}+{requested}/{total}
+      </span>
+      {overQuota && <span className="text-red-600 font-semibold">over quota</span>}
+    </div>
+  );
+}
+
 export default async function ApplicationDetailPage({
   params,
   searchParams,
@@ -96,6 +119,37 @@ export default async function ApplicationDetailPage({
     .from(auditLog)
     .where(eq(auditLog.applicationId, id))
     .orderBy(asc(auditLog.createdAt));
+
+  // Get this NOC's quota
+  const [quota] = await db
+    .select()
+    .from(nocQuotas)
+    .where(and(eq(nocQuotas.nocCode, session.nocCode), eq(nocQuotas.eventId, "LA28")));
+
+  // Get already-approved allocation totals for this NOC (all approved orgs, all slots)
+  const existingAllocs = await db
+    .select({
+      eSlots:   orgSlotAllocations.eSlots,
+      esSlots:  orgSlotAllocations.esSlots,
+      epSlots:  orgSlotAllocations.epSlots,
+      epsSlots: orgSlotAllocations.epsSlots,
+      etSlots:  orgSlotAllocations.etSlots,
+      ecSlots:  orgSlotAllocations.ecSlots,
+    })
+    .from(orgSlotAllocations)
+    .where(and(
+      eq(orgSlotAllocations.nocCode, session.nocCode),
+      eq(orgSlotAllocations.eventId, "LA28")
+    ));
+
+  const allocated = {
+    E:   existingAllocs.reduce((s, a) => s + (a.eSlots   ?? 0), 0),
+    Es:  existingAllocs.reduce((s, a) => s + (a.esSlots  ?? 0), 0),
+    EP:  existingAllocs.reduce((s, a) => s + (a.epSlots  ?? 0), 0),
+    EPs: existingAllocs.reduce((s, a) => s + (a.epsSlots ?? 0), 0),
+    ET:  existingAllocs.reduce((s, a) => s + (a.etSlots  ?? 0), 0),
+    EC:  existingAllocs.reduce((s, a) => s + (a.ecSlots  ?? 0), 0),
+  };
 
   const isActionable = app.status === "pending" || app.status === "resubmitted";
 
@@ -230,6 +284,31 @@ export default async function ApplicationDetailPage({
                 </div>
               )}
             </div>
+            {quota && isActionable && (
+              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-xs font-semibold text-amber-900 mb-2">Quota impact if approved</p>
+                <div className="space-y-1.5">
+                  {app.categoryE && quota.eTotal > 0 && (
+                    <QuotaBar label="E" requested={app.requestedE ?? 0} allocated={allocated.E} total={quota.eTotal} />
+                  )}
+                  {app.categoryEs && quota.esTotal > 0 && (
+                    <QuotaBar label="Es" requested={app.requestedEs ?? 0} allocated={allocated.Es} total={quota.esTotal} />
+                  )}
+                  {app.categoryEp && quota.epTotal > 0 && (
+                    <QuotaBar label="EP" requested={app.requestedEp ?? 0} allocated={allocated.EP} total={quota.epTotal} />
+                  )}
+                  {app.categoryEps && quota.epsTotal > 0 && (
+                    <QuotaBar label="EPs" requested={app.requestedEps ?? 0} allocated={allocated.EPs} total={quota.epsTotal} />
+                  )}
+                  {app.categoryEt && quota.etTotal > 0 && (
+                    <QuotaBar label="ET" requested={app.requestedEt ?? 0} allocated={allocated.ET} total={quota.etTotal} />
+                  )}
+                  {app.categoryEc && quota.ecTotal > 0 && (
+                    <QuotaBar label="EC" requested={app.requestedEc ?? 0} allocated={allocated.EC} total={quota.ecTotal} />
+                  )}
+                </div>
+              </div>
+            )}
             <div>
               <dt className="text-gray-500 text-xs mb-1">About coverage</dt>
               <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">{app.about}</dd>
@@ -367,6 +446,10 @@ export default async function ApplicationDetailPage({
         {/* Review actions */}
         {isActionable ? (
           <section className="space-y-3">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+              <strong>Approving this application</strong> confirms the organisation is eligible to apply — it does not commit any accreditation slots. Slot quantities are negotiated in the Press by Number (PbN) phase after all applications are reviewed.
+            </div>
+
             {error === "note_required" && (
               <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
                 A note is required when returning or rejecting an application.

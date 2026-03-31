@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, orgSlotAllocations, nocQuotas, auditLog } from "@/db/schema";
-import { requireNocSession, type SessionPayload } from "@/lib/session";
+import { requireNocSession, requireWritable, type SessionPayload } from "@/lib/session";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 
 type CategorySlots = Record<AccredCategory, number>;
@@ -93,6 +93,7 @@ async function persistDraftAllocations(
 
 /** Save draft allocations without submitting. */
 export async function saveSlotAllocations(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   await persistDraftAllocations(formData, session);
   redirect("/admin/noc/pbn?success=saved");
@@ -103,6 +104,7 @@ export async function saveSlotAllocations(formData: FormData) {
  * Validates per-category quotas, then moves all draft allocations to noc_submitted.
  */
 export async function submitPbnToOcog(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   const nocCode = session.nocCode;
 

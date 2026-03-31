@@ -60,7 +60,8 @@ export function OrganisationTab({
         <div className="col-span-2 sm:col-span-1">
           <label htmlFor="website" className={LABEL}>Website</label>
           <input id="website" name="website" type="url" data-tab="0"
-            defaultValue={prefill?.orgWebsite ?? ""} placeholder="https://" className={BASE_INPUT + " border-gray-300"} />
+            defaultValue={prefill?.orgWebsite ?? ""} placeholder="https://" className={inp("website", errors)} />
+          <Err name="website" errors={errors} />
         </div>
       </div>
 

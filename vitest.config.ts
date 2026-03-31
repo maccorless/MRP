@@ -6,6 +6,30 @@ export default defineConfig({
     environment: "node",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
+    // Run each test file in its own process so module-level state (TAG, mockCookieStore)
+    // is isolated. Prevents cross-file cleanup from deleting data still in use by
+    // another file's tests, and prevents submitPbnToOcog side-effects from leaking.
+    pool: "forks",
+    env: (() => {
+      // Load .env.local for integration tests so DATABASE_URL and NEXTAUTH_SECRET
+      // are available in vitest worker threads (loadEnvConfig in setup.ts only
+      // runs inside the worker after the module graph is already importing db/).
+      try {
+        const fs = require("fs");
+        const raw = fs.readFileSync(".env.local", "utf8");
+        const vars: Record<string, string> = {};
+        for (const line of raw.split("\n")) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith("#")) continue;
+          const idx = trimmed.indexOf("=");
+          if (idx === -1) continue;
+          vars[trimmed.slice(0, idx)] = trimmed.slice(idx + 1);
+        }
+        return vars;
+      } catch {
+        return {};
+      }
+    })(),
   },
   resolve: {
     alias: {

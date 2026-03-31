@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { orgSlotAllocations, organizations, applications, auditLog } from "@/db/schema";
-import { requireOcogSession } from "@/lib/session";
+import { requireOcogSession, requireWritable } from "@/lib/session";
 import { acrClient } from "@/lib/acr/stub-client";
 import type { OrgExportRecord } from "@/lib/acr/adapter";
 
@@ -13,6 +13,7 @@ import type { OrgExportRecord } from "@/lib/acr/adapter";
  * Form fields: noc_code, and optionally press_{orgId} / photo_{orgId} for each org.
  */
 export async function approvePbn(formData: FormData) {
+  await requireWritable();
   const session = await requireOcogSession();
   const nocCode = formData.get("noc_code") as string;
   if (!nocCode) redirect("/admin/ocog/pbn");
@@ -86,6 +87,7 @@ export async function approvePbn(formData: FormData) {
  * Send a NOC's approved allocations to ACR via the adapter.
  */
 export async function sendToAcr(formData: FormData) {
+  await requireWritable();
   const session = await requireOcogSession();
   const nocCode = formData.get("noc_code") as string;
   if (!nocCode) redirect("/admin/ocog/pbn");
@@ -142,6 +144,14 @@ export async function sendToAcr(formData: FormData) {
   }));
 
   const { pushed } = await acrClient.pushOrgData(records);
+
+  // Mark all sent allocations as sent_to_acr
+  for (const { alloc } of rows) {
+    await db
+      .update(orgSlotAllocations)
+      .set({ pbnState: "sent_to_acr" })
+      .where(eq(orgSlotAllocations.id, alloc.id));
+  }
 
   await db.insert(auditLog).values({
     actorType: "ocog_admin",

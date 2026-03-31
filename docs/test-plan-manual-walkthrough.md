@@ -2,30 +2,34 @@
 
 **Version**: v0.1  
 **Last updated**: 2026-03-31  
-**Environment**: Production (Railway) — confirm URL before starting
+**Production URL**: https://mrp-production-8073.up.railway.app/
 
 ---
 
 ## How to use this document
 
-Each section anchors to one role. For each role you will find:
+Each section anchors to one **role**. Under each role you'll find one or more **use cases** (what the person is trying to accomplish), each broken into numbered test cases with expected results and ASCII wireframes.
 
-1. **What this role does** — the job this person has in the real-world process
-2. **Pre-conditions** — what needs to exist in the system before you test
-3. **Test cases** — numbered steps with expected results
-4. **Wireframes** — ASCII sketches of the key screens to orient you
+Work through roles in order — **Applicant → NOC Admin → IOC Admin** — because each role produces data the next one consumes. IF Admin mirrors NOC Admin and can be tested in parallel.
 
-Work through the roles in order (Media Org → NOC → OCOG → IOC) because each role depends on data produced by the previous one.
+> **Missing use cases (flagged for product review)**
+> The following are implemented but not covered by the use cases below. They should be added to a future test pass:
+> - **OCOG Admin role** — the OCOG admin reviews and approves NOC PbN submissions before they go to ACR. Route: `https://mrp-production-8073.up.railway.app/admin/ocog/pbn`. Login as `ocog.admin@la28.org`.
+> - **IOC quota management** — the IOC sets per-NOC, per-category quotas. These are currently seeded from Paris 2024 fixture data; the IOC quota management UI is not yet built.
+> - **IOC data exports (CSV)** — IOC Admin can download PbN allocations and ENR nominations as CSV files. Routes: `/api/export/pbn-allocations` and `/api/export/enr-nominations`.
+> - **IOC audit trail** — all admin actions are logged. No dedicated view yet.
+> - **Sudo / impersonate user** — listed as an IOC use case below, but **this feature is not yet built**. The test case is a placeholder for the roadmap.
+> - **IF Admin sport scoping** — IF Admin currently redirects to the same NOC UI with no sport filter applied. Sport-scoped views are not yet implemented.
 
 ---
 
 ## Test accounts and seed data
 
-Run `npm run db:seed` (or `bun run db:seed`) once before testing to load the fixture dataset. **The seed script wipes and replaces all existing data** — do not run it against a database that holds real submissions.
+Run `npm run db:seed` (or `bun run db:seed`) once before testing to load the fixture dataset. **The seed script wipes and replaces all existing data** — do not run it against a database with real submissions.
 
 ### Admin credentials
 
-All seeded admin accounts share the same password: **`Password1!`**
+All seeded admin accounts share the password: **`Password1!`**
 
 | Email | Role | NOC / IF | Display name |
 |-------|------|----------|-------------|
@@ -46,12 +50,12 @@ These let you skip the email step and go straight to the form:
 | `K7M2` | `demo@test.com` | **Valid** — expires 24 h after seed |
 | `XXXX` | `expired@test.com` | **Expired** — use to test the expired-link error screen |
 
-To use a token directly, navigate to:
+To use a token directly:
 ```
-/apply/verify?token=K7M2&email=demo@test.com
+https://mrp-production-8073.up.railway.app/apply/verify?token=K7M2&email=demo@test.com
 ```
 
-> **Submitting your own EoI or ENR EoI**: The seed data covers admin workflows, but the best way to test the full applicant journey is with a real email address you control. Go to `/apply`, enter your email, and follow the magic link. You can do this at any time without running the seed script — it won't affect seeded admin accounts or applications.
+> **Testing with your own email**: Go to `https://mrp-production-8073.up.railway.app/apply`, enter your real work email, and follow the magic link. This works any time without resetting seed data.
 
 ---
 
@@ -70,15 +74,13 @@ To use a token directly, navigate to:
 
 ### Seeded applications
 
-The seed covers all five application statuses so you can test each NOC action without waiting for a real submission.
-
-| Ref # | Org | NOC | Status | Scenario |
-|-------|-----|-----|--------|---------|
+| Ref # | Org | NOC | Status | Categories requested | Scenario |
+|-------|-----|-----|--------|----------------------|---------|
 | `APP-2028-USA-00001` | Associated Press (US) | USA | **Pending** | E×8 | Ready to approve, return, or reject |
-| `APP-2028-USA-00002` | The New York Times | USA | **Pending** | E×5, EP×3 | Second pending — useful for testing return flow |
-| `APP-2028-GBR-00001` | The Guardian | GBR | **Pending** | E×4, Es×2 | Pending under GBR NOC |
+| `APP-2028-USA-00002` | The New York Times | USA | **Pending** | E×5, EP×3 | Second pending — test return flow |
+| `APP-2028-GBR-00001` | The Guardian | GBR | **Pending** | E×4, Es×2 | Pending under GBR |
 | `APP-2028-USA-00003` | NBC Sports | USA | **Approved** | EP×6, EPs×2 | Already approved — no action buttons |
-| `APP-2028-GBR-00002` | BBC Sport | GBR | **Approved** | E×6, EP×4, ET×2, EC×2 | Approved under GBR — multi-category |
+| `APP-2028-GBR-00002` | BBC Sport | GBR | **Approved** | E×6, EP×4, ET×2, EC×2 | Multi-category |
 | `APP-2028-FRA-00001` | L'Équipe | FRA | **Approved** | EP×4, EPs×2 | Approved under FRA |
 | `APP-2028-USA-00004` | Reuters (North America) | USA | **Returned** | E×3 | Returned — applicant can resubmit |
 | `APP-2028-GBR-00003` | Reuters (UK) | GBR | **Returned** | EP×5 | Returned under GBR with note |
@@ -87,7 +89,7 @@ The seed covers all five application statuses so you can test each NOC action wi
 
 ### Seeded NOC quotas (Paris 2024 fixture data)
 
-Quotas are tracked **per sub-category** — the IOC assigns each independently. Pre-loaded for 18 NOCs. A selection:
+Quotas are tracked **per accreditation sub-category** — E, Es, EP, EPs, ET, EC — each allocated independently by the IOC.
 
 | NOC | E | Es | EP | EPs | ET | EC | Total |
 |-----|---|----|----|-----|----|----|-------|
@@ -98,41 +100,42 @@ Quotas are tracked **per sub-category** — the IOC assigns each independently. 
 | AUS | 38 | 10 | 15 | 5 | 10 | 9 | 87 |
 | KEN | 10 | 2 | 0 | 0 | 0 | 0 | 12 |
 
-All quotas are marked with a note: *"Paris 2024 fixture data — replace with real IOC import before July 2026."*
+*Paris 2024 fixture data — replace with real IOC import before July 2026.*
 
 ---
 
-## Roles at a glance
+## Accreditation category key
 
-| Role | Portal entry | Responsible for |
-|------|-------------|-----------------|
-| **Media Org** | `/apply` | Submitting an Expression of Interest (EoI) |
-| **NOC Admin** | `/admin` → NOC | Reviewing EoIs, managing PbN allocations |
-| **OCOG Admin** | `/admin` → OCOG | Approving NOC PbN submissions |
-| **IOC Admin** | `/admin` → IOC | Setting quotas, ENR decisions, exports |
-
----
-
----
-
-# Role 1 — Media Organisation
-
-## What this role does
-
-A media organisation (newspaper, broadcaster, agency, freelancer) wants to send a team to LA 2028. They have never applied before — or they have been invited to resubmit after their NOC returned a previous application. They fill out a multi-tab form with their organisation details, contact information, the accreditation categories they need, and their publication history. The NOC uses this information to decide how many accreditation slots to allocate before submitting to the IOC.
+| Code | Meaning |
+|------|---------|
+| **E** | Written press |
+| **Es** | Written press (special) |
+| **EP** | Photographer |
+| **EPs** | Photographer (special) |
+| **ET** | Technical staff |
+| **EC** | Commentator |
 
 ---
 
-## Pre-conditions
+---
 
-- No database setup needed — this is the starting point for the applicant journey.
-- **Option A (own email)**: Use any real email address you can receive mail on. Go to `/apply` and follow the link. Recommended for testing the full end-to-end email flow.
-- **Option B (pre-seeded token)**: Use the seeded token `K7M2` at `/apply/verify?token=K7M2&email=demo@test.com` to skip the email step entirely. Useful for quick form testing.
-- The application must be running and accessible.
+# Role 1 — EoI Applicant
+
+**Who**: A journalist, photographer, broadcaster, or agency representative applying for media accreditation at LA 2028.
+
+**Portal entry**: https://mrp-production-8073.up.railway.app/apply
+
+**What they do**: Submit an Expression of Interest (EoI) form covering their organisation, contact details, accreditation categories requested, and publication history. The NOC reviews their submission and allocates slots.
 
 ---
 
-## Test Case 1.1 — Request an access token
+## Use Case: Apply
+
+The applicant receives a magic link by email, fills out the multi-tab form, and submits. This is the core applicant journey.
+
+---
+
+### Test 1.1 — Request an access token
 
 **Goal**: Confirm the email gate works and a token is sent.
 
@@ -157,26 +160,22 @@ A media organisation (newspaper, broadcaster, agency, freelancer) wants to send 
 
 **Steps**:
 
-1. Navigate to `/apply`
+1. Navigate to `https://mrp-production-8073.up.railway.app/apply`
 2. Enter a valid work email (e.g. `tester@apnews.com`)
 3. Click **Send access code**
 
-**Expected**: Page confirms the code was sent. Check your inbox for an email with a 4-character code.
+**Expected**: Page confirms the code was sent. Check inbox for a link containing a 4-character token.
 
-**Negative test**: Repeat with a clearly invalid address (`notanemail`).  
-**Expected**: Inline error — "Please enter a valid email address."
+**Negative**: Enter `notanemail` → inline error "Please enter a valid email address."
 
 ---
 
-## Test Case 1.2 — Verify the access code
+### Test 1.2 — Verify the access code
 
-**Goal**: Confirm the code screen loads and the Continue button works.
+**Goal**: Confirm the verify screen loads and Continue works.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  LA 2028  Media Registration Portal                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
 │   Check your inbox                                              │
 │                                                                 │
 │   We sent a code to tester@apnews.com                          │
@@ -185,279 +184,102 @@ A media organisation (newspaper, broadcaster, agency, freelancer) wants to send 
 │              │   A  B  7  3         │  ← 4-char code           │
 │              └──────────────────────┘                          │
 │                                                                 │
-│   Use this code within 24 hours.                                │
-│                                                                 │
 │   [ Continue to application → ]                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Steps (own email path)**:
-
-1. Open the email you received — it contains a link
-2. Click the link; the verify screen shows a 4-character code
+**Option A — own email**:
+1. Click the link in your email
+2. The verify screen shows your 4-character code
 3. Click **Continue to application**
 
-**Steps (pre-seeded token shortcut)**:
+**Option B — pre-seeded token** (skips email):
+1. Navigate directly to `https://mrp-production-8073.up.railway.app/apply/verify?token=K7M2&email=demo@test.com`
+2. Click **Continue to application**
 
-1. Navigate directly to `/apply/verify?token=K7M2&email=demo@test.com`
-2. Confirm the verify screen shows and the code `K7M2` is displayed
-3. Click **Continue to application**
+**Expected**: Redirected to the multi-tab EoI form.
 
-**Expected**: Redirected to `/apply/form` — the tabbed form loads.
-
-**Negative test — expired token**: Navigate to `/apply/verify?token=XXXX&email=expired@test.com`  
-**Expected**: Error page — "This link is invalid or has expired." (token `XXXX` is pre-seeded as expired)
+**Negative**: Navigate to the same URL using token `XXXX` → error screen showing "This link has expired."
 
 ---
 
-## Test Case 1.3 — Submit a valid application
+### Test 1.3 — Complete and submit the EoI form
 
-**Goal**: Confirm the full happy-path submission works end to end.
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Tab bar                                                           │
-│  ● Organisation  ○ Contacts  ○ Accreditation  ○ Publication  ○ History │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  Tell us about your media organisation.                            │
-│                                                                    │
-│  Organisation name *           Website                             │
-│  ┌─────────────────────┐       ┌─────────────────────┐            │
-│  │ The Associated Press│       │ https://apnews.com  │            │
-│  └─────────────────────┘       └─────────────────────┘            │
-│                                                                    │
-│  Organisation type *                                               │
-│  ┌──────────────────────────────────────────────┐                 │
-│  │  News Agency                             ▼  │                 │
-│  └──────────────────────────────────────────────┘                 │
-│                                                                    │
-│  Country *                     NOC code *                          │
-│  ┌─────────────────────┐       ┌─────────────────────┐            │
-│  │ US — United States  │       │ USA — United States │            │
-│  └─────────────────────┘       └─────────────────────┘            │
-│                                                                    │
-│                          [ Continue → ]                            │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-**Tab 1 — Organisation**
-
-| Field | Value to enter |
-|-------|---------------|
-| Organisation name | `Test Media Co` |
-| Website | `https://testmedia.example.com` |
-| Organisation type | `News Agency` |
-| Country | Start typing `US` — select **US — United States** |
-| NOC code | Start typing `USA` — select **USA — United States of America** |
-
-Click **Continue →**.
-
----
-
-**Tab 2 — Contacts**
+**Goal**: Confirm all five tabs work, auto-save functions, and submission succeeds.
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  Primary Contact                                                   │
-│                                                                    │
-│  First name *              Last name *                             │
-│  ┌─────────────────┐       ┌─────────────────┐                    │
-│  │ Jane            │       │ Smith           │                    │
-│  └─────────────────┘       └─────────────────┘                    │
-│                                                                    │
-│  Position / Title                                                  │
-│  ┌───────────────────────────────────────────┐                    │
-│  │ Deputy Sports Editor                      │                    │
-│  └───────────────────────────────────────────┘                    │
-│                                                                    │
-│  Email address (verified — cannot change)                          │
-│  ┌───────────────────────────────────────────┐                    │
-│  │ tester@apnews.com                         │  (greyed out)      │
-│  └───────────────────────────────────────────┘                    │
-│                                                                    │
-│  + Add a secondary contact                                         │
-│                                                                    │
-│  ← Back                          [ Continue → ]                    │
-└────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│  Tab: [Organisation] [Contacts] [Accreditation] [Publications] [Review]  │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ORGANISATION                                                        │
+│                                                                      │
+│  Organisation name *    ┌──────────────────────────────────┐        │
+│                         │ AP Test Org                      │        │
+│                         └──────────────────────────────────┘        │
+│  Organisation type *    ┌──────────────────────────────────┐        │
+│                         │ News Agency                   ▼  │        │
+│                         └──────────────────────────────────┘        │
+│  Country *              ┌──────────────────────────────────┐        │
+│                         │ United States                 ▼  │        │
+│                         └──────────────────────────────────┘        │
+│  NOC *                  ┌──────────────────────────────────┐        │
+│                         │ USA - USOPC                   ▼  │        │
+│                         └──────────────────────────────────┘        │
+│                                                                      │
+│  [Save draft]                            [Next: Contacts →]         │
+└──────────────────────────────────────────────────────────────────────┘
 ```
-
-| Field | Value |
-|-------|-------|
-| First name | `Jane` |
-| Last name | `Smith` |
-| Position | `Deputy Sports Editor` |
-
-Click **Continue →**.
-
----
-
-**Tab 3 — Accreditation**
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Accreditation categories *  (select all that apply)               │
-│                                                                    │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │ ☑  E — Journalist                                           │  │
-│  │    All venues + MPC. General reporters covering any sport.  │  │
-│  │                                                             │  │
-│  │    How many E accreditations?  ┌────┐                       │  │
-│  │                                │ 4  │                       │  │
-│  │                                └────┘                       │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │ ☑  EP — Photographer                                        │  │
-│  │    Photo positions at all venues.                           │  │
-│  │                                                             │  │
-│  │    How many EP accreditations?  ┌────┐                      │  │
-│  │                                 │ 2  │                      │  │
-│  │                                 └────┘                      │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │ ☐  Es — Sport-specific journalist                           │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│  ... (ET, EC, EPs)                                                 │
-│                                                                    │
-│  About your coverage *                                             │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │ Test Media Co will cover athletics, swimming, and           │  │
-│  │ gymnastics with a 4-person writing team and 2              │  │
-│  │ photographers. We serve 2M monthly readers.                │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                    │
-│  ← Back                          [ Continue → ]                    │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-| Action | Value |
-|--------|-------|
-| Check category | `E — Journalist` |
-| Quantity for E | `4` |
-| Check category | `EP — Photographer` |
-| Quantity for EP | `2` |
-| About | `Test Media Co will cover athletics, swimming and gymnastics with a 4-person writing team and 2 photographers. We serve 2M monthly readers.` |
-
-Click **Continue →**.
-
----
-
-**Tabs 4 & 5 — Publication and History**
-
-These tabs are optional. Skip them for now — click **Continue →** on Tab 4 and **Submit Application** on Tab 5.
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Tab bar                                                           │
-│  ✓ Organisation  ✓ Contacts  ✓ Accreditation  ✓ Publication  ● History │
-├────────────────────────────────────────────────────────────────────┤
-│  ...history fields...                                              │
-│                                                                    │
-│  ← Back              [ Submit Application ]  ← green button       │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-**Expected after submit**: Redirected to `/apply/submitted` with a reference number in the format `APP-2028-USA-XXXXX`. Record this reference number.
-
----
-
-## Test Case 1.4 — Validation errors on submit
-
-**Goal**: Confirm that submitting with missing required fields shows inline errors and navigates to the first problem.
 
 **Steps**:
 
-1. Navigate to `/apply/form` using a fresh token
-2. Click **Continue →** through all tabs without filling in anything
-3. On the last tab, click **Submit Application**
+1. **Organisation tab**: Fill in org name, type, country, NOC, address fields. Click **Next**.
+2. **Contacts tab**: Fill primary contact first/last name, job title, email, phone. Click **Next**.
+3. **Accreditation tab**: 
+   - Check at least one category (E, Es, EP, EPs, ET, or EC)
+   - Enter requested quantity for each checked category
+   - Fill the "About your coverage" textarea
+   - Click **Next**
+4. **Publications tab**: Add at least one publication with title and circulation. Click **Next**.
+5. **Review tab**: Confirm all sections show your entered data. Click **Submit application**.
+
+**Expected**: Confirmation page with your reference number (e.g. `APP-2028-USA-00042`). Form data is cleared from localStorage.
+
+**Auto-save test**: On any tab, fill a field, close the browser tab, reopen `https://mrp-production-8073.up.railway.app/apply`, re-verify with the same token. The form should reload with your previously entered data.
+
+---
+
+### Test 1.4 — Submit with validation errors
+
+**Goal**: Confirm required fields are enforced and the form navigates to the first tab with an error.
+
+**Steps**:
+1. On the Review tab, click **Submit application** without completing required fields (e.g. start fresh or clear the org name field)
 
 **Expected**:
-- The form jumps back to Tab 1 (Organisation)
-- `org_name` field has a red border and "This field is required." appears below it
-- Page auto-scrolls to and focuses that field
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Organisation name *                                               │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │                                                             │  │← red border
-│  └─────────────────────────────────────────────────────────────┘  │
-│  This field is required.                                           │← error text (red)
-│                                                                    │
-│  Organisation type *                                               │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  Select type...                                         ▼  │  │← red border
-│  └─────────────────────────────────────────────────────────────┘  │
-│  This field is required.                                           │← error text (red)
-└────────────────────────────────────────────────────────────────────┘
-```
-
-4. Fill in `org_name` and `org_type` only, then try submitting again
-5. **Expected**: Form jumps to Tab 1 — `country` field now highlighted
-
-6. Fill all of Tab 1, leave Contacts blank, try submitting again
-7. **Expected**: Form jumps to Tab 2 — `contact_first_name` highlighted
-
-8. Fill all required fields across all tabs, leave the Accreditation category checkboxes all unchecked, try submitting
-9. **Expected**: Form jumps to Tab 3 — error "Please select at least one accreditation category."
+- Red border on every empty required field
+- Error text below each required field ("This field is required" or similar)
+- Active tab jumps to the earliest tab that has an error (e.g. if Organisation tab has errors, it becomes active)
+- No submission occurs
 
 ---
 
-## Test Case 1.5 — Auto-save and restore
+### Test 1.5 — Resubmit a returned application
 
-**Goal**: Confirm progress is not lost on page refresh.
+**Goal**: Confirm an applicant can update and resubmit after a NOC returns their application.
 
-**Steps**:
-
-1. Open the form, fill in Tab 1 entirely
-2. Navigate to Tab 2 and fill in first/last name
-3. Refresh the browser (Cmd+R / F5)
-
-**Expected**: All previously entered values are restored exactly as entered. The tab status dots (blue/green) reflect completed tabs.
-
----
-
-## Test Case 1.6 — Resubmission (after NOC returns the application)
-
-*Run this test after completing NOC Test Case 2.3 (Return an application).*
-
-**Goal**: Confirm the resubmission flow pre-fills data and locks the Organisation tab.
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  ⚠  Your application was returned by your NOC                      │
-│  "Please clarify the size of your photography team and confirm    │
-│   whether you need EP or EPs category."                           │
-└────────────────────────────────────────────────────────────────────┘
-│  Tab bar                                                           │
-│  ● Organisation  ○ Contacts  ○ Accreditation  ○ Publication  ○ History │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  Organisation details cannot be changed on resubmission.    │  │
-│  │  If this information is incorrect, contact your NOC.        │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                    │
-│  Organisation    Test Media Co                                     │
-│  NOC             USA                                               │
-│  Country         US                                                │
-│  Type            News Agency                                       │
-│                                                                    │
-└────────────────────────────────────────────────────────────────────┘
-```
+**Pre-condition**: Application `APP-2028-USA-00004` (Reuters, Returned status) is in the seed data. Log in as the applicant for that application, or create a new application and have a NOC admin return it.
 
 **Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/apply` with the original email
+2. Request a new access code and verify
+3. The form should load pre-populated with the previous submission
+4. The NOC's return note should be visible at the top of the form
+5. Update any field (e.g. increase requested E slots from 3 to 5)
+6. Click **Submit application**
 
-1. Use the resubmission link from the return email (or navigate to `/apply/form?token=...&resubmit_id=...`)
-2. Confirm:
-   - Orange banner shows the NOC's return note
-   - Tab 1 is read-only (fields replaced with display values, no inputs)
-   - Tabs 2–5 are editable and pre-filled with previous data
-3. Update the `about` field on Tab 3 to address the NOC's feedback
-4. Click **Resubmit Application**
-
-**Expected**: Redirected to `/apply/submitted?...&resubmit=1`. The reference number is the same as the original application.
+**Expected**: Status changes from **Returned** to **Resubmitted**. Reference number is unchanged.
 
 ---
 
@@ -465,271 +287,238 @@ These tabs are optional. Skip them for now — click **Continue →** on Tab 4 a
 
 # Role 2 — NOC Admin
 
-## What this role does
+**Who**: The accreditation coordinator at a National Olympic Committee (e.g. USOPC for USA, British Olympic Association for GBR).
 
-The NOC Admin (National Olympic Committee administrator) receives all EoI applications from media organisations in their country. They review each one to check that the organisation is legitimate and that the accreditation request is reasonable. They can approve it (forwarding it toward the IOC), return it with a note asking for corrections, or reject it permanently. After reviewing all applications they build a Press-by-Number (PbN) allocation — a precise slot count per organisation — and submit it to OCOG for approval.
+**Portal entry**: https://mrp-production-8073.up.railway.app/admin  
+(Login with `noc.admin@usopc.org` / `Password1!` for USA; `noc.admin@teamgb.org` for GBR)
 
----
-
-## Pre-conditions
-
-- Seed data loaded (`npm run db:seed`). The seeded dataset gives you applications in every status state across USA, GBR, and FRA without needing to submit anything manually.
-- If you want to test the full applicant→NOC chain end-to-end, complete Role 1 TC 1.3 first to create a fresh `pending` application.
+**What they do**: Review EoI submissions from media organisations in their country, decide how many accreditation slots to allocate per organisation, and submit the allocation plan (PbN) to the IOC. They also nominate organisations for Extra National Representatives (ENR).
 
 ---
 
-## Test Case 2.1 — Log in as NOC Admin
+## Use Case 1: Evaluate EoI Forms
+
+The NOC admin reviews incoming EoI applications and approves, returns (with feedback), or rejects them.
+
+---
+
+### Test 2.1 — View the EoI review list
+
+**Goal**: Confirm the review list loads and shows correct application statuses.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  NOC Admin — Applications                                            │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  [ All ▼ ]  [ Filter by status ▼ ]        [ Search org name... ]    │
+│                                                                      │
+│  Organisation           Status       Categories    Ref              │
+│  ─────────────────────────────────────────────────────────────────  │
+│  Associated Press (US)  ● Pending    E×8           APP-2028-USA-00001│
+│  The New York Times     ● Pending    E×5, EP×3     APP-2028-USA-00002│
+│  NBC Sports             ✓ Approved   EP×6, EPs×2   APP-2028-USA-00003│
+│  Reuters (North Am.)    ↩ Returned   E×3           APP-2028-USA-00004│
+│  Reuters (resubmit)     ↻ Resubmit.  E×8, EP×4     APP-2028-USA-00005│
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps**:
+1. Log in as `noc.admin@usopc.org` at `https://mrp-production-8073.up.railway.app/admin`
+2. Navigate to **Applications** (or the EoI review section)
+
+**Expected**: List shows all USA applications across all statuses. Counts match seed data.
+
+**Filter test**: Filter by **Pending** → only AP and NYT appear.
+
+---
+
+### Test 2.2 — Approve an application
+
+**Goal**: Confirm an application can be approved and the status updates correctly.
+
+**Steps**:
+1. Click on `APP-2028-USA-00001` (Associated Press, Pending)
+2. Review the form — E×8, no photo categories
+3. Click **Approve**
+
+**Expected**: Status changes to **Approved**. Application no longer appears in Pending filter. The org now appears in the PbN allocation table (Use Case 2).
+
+---
+
+### Test 2.3 — Return an application with a note
+
+**Goal**: Confirm the NOC can send an application back to the applicant with feedback.
+
+**Steps**:
+1. Click on `APP-2028-USA-00002` (New York Times, Pending)
+2. Click **Return to applicant**
+3. Enter a return note: "Please provide additional detail on your EP coverage plan for track & field."
+4. Confirm the return
+
+**Expected**: Status changes to **Returned**. Return note is stored and visible if the applicant reopens their form.
+
+---
+
+### Test 2.4 — Reject an application permanently
+
+**Goal**: Confirm a permanent rejection prevents resubmission.
+
+**Steps**:
+1. Find a Pending application (or use a second test org)
+2. Click **Reject**
+3. Confirm the rejection
+
+**Expected**: Status changes to **Rejected**. No resubmit option shown. Rejection is permanent.
+
+---
+
+## Use Case 2: Allocate Quota (PbN)
+
+After approving applications, the NOC admin decides how many accreditation slots to allocate to each approved organisation and submits the plan to the OCOG/IOC. Allocations are tracked per sub-category (E, Es, EP, EPs, ET, EC) against the NOC's quota.
+
+---
+
+### Test 2.5 — View the PbN allocation table
+
+**Goal**: Confirm the allocation table shows only approved orgs and the correct per-category quotas.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PbN Allocation — USA                                                   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Quota:  E: 80  Es: 20  EP: 30  EPs: 10  ET: 25  EC: 25               │
+│                                                                         │
+│  Organisation      E Req  E Alloc  EP Req  EP Alloc  EPs Req EPs Alloc │
+│  ──────────────────────────────────────────────────────────────────────│
+│  NBC Sports         —      ─────    6       [  6 ]    2       [  2 ]   │
+│  Reuters (resubm.)  8      [  8 ]   4       [  4 ]    —       ─────    │
+│                                                                         │
+│  Footer:           8      8/80     10      10/30      2       2/10     │
+│                                                                         │
+│  [ Save draft ]                             [ Submit to IOC → ]        │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/pbn`
+2. Confirm only **Approved** applications appear in the table
+
+**Expected**:
+- USA shows NBC Sports (EP, EPs) and Reuters resubmit (E, EP)
+- Only columns for categories that at least one org requested are shown (dynamic columns)
+- Quota totals shown at top: E=80, EP=30, EPs=10 for USA
+- Footer totals update as you enter slot numbers
+
+---
+
+### Test 2.6 — Enter slot allocations and check quota enforcement
+
+**Goal**: Confirm slot inputs work and the form prevents over-quota submission.
+
+**Steps**:
+1. Enter valid slot numbers for each org — e.g. NBC Sports: EP=6, EPs=2; Reuters: E=8, EP=4
+2. Watch the footer totals and progress bars update in real time
+3. Click **Save draft** — confirm values persist on page reload
+4. Now try to over-allocate: enter EP=30 for each org (total = 60, quota = 30)
+5. Click **Submit to IOC**
+
+**Expected** (step 3): Draft saves without submitting.  
+**Expected** (step 5): Submission blocked with an error indicating the EP quota is exceeded. Specific error identifies which category is over.
+
+---
+
+### Test 2.7 — Submit the PbN allocation plan
+
+**Goal**: Confirm submission works when within quota.
+
+**Steps**:
+1. Ensure all slot values are within quota
+2. Click **Submit to IOC**
+3. Confirm the submission dialog
+
+**Expected**: PbN state changes to `noc_submitted`. The submit button is no longer available. A confirmation message is shown.
+
+---
+
+## Use Case 3: Enter / Prioritize ENR Requests
+
+After PbN submission, the NOC can nominate specific media organisations for Extra National Representative slots and rank them by priority.
+
+---
+
+### Test 2.8 — View the ENR nomination list
+
+**Goal**: Confirm the ENR section is independent of EoI and accessible after seeding.
+
+**Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/enr`
+
+**Expected**: ENR list page loads. If no nominations exist yet, a prompt to add the first nomination is shown.
+
+---
+
+### Test 2.9 — Add an ENR nomination
+
+**Goal**: Confirm a nomination can be added with all required fields.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  MRP Admin — Sign in                                            │
+│  Add ENR Nomination                                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│   Email address                                                 │
-│   ┌─────────────────────────────────────────────────────────┐  │
-│   │  noc.admin@usopc.org                                    │  │
-│   └─────────────────────────────────────────────────────────┘  │
+│  Organisation name *   ┌───────────────────────────────────┐   │
+│                        │ AP Test International             │   │
+│                        └───────────────────────────────────┘   │
 │                                                                 │
-│   Password                                                      │
-│   ┌─────────────────────────────────────────────────────────┐  │
-│   │  Password1!                                             │  │
-│   └─────────────────────────────────────────────────────────┘  │
+│  Description *         ┌───────────────────────────────────┐   │
+│                        │ Global newswire covering 100+     │   │
+│                        │ countries with 2,000 journalists  │   │
+│                        └───────────────────────────────────┘   │
 │                                                                 │
-│   [ Sign in ]                                                   │
+│  Justification *       ┌───────────────────────────────────┐   │
+│                        │ Only newswire with live coverage  │   │
+│                        │ in every Olympic city             │   │
+│                        └───────────────────────────────────┘   │
 │                                                                 │
+│  Must-have slots       [ 3 ]    Nice-to-have slots   [ 2 ]     │
+│                                                                 │
+│  [ Add nomination ]                                             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Credentials**: `noc.admin@usopc.org` / `Password1!`  
-(To test GBR instead, use `noc.admin@teamgb.org` / `Password1!`)
-
 **Steps**:
+1. Click **Add nomination**
+2. Fill in: org name, description, justification, must-have slots (e.g. 3), nice-to-have slots (e.g. 2)
+3. Click **Add nomination**
 
-1. Navigate to `/admin`
-2. Enter `noc.admin@usopc.org` and `Password1!`
-3. Click **Sign in**
-
-**Expected**: Redirected to `/admin/noc/home`. The header shows **USA** and a blue accent colour. The home dashboard shows a warning banner — there are pending applications awaiting review (seeded: 2 pending for USA).
+**Expected**: Nomination appears in the list. Priority position is assigned automatically (next available slot).
 
 ---
 
-## Test Case 2.2 — Review and approve an application
+### Test 2.10 — Reorder ENR priority
 
-**Goal**: Confirm an application moves from `pending` to `approved`.
-
-**Seeded record to use**: `APP-2028-USA-00001` — Associated Press (US), contact Jane Holloway, requesting E (press) accreditation.
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  EoI Queue                                                         │
-│  [ All ] [ Pending ] [ Resubmitted ] [ Approved ] [ Returned ] [ Rejected ] │
-├──────────────┬───────────┬──────────────────┬────────────┬─────────┤
-│  Ref #       │  Status   │  Org name        │  Contact   │ Submitted │
-├──────────────┼───────────┼──────────────────┼────────────┼─────────┤
-│ APP-2028     │ ● Pending │ Associated Press │ J.Holloway │ (date)  │
-│ -USA-00001   │           │ (US)             │            │         │
-├──────────────┼───────────┼──────────────────┼────────────┼─────────┤
-│ APP-2028     │ ● Pending │ The New York     │ M. Webb    │ (date)  │
-│ -USA-00002   │           │ Times            │            │         │
-└──────────────┴───────────┴──────────────────┴────────────┴─────────┘
-```
+**Goal**: Confirm nominations can be reordered to reflect NOC priority.
 
 **Steps**:
+1. Add at least two nominations (see Test 2.9)
+2. Use the priority drag handle (or up/down buttons) to move the second nomination above the first
 
-1. Click **EoI Queue** in the nav
-2. Confirm at least two `Pending` rows appear for USA (`APP-2028-USA-00001` and `APP-2028-USA-00002`)
-3. Click `APP-2028-USA-00001` to open the Associated Press application
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  APP-2028-USA-00001                  ● Pending                     │
-├────────────────────────────────────────────────────────────────────┤
-│  Organisation                                                      │
-│  Associated Press (US)  ·  News Agency  ·  USA  ·  US             │
-│  https://apnews.com                                                │
-│                                                                    │
-│  Primary contact: Jane Holloway — j.holloway@ap.org               │
-│                                                                    │
-│  Accreditation requested                                           │
-│  E (press): yes   EP (photo): no                                   │
-│                                                                    │
-│  About coverage                                                    │
-│  AP has covered every Olympic Games since 1896. Requesting        │
-│  accreditation for 12 journalists and photographers...            │
-│                                                                    │
-│  ┌─────────────────────────────────────────────────────────────┐  │
-│  │  [ Approve ]   [ Return with note ]   [ Reject ]            │  │
-│  └─────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-4. Review the application details — scroll through all sections
-5. Click **Approve**
-
-**Expected**: 
-- Status badge changes to `Approved`
-- Action buttons disappear (no further actions possible)
-- Audit trail at the bottom shows a new entry: `approved by noc-usa@test.mrp`
+**Expected**: Priority order updates immediately. The new order persists on page reload.
 
 ---
 
-## Test Case 2.3 — Return an application with a note
+### Test 2.11 — Submit ENR nominations to IOC
 
-**Goal**: Confirm an application is returned and the applicant can resubmit.
-
-**Seeded record to use**: `APP-2028-USA-00002` — The New York Times, contact Marcus Webb.
+**Goal**: Confirm the NOC can submit the ENR list to the IOC.
 
 **Steps**:
+1. Ensure at least one nomination exists
+2. Click **Submit to IOC**
+3. Confirm the submission
 
-1. Go back to the queue and open `APP-2028-USA-00002` (The New York Times)
-2. Click **Return with note**
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Return application                                                │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  Your note will be sent to the applicant. They can correct        │
-│  their application and resubmit.                                  │
-│                                                                    │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │ Please clarify the size of your photography team and        │  │
-│  │ confirm whether you need EP or EPs category.               │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                    │
-│  [ Cancel ]                    [ Return application ]              │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-3. Enter a note: `Please clarify the size of your photography team and confirm whether you need EP or EPs category.`
-4. Click **Return application**
-
-**Expected**:
-- Status changes to `Returned`
-- Audit trail records the action and the note
-- (In a real environment) The applicant's email receives a resubmission link
-
----
-
-## Test Case 2.4 — Inspect an already-rejected application
-
-**Goal**: Confirm a rejected application shows the rejection reason and no action buttons.
-
-**Seeded record to use**: `APP-2028-FRA-00002` — L'Équipe duplicate, rejected by M. Dupont (CNOSF).  
-*(Log out of the USA session first and log in as `noc.admin@franceolympique.fr` / `Password1!`)*
-
-**Steps**:
-
-1. Log in as FRA NOC admin (`noc.admin@franceolympique.fr` / `Password1!`)
-2. Click **EoI Queue** and filter by **Rejected**
-3. Open `APP-2028-FRA-00002`
-
-**Expected**:
-- Status badge shows `Rejected`
-- Review note reads: *"L'Équipe already has an approved application for this Games (APP-2028-FRA-00001). Duplicate applications are not permitted."*
-- No action buttons are shown — permanent state
-
-**To test rejecting a live application yourself**: If you submitted an application in Role 1 TC 1.3 under USA, log back in as `noc.admin@usopc.org`, find it in the queue, and click **Reject**.
-
-**Steps (live rejection)**:
-
-1. Open any `Pending` application under your NOC
-2. Click **Reject**
-3. Enter a reason: `Organisation does not meet accreditation eligibility criteria.`
-4. Click **Reject application**
-
-**Expected**:
-- Status changes to `Rejected`
-- No action buttons shown (permanent — applicant cannot resubmit)
-- Audit trail records the rejection reason
-
----
-
-## Test Case 2.5 — Filter the queue
-
-**Goal**: Confirm filter buttons narrow the list correctly.
-
-Log back in as `noc.admin@usopc.org` (USA). The seeded USA dataset gives you all five statuses to test against.
-
-**Expected counts for USA after seed** (before any additional live testing):
-
-| Filter | Expected applications visible |
-|--------|------------------------------|
-| All | 5 (APP-USA-00001 through 00005) |
-| Pending | 2 (AP, NYT) |
-| Approved | 1 (NBC Sports) |
-| Returned | 1 (Reuters NA) |
-| Resubmitted | 1 (AP resubmission) |
-| Rejected | 0 (FRA has the rejection — not visible to USA) |
-
-**Steps**:
-
-1. Go to `/admin/noc/queue` as USA NOC admin
-2. Click **Pending** — verify only AP and NYT appear
-3. Click **Approved** — verify only NBC Sports appears
-4. Click **Returned** — verify only Reuters (North America) appears
-5. Click **Resubmitted** — verify the AP resubmission (`APP-2028-USA-00005`) appears
-6. Click **All** — verify all five appear
-
----
-
-## Test Case 2.6 — Inspect a resubmitted application
-
-**Goal**: Confirm the resubmission shows the original return note and updated content.
-
-**Seeded record to use**: `APP-2028-USA-00005` — AP resubmission. The original `APP-2028-USA-00001` was returned asking for more venue detail; this is the corrected version.
-
-**Steps**:
-
-1. As USA NOC admin, filter the queue to **Resubmitted**
-2. Open `APP-2028-USA-00005`
-
-**Expected**:
-- Banner or note shows the original return reason: *"Original submission lacked venue detail."*
-- The About section now reads: *"AP photo desk requests photographer accreditation for 4 photographers covering athletics and aquatics at SoFi Stadium and the Olympic Aquatics Center…"*
-- `resubmissionCount` shows 1
-- Action buttons (Approve / Return / Reject) are present — this is back in the NOC's hands
-
----
-
-## Test Case 2.7 — Create a PbN allocation
-
-**Goal**: Confirm a NOC can allocate press slots for an approved organisation.
-
-The seeded data includes one approved USA application (NBC Sports, `APP-2028-USA-00003`, requesting EP×6 and EPs×2). That organisation appears in the PbN allocation table. USA's per-category quota: **E:80 · Es:20 · EP:30 · EPs:10 · ET:25 · EC:25**.
-
-The PbN table only shows columns for categories that at least one approved org in the NOC actually requested. For NBC Sports (photo-only), only **EP** and **EPs** columns are active.
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Press by Number — USA                                             │
-│  Assign slots per category to approved organisations               │
-├──────────────────────────────────────────────────────────────────────┐
-│  Quota bars (live):                                                │
-│  EP  ──────── 0 / 30       EPs ──────── 0 / 10                    │
-├─────────────────────┬────────────────┬─────────────────────────────┤
-│  Organisation       │  EP  Req. Alloc│  EPs  Req.  Alloc          │
-├─────────────────────┼────────────────┼─────────────────────────────┤
-│  NBC Sports         │       6  [ 0 ] │         2  [ 0 ]           │
-├─────────────────────┼────────────────┼─────────────────────────────┤
-│  Total              │          0 /30 │             0 /10           │
-└─────────────────────┴────────────────┴─────────────────────────────┘
-│  [ Save Draft ]     [ Submit to OCOG ]                             │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-**Steps**:
-
-1. Click **PbN Allocations** in the nav
-2. Confirm NBC Sports appears with **EP** and **EPs** columns (requested quantities shown in grey: EP: 6, EPs: 2)
-3. Enter `5` in the EP allocation field and `2` in the EPs allocation field for NBC Sports
-4. Click **Save draft**
-
-**Expected**: Page reloads with `5` and `2` saved. Quota bars update: EP shows `5 / 30`, EPs shows `2 / 10`.
-
-5. Click **Submit to OCOG**
-
-**Expected**: Status changes to `Submitted`. The submit button is replaced with a "Pending OCOG approval" banner. USA's PbN row on the OCOG dashboard now shows as awaiting review.
+**Expected**: ENR state changes to submitted. Nominations are read-only after submission (no edit, only remove-and-re-add to change).
 
 ---
 
@@ -737,337 +526,431 @@ The PbN table only shows columns for categories that at least one approved org i
 
 # Role 3 — OCOG Admin
 
-## What this role does
+**Who**: The LA28 Organising Committee accreditation officer responsible for final approval of all NOC slot allocations before they are transmitted to the ACR (Accreditation) system.
 
-The OCOG Admin (Organising Committee) receives PbN submissions from all NOCs and decides whether the requested slot counts are reasonable within the venue capacity constraints. They can approve a submission as-is, or send it back to the NOC asking for reductions. Once all NOCs are approved, the OCOG exports the final allocation to the Accreditation system (ACR).
+**Portal entry**: https://mrp-production-8073.up.railway.app/admin/ocog  
+(Login with `ocog.admin@la28.org` / `Password1!`)
 
----
+**What they do**: Monitor PbN submission status across all NOCs, review each NOC's proposed per-category slot allocations, adjust individual org slot counts if needed, formally approve the allocation, and push the final data to ACR.
 
-## Pre-conditions
-
-- Complete Role 2 TC 2.7 (PbN allocation submitted by USA NOC) before running TC 3.2.
-- **Credentials**: `ocog.admin@la28.org` / `Password1!`
+**Dependency**: NOC Admin must have submitted a PbN allocation (Use Case 2, Test 2.7) before OCOG can act on it.
 
 ---
 
-## Test Case 3.1 — Log in as OCOG Admin
+## Use Case 1: Review PbN Submissions
 
-**Credentials**: `ocog.admin@la28.org` / `Password1!`
+The OCOG admin monitors which NOCs have submitted their allocations and reviews each one before approving.
 
-**Steps**:
+---
 
-1. Navigate to `/admin` — log out of the NOC session first
-2. Enter `ocog.admin@la28.org` and `Password1!`
-3. Click **Sign in**
+### Test 3.1 — View the OCOG PbN dashboard
 
-**Expected**: Redirected to `/admin/ocog`. Header uses an orange accent. Dashboard shows PbN submission status.
+**Goal**: Confirm the dashboard shows cross-NOC PbN submission status and highlights NOCs awaiting approval.
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  OCOG Dashboard                                                    │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  Milestones                                                        │
-│  ✓ NOC EoI review window                                           │
-│  ● NOC PbN submissions due          ← active step                 │
-│  ○ OCOG approval                                                   │
-│  ○ Push to ACR                                                     │
-│                                                                    │
-│  ⚠  1 NOC submission awaiting your approval.                       │
-│  [ Go to PbN Approvals → ]                                         │
-│                                                                    │
-└────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Test Case 3.2 — Approve a NOC PbN submission
-
-**Goal**: Confirm OCOG can approve a submitted allocation.
-
-**Steps**:
-
-1. Click **PbN Approvals** in the nav
-2. Find USA — status `noc_submitted`
-3. Click to open the detail
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  USA — PbN Allocation                        ● Submitted           │
-│  1 org · 7 total slots across 2 categories                         │
-│  EP: 5/30  EPs: 2/10   (quota bars shown per category)            │
-├─────────────────────────┬──────────┬────────┬────────┬─────────────┤
-│  Organisation           │ Categories│  EP    │  EPs   │  Total      │
-├─────────────────────────┼──────────┼────────┼────────┼─────────────┤
-│  NBC Sports             │ EP, EPs  │   5    │   2    │   7         │
-├─────────────────────────┼──────────┼────────┼────────┼─────────────┤
-│  Total                  │          │   5    │   2    │   7         │
-└─────────────────────────┴──────────┴────────┴────────┴─────────────┘
-│  [ Approve Allocation ]                                             │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-4. Confirm the numbers look correct against per-category quota
-5. Click **Approve Allocation**
-
-**Expected**: Status changes to `ocog_approved`. Per-category slot values are locked. The NOC can no longer edit this submission.
-
----
-
-## Test Case 3.3 — Request adjustments from a NOC
-
-*Submit a second PbN draft from a different NOC (or re-use the same NOC after resetting) before running this test.*
-
-**Steps**:
-
-1. Open a submitted NOC allocation
-2. Click **Request adjustments**
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  Request adjustments                                               │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  Your note will be sent to the NOC. They can revise their         │
-│  allocation and resubmit.                                         │
-│                                                                    │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │ EP allocation for Test Media Co exceeds typical ratio.      │  │
-│  │ Please reduce to a maximum of 1 EP slot.                    │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                    │
-│  [ Cancel ]              [ Send to NOC ]                           │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-3. Enter a note and click **Send to NOC**
-
-**Expected**: Status returns to a `draft`-like state; NOC admin sees the feedback when they next open PbN allocations.
-
----
-
----
-
-# Role 4 — IOC Admin
-
-## What this role does
-
-The IOC Admin has the highest-level view of the entire system. They set the quotas that define how many accreditation slots each NOC is permitted to allocate. They review ENR (non-rights broadcaster) requests. They can see every application across every NOC and export the full dataset. After all OCOG approvals are in, they trigger the final push to the ACR (Accreditation) system.
-
----
-
-## Pre-conditions
-
-- Seed data loaded. The seed provides applications across all statuses and quotas for 18 NOCs — no manual setup needed for most IOC tests.
-- **Credentials**: `ioc.admin@olympics.org` / `Password1!`
-- For a complete dashboard, complete Role 1–3 tests first to add live data on top of the seed.
-
----
-
-## Test Case 4.1 — Log in as IOC Admin
-
-**Credentials**: `ioc.admin@olympics.org` / `Password1!`
-
-**Steps**:
-
-1. Navigate to `/admin` — log out of OCOG session first
-2. Enter `ioc.admin@olympics.org` and `Password1!`
-3. Click **Sign in**
-
-**Expected**: Redirected to `/admin/ioc`. Header uses a green accent.
-
----
-
-## Test Case 4.2 — Review the IOC dashboard
-
-**Goal**: Confirm the dashboard shows correct counts across all NOCs.
-
-**Expected counts from seed data alone** (before any additional live testing):
-
-```
-┌────────────────────────────────────────────────────────────────────┐
-│  IOC Dashboard                                                     │
-├────────────────────────────────────────────────────────────────────┤
-│                                                                    │
-│  ┌──────────┐  ┌─────────────┐  ┌──────────┐  ┌───────┐  ┌──────┐│
-│  │ Pending  │  │ Resubmitted │  │ Approved │  │Returned│  │Reject││
-│  │    3     │  │      1      │  │    3     │  │   2    │  │   1  ││
-│  └──────────┘  └─────────────┘  └──────────┘  └───────┘  └──────┘│
-│                                                                    │
-│  Breakdown by NOC                                                  │
-│  ┌──────┬─────────┬──────────────┬──────────┬─────────┬──────────┐│
-│  │ NOC  │ Pending │ Resubmitted  │ Approved │ Returned│ Rejected ││
-│  ├──────┼─────────┼──────────────┼──────────┼─────────┼──────────┤│
-│  │ USA  │    2    │      1       │    1     │    1    │    0     ││
-│  │ GBR  │    1    │      0       │    1     │    1    │    0     ││
-│  │ FRA  │    0    │      0       │    1     │    0    │    1     ││
-│  └──────┴─────────┴──────────────┴──────────┴─────────┴──────────┘│
-│                                                                    │
-│  [ Export all EoI CSV ↓ ]                                          │
-└────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  OCOG Admin — Press by Number Approvals                              │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ⚠  1 NOC has submitted PbN allocations awaiting your approval.     │
+│     Review them in PbN Approvals.                                    │
+│                                                                      │
+│  [ All ▼ ]  [ submitted ▼ ]                                          │
+│                                                                      │
+│  NOC   Status              Orgs  Press Quota  Photo Quota            │
+│  ────────────────────────────────────────────────────────────────── │
+│  USA   ● Submitted          2    8/190        10/40                  │
+│  GBR   ○ Not started        0    0/123        0/31                   │
+│  FRA   ○ Not started        0    0/114        0/26                   │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 **Steps**:
-
-1. Navigate to `/admin/ioc`
-2. Verify the stat cards match the seeded counts above (3 pending, 1 resubmitted, 3 approved, 2 returned, 1 rejected)
-3. Verify the per-NOC breakdown shows USA, GBR, and FRA rows with the correct splits
-
-**Expected**: Numbers match the table above. Any additional applications submitted during Role 1 testing will add to the USA row.
-
----
-
-## Test Case 4.3 — Export all EoI data as CSV
-
-**Goal**: Confirm the CSV export produces a valid, complete file.
-
-**Steps**:
-
-1. On the IOC dashboard, click **Export all EoI CSV ↓**
+1. Log in as `ocog.admin@la28.org` at `https://mrp-production-8073.up.railway.app/admin`
+2. Navigate to **PbN Approvals** (or go directly to `https://mrp-production-8073.up.railway.app/admin/ocog/pbn`)
 
 **Expected**:
-- Browser downloads a `.csv` file
-- File opens in a spreadsheet with one row per application
-- Columns include: Reference number, Org name, NOC, Status, Contact name, Category columns (E, Es, EP, EPs, ET, EC), quantities requested, About text, submission date
+- Cross-NOC list with one row per NOC
+- USA shows **Submitted** status (if Test 2.7 was completed)
+- GBR and FRA show **Not started**
+- Banner warns about pending approvals
+- Filter by **Submitted** → only USA row visible
 
 ---
 
-## Test Case 4.4 — View and edit NOC quotas
+### Test 3.2 — Review a NOC's allocation detail
 
-**Goal**: Confirm quotas can be read and updated.
-
-The seed loads quotas for 18 NOCs based on Paris 2024 benchmarks. Seeded values for USA, GBR, FRA:
+**Goal**: Confirm the OCOG can drill into a specific NOC's org-by-org allocation and see per-category slot breakdowns.
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  Quotas                                                            │
-├──────────┬────────────────────────────┬────────────────────────────┤
-│  NOC     │  E quota (journalists)     │  EP quota (photographers)  │
-├──────────┼────────────────────────────┼────────────────────────────┤
-│  USA     │  150                       │  50                        │
-│  GBR     │  95                        │  32                        │
-│  FRA     │  88                        │  30                        │
-│  KEN     │  12                        │  0                         │
-│  ...     │  ...                       │  ...                       │
-└──────────┴────────────────────────────┴────────────────────────────┘
-│  (18 NOCs total)                                                   │
-│  [ Edit quotas ]                                                   │
-└────────────────────────────────────────────────────────────────────┘
-```
-
-**Steps**:
-
-1. Click **Quotas** in the nav
-2. Confirm USA shows E: 150 / EP: 50 (the seeded Paris 2024 fixture value)
-3. Click **Edit quotas**
-4. Change USA's E quota to `155`
-5. Save
-
-**Expected**: Table refreshes showing `155` for USA. A change log entry records the edit: *"Paris 2024 fixture → 155, changed by ioc.admin@olympics.org."*
-
-6. Revert to `150` and save again to restore the baseline
-
----
-
-## Test Case 4.5 — Review the audit trail
-
-**Goal**: Confirm all actions taken during testing appear in the audit log.
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│  Audit Trail                                                            │
-├────────────────┬──────────────────────────┬──────────┬─────────────────┤
-│  Timestamp     │  Actor                   │  Action  │  Details        │
-├────────────────┼──────────────────────────┼──────────┼─────────────────┤
-│ 31 Mar 12:01  │ noc-usa@test.mrp (noc)   │ approved │ APP-2028-USA-001 │
-│ 31 Mar 12:00  │ tester@apnews.com        │ submitted│ APP-2028-USA-001 │
-│ 31 Mar 11:59  │ noc-usa@test.mrp (noc)   │ quota_ch │ E: 80→85        │
-└────────────────┴──────────────────────────┴──────────┴─────────────────┘
+┌───────────────────────────────────────────────────────────────────────┐
+│  OCOG Review — USA                                                    │
+├───────────────────────────────────────────────────────────────────────┤
+│  Quota summary                                                        │
+│  E: 80   Es: 20   EP: 30   EPs: 10   ET: 25   EC: 25                 │
+│                                                                       │
+│  Organisation      E Alloc  EP Alloc  EPs Alloc  Total               │
+│  ─────────────────────────────────────────────────────────────────── │
+│  NBC Sports          —        6          2          8                 │
+│  Reuters (resubm.)   8        4          —         12                 │
+│                                                                       │
+│  Footer:             8       10          2         20                 │
+│                                                                       │
+│  [ Approve allocation ]      [ Back to list ]                        │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 **Steps**:
+1. From the OCOG PbN list, click on **USA**
+2. Review the per-org, per-category slot breakdown
 
-1. Click **Audit Trail** in the nav
-2. Scroll through the log
-
-**Expected — seeded entries** (present before any live testing):
-
-| Action | Actor | Subject |
-|--------|-------|---------|
-| `application_submitted` | Jane Holloway (AP) | APP-2028-USA-00001 |
-| `application_submitted` | Marcus Webb (NYT) | APP-2028-USA-00002 |
-| `application_submitted` | Priya Nair (Guardian) | APP-2028-GBR-00001 |
-| `application_submitted` | Dana Kowalski (NBC) | APP-2028-USA-00003 |
-| `application_submitted` | Tom Ashford (BBC) | APP-2028-GBR-00002 |
-| `application_submitted` | Claire Fontaine (L'Équipe) | APP-2028-FRA-00001 |
-| `application_submitted` | Sam Okafor (Reuters) | APP-2028-USA-00004 |
-| `application_submitted` | Helen Brooks (Reuters UK) | APP-2028-GBR-00003 |
-| `application_approved` | S. Kim (USOPC) | APP-2028-USA-00003 (NBC) |
-| `application_approved` | R. Clarke (Team GB) | APP-2028-GBR-00002 (BBC) |
-| `application_approved` | M. Dupont (CNOSF) | APP-2028-FRA-00001 (L'Équipe) |
-| `application_returned` | S. Kim (USOPC) | APP-2028-USA-00004 (Reuters NA) |
-| `application_returned` | R. Clarke (Team GB) | APP-2028-GBR-00003 (Reuters UK) |
-| `application_resubmitted` | Jane Holloway (AP) | APP-2028-USA-00005 |
-| `application_rejected` | M. Dupont (CNOSF) | APP-2028-FRA-00002 (L'Équipe dup.) |
-| `admin_login` | S. Kim (USOPC) | — |
-| `admin_login` | IOC Admin | — |
-
-**Expected — live entries** (from your test run):
-- `application_submitted` — for any submissions from Role 1 testing
-- `application_approved` — from TC 2.2
-- `application_returned` — from TC 2.3
-- `pbn_submitted` — from TC 2.7
-- `pbn_approved` — from TC 3.2
-- `quota_changed` — from TC 4.4
-- `export_generated` — from TC 4.3
+**Expected**:
+- One row per approved org in USA
+- Per-category columns matching the categories those orgs requested
+- Quota summary bars showing allocated vs. total for each category
+- Grand total visible
+- Approve button available (since state = `noc_submitted`)
 
 ---
 
-## Test Case 4.6 — ENR review (smoke test)
+## Use Case 2: Approve PbN Allocation (with optional adjustments)
 
-**Goal**: Confirm the ENR section loads and is navigable.
+The OCOG can accept the NOC's allocation as-is, or adjust individual org slot counts before approving.
 
-*Full ENR testing requires a NOC to have submitted ENR requests — skip if not yet seeded.*
+---
+
+### Test 3.3 — Approve a NOC allocation without changes
+
+**Goal**: Confirm approval with no adjustments works and advances the state.
 
 **Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ocog/pbn/USA`
+2. Review the allocation — do not change any slot values
+3. Click **Approve allocation**
 
-1. Click **ENR Review** in the nav
-2. Verify the page loads without errors
-3. If any NOC has submitted ENR requests, click through to one
+**Expected**:
+- State changes to `ocog_approved`
+- USA row on the PbN list now shows **Approved** status
+- The **Approve** button is no longer shown on the USA detail page
+- A new **Send to ACR** button appears
 
-**Expected**: Page loads. If requests exist, each shows the NOC's requested quantity and a decision control (Grant / Partial / Deny).
+---
+
+### Test 3.4 — Approve a NOC allocation with slot adjustments
+
+**Goal**: Confirm the OCOG can override individual org slot counts before approving.
+
+**Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ocog/pbn/USA`
+2. Change one org's E slot count (e.g. reduce Reuters from 8 to 6)
+3. Click **Approve allocation**
+
+**Expected**:
+- Updated slot values are saved
+- The adjusted org shows the OCOG-modified value, not the original NOC value
+- State advances to `ocog_approved`
+- Adjustment is reflected in any subsequent CSV export
+
+---
+
+## Use Case 3: Send to ACR
+
+After approving, the OCOG transmits the final allocation to the ACR system.
+
+---
+
+### Test 3.5 — Send approved allocation to ACR
+
+**Goal**: Confirm the Send to ACR action triggers the ACR adapter and logs the transmission.
+
+**Steps**:
+1. Ensure USA is in `ocog_approved` state (Test 3.3 or 3.4 complete)
+2. On the USA detail page, click **Send to ACR**
+
+**Expected**:
+- Success banner: "X orgs sent to ACR" (where X = number of approved orgs for USA)
+- Server log shows `[ACR STUB] pushOrgData called with X records` with per-org category breakdown
+- Audit log records the `pbn_sent_to_acr` action
+- The **Send to ACR** button is no longer available (or is disabled) after transmission
+
+**Negative**: Attempt to send a NOC that is still in `noc_submitted` state (not yet OCOG approved) — the action should redirect with an error, not transmit.
 
 ---
 
 ---
 
-# Cross-role regression checklist
+# Role 5 — IF Admin
 
-After completing all role-specific tests above, run these end-to-end checks. The "seeded record" column tells you which fixture to use so you don't need to create fresh data for each check.
+**Who**: An International Federation representative (e.g. World Athletics) who reviews media applications for organisations covering their sport.
 
-| # | Check | Seeded record | Pass / Fail |
-|---|-------|--------------|-------------|
-| R1 | IOC dashboard shows NBC Sports under USA → Approved | APP-2028-USA-00003 | |
-| R2 | Reuters (NA) return note visible on the application detail | APP-2028-USA-00004 | |
-| R3 | AP resubmission shows as `Resubmitted` in USA NOC queue | APP-2028-USA-00005 | |
-| R4 | Action buttons absent on already-approved BBC Sport app | APP-2028-GBR-00002 | |
-| R5 | EoI CSV export includes all 10 seeded apps; columns include E Req, Es Req, EP Req, EPs Req, ET Req, EC Req | — | |
-| R6 | PbN table shows only EP and EPs columns for NBC Sports (the only active categories for that org) | APP-2028-USA-00003 | |
-| R7 | Quota bars on PbN page update live as you type slot values | USA PbN page | |
-| R8 | FRA NOC cannot see USA applications and vice versa (NOC isolation) | Login as FRA, check queue | |
-| R9 | Rejected L'Équipe duplicate is NOT in FRA's PbN org list | APP-2028-FRA-00002 | |
-| R10 | OCOG PbN review shows per-category columns matching the categories NBC requested | APP-2028-USA-00003 | |
-| R11 | PbN allocations CSV export includes all 6 `*_slots` columns (not just press/photo) | Run export after TC 3.2 | |
-| R12 | Audit trail is read-only (no edit or delete controls visible) | — | |
-| R13 | Quota edit for USA E: 80 → 85 is immediately visible in NOC PbN quota bar | USA quota row | |
-| R14 | Expired token `XXXX` shows error screen, not the form | `/apply/verify?token=XXXX&email=expired@test.com` | |
-| R15 | IOC Viewer (`ioc.readonly@olympics.org`) can view dashboard but not edit quotas | — | |
+**Portal entry**: https://mrp-production-8073.up.railway.app/admin  
+(Login with `if.admin@worldathletics.org` / `Password1!`)
+
+**What they do**: The IF Admin role currently shares the NOC Admin UI. Sport-specific filtering is not yet implemented — the IF admin sees all applications for their associated NOC, not just their sport. ENR scenarios are not applicable to IF Admins.
+
+> **Note**: IF Admin sport-scoping (filtering applications to a specific sport/IF) is on the roadmap but not yet built. All test cases below match the NOC Admin experience.
 
 ---
 
-## Known limitations in v0.1
+## Use Case 1: Evaluate EoI Forms
 
-- Email delivery is mocked in the local environment; tokens and return-links appear in server logs instead of inboxes.
-- ENR workflow is not fully wired end-to-end; TC 4.6 is a smoke test only.
-- IOC "Push to ACR" button generates a CSV export; live ACR integration is out of scope for v0.1.
-- PbN slot allocation is per-aggregate (E and EP totals), not broken out per sub-category (Es, EPs, ET, EC) yet.
+Same as NOC Admin — see Tests 2.1 through 2.4 above. Log in as `if.admin@worldathletics.org`.
+
+The IF admin can view the application list and take approve/return/reject actions. The screen will show all applications for the IF's associated NOC rather than filtered to Athletics specifically.
+
+---
+
+## Use Case 2: Allocate Quota
+
+Same as NOC Admin — see Tests 2.5 through 2.7. The IF admin can view the PbN allocation table and submit allocations using the same workflow.
+
+> **ENR not applicable**: IF Admins do not submit ENR nominations. If the ENR navigation item is visible, confirm it is disabled or hidden — this is a known scope boundary.
+
+---
+
+---
+
+# Role 6 — IOC Admin
+
+**Who**: An IOC accreditation officer overseeing the full media registration process across all NOCs.
+
+**Portal entry**: https://mrp-production-8073.up.railway.app/admin  
+(Login with `ioc.admin@olympics.org` / `Password1!`)
+
+**What they do**: Monitor the status of EoI applications across all NOCs, make grant/partial/denied decisions on ENR nominations, and (when built) impersonate other users for support purposes.
+
+---
+
+## Use Case 1: View Dashboard
+
+The IOC admin gets a cross-NOC overview of EoI application status, PbN submission progress, and ENR activity.
+
+---
+
+### Test 4.1 — View the IOC dashboard
+
+**Goal**: Confirm the IOC admin sees data across all NOCs, not just one.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  IOC Admin — Dashboard                                               │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Applications at a glance                                            │
+│  ┌──────────┬──────────┬──────────┬──────────┬──────────┐           │
+│  │ Pending  │ Approved │ Returned │ Resubmit │ Rejected │           │
+│  │   3      │   4      │   3      │   1      │   1      │           │
+│  └──────────┴──────────┴──────────┴──────────┴──────────┘           │
+│                                                                      │
+│  NOC PbN status                                                      │
+│  USA  ████████░░ noc_submitted     GBR  ██░░░░░░░░ draft             │
+│  FRA  ██░░░░░░░░ draft                                               │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps**:
+1. Log in as `ioc.admin@olympics.org` at `https://mrp-production-8073.up.railway.app/admin`
+
+**Expected**:
+- Dashboard shows totals across ALL NOCs (USA + GBR + FRA)
+- Application counts match seed data (3 pending, 4 approved, etc.)
+- PbN status per NOC is visible
+- NOC admin cannot see this view (confirm by logging in as `noc.admin@usopc.org` — should redirect or scope to USA only)
+
+---
+
+### Test 4.2 — Browse applications across NOCs
+
+**Goal**: Confirm IOC Admin can see all applications, including those from other NOCs.
+
+**Steps**:
+1. Navigate to the applications list from the IOC dashboard
+2. Confirm you can see GBR applications (Guardian, BBC Sport) alongside USA applications
+
+**Expected**: Full cross-NOC list. No NOC filter applied by default. Filter controls available if needed.
+
+---
+
+## Use Case 2: Manage / Assign ENR Requests
+
+After NOCs submit their ENR nominations, the IOC reviews each org and makes a decision: Grant, Partial Grant, or Denied.
+
+---
+
+### Test 4.3 — View ENR submissions from all NOCs
+
+**Goal**: Confirm the IOC ENR list aggregates submissions from all NOCs.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  IOC Admin — ENR Nominations                                         │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  NOC   Organisation          Priority  Must-Have  Nice-to-Have  Decision│
+│  ────────────────────────────────────────────────────────────────── │
+│  USA   AP Test International   1         3          2           —    │
+│  USA   World Photo Agency       2         2          1           —    │
+│  GBR   Reuters Global          1         4          2           —    │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Pre-condition**: At least one NOC has submitted ENR nominations (run Tests 2.9–2.11 first, or use seeded ENR data if present).
+
+**Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ioc/enr`
+
+**Expected**: All submitted ENR nominations from all NOCs are visible with their priority rankings.
+
+---
+
+### Test 4.4 — Make a decision on an ENR nomination
+
+**Goal**: Confirm IOC can grant, partially grant, or deny an ENR nomination.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  ENR Decision — AP Test International (USA, Priority 1)              │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Must-have slots requested:  3                                       │
+│  Nice-to-have slots:         2                                       │
+│                                                                      │
+│  Decision   ○ Grant   ● Partial Grant   ○ Denied                    │
+│                                                                      │
+│  Slots granted   [ 2 ]                                               │
+│                                                                      │
+│  [ Save decision ]                                                   │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps**:
+1. Click on a nomination (e.g. AP Test International, USA Priority 1)
+2. Select **Partial Grant**
+3. Enter granted slots: `2` (less than the 3 requested)
+4. Click **Save decision**
+
+**Expected**: Decision saved. The nomination row shows "Partial — 2 slots" in the decisions column. NOC Admin can see this decision when they view their ENR list.
+
+**Repeat for**: Grant (enter the full must-have amount), Denied (no slots).
+
+---
+
+### Test 4.5 — View ENR decisions from NOC admin perspective
+
+**Goal**: Confirm NOC can see IOC decisions after they are made.
+
+**Steps**:
+1. Log out, log back in as `noc.admin@usopc.org`
+2. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/enr`
+
+**Expected**: Decisions (Grant / Partial / Denied) and granted slot counts are visible for each nomination.
+
+---
+
+## Use Case 3: Act as Another User (Sudo)
+
+The IOC admin can open a read-only window impersonating any admin user for support and debugging. All form controls are disabled in sudo mode. The sudo event is audit logged.
+
+---
+
+### Test 6.3 — Open a sudo window as a NOC admin
+
+**Goal**: Confirm the "Act as user" flow opens a new window with the correct session and banner.
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│  [SUDO MODE]  Viewing as S. Kim (NOC Admin · USA)                    │
+│              initiated by IOC Admin  [ Exit sudo ]                   │
+├──────────────────────────────────────────────────────────────────────┤
+│  (NOC Admin UI — all forms and buttons disabled)                     │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+**Steps**:
+1. Log in as `ioc.admin@olympics.org`
+2. In the header, click **Act as user**
+3. Enter `noc.admin@usopc.org` in the email field
+4. Click **Open as user →**
+
+**Expected**:
+- A new browser window opens
+- The amber **SUDO MODE** banner appears at the very top: "Viewing as S. Kim (NOC Admin · USA) — initiated by IOC Admin"
+- The window shows the NOC Admin home page for USA
+- An **Exit sudo** button is visible in the banner
+
+**Negative**: Attempt to enter `ioc.readonly@olympics.org` → error "Cannot sudo into another IOC admin account."
+
+---
+
+### Test 6.4 — Confirm sudo session is read-only
+
+**Goal**: Confirm all write actions are blocked in the sudo window.
+
+**Steps** (in the sudo window from Test 6.3):
+1. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/queue`
+2. Click on a pending application
+3. Try to click **Approve**
+
+**Expected**: The approve button is disabled (greyed out). Attempting to submit any form should have no effect.
+
+**Also test**: Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/pbn` — slot input fields should be disabled.
+
+---
+
+### Test 6.5 — Exit sudo
+
+**Goal**: Confirm the Exit sudo button ends the session cleanly.
+
+**Steps**:
+1. In the sudo window, click **Exit sudo** in the amber banner
+
+**Expected**: Window redirects to a "Sudo session ended — this window can be closed" confirmation page. The original IOC Admin window is unaffected.
+
+---
+
+### Test 6.6 — Confirm sudo is audit logged
+
+**Goal**: Confirm the `sudo_initiated` action appears in the audit log.
+
+**Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ioc/audit`
+2. Look for the most recent `sudo_initiated` entry
+
+**Expected**: Audit entry shows: actor = IOC Admin, action = `sudo_initiated`, detail = "Sudo initiated as S. Kim (noc_admin · USA)".
+
+---
+
+---
+
+## Cross-role regression checklist
+
+Run this after any significant code change to catch regressions across the full journey.
+
+| # | Action | Actor | Expected |
+|---|--------|-------|---------|
+| 1 | Submit EoI form with all required fields | Applicant | Ref number shown, status = Pending |
+| 2 | View application list | NOC Admin (USA) | Only USA apps visible |
+| 3 | Approve one pending application | NOC Admin | Status → Approved |
+| 4 | Return one pending application with note | NOC Admin | Status → Returned |
+| 5 | Resubmit a returned application | Applicant | Status → Resubmitted |
+| 6 | View PbN table after approval | NOC Admin | Approved org appears in table |
+| 7 | Enter slot allocations | NOC Admin | Totals update in footer |
+| 8 | Over-allocate one category and submit | NOC Admin | Error, submission blocked |
+| 9 | Submit valid PbN allocation | NOC Admin | State → noc_submitted |
+| 10 | Add ENR nomination | NOC Admin | Appears in list with priority |
+| 11 | Reorder ENR nominations | NOC Admin | Order persists |
+| 12 | Submit ENR to IOC | NOC Admin | Read-only state after submit |
+| 13 | View dashboard totals | IOC Admin | Cross-NOC counts match |
+| 14 | Grant ENR nomination | IOC Admin | Decision visible to NOC |
+| 15 | Download PbN CSV export | IOC Admin | CSV with all 6 category columns |
+| 16 | OCOG reviews submitted PbN | OCOG Admin | `https://mrp-production-8073.up.railway.app/admin/ocog/pbn` — NOC's submission visible |
+| 17 | OCOG approves PbN with adjustments | OCOG Admin | State → ocog_approved |
+| 18 | OCOG sends to ACR | OCOG Admin | ACR stub logs all 6 category fields |
+| 19 | Open sudo window as NOC admin | IOC Admin | New window shows SUDO MODE banner, NOC UI |
+| 20 | Attempt approve action in sudo window | IOC Admin (sudo) | Button disabled, no write occurs |
+| 21 | Exit sudo | IOC Admin (sudo) | Window shows "session ended" page |
+| 22 | Check audit log for sudo event | IOC Admin | `sudo_initiated` entry with actor and target |

@@ -4,13 +4,14 @@ import { redirect } from "next/navigation";
 import { eq, and, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { enrRequests, auditLog } from "@/db/schema";
-import { requireIocAdminSession } from "@/lib/session";
+import { requireIocAdminSession, requireWritable } from "@/lib/session";
 
 /**
  * Save IOC decisions for all orgs in a NOC's ENR list.
  * Form fields: decision_{requestId} and slots_{requestId} for each org.
  */
 export async function saveEnrDecisions(formData: FormData) {
+  await requireWritable();
   const session = await requireIocAdminSession();
   const nocCode = formData.get("noc_code") as string;
   if (!nocCode) redirect("/admin/ioc/enr");

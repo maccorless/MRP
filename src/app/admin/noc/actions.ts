@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, auditLog } from "@/db/schema";
-import { requireNocSession } from "@/lib/session";
+import { requireNocSession, requireWritable } from "@/lib/session";
 
 async function getApplicationForNoc(id: string, nocCode: string) {
   const [app] = await db
@@ -15,6 +15,7 @@ async function getApplicationForNoc(id: string, nocCode: string) {
 }
 
 export async function approveApplication(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   const id = formData.get("id") as string;
 
@@ -49,6 +50,7 @@ export async function approveApplication(formData: FormData) {
 }
 
 export async function returnApplication(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   const id = formData.get("id") as string;
   const note = (formData.get("note") as string)?.trim();
@@ -85,6 +87,7 @@ export async function returnApplication(formData: FormData) {
 }
 
 export async function rejectApplication(formData: FormData) {
+  await requireWritable();
   const session = await requireNocSession();
   const id = formData.get("id") as string;
   const note = (formData.get("note") as string)?.trim();

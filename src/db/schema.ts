@@ -51,6 +51,7 @@ export const auditActionEnum = pgEnum("audit_action", [
   "quota_changed",
   "enr_submitted",
   "enr_decision_made",
+  "sudo_initiated",
 ]);
 
 export const pbnStateEnum = pgEnum("pbn_state", [
@@ -323,6 +324,25 @@ export const enrRequests = pgTable("enr_requests", {
 // When a real NOC submits an EoI from an org whose email domain or name matches
 // a reserved entry, they receive a dedup warning and the application is blocked.
 // The IOC admin manages this list before the EoI window opens.
+
+// ─── Sudo Tokens ─────────────────────────────────────────────────────────────
+// One-time tokens allowing an IOC admin to open a read-only session as another
+// admin user. Consumed on first use; expire after 10 minutes if unused.
+
+export const sudoTokens = pgTable("sudo_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tokenHash: text("token_hash").notNull().unique(),
+  // The IOC admin who initiated the sudo
+  actorId: text("actor_id").notNull(),
+  actorLabel: text("actor_label").notNull(),
+  // The target user to impersonate
+  targetEmail: text("target_email").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Reserved Organizations ───────────────────────────────────────────────────
 
 export const reservedOrganizations = pgTable("reserved_organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
