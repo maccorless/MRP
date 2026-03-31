@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { eq, and, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
@@ -34,6 +34,20 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   enr:                "ENR (Non-Rights Broadcaster)",
 };
 
+const PUB_TYPE_LABEL: Record<string, string> = {
+  app: "App",
+  editorial_website___blog: "Website / Blog",
+  email_newsletter: "Email Newsletter",
+  magazine___newspaper: "Magazine / Newspaper",
+  official_ngb_publication: "NGB Publication",
+  photo_journal___online_gallery: "Photo Gallery",
+  podcast: "Podcast",
+  print_newsletter: "Print Newsletter",
+  social_media: "Social Media",
+  freelancer_with_confirmed_assignment: "Freelancer",
+  other: "Other",
+};
+
 const AUDIT_ACTION_LABEL: Record<string, string> = {
   application_submitted:   "Application submitted",
   application_resubmitted: "Application resubmitted",
@@ -43,6 +57,16 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
   email_verified:          "Email verified",
   admin_login:             "Admin signed in",
 };
+
+function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
+  if (!value && value !== 0) return null;
+  return (
+    <div>
+      <dt className="text-gray-500 text-xs">{label}</dt>
+      <dd className="text-gray-900 mt-0.5">{value}</dd>
+    </div>
+  );
+}
 
 export default async function ApplicationDetailPage({
   params,
@@ -75,6 +99,12 @@ export default async function ApplicationDetailPage({
 
   const isActionable = app.status === "pending" || app.status === "resubmitted";
 
+  const pubTypes = (app.publicationTypes as string[] | null) ?? [];
+  const hasAddress = org.address || org.city || org.stateProvince || org.postalCode;
+  const hasSecondary = app.secondaryFirstName || app.secondaryLastName;
+  const hasPublication = pubTypes.length > 0 || app.circulation || app.publicationFrequency || app.sportsToCover;
+  const hasHistory = app.priorOlympic !== null || app.priorParalympic !== null || app.pastCoverageExamples;
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
       {/* Back + header */}
@@ -101,7 +131,7 @@ export default async function ApplicationDetailPage({
       </div>
 
       <div className="space-y-5">
-        {/* Return/rejection note (if present) */}
+        {/* Return/rejection note */}
         {app.reviewNote && (app.status === "returned" || app.status === "rejected") && (
           <div className={`p-4 rounded-lg border text-sm ${app.status === "rejected" ? "bg-red-50 border-red-200 text-red-800" : "bg-orange-50 border-orange-200 text-orange-800"}`}>
             <div className="font-semibold mb-1">
@@ -111,35 +141,20 @@ export default async function ApplicationDetailPage({
           </div>
         )}
 
-        {/* Organization */}
+        {/* Organisation */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-            Organization
+            Organisation
           </h2>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div>
-              <dt className="text-gray-500">Name</dt>
-              <dd className="font-medium text-gray-900">{org.name}</dd>
-            </div>
-            <div>
-              <dt className="text-gray-500">Type</dt>
-              <dd className="text-gray-900">{ORG_TYPE_LABEL[org.orgType] ?? org.orgType}</dd>
-            </div>
-            <div>
-              <dt className="text-gray-500">Country</dt>
-              <dd className="text-gray-900">{org.country}</dd>
-            </div>
-            <div>
-              <dt className="text-gray-500">NOC</dt>
-              <dd className="text-gray-900">{org.nocCode}</dd>
-            </div>
-            <div>
-              <dt className="text-gray-500">Email domain</dt>
-              <dd className="text-gray-900 font-mono text-xs">{org.emailDomain}</dd>
-            </div>
+            <Field label="Name" value={org.name} />
+            <Field label="Type" value={ORG_TYPE_LABEL[org.orgType] ?? org.orgType} />
+            <Field label="Country" value={org.country} />
+            <Field label="NOC" value={org.nocCode} />
+            <Field label="Email domain" value={org.emailDomain} />
             {org.website && (
               <div>
-                <dt className="text-gray-500">Website</dt>
+                <dt className="text-gray-500 text-xs">Website</dt>
                 <dd>
                   <a href={org.website} target="_blank" rel="noopener noreferrer" className="text-[#0057A8] hover:underline text-xs">
                     {org.website}
@@ -147,37 +162,62 @@ export default async function ApplicationDetailPage({
                 </dd>
               </div>
             )}
-            {/* isMultiTerritoryFlag intentionally not shown — CRIT-04 / Open Question #16 */}
+            {org.isFreelancer && <Field label="Freelancer" value="Yes" />}
+            {app.accessibilityNeeds && <Field label="Accessibility needs" value="Yes — wheelchair access required" />}
+          </dl>
+          {hasAddress && (
+            <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
+              <dt className="text-gray-500 text-xs mb-1">Address</dt>
+              <dd className="text-gray-900">
+                {[org.address, org.address2, [org.city, org.stateProvince, org.postalCode].filter(Boolean).join(", ")].filter(Boolean).join(", ")}
+              </dd>
+            </div>
+          )}
+        </section>
+
+        {/* Contacts */}
+        <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            Contacts
+          </h2>
+          <dl className="text-sm space-y-3">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+              <Field label="Name" value={app.contactFirstName && app.contactLastName ? `${app.contactFirstName} ${app.contactLastName}` : app.contactName} />
+              <Field label="Email" value={app.contactEmail} />
+              <Field label="Position" value={app.contactTitle} />
+              <Field label="Office phone" value={app.contactPhone} />
+              <Field label="Cell phone" value={app.contactCell} />
+            </div>
+            {hasSecondary && (
+              <div className="pt-3 border-t border-gray-100">
+                <div className="text-xs font-medium text-gray-500 mb-2">Secondary contact</div>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                  <Field label="Name" value={[app.secondaryFirstName, app.secondaryLastName].filter(Boolean).join(" ")} />
+                  <Field label="Email" value={app.secondaryEmail} />
+                  <Field label="Position" value={app.secondaryTitle} />
+                  <Field label="Office phone" value={app.secondaryPhone} />
+                  <Field label="Cell phone" value={app.secondaryCell} />
+                </div>
+              </div>
+            )}
           </dl>
         </section>
 
-        {/* Contact & application */}
+        {/* Accreditation */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-            Application
+            Accreditation Request
           </h2>
           <dl className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-x-6">
               <div>
-                <dt className="text-gray-500">Contact name</dt>
-                <dd className="font-medium text-gray-900">{app.contactName}</dd>
-              </div>
-              <div>
-                <dt className="text-gray-500">Contact email</dt>
-                <dd className="text-gray-900">{app.contactEmail}</dd>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6">
-              <div>
-                <dt className="text-gray-500">Category</dt>
-                <dd className="text-gray-900">
-                  {categoryDisplayLabel(app.categoryPress, app.categoryPhoto)}
-                </dd>
+                <dt className="text-gray-500 text-xs">Category</dt>
+                <dd className="text-gray-900 mt-0.5">{categoryDisplayLabel(app.categoryPress, app.categoryPhoto)}</dd>
               </div>
               {(app.requestedPress || app.requestedPhoto) && (
                 <div>
-                  <dt className="text-gray-500">Requested</dt>
-                  <dd className="text-gray-900">
+                  <dt className="text-gray-500 text-xs">Requested</dt>
+                  <dd className="text-gray-900 mt-0.5">
                     {[
                       app.requestedPress ? `${app.requestedPress} press` : null,
                       app.requestedPhoto ? `${app.requestedPhoto} photo` : null,
@@ -187,19 +227,92 @@ export default async function ApplicationDetailPage({
               )}
             </div>
             <div>
-              <dt className="text-gray-500 mb-1">About</dt>
-              <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">
-                {app.about}
-              </dd>
+              <dt className="text-gray-500 text-xs mb-1">About coverage</dt>
+              <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">{app.about}</dd>
             </div>
-            {app.resubmissionCount > 0 && (
-              <div>
-                <dt className="text-gray-500">Resubmissions</dt>
-                <dd className="text-gray-900">{app.resubmissionCount}</dd>
-              </div>
-            )}
+            {app.resubmissionCount > 0 && <Field label="Resubmissions" value={app.resubmissionCount} />}
           </dl>
         </section>
+
+        {/* Publication details (if any filled) */}
+        {hasPublication && (
+          <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+              Publication Details
+            </h2>
+            <dl className="space-y-3 text-sm">
+              {pubTypes.length > 0 && (
+                <div>
+                  <dt className="text-gray-500 text-xs mb-1">Publication type</dt>
+                  <dd className="flex flex-wrap gap-1.5">
+                    {pubTypes.map((t) => (
+                      <span key={t} className="inline-flex px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
+                        {PUB_TYPE_LABEL[t] ?? t}
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-x-6">
+                <Field label="Circulation / visitors" value={app.circulation} />
+                <Field label="Publication frequency" value={app.publicationFrequency} />
+              </div>
+              {app.sportsToCover && (
+                <div>
+                  <dt className="text-gray-500 text-xs mb-1">Sports to cover</dt>
+                  <dd className="text-gray-900">{app.sportsToCover}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
+
+        {/* Accreditation history (if any filled) */}
+        {hasHistory && (
+          <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+              Accreditation History
+            </h2>
+            <dl className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-x-6">
+                {app.priorOlympic !== null && (
+                  <div>
+                    <dt className="text-gray-500 text-xs">Prior Olympic accreditation</dt>
+                    <dd className="mt-0.5">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${app.priorOlympic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                        {app.priorOlympic ? "Yes" : "No"}
+                      </span>
+                    </dd>
+                  </div>
+                )}
+                {app.priorParalympic !== null && (
+                  <div>
+                    <dt className="text-gray-500 text-xs">Prior Paralympic accreditation</dt>
+                    <dd className="mt-0.5">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${app.priorParalympic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                        {app.priorParalympic ? "Yes" : "No"}
+                      </span>
+                    </dd>
+                  </div>
+                )}
+              </div>
+              <Field label="Olympic years" value={app.priorOlympicYears} />
+              <Field label="Paralympic years" value={app.priorParalympicYears} />
+              {app.pastCoverageExamples && (
+                <div>
+                  <dt className="text-gray-500 text-xs mb-1">Past coverage / sporting events</dt>
+                  <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed whitespace-pre-line">{app.pastCoverageExamples}</dd>
+                </div>
+              )}
+              {app.additionalComments && (
+                <div>
+                  <dt className="text-gray-500 text-xs mb-1">Additional comments</dt>
+                  <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">{app.additionalComments}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+        )}
 
         {/* Internal note (NOC-only) */}
         {app.internalNote && (
@@ -281,26 +394,17 @@ export default async function ApplicationDetailPage({
 
             {/* Return */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                Return for Corrections
-              </h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Return for Corrections</h3>
               <p className="text-xs text-gray-500 mb-3">
-                Send the application back to the applicant with a note explaining what
-                needs to be corrected.
+                Send the application back to the applicant with a note explaining what needs to be corrected.
               </p>
               <form action={returnApplication} className="space-y-3">
                 <input type="hidden" name="id" value={app.id} />
-                <textarea
-                  name="note"
-                  required
-                  rows={3}
-                  placeholder="Explain what the applicant needs to correct or clarify…"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded hover:bg-orange-600 transition-colors cursor-pointer"
-                >
+                <textarea name="note" required rows={3}
+                  placeholder="Explain what the applicant needs to correct or clarify..."
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none" />
+                <button type="submit"
+                  className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded hover:bg-orange-600 transition-colors cursor-pointer">
                   Return for Corrections
                 </button>
               </form>
@@ -314,17 +418,11 @@ export default async function ApplicationDetailPage({
               </p>
               <form action={rejectApplication} className="space-y-3">
                 <input type="hidden" name="id" value={app.id} />
-                <textarea
-                  name="note"
-                  required
-                  rows={3}
-                  placeholder="Provide the reason for rejection…"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent resize-none"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition-colors cursor-pointer"
-                >
+                <textarea name="note" required rows={3}
+                  placeholder="Provide the reason for rejection..."
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent resize-none" />
+                <button type="submit"
+                  className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition-colors cursor-pointer">
                   Reject Application
                 </button>
               </form>

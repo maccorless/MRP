@@ -29,11 +29,24 @@ export async function GET(request: Request) {
       website: organizations.website,
       contactName: applications.contactName,
       contactEmail: applications.contactEmail,
+      contactTitle: applications.contactTitle,
+      contactPhone: applications.contactPhone,
+      secondaryName: applications.secondaryFirstName,
+      secondaryLastName: applications.secondaryLastName,
+      secondaryEmail: applications.secondaryEmail,
       categoryPress: applications.categoryPress,
       categoryPhoto: applications.categoryPhoto,
       requestedPress: applications.requestedPress,
       requestedPhoto: applications.requestedPhoto,
       about: applications.about,
+      publicationTypes: applications.publicationTypes,
+      circulation: applications.circulation,
+      publicationFrequency: applications.publicationFrequency,
+      sportsToCover: applications.sportsToCover,
+      priorOlympic: applications.priorOlympic,
+      priorOlympicYears: applications.priorOlympicYears,
+      priorParalympic: applications.priorParalympic,
+      priorParalympicYears: applications.priorParalympicYears,
       status: applications.status,
       resubmissionCount: applications.resubmissionCount,
       submittedAt: applications.submittedAt,
@@ -58,22 +71,36 @@ export async function GET(request: Request) {
 
   const header = [
     "Reference", "NOC", "Organisation", "Country", "Org Type",
-    "Email Domain", "Website", "Contact Name", "Contact Email",
+    "Email Domain", "Website",
+    "Contact Name", "Contact Email", "Contact Title", "Contact Phone",
+    "Secondary Contact", "Secondary Email",
     "Category", "Press Requested", "Photo Requested",
+    "Publication Types", "Circulation", "Pub Frequency", "Sports to Cover",
+    "Prior Olympic", "Olympic Years", "Prior Paralympic", "Paralympic Years",
     "Status", "About", "Resubmissions", "Submitted", "Reviewed",
     ...(isNoc ? ["Internal Note"] : []),
   ];
 
-  const csvRows = filtered.map((r) => [
-    r.referenceNumber, r.nocCode, r.orgName, r.country, r.orgType,
-    r.emailDomain, r.website, r.contactName, r.contactEmail,
-    categoryDisplayLabel(r.categoryPress, r.categoryPhoto),
-    r.requestedPress, r.requestedPhoto,
-    r.status, r.about, r.resubmissionCount,
-    r.submittedAt.toISOString(),
-    r.reviewedAt?.toISOString() ?? "",
-    ...(isNoc ? [r.internalNote] : []),
-  ]);
+  const csvRows = filtered.map((r) => {
+    const pubTypes = (r.publicationTypes as string[] | null) ?? [];
+    return [
+      r.referenceNumber, r.nocCode, r.orgName, r.country, r.orgType,
+      r.emailDomain, r.website,
+      r.contactName, r.contactEmail, r.contactTitle, r.contactPhone,
+      [r.secondaryName, r.secondaryLastName].filter(Boolean).join(" "), r.secondaryEmail,
+      categoryDisplayLabel(r.categoryPress, r.categoryPhoto),
+      r.requestedPress, r.requestedPhoto,
+      pubTypes.join(", "), r.circulation, r.publicationFrequency, r.sportsToCover,
+      r.priorOlympic === true ? "Yes" : r.priorOlympic === false ? "No" : "",
+      r.priorOlympicYears,
+      r.priorParalympic === true ? "Yes" : r.priorParalympic === false ? "No" : "",
+      r.priorParalympicYears,
+      r.status, r.about, r.resubmissionCount,
+      r.submittedAt.toISOString(),
+      r.reviewedAt?.toISOString() ?? "",
+      ...(isNoc ? [r.internalNote] : []),
+    ];
+  });
 
   const csv = buildCsv(header, csvRows);
   const date = new Date().toISOString().slice(0, 10);
