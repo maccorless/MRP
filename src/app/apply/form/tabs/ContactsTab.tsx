@@ -1,0 +1,130 @@
+"use client";
+
+import { useState } from "react";
+import type { PrefillData } from "../EoiFormTabs";
+
+const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
+const LABEL = "block text-sm font-medium text-gray-700 mb-1";
+const HELP = "text-xs text-gray-400 mt-1";
+
+export function ContactsTab({
+  prefill,
+  email,
+}: {
+  prefill: PrefillData | null;
+  email: string;
+}) {
+  const hasSecondary = !!(prefill?.secondaryFirstName || prefill?.secondaryLastName);
+  const [showSecondary, setShowSecondary] = useState(hasSecondary);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
+        The primary contact will receive all correspondence about this application, including status updates and any requests for corrections.
+      </div>
+
+      {/* Primary contact */}
+      <div>
+        <h3 className="text-sm font-semibold text-gray-900 mb-4">Primary Contact</h3>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="contact_first_name" className={LABEL}>First name <span className="text-red-500">*</span></label>
+              <input id="contact_first_name" name="contact_first_name" type="text" required data-tab="1"
+                defaultValue={prefill?.contactFirstName ?? ""} placeholder="First" className={INPUT} />
+            </div>
+            <div>
+              <label htmlFor="contact_last_name" className={LABEL}>Last name <span className="text-red-500">*</span></label>
+              <input id="contact_last_name" name="contact_last_name" type="text" required data-tab="1"
+                defaultValue={prefill?.contactLastName ?? ""} placeholder="Last" className={INPUT} />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="contact_title" className={LABEL}>Position / Title</label>
+            <input id="contact_title" name="contact_title" type="text" data-tab="1"
+              defaultValue={prefill?.contactTitle ?? ""} placeholder="e.g. Sports Editor, Bureau Chief" className={INPUT} />
+          </div>
+          <div>
+            <label className={LABEL}>Email address</label>
+            <div className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500">{email}</div>
+            <p className={HELP}>Verified via your access link. Cannot be changed.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="contact_phone" className={LABEL}>Office phone</label>
+              <input id="contact_phone" name="contact_phone" type="tel" data-tab="1"
+                defaultValue={prefill?.contactPhone ?? ""} placeholder="+1 212-555-0100" className={INPUT} />
+            </div>
+            <div>
+              <label htmlFor="contact_cell" className={LABEL}>Cell phone</label>
+              <input id="contact_cell" name="contact_cell" type="tel" data-tab="1"
+                defaultValue={prefill?.contactCell ?? ""} placeholder="+1 212-555-0101" className={INPUT} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Secondary contact toggle */}
+      <div className="border-t border-gray-100 pt-6">
+        {!showSecondary ? (
+          <button
+            type="button"
+            onClick={() => setShowSecondary(true)}
+            className="text-sm text-[#0057A8] font-medium hover:underline cursor-pointer"
+          >
+            + Add a secondary contact
+          </button>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-900">Secondary Contact</h3>
+              <button
+                type="button"
+                onClick={() => setShowSecondary(false)}
+                className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="secondary_first_name" className={LABEL}>First name</label>
+                  <input id="secondary_first_name" name="secondary_first_name" type="text" data-tab="1"
+                    defaultValue={prefill?.secondaryFirstName ?? ""} className={INPUT} />
+                </div>
+                <div>
+                  <label htmlFor="secondary_last_name" className={LABEL}>Last name</label>
+                  <input id="secondary_last_name" name="secondary_last_name" type="text" data-tab="1"
+                    defaultValue={prefill?.secondaryLastName ?? ""} className={INPUT} />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="secondary_title" className={LABEL}>Position / Title</label>
+                <input id="secondary_title" name="secondary_title" type="text" data-tab="1"
+                  defaultValue={prefill?.secondaryTitle ?? ""} className={INPUT} />
+              </div>
+              <div>
+                <label htmlFor="secondary_email" className={LABEL}>Email address</label>
+                <input id="secondary_email" name="secondary_email" type="email" data-tab="1"
+                  defaultValue={prefill?.secondaryEmail ?? ""} className={INPUT} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="secondary_phone" className={LABEL}>Office phone</label>
+                  <input id="secondary_phone" name="secondary_phone" type="tel" data-tab="1"
+                    defaultValue={prefill?.secondaryPhone ?? ""} className={INPUT} />
+                </div>
+                <div>
+                  <label htmlFor="secondary_cell" className={LABEL}>Cell phone</label>
+                  <input id="secondary_cell" name="secondary_cell" type="tel" data-tab="1"
+                    defaultValue={prefill?.secondaryCell ?? ""} className={INPUT} />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -6,6 +6,7 @@ import {
   uuid,
   integer,
   boolean,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -97,6 +98,15 @@ export const organizations = pgTable("organizations", {
   commonCodesId: text("common_codes_id"),      // null until coded
   status: orgStatusEnum("org_status").notNull().default("active"),
   isMultiTerritoryFlag: boolean("is_multi_territory_flag").default(false).notNull(),
+
+  // Address (v2 expansion)
+  address: text("address"),
+  address2: text("address2"),
+  city: text("city"),
+  stateProvince: text("state_province"),
+  postalCode: text("postal_code"),
+  isFreelancer: boolean("is_freelancer"),
+
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -110,19 +120,47 @@ export const applications = pgTable("applications", {
   organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   nocCode: text("noc_code").notNull(),
 
-  // Contact (MICO26 provisional fields)
-  contactName: text("contact_name").notNull(),
+  // Contact — primary
+  contactName: text("contact_name").notNull(),  // backward compat: firstName + " " + lastName
   contactEmail: text("contact_email").notNull(),
+  contactFirstName: text("contact_first_name"),
+  contactLastName: text("contact_last_name"),
+  contactTitle: text("contact_title"),
+  contactPhone: text("contact_phone"),
+  contactCell: text("contact_cell"),
+
+  // Contact — secondary
+  secondaryFirstName: text("secondary_first_name"),
+  secondaryLastName: text("secondary_last_name"),
+  secondaryTitle: text("secondary_title"),
+  secondaryEmail: text("secondary_email"),
+  secondaryPhone: text("secondary_phone"),
+  secondaryCell: text("secondary_cell"),
 
   // Category — Press / Photo / Both (at least one must be true)
   categoryPress: boolean("category_press").notNull().default(false),
   categoryPhoto: boolean("category_photo").notNull().default(false),
 
   // Requested slot quantities (from EoI form)
-  requestedPress: integer("requested_press"),   // null for pre-v2 applications
+  requestedPress: integer("requested_press"),
   requestedPhoto: integer("requested_photo"),
 
   about: text("about").notNull(),
+
+  // Publication details
+  publicationTypes: jsonb("publication_types"),       // e.g. ["magazine","website","podcast"]
+  circulation: text("circulation"),
+  publicationFrequency: text("publication_frequency"),
+
+  // Accreditation history
+  priorOlympic: boolean("prior_olympic"),
+  priorOlympicYears: text("prior_olympic_years"),
+  priorParalympic: boolean("prior_paralympic"),
+  priorParalympicYears: text("prior_paralympic_years"),
+  pastCoverageExamples: text("past_coverage_examples"),
+  sportsToCover: text("sports_to_cover"),
+  additionalComments: text("additional_comments"),
+  accessibilityNeeds: boolean("accessibility_needs"),
 
   // Status
   status: applicationStatusEnum("status").default("pending").notNull(),

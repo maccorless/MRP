@@ -58,21 +58,80 @@ export async function submitApplication(formData: FormData) {
   }
 
   // Common form fields
-  const contactName = (formData.get("contact_name") as string).trim();
+  const contactFirstName = (formData.get("contact_first_name") as string)?.trim() || "";
+  const contactLastName = (formData.get("contact_last_name") as string)?.trim() || "";
+  const contactName = `${contactFirstName} ${contactLastName}`.trim() || (formData.get("contact_name") as string)?.trim() || "";
+  const contactTitle = (formData.get("contact_title") as string)?.trim() || null;
+  const contactPhone = (formData.get("contact_phone") as string)?.trim() || null;
+  const contactCell = (formData.get("contact_cell") as string)?.trim() || null;
+
+  // Secondary contact
+  const secondaryFirstName = (formData.get("secondary_first_name") as string)?.trim() || null;
+  const secondaryLastName = (formData.get("secondary_last_name") as string)?.trim() || null;
+  const secondaryTitle = (formData.get("secondary_title") as string)?.trim() || null;
+  const secondaryEmail = (formData.get("secondary_email") as string)?.trim() || null;
+  const secondaryPhone = (formData.get("secondary_phone") as string)?.trim() || null;
+  const secondaryCell = (formData.get("secondary_cell") as string)?.trim() || null;
+
+  // Category + quantities
   const categoryRaw = formData.get("category") as string | null;
   const { categoryPress, categoryPhoto } = parseCategoryFlags(categoryRaw);
   const about = (formData.get("about") as string).trim();
-
-  // Requested quantities
   const requestedPressRaw = formData.get("requested_press") as string | null;
   const requestedPhotoRaw = formData.get("requested_photo") as string | null;
   const requestedPress = categoryPress && requestedPressRaw ? parseInt(requestedPressRaw, 10) : null;
   const requestedPhoto = categoryPhoto && requestedPhotoRaw ? parseInt(requestedPhotoRaw, 10) : null;
 
+  // Publication details
+  const publicationTypesRaw = formData.getAll("publication_types") as string[];
+  const publicationTypes = publicationTypesRaw.length > 0 ? publicationTypesRaw : null;
+  const circulation = (formData.get("circulation") as string)?.trim() || null;
+  const publicationFrequency = (formData.get("publication_frequency") as string)?.trim() || null;
+  const sportsToCover = (formData.get("sports_to_cover") as string)?.trim() || null;
+
+  // Accreditation history
+  const priorOlympicRaw = formData.get("prior_olympic") as string | null;
+  const priorOlympic = priorOlympicRaw === "yes" ? true : priorOlympicRaw === "no" ? false : null;
+  const priorOlympicYears = (formData.get("prior_olympic_years") as string)?.trim() || null;
+  const priorParalympicRaw = formData.get("prior_paralympic") as string | null;
+  const priorParalympic = priorParalympicRaw === "yes" ? true : priorParalympicRaw === "no" ? false : null;
+  const priorParalympicYears = (formData.get("prior_paralympic_years") as string)?.trim() || null;
+  const pastCoverageExamples = (formData.get("past_coverage_examples") as string)?.trim() || null;
+  const additionalComments = (formData.get("additional_comments") as string)?.trim() || null;
+
+  // Flags
+  const accessibilityNeeds = formData.get("accessibility_needs") === "yes" ? true : null;
+
   // Must select at least one category
   if (!categoryPress && !categoryPhoto) {
     redirect("/apply?error=invalid_category");
   }
+
+  // All expanded fields for insert/update
+  const expandedFields = {
+    contactFirstName: contactFirstName || null,
+    contactLastName: contactLastName || null,
+    contactTitle,
+    contactPhone,
+    contactCell,
+    secondaryFirstName,
+    secondaryLastName,
+    secondaryTitle,
+    secondaryEmail,
+    secondaryPhone,
+    secondaryCell,
+    publicationTypes,
+    circulation,
+    publicationFrequency,
+    sportsToCover,
+    priorOlympic,
+    priorOlympicYears,
+    priorParalympic,
+    priorParalympicYears,
+    pastCoverageExamples,
+    additionalComments,
+    accessibilityNeeds,
+  };
 
   // ── RESUBMISSION PATH ─────────────────────────────────────────────────────
   if (resubmitId) {
@@ -98,6 +157,7 @@ export async function submitApplication(formData: FormData) {
         requestedPress,
         requestedPhoto,
         about,
+        ...expandedFields,
         status: "resubmitted",
         resubmissionCount: returnedApp.resubmissionCount + 1,
         reviewNote: null,
@@ -168,6 +228,14 @@ export async function submitApplication(formData: FormData) {
 
     const isMultiTerritory = samedomainOrgs.length > 0;
 
+    // Org address fields
+    const orgAddress = (formData.get("address") as string)?.trim() || null;
+    const orgAddress2 = (formData.get("address2") as string)?.trim() || null;
+    const orgCity = (formData.get("city") as string)?.trim() || null;
+    const orgStateProvince = (formData.get("state_province") as string)?.trim() || null;
+    const orgPostalCode = (formData.get("postal_code") as string)?.trim() || null;
+    const isFreelancer = formData.get("is_freelancer") === "yes" ? true : null;
+
     [org] = await db
       .insert(organizations)
       .values({
@@ -178,6 +246,12 @@ export async function submitApplication(formData: FormData) {
         website,
         emailDomain,
         isMultiTerritoryFlag: isMultiTerritory,
+        address: orgAddress,
+        address2: orgAddress2,
+        city: orgCity,
+        stateProvince: orgStateProvince,
+        postalCode: orgPostalCode,
+        isFreelancer,
       })
       .returning();
   }
@@ -202,6 +276,7 @@ export async function submitApplication(formData: FormData) {
       requestedPress,
       requestedPhoto,
       about,
+      ...expandedFields,
       status: "pending",
     })
     .returning();
