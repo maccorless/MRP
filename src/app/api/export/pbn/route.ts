@@ -4,10 +4,7 @@ import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { categoryDisplayLabel } from "@/lib/category";
-
-function csvEscape(val: string | null | undefined): string {
-  return `"${String(val ?? "").replace(/"/g, '""')}"`;
-}
+import { csvEscape } from "@/lib/csv";
 
 export async function GET() {
   const session = await getSession();

@@ -58,11 +58,19 @@ export default async function IocDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">IOC Overview</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          All {rows.length} applications across all NOCs
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">IOC Overview</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            All {rows.length} applications across all NOCs
+          </p>
+        </div>
+        <a
+          href="/api/export/eoi"
+          className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+        >
+          Export all EoI CSV ↓
+        </a>
       </div>
 
       {/* Status stat cards */}

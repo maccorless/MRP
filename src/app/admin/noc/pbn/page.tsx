@@ -92,15 +92,25 @@ export default async function NocPbnPage({
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      {/* Header with state badge */}
+      {/* Header with state badge + export */}
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Press by Number — {nocCode}</h1>
           <p className="text-sm text-gray-500 mt-0.5">Assign press and photo slots to your approved organisations</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${stateBadgeClass}`}>
-          {overallState}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${stateBadgeClass}`}>
+            {overallState}
+          </span>
+          {rows.length > 0 && (
+            <a
+              href="/api/export/pbn-allocations"
+              className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Export CSV ↓
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Status banners */}

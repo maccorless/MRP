@@ -98,8 +98,9 @@ export default async function NocQueuePage({
         </div>
       )}
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 mb-4 flex-wrap">
+      {/* Toolbar: filter tabs + export */}
+      <div className="flex items-center justify-between mb-4">
+      <div className="flex gap-1 flex-wrap">
         {filters.map(({ key, label }) => (
           <Link
             key={key}
@@ -113,6 +114,13 @@ export default async function NocQueuePage({
             {label}
           </Link>
         ))}
+      </div>
+      <a
+        href={activeFilter === "all" ? "/api/export/eoi" : `/api/export/eoi?status=${activeFilter}`}
+        className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+      >
+        Export CSV ↓
+      </a>
       </div>
 
       {/* Table */}

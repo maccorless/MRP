@@ -52,11 +52,21 @@ export default async function NocEnrPage({
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">ENR Nominations — {nocCode}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Nominate non-rights broadcaster organisations for IOC accreditation
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">ENR Nominations — {nocCode}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Nominate non-rights broadcaster organisations for IOC accreditation
+          </p>
+        </div>
+        {requests.length > 0 && (
+          <a
+            href="/api/export/enr"
+            className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+          >
+            Export CSV ↓
+          </a>
+        )}
       </div>
 
       {/* Banners */}
