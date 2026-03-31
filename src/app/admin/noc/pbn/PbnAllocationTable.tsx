@@ -2,39 +2,97 @@
 
 import { useState, useMemo } from "react";
 import { saveSlotAllocations, submitPbnToOcog } from "./actions";
+import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 
 type PbnRow = {
   orgId: string;
   orgName: string;
-  categoryPress: boolean;
-  categoryPhoto: boolean;
-  requestedPress: number | null;
-  requestedPhoto: number | null;
-  pressSlots: number;
-  photoSlots: number;
+  categoryE:   boolean;
+  categoryEs:  boolean;
+  categoryEp:  boolean;
+  categoryEps: boolean;
+  categoryEt:  boolean;
+  categoryEc:  boolean;
+  requestedE:   number | null;
+  requestedEs:  number | null;
+  requestedEp:  number | null;
+  requestedEps: number | null;
+  requestedEt:  number | null;
+  requestedEc:  number | null;
+  eSlots:   number;
+  esSlots:  number;
+  epSlots:  number;
+  epsSlots: number;
+  etSlots:  number;
+  ecSlots:  number;
+};
+
+type Quota = {
+  eTotal:   number;
+  esTotal:  number;
+  epTotal:  number;
+  epsTotal: number;
+  etTotal:  number;
+  ecTotal:  number;
 };
 
 type Props = {
   rows: PbnRow[];
-  quota: { pressTotal: number; photoTotal: number } | null;
+  quota: Quota | null;
+  activeCategories: AccredCategory[];
   isEditable: boolean;
 };
 
-export function PbnAllocationTable({ rows, quota, isEditable }: Props) {
-  // Track current input values for live totals
-  const [values, setValues] = useState<Record<string, { press: number; photo: number }>>(
-    () => Object.fromEntries(rows.map((r) => [r.orgId, { press: r.pressSlots, photo: r.photoSlots }]))
+// Stable map from category value to row field names
+const CAT_FIELDS: Record<AccredCategory, { requested: keyof PbnRow; slots: keyof PbnRow; quotaKey: keyof Quota }> = {
+  E:   { requested: "requestedE",   slots: "eSlots",   quotaKey: "eTotal" },
+  Es:  { requested: "requestedEs",  slots: "esSlots",  quotaKey: "esTotal" },
+  EP:  { requested: "requestedEp",  slots: "epSlots",  quotaKey: "epTotal" },
+  EPs: { requested: "requestedEps", slots: "epsSlots", quotaKey: "epsTotal" },
+  ET:  { requested: "requestedEt",  slots: "etSlots",  quotaKey: "etTotal" },
+  EC:  { requested: "requestedEc",  slots: "ecSlots",  quotaKey: "ecTotal" },
+};
+
+const CAT_ENABLED_FIELD: Record<AccredCategory, keyof PbnRow> = {
+  E:   "categoryE",
+  Es:  "categoryEs",
+  EP:  "categoryEp",
+  EPs: "categoryEps",
+  ET:  "categoryEt",
+  EC:  "categoryEc",
+};
+
+type SlotValues = Record<AccredCategory, number>;
+
+export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }: Props) {
+  const [values, setValues] = useState<Record<string, SlotValues>>(
+    () => Object.fromEntries(
+      rows.map((r) => [
+        r.orgId,
+        {
+          E:   r.eSlots,
+          Es:  r.esSlots,
+          EP:  r.epSlots,
+          EPs: r.epsSlots,
+          ET:  r.etSlots,
+          EC:  r.ecSlots,
+        } as SlotValues,
+      ])
+    )
   );
 
-  // Search + sort state
   const [search, setSearch] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
 
-  // Live totals
-  const totalPress = Object.values(values).reduce((s, v) => s + v.press, 0);
-  const totalPhoto = Object.values(values).reduce((s, v) => s + v.photo, 0);
+  // Live totals per category
+  const totals = useMemo<SlotValues>(() => {
+    const t = { E: 0, Es: 0, EP: 0, EPs: 0, ET: 0, EC: 0 } as SlotValues;
+    for (const v of Object.values(values)) {
+      for (const cat of ACCRED_CATEGORIES) t[cat.value] += v[cat.value];
+    }
+    return t;
+  }, [values]);
 
-  // Filtered + sorted rows
   const displayRows = useMemo(() => {
     let filtered = rows;
     if (search) {
@@ -46,54 +104,81 @@ export function PbnAllocationTable({ rows, quota, isEditable }: Props) {
     );
   }, [rows, search, sortAsc]);
 
-  function handleChange(orgId: string, field: "press" | "photo", raw: string) {
-    const val = parseInt(raw, 10) || 0;
+  function handleChange(orgId: string, cat: AccredCategory, raw: string) {
+    const val = parseInt(raw, 10);
     setValues((prev) => ({
       ...prev,
-      [orgId]: { ...prev[orgId], [field]: Math.max(0, val) },
+      [orgId]: { ...prev[orgId], [cat]: isNaN(val) ? 0 : Math.max(0, val) },
     }));
   }
 
   function handleSubmitToOcog(e: React.FormEvent<HTMLFormElement>) {
     if (!quota) return;
-    const unusedPress = quota.pressTotal - totalPress;
-    const unusedPhoto = quota.photoTotal - totalPhoto;
-    if (unusedPress > 0 || unusedPhoto > 0) {
-      const parts = [];
-      if (unusedPress > 0) parts.push(`${unusedPress} unused press slots`);
-      if (unusedPhoto > 0) parts.push(`${unusedPhoto} unused photo slots`);
-      if (!window.confirm(`You have ${parts.join(" and ")}. Submit anyway?`)) {
+    const over: string[] = [];
+    for (const cat of ACCRED_CATEGORIES) {
+      const catQuota = quota[CAT_FIELDS[cat.value].quotaKey];
+      if (catQuota > 0 && totals[cat.value] > catQuota) {
+        over.push(`${cat.value} (${totals[cat.value]}/${catQuota})`);
+      }
+    }
+    if (over.length > 0) {
+      e.preventDefault();
+      alert(`Over quota for: ${over.join(", ")}. Reduce before submitting.`);
+      return;
+    }
+    const unused = activeCategories
+      .filter((cat) => {
+        const catQuota = quota[CAT_FIELDS[cat].quotaKey];
+        return catQuota > 0 && totals[cat] < catQuota;
+      });
+    if (unused.length > 0) {
+      const parts = unused.map((cat) => {
+        const catQuota = quota[CAT_FIELDS[cat].quotaKey];
+        return `${cat}: ${totals[cat]}/${catQuota}`;
+      });
+      if (!window.confirm(`Unused quota in: ${parts.join(", ")}. Submit anyway?`)) {
         e.preventDefault();
       }
     }
   }
 
+  // Bar colours per category
+  const CAT_COLOR: Record<AccredCategory, string> = {
+    E:   "bg-[#0057A8]",
+    Es:  "bg-blue-400",
+    EP:  "bg-purple-600",
+    EPs: "bg-purple-400",
+    ET:  "bg-amber-500",
+    EC:  "bg-gray-500",
+  };
+
   return (
     <div className="space-y-4">
-      {/* Quota progress bars (live) */}
+      {/* Per-category quota progress bars */}
       {quota && (
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { label: "Press slots", used: totalPress, total: quota.pressTotal, color: "bg-[#0057A8]" },
-            { label: "Photo slots", used: totalPhoto, total: quota.photoTotal, color: "bg-purple-600" },
-          ].map(({ label, used, total, color }) => {
-            const pct = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+        <div className="grid grid-cols-3 gap-3">
+          {activeCategories.map((cat) => {
+            const catMeta = ACCRED_CATEGORIES.find((c) => c.value === cat)!;
+            const used  = totals[cat];
+            const total = quota[CAT_FIELDS[cat].quotaKey];
+            if (total === 0) return null;
+            const pct  = Math.min(100, Math.round((used / total) * 100));
             const over = used > total;
             return (
-              <div key={label} className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="font-medium text-gray-700">{label}</span>
+              <div key={cat} className="bg-white rounded-lg border border-gray-200 p-3">
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="font-medium text-gray-700">{catMeta.shortLabel} — {catMeta.description}</span>
                   <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
                     {used} / {total}
                   </span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${over ? "bg-red-500" : color}`}
+                    className={`h-full rounded-full transition-all ${over ? "bg-red-500" : CAT_COLOR[cat]}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                {over && <p className="text-xs text-red-600 mt-1">Over quota — reduce before submitting</p>}
+                {over && <p className="text-xs text-red-600 mt-1">Over quota</p>}
               </div>
             );
           })}
@@ -118,94 +203,101 @@ export function PbnAllocationTable({ rows, quota, isEditable }: Props) {
         className="space-y-4"
       >
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                 <tr>
                   <th
-                    className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide cursor-pointer select-none hover:text-gray-700"
+                    className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide cursor-pointer select-none hover:text-gray-700 whitespace-nowrap"
                     onClick={() => setSortAsc((v) => !v)}
                   >
                     Organisation {sortAsc ? "↑" : "↓"}
                   </th>
-                  <th className="text-right px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Req.</th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Press</th>
-                  <th className="text-right px-3 py-3 text-xs font-medium text-gray-400 uppercase tracking-wide">Req.</th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Photo</th>
+                  {activeCategories.map((cat) => (
+                    <th
+                      key={cat}
+                      colSpan={2}
+                      className="text-center px-2 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap border-l border-gray-200"
+                    >
+                      {cat}
+                    </th>
+                  ))}
+                </tr>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th />
+                  {activeCategories.map((cat) => (
+                    <>
+                      <th key={`${cat}-req`} className="text-right px-2 py-1 text-xs font-normal text-gray-400 border-l border-gray-200">Req.</th>
+                      <th key={`${cat}-alloc`} className="text-right px-3 py-1 text-xs font-normal text-gray-500">Alloc.</th>
+                    </>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {displayRows.map((row) => {
-                  const v = values[row.orgId] ?? { press: 0, photo: 0 };
+                  const v = values[row.orgId];
                   return (
                     <tr key={row.orgId} className="hover:bg-gray-50">
-                      <td className="px-5 py-3">
-                        <div className="font-medium text-gray-900">{row.orgName}</div>
-                      </td>
-                      {/* Requested press */}
-                      <td className="px-3 py-3 text-right text-xs text-gray-400">
-                        {row.categoryPress ? (row.requestedPress ?? "—") : "—"}
-                      </td>
-                      {/* Press allocation */}
-                      <td className="px-5 py-3 text-right">
-                        {isEditable ? (
-                          row.categoryPress ? (
-                            <input
-                              type="number"
-                              name={`press_${row.orgId}`}
-                              value={v.press}
-                              onChange={(e) => handleChange(row.orgId, "press", e.target.value)}
-                              onFocus={(e) => e.target.select()}
-                              min={0}
-                              className="w-20 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            />
-                          ) : (
-                            <>
-                              <input type="hidden" name={`press_${row.orgId}`} value={0} />
-                              <span className="text-gray-300">—</span>
-                            </>
-                          )
-                        ) : (
-                          <span className="font-semibold text-gray-900">{v.press}</span>
-                        )}
-                      </td>
-                      {/* Requested photo */}
-                      <td className="px-3 py-3 text-right text-xs text-gray-400">
-                        {row.categoryPhoto ? (row.requestedPhoto ?? "—") : "—"}
-                      </td>
-                      {/* Photo allocation */}
-                      <td className="px-5 py-3 text-right">
-                        {isEditable ? (
-                          row.categoryPhoto ? (
-                            <input
-                              type="number"
-                              name={`photo_${row.orgId}`}
-                              value={v.photo}
-                              onChange={(e) => handleChange(row.orgId, "photo", e.target.value)}
-                              onFocus={(e) => e.target.select()}
-                              min={0}
-                              className="w-20 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            />
-                          ) : (
-                            <>
-                              <input type="hidden" name={`photo_${row.orgId}`} value={0} />
-                              <span className="text-gray-300">—</span>
-                            </>
-                          )
-                        ) : (
-                          <span className="font-semibold text-gray-900">{v.photo}</span>
-                        )}
-                      </td>
+                      <td className="px-5 py-3 font-medium text-gray-900 whitespace-nowrap">{row.orgName}</td>
+                      {activeCategories.map((cat) => {
+                        const fields = CAT_FIELDS[cat];
+                        const enabled = row[CAT_ENABLED_FIELD[cat]] as boolean;
+                        const requested = row[fields.requested] as number | null;
+                        const currentVal = v[cat];
+                        return (
+                          <>
+                            {/* Requested */}
+                            <td key={`${row.orgId}-${cat}-req`} className="px-2 py-3 text-right text-xs text-gray-400 border-l border-gray-100">
+                              {enabled ? (requested ?? "—") : "—"}
+                            </td>
+                            {/* Allocated */}
+                            <td key={`${row.orgId}-${cat}-alloc`} className="px-3 py-3 text-right">
+                              {isEditable ? (
+                                enabled ? (
+                                  <input
+                                    type="number"
+                                    name={`${cat.toLowerCase()}_${row.orgId}`}
+                                    value={currentVal}
+                                    onChange={(e) => handleChange(row.orgId, cat, e.target.value)}
+                                    onFocus={(e) => e.target.select()}
+                                    min={0}
+                                    className="w-16 border border-gray-300 rounded px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  />
+                                ) : (
+                                  <>
+                                    <input type="hidden" name={`${cat.toLowerCase()}_${row.orgId}`} value={0} />
+                                    <span className="text-gray-300">—</span>
+                                  </>
+                                )
+                              ) : (
+                                <span className={`font-semibold ${currentVal > 0 ? "text-gray-900" : "text-gray-300"}`}>
+                                  {enabled ? currentVal : "—"}
+                                </span>
+                              )}
+                            </td>
+                          </>
+                        );
+                      })}
                     </tr>
                   );
                 })}
               </tbody>
               <tfoot className="bg-gray-50 border-t border-gray-200 sticky bottom-0">
                 <tr>
-                  <td colSpan={2} className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
-                  <td className="px-5 py-2.5 text-right font-semibold text-gray-900">{totalPress}</td>
-                  <td />
-                  <td className="px-5 py-2.5 text-right font-semibold text-gray-900">{totalPhoto}</td>
+                  <td className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
+                  {activeCategories.map((cat) => (
+                    <>
+                      <td key={`total-${cat}-req`} className="border-l border-gray-200" />
+                      <td key={`total-${cat}-alloc`} className="px-3 py-2.5 text-right font-semibold text-gray-900">
+                        {totals[cat]}
+                        {quota && quota[CAT_FIELDS[cat].quotaKey] > 0 && (
+                          <span className="text-xs font-normal text-gray-400 ml-1">
+                            /{quota[CAT_FIELDS[cat].quotaKey]}
+                          </span>
+                        )}
+                      </td>
+                    </>
+                  ))}
                 </tr>
               </tfoot>
             </table>

@@ -8,7 +8,8 @@ export class AcrStubClient implements AcrAdapter {
   async pushOrgData(orgs: OrgExportRecord[]): Promise<{ pushed: number }> {
     console.log(`[ACR STUB] pushOrgData called with ${orgs.length} records`);
     for (const org of orgs) {
-      console.log(`[ACR STUB]  ${org.nocCode} / ${org.orgName} — press:${org.pressSlots} photo:${org.photoSlots}`);
+      const total = org.eSlots + org.esSlots + org.epSlots + org.epsSlots + org.etSlots + org.ecSlots;
+      console.log(`[ACR STUB]  ${org.nocCode} / ${org.orgName} — E:${org.eSlots} Es:${org.esSlots} EP:${org.epSlots} EPs:${org.epsSlots} ET:${org.etSlots} EC:${org.ecSlots} (total:${total})`);
     }
     return { pushed: orgs.length };
   }

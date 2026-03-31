@@ -2,13 +2,18 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, orgSlotAllocations, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+import { ACCRED_CATEGORIES } from "@/lib/category";
 import { PbnAllocationTable } from "./PbnAllocationTable";
 
 const ERROR_MSG: Record<string, string> = {
-  no_quota:          "No quota has been assigned to your NOC yet. Contact IOC to set quotas.",
-  no_allocations:    "No slot allocations found. Save your allocations before submitting.",
-  over_press_quota:  "Press slot total exceeds your quota. Reduce before submitting.",
-  over_photo_quota:  "Photo slot total exceeds your quota. Reduce before submitting.",
+  no_quota:       "No quota has been assigned to your NOC yet. Contact IOC to set quotas.",
+  no_allocations: "No slot allocations found. Save your allocations before submitting.",
+  over_e_quota:   "E (Journalist) slot total exceeds your quota. Reduce before submitting.",
+  over_es_quota:  "Es (Sport-Specific Journalist) slot total exceeds your quota.",
+  over_ep_quota:  "EP (Photographer) slot total exceeds your quota.",
+  over_eps_quota: "EPs (Sport-Specific Photographer) slot total exceeds your quota.",
+  over_et_quota:  "ET (Technician) slot total exceeds your quota.",
+  over_ec_quota:  "EC (Support Staff) slot total exceeds your quota.",
 };
 
 export default async function NocPbnPage({
@@ -20,21 +25,27 @@ export default async function NocPbnPage({
   const nocCode = session.nocCode;
   const { success, error } = await searchParams;
 
-  // Quota for this NOC
   const [quota] = await db
     .select()
     .from(nocQuotas)
     .where(and(eq(nocQuotas.nocCode, nocCode), eq(nocQuotas.eventId, "LA28")));
 
-  // Approved orgs with existing allocations
   const rows = await db
     .select({
       app: {
         id: applications.id,
-        categoryPress: applications.categoryPress,
-        categoryPhoto: applications.categoryPhoto,
-        requestedPress: applications.requestedPress,
-        requestedPhoto: applications.requestedPhoto,
+        categoryE:   applications.categoryE,
+        categoryEs:  applications.categoryEs,
+        categoryEp:  applications.categoryEp,
+        categoryEps: applications.categoryEps,
+        categoryEt:  applications.categoryEt,
+        categoryEc:  applications.categoryEc,
+        requestedE:   applications.requestedE,
+        requestedEs:  applications.requestedEs,
+        requestedEp:  applications.requestedEp,
+        requestedEps: applications.requestedEps,
+        requestedEt:  applications.requestedEt,
+        requestedEc:  applications.requestedEc,
       },
       org: {
         id: organizations.id,
@@ -42,8 +53,12 @@ export default async function NocPbnPage({
       },
       alloc: {
         id: orgSlotAllocations.id,
-        pressSlots: orgSlotAllocations.pressSlots,
-        photoSlots: orgSlotAllocations.photoSlots,
+        eSlots:   orgSlotAllocations.eSlots,
+        esSlots:  orgSlotAllocations.esSlots,
+        epSlots:  orgSlotAllocations.epSlots,
+        epsSlots: orgSlotAllocations.epsSlots,
+        etSlots:  orgSlotAllocations.etSlots,
+        ecSlots:  orgSlotAllocations.ecSlots,
         pbnState: orgSlotAllocations.pbnState,
       },
     })
@@ -59,7 +74,6 @@ export default async function NocPbnPage({
     )
     .where(and(eq(applications.nocCode, nocCode), eq(applications.status, "approved")));
 
-  // Determine overall PbN state
   const hasSubmitted = rows.some((r) => r.alloc?.pbnState === "noc_submitted");
   const hasApproved  = rows.some((r) => r.alloc?.pbnState === "ocog_approved");
   const isEditable   = !hasSubmitted && !hasApproved;
@@ -78,25 +92,54 @@ export default async function NocPbnPage({
     ? "bg-yellow-100 text-yellow-800"
     : "bg-gray-100 text-gray-600";
 
-  // Serialize for client component
   const tableRows = rows.map(({ org, app, alloc }) => ({
-    orgId: org.id,
+    orgId:   org.id,
     orgName: org.name,
-    categoryPress: app.categoryPress,
-    categoryPhoto: app.categoryPhoto,
-    requestedPress: app.requestedPress,
-    requestedPhoto: app.requestedPhoto,
-    pressSlots: alloc?.pressSlots ?? 0,
-    photoSlots: alloc?.photoSlots ?? 0,
+    categoryE:   app.categoryE,
+    categoryEs:  app.categoryEs,
+    categoryEp:  app.categoryEp,
+    categoryEps: app.categoryEps,
+    categoryEt:  app.categoryEt,
+    categoryEc:  app.categoryEc,
+    requestedE:   app.requestedE,
+    requestedEs:  app.requestedEs,
+    requestedEp:  app.requestedEp,
+    requestedEps: app.requestedEps,
+    requestedEt:  app.requestedEt,
+    requestedEc:  app.requestedEc,
+    eSlots:   alloc?.eSlots   ?? 0,
+    esSlots:  alloc?.esSlots  ?? 0,
+    epSlots:  alloc?.epSlots  ?? 0,
+    epsSlots: alloc?.epsSlots ?? 0,
+    etSlots:  alloc?.etSlots  ?? 0,
+    ecSlots:  alloc?.ecSlots  ?? 0,
   }));
 
+  const quotaProps = quota
+    ? {
+        eTotal:   quota.eTotal   ?? 0,
+        esTotal:  quota.esTotal  ?? 0,
+        epTotal:  quota.epTotal  ?? 0,
+        epsTotal: quota.epsTotal ?? 0,
+        etTotal:  quota.etTotal  ?? 0,
+        ecTotal:  quota.ecTotal  ?? 0,
+      }
+    : null;
+
+  // Determine which categories any org in this NOC actually requested
+  const activeCategories = ACCRED_CATEGORIES.filter((cat) =>
+    rows.some((r) => {
+      const key = `category${cat.value}` as keyof typeof r.app;
+      return r.app[key] === true;
+    })
+  ).map((c) => c.value);
+
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      {/* Header with state badge + export */}
+    <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Press by Number — {nocCode}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Assign press and photo slots to your approved organisations</p>
+          <p className="text-sm text-gray-500 mt-0.5">Assign accreditation slots per category to your approved organisations</p>
         </div>
         <div className="flex items-center gap-2">
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${stateBadgeClass}`}>
@@ -113,7 +156,6 @@ export default async function NocPbnPage({
         </div>
       </div>
 
-      {/* Status banners */}
       {success === "submitted" && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
           Allocation submitted to OCOG for review.
@@ -130,7 +172,6 @@ export default async function NocPbnPage({
         </div>
       )}
 
-      {/* No quota warning */}
       {!quota && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
           No quota has been assigned to {nocCode} yet. IOC must set quotas before you can submit.
@@ -146,7 +187,8 @@ export default async function NocPbnPage({
         <>
           <PbnAllocationTable
             rows={tableRows}
-            quota={quota ? { pressTotal: quota.pressTotal, photoTotal: quota.photoTotal } : null}
+            quota={quotaProps}
+            activeCategories={activeCategories}
             isEditable={isEditable}
           />
 

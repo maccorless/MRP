@@ -233,10 +233,12 @@ async function main() {
       nocCode: "USA",
       contactName: "Jane Holloway",
       contactEmail: "j.holloway@ap.org",
-      categoryPress: true,
-      categoryPhoto: false,
+      categoryE: true, categoryEs: false, categoryEp: false,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      requestedE: 8,
+      categoryPress: true, categoryPhoto: false,
       about:
-        "AP has covered every Olympic Games since 1896. We are requesting accreditation for 12 journalists and photographers covering athletics, swimming, and gymnastics.",
+        "AP has covered every Olympic Games since 1896. Requesting 8 E (journalist) accreditations covering athletics, swimming, and gymnastics.",
       status: "pending",
     })
     .returning();
@@ -249,10 +251,12 @@ async function main() {
       nocCode: "USA",
       contactName: "Marcus Webb",
       contactEmail: "m.webb@nytimes.com",
-      categoryPress: true,
-      categoryPhoto: false,
+      categoryE: true, categoryEs: false, categoryEp: true,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      requestedE: 5, requestedEp: 3,
+      categoryPress: true, categoryPhoto: true,
       about:
-        "The New York Times sports desk requests accreditation for coverage across all major Olympic venues. Our team of 8 includes 5 writers and 3 photographers.",
+        "The New York Times sports desk requests 5 E and 3 EP accreditations for a team covering all major Olympic venues.",
       status: "pending",
     })
     .returning();
@@ -265,10 +269,12 @@ async function main() {
       nocCode: "GBR",
       contactName: "Priya Nair",
       contactEmail: "p.nair@theguardian.com",
-      categoryPress: true,
-      categoryPhoto: false,
+      categoryE: true, categoryEs: true, categoryEp: false,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      requestedE: 4, requestedEs: 2,
+      categoryPress: true, categoryPhoto: false,
       about:
-        "The Guardian requests accreditation for our Olympic coverage team. We have attended every Summer Olympics since 1988 with full editorial and photographic teams.",
+        "The Guardian requests 4 E (general journalist) and 2 Es (sport-specific, athletics) accreditations for our Olympic coverage team.",
       status: "pending",
     })
     .returning();
@@ -282,10 +288,12 @@ async function main() {
       nocCode: "USA",
       contactName: "Dana Kowalski",
       contactEmail: "d.kowalski@nbcuni.com",
-      categoryPress: false,
-      categoryPhoto: true,
+      categoryE: false, categoryEs: false, categoryEp: true,
+      categoryEps: true, categoryEt: false, categoryEc: false,
+      requestedEp: 6, requestedEps: 2,
+      categoryPress: false, categoryPhoto: true,
       about:
-        "NBC Sports requests photographer accreditation for our production team covering all competition venues.",
+        "NBC Sports requests 6 EP (general photographer) and 2 EPs (swimming specialist) accreditations for our production team.",
       status: "approved",
       reviewedBy: nocAdminUS.id,
       reviewedAt: new Date("2026-02-15T10:30:00Z"),
@@ -300,10 +308,12 @@ async function main() {
       nocCode: "GBR",
       contactName: "Tom Ashford",
       contactEmail: "t.ashford@bbc.co.uk",
-      categoryPress: true,
-      categoryPhoto: true,
+      categoryE: true, categoryEs: false, categoryEp: true,
+      categoryEps: false, categoryEt: true, categoryEc: true,
+      requestedE: 6, requestedEp: 4, requestedEt: 2, requestedEc: 2,
+      categoryPress: true, categoryPhoto: true,
       about:
-        "BBC Sport requests accreditation for our editorial and photography teams covering the 2028 Games across all major venues.",
+        "BBC Sport requests 6 E journalists, 4 EP photographers, 2 ET technicians, and 2 EC support staff for full Games coverage.",
       status: "approved",
       reviewedBy: nocAdminGB.id,
       reviewedAt: new Date("2026-02-20T09:00:00Z"),
@@ -318,10 +328,12 @@ async function main() {
       nocCode: "FRA",
       contactName: "Claire Fontaine",
       contactEmail: "c.fontaine@lequipe.fr",
-      categoryPress: false,
-      categoryPhoto: true,
+      categoryE: false, categoryEs: false, categoryEp: true,
+      categoryEps: true, categoryEt: false, categoryEc: false,
+      requestedEp: 4, requestedEps: 2,
+      categoryPress: false, categoryPhoto: true,
       about:
-        "L'Équipe requests photographer accreditation for our team of 6 sports photographers covering athletics, cycling, and team sports.",
+        "L'Équipe requests 4 EP photographers and 2 EPs (athletics specialist) for our team covering athletics, cycling, and team sports.",
       status: "approved",
       reviewedBy: nocAdminFR.id,
       reviewedAt: new Date("2026-02-22T14:15:00Z"),
@@ -337,8 +349,10 @@ async function main() {
       nocCode: "USA",
       contactName: "Sam Okafor",
       contactEmail: "s.okafor@reuters.com",
-      categoryPress: true,
-      categoryPhoto: false,
+      categoryE: true, categoryEs: false, categoryEp: false,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      requestedE: 3,
+      categoryPress: true, categoryPhoto: false,
       about: "Reuters newswire coverage.",
       status: "returned",
       reviewNote:
@@ -356,8 +370,10 @@ async function main() {
       nocCode: "GBR",
       contactName: "Helen Brooks",
       contactEmail: "h.brooks@reuters.com",
-      categoryPress: false,
-      categoryPhoto: true,
+      categoryE: false, categoryEs: false, categoryEp: true,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      requestedEp: 5,
+      categoryPress: false, categoryPhoto: true,
       about: "Reuters photo desk.",
       status: "returned",
       reviewNote:
@@ -376,10 +392,12 @@ async function main() {
       nocCode: "USA",
       contactName: "Jane Holloway",
       contactEmail: "j.holloway@ap.org",
-      categoryPress: true,
-      categoryPhoto: true,
+      categoryE: true, categoryEs: false, categoryEp: true,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      requestedE: 8, requestedEp: 4,
+      categoryPress: true, categoryPhoto: true,
       about:
-        "AP photo desk requests photographer accreditation for 4 photographers covering athletics and aquatics at SoFi Stadium and the Olympic Aquatics Center. Updated from original submission to reflect confirmed venue assignments.",
+        "AP requests 8 E journalists and 4 EP photographers covering athletics and aquatics at SoFi Stadium and the Olympic Aquatics Center. Updated from original submission with full venue breakdown.",
       status: "resubmitted",
       resubmissionCount: 1,
       reviewNote:
@@ -398,8 +416,10 @@ async function main() {
       nocCode: "FRA",
       contactName: "Pierre Martin",
       contactEmail: "p.martin@lequipe.fr",
-      categoryPress: true,
-      categoryPhoto: false,
+      categoryE: true, categoryEs: false, categoryEp: false,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      requestedE: 2,
+      categoryPress: true, categoryPhoto: false,
       about: "Additional press pass request.",
       status: "rejected",
       reviewNote:
@@ -603,36 +623,46 @@ async function main() {
 
   console.log("Seeding NOC quota fixtures...");
 
+  // Per-category quotas. Press-side: E + Es + ET + EC. Photo-side: EP + EPs.
+  // Tier 1 NOCs have larger Es/EPs allocations; smaller NOCs often have 0 for specialist categories.
   const quotaFixtures = [
     // Tier 1
-    { nocCode: "USA", pressTotal: 150, photoTotal: 50 },
-    { nocCode: "GBR", pressTotal: 95,  photoTotal: 32 },
-    { nocCode: "GER", pressTotal: 82,  photoTotal: 28 },
-    { nocCode: "FRA", pressTotal: 88,  photoTotal: 30 },
-    { nocCode: "JPN", pressTotal: 88,  photoTotal: 30 },
-    { nocCode: "AUS", pressTotal: 72,  photoTotal: 24 },
-    { nocCode: "CAN", pressTotal: 65,  photoTotal: 22 },
-    { nocCode: "ITA", pressTotal: 70,  photoTotal: 23 },
+    { nocCode: "USA", eTotal: 80, esTotal: 20, epTotal: 30, epsTotal: 10, etTotal: 25, ecTotal: 25 },
+    { nocCode: "GBR", eTotal: 50, esTotal: 15, epTotal: 20, epsTotal:  8, etTotal: 15, ecTotal: 15 },
+    { nocCode: "GER", eTotal: 44, esTotal: 12, epTotal: 18, epsTotal:  6, etTotal: 12, ecTotal: 14 },
+    { nocCode: "FRA", eTotal: 46, esTotal: 14, epTotal: 19, epsTotal:  7, etTotal: 13, ecTotal: 15 },
+    { nocCode: "JPN", eTotal: 46, esTotal: 14, epTotal: 19, epsTotal:  7, etTotal: 13, ecTotal: 15 },
+    { nocCode: "AUS", eTotal: 38, esTotal: 10, epTotal: 15, epsTotal:  5, etTotal: 10, ecTotal:  9 },
+    { nocCode: "CAN", eTotal: 34, esTotal:  8, epTotal: 14, epsTotal:  4, etTotal:  9, ecTotal: 10 },
+    { nocCode: "ITA", eTotal: 36, esTotal: 10, epTotal: 14, epsTotal:  5, etTotal: 10, ecTotal: 10 },
     // Tier 2
-    { nocCode: "NED", pressTotal: 52,  photoTotal: 18 },
-    { nocCode: "ESP", pressTotal: 58,  photoTotal: 19 },
-    { nocCode: "BRA", pressTotal: 60,  photoTotal: 20 },
-    { nocCode: "CHN", pressTotal: 90,  photoTotal: 30 },
-    { nocCode: "KOR", pressTotal: 55,  photoTotal: 18 },
-    { nocCode: "SWE", pressTotal: 42,  photoTotal: 14 },
-    { nocCode: "NOR", pressTotal: 38,  photoTotal: 13 },
+    { nocCode: "NED", eTotal: 28, esTotal:  6, epTotal: 12, epsTotal:  3, etTotal:  6, ecTotal: 10 },
+    { nocCode: "ESP", eTotal: 30, esTotal:  8, epTotal: 12, epsTotal:  4, etTotal:  7, ecTotal: 11 },
+    { nocCode: "BRA", eTotal: 32, esTotal:  8, epTotal: 13, epsTotal:  4, etTotal:  8, ecTotal: 12 },
+    { nocCode: "CHN", eTotal: 48, esTotal: 14, epTotal: 20, epsTotal:  6, etTotal: 14, ecTotal: 14 },
+    { nocCode: "KOR", eTotal: 28, esTotal:  8, epTotal: 12, epsTotal:  4, etTotal:  7, ecTotal: 10 },
+    { nocCode: "SWE", eTotal: 22, esTotal:  5, epTotal:  9, epsTotal:  2, etTotal:  6, ecTotal:  9 },
+    { nocCode: "NOR", eTotal: 20, esTotal:  4, epTotal:  9, epsTotal:  2, etTotal:  5, ecTotal:  9 },
     // Tier 3
-    { nocCode: "KEN", pressTotal: 12,  photoTotal: 0  },
-    { nocCode: "NZL", pressTotal: 22,  photoTotal: 8  },
-    { nocCode: "POR", pressTotal: 18,  photoTotal: 6  },
+    { nocCode: "KEN", eTotal: 10, esTotal:  2, epTotal:  0, epsTotal:  0, etTotal:  0, ecTotal:  0 },
+    { nocCode: "NZL", eTotal: 12, esTotal:  3, epTotal:  5, epsTotal:  2, etTotal:  2, ecTotal:  3 },
+    { nocCode: "POR", eTotal: 10, esTotal:  2, epTotal:  4, epsTotal:  1, etTotal:  2, ecTotal:  2 },
   ];
 
   await db.insert(nocQuotas).values(
     quotaFixtures.map((q) => ({
       nocCode: q.nocCode,
       eventId: "LA28",
-      pressTotal: q.pressTotal,
-      photoTotal: q.photoTotal,
+      // Per-category totals
+      eTotal:   q.eTotal,
+      esTotal:  q.esTotal,
+      epTotal:  q.epTotal,
+      epsTotal: q.epsTotal,
+      etTotal:  q.etTotal,
+      ecTotal:  q.ecTotal,
+      // Legacy aggregates kept in sync
+      pressTotal: q.eTotal + q.esTotal + q.etTotal + q.ecTotal,
+      photoTotal: q.epTotal + q.epsTotal,
       setBy: iocAdmin.id,
       notes: "Paris 2024 fixture data — replace with real IOC import before July 2026",
     }))

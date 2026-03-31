@@ -33,22 +33,32 @@ export async function approvePbn(formData: FormData) {
   let totalPress = 0;
   let totalPhoto = 0;
 
-  for (const alloc of allocs) {
-    // Check if OCOG adjusted the value for this org
-    const pressKey = `press_${alloc.organizationId}`;
-    const photoKey = `photo_${alloc.organizationId}`;
-    const pressRaw = formData.get(pressKey);
-    const photoRaw = formData.get(photoKey);
+  let grandTotal = 0;
+  const catSummaryParts: string[] = [];
 
-    const press = pressRaw !== null ? (parseInt(pressRaw as string, 10) || 0) : alloc.pressSlots;
-    const photo = photoRaw !== null ? (parseInt(photoRaw as string, 10) || 0) : alloc.photoSlots;
+  for (const alloc of allocs) {
+    function getVal(key: string, fallback: number): number {
+      const raw = formData.get(`${key}_${alloc.organizationId}`);
+      return raw !== null ? (parseInt(raw as string, 10) || 0) : fallback;
+    }
+
+    const eSlots   = getVal("e",   alloc.eSlots   ?? 0);
+    const esSlots  = getVal("es",  alloc.esSlots  ?? 0);
+    const epSlots  = getVal("ep",  alloc.epSlots  ?? 0);
+    const epsSlots = getVal("eps", alloc.epsSlots ?? 0);
+    const etSlots  = getVal("et",  alloc.etSlots  ?? 0);
+    const ecSlots  = getVal("ec",  alloc.ecSlots  ?? 0);
+    const press    = eSlots + esSlots + etSlots + ecSlots;
+    const photo    = epSlots + epsSlots;
 
     totalPress += press;
     totalPhoto += photo;
+    grandTotal += press + photo;
 
     await db
       .update(orgSlotAllocations)
       .set({
+        eSlots, esSlots, epSlots, epsSlots, etSlots, ecSlots,
         pressSlots: press,
         photoSlots: photo,
         pbnState: "ocog_approved",
@@ -58,12 +68,15 @@ export async function approvePbn(formData: FormData) {
       .where(eq(orgSlotAllocations.id, alloc.id));
   }
 
+  if (totalPress > 0) catSummaryParts.push(`${totalPress} press`);
+  if (totalPhoto > 0) catSummaryParts.push(`${totalPhoto} photo`);
+
   await db.insert(auditLog).values({
     actorType: "ocog_admin",
     actorId: session.userId,
     actorLabel: session.displayName,
     action: "pbn_approved",
-    detail: `${nocCode} · ${allocs.length} orgs · ${totalPress} press · ${totalPhoto} photo`,
+    detail: `${nocCode} · ${allocs.length} orgs · ${grandTotal} total (${catSummaryParts.join(", ")})`,
   });
 
   redirect(`/admin/ocog/pbn?success=approved&noc=${nocCode}`);
@@ -112,10 +125,18 @@ export async function sendToAcr(formData: FormData) {
     emailDomain: org.emailDomain,
     contactName: app.contactName,
     contactEmail: app.contactEmail,
-    categoryPress: app.categoryPress,
-    categoryPhoto: app.categoryPhoto,
-    pressSlots: alloc.pressSlots,
-    photoSlots: alloc.photoSlots,
+    categoryE:   app.categoryE   ?? false,
+    categoryEs:  app.categoryEs  ?? false,
+    categoryEp:  app.categoryEp  ?? false,
+    categoryEps: app.categoryEps ?? false,
+    categoryEt:  app.categoryEt  ?? false,
+    categoryEc:  app.categoryEc  ?? false,
+    eSlots:   alloc.eSlots   ?? 0,
+    esSlots:  alloc.esSlots  ?? 0,
+    epSlots:  alloc.epSlots  ?? 0,
+    epsSlots: alloc.epsSlots ?? 0,
+    etSlots:  alloc.etSlots  ?? 0,
+    ecSlots:  alloc.ecSlots  ?? 0,
     commonCodesId: org.commonCodesId,
     eventId: "LA28",
   }));

@@ -9,10 +9,20 @@ export type OrgExportRecord = {
   emailDomain: string;
   contactName: string;
   contactEmail: string;
-  categoryPress: boolean;
-  categoryPhoto: boolean;
-  pressSlots: number;
-  photoSlots: number;
+  // Per-category flags (requested in EoI)
+  categoryE:   boolean;
+  categoryEs:  boolean;
+  categoryEp:  boolean;
+  categoryEps: boolean;
+  categoryEt:  boolean;
+  categoryEc:  boolean;
+  // Per-category allocated slots
+  eSlots:   number;
+  esSlots:  number;
+  epSlots:  number;
+  epsSlots: number;
+  etSlots:  number;
+  ecSlots:  number;
   commonCodesId: string | null;
   eventId: string;
 };
