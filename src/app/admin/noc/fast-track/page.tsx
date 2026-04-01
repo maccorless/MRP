@@ -48,7 +48,7 @@ export default async function FastTrackPage({
       <form action={submitFastTrackApplication} className="space-y-6">
         {/* Organisation */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-900">Organisation</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Organisation</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <label className="block text-xs text-gray-500 mb-1">
@@ -56,7 +56,7 @@ export default async function FastTrackPage({
               </label>
               <input
                 name="org_name" type="text" required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
             </div>
             <div>
@@ -65,7 +65,7 @@ export default async function FastTrackPage({
               </label>
               <select
                 name="org_type" required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               >
                 <option value="">— Select —</option>
                 {ORG_TYPE_OPTIONS.map((o) => (
@@ -78,7 +78,7 @@ export default async function FastTrackPage({
               <input
                 name="country" type="text" list="country-list"
                 placeholder="e.g. US"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
               <datalist id="country-list">
                 {COUNTRY_CODES.map((c) => (
@@ -90,7 +90,7 @@ export default async function FastTrackPage({
               <label className="block text-xs text-gray-500 mb-1">Website</label>
               <input
                 name="website" type="url" placeholder="https://"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
             </div>
           </div>
@@ -98,7 +98,7 @@ export default async function FastTrackPage({
 
         {/* Contact */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-900">Primary Contact</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Primary Contact</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-gray-500 mb-1">
@@ -106,7 +106,7 @@ export default async function FastTrackPage({
               </label>
               <input
                 name="contact_name" type="text" required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
             </div>
             <div>
@@ -115,7 +115,7 @@ export default async function FastTrackPage({
               </label>
               <input
                 name="contact_email" type="email" required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
             </div>
           </div>
@@ -123,7 +123,7 @@ export default async function FastTrackPage({
 
         {/* Accreditation */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-900">Accreditation Categories</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Accreditation Categories</h2>
           <p className="text-xs text-gray-500">Select all that apply and enter requested slot quantities.</p>
           <div className="space-y-3">
             {CATEGORIES.map(({ key, label, sub }) => (
@@ -139,7 +139,8 @@ export default async function FastTrackPage({
                 <input
                   type="number" name={`requested_${key}`}
                   min={0} placeholder="slots"
-                  className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  aria-label={`${label} (${sub}) — requested slots`}
+                  className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
                 />
               </div>
             ))}
@@ -148,14 +149,14 @@ export default async function FastTrackPage({
 
         {/* About */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-gray-900">About</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">About</h2>
           <div>
             <label className="block text-xs text-gray-500 mb-1">
               Brief description of the organisation and coverage plans <span className="text-red-500">*</span>
             </label>
             <textarea
               name="about" required rows={3}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
             />
           </div>
         </div>

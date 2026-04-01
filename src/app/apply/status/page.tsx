@@ -9,9 +9,9 @@ export default async function StatusPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Check Application Status</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-1">Check Application Status</h1>
       <p className="text-gray-500 mb-8">
-        Enter the email address you used to apply. We&apos;ll generate a link to view your application status.
+        Enter the email address you used to apply to view your application status.
       </p>
 
       {error === "invalid_email" && (
@@ -36,10 +36,13 @@ export default async function StatusPage({
           />
           <button
             type="submit"
-            className="mt-4 w-full bg-[#0057A8] text-white rounded-md px-4 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
+            className="mt-4 w-full bg-[#0057A8] text-white rounded px-4 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
           >
-            View My Status →
+            View My Status
           </button>
+          <p className="mt-2 text-xs text-gray-400 text-center">
+            The status link is valid for 1 hour. You can request a new one at any time.
+          </p>
         </form>
       </div>
     </div>

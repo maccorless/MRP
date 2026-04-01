@@ -68,12 +68,14 @@ export default async function StatusViewPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Application Status</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-1">Application Status</h1>
       <p className="text-gray-500 mb-6 text-sm">Logged in as {email}</p>
 
       {rows.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">
-          No applications found for this email address.
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-500">
+          <div className="font-medium text-gray-700 mb-1">No applications found</div>
+          <p className="text-gray-500">We couldn&apos;t find an application for <span className="font-medium">{email}</span>.</p>
+          <p className="mt-2 text-gray-400">If you applied with a different address, <a href="/apply/status" className="text-[#0057A8] hover:underline">try again</a>. Otherwise contact your NOC directly.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -95,6 +97,13 @@ export default async function StatusViewPage({
                 <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
                   <div className="font-medium mb-1">NOC note:</div>
                   {app.reviewNote}
+                </div>
+              )}
+
+              {app.status === "approved" && !allocation && (
+                <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
+                  <div className="font-medium text-gray-700 mb-1">Slot allocation in progress</div>
+                  Your accreditation numbers are being finalised. You will be contacted once slot allocation is confirmed.
                 </div>
               )}
 
@@ -126,7 +135,7 @@ export default async function StatusViewPage({
                   href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
                   className="inline-block mt-1 px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
                 >
-                  Correct &amp; Resubmit →
+                  Correct &amp; Resubmit
                 </Link>
               )}
             </div>

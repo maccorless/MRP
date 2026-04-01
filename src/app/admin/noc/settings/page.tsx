@@ -42,7 +42,7 @@ export default async function NocSettingsPage({
       )}
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">EoI Submission Window</h2>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">EoI Submission Window</h2>
 
         <div className="flex items-center gap-3 mb-4">
           <span
@@ -86,6 +86,11 @@ export default async function NocSettingsPage({
           >
             {isOpen ? "Close EoI Window" : "Open EoI Window"}
           </button>
+          {isOpen && (
+            <p className="mt-2 text-xs text-gray-400">
+              Closing the window will immediately prevent new applications. You can re-open it at any time.
+            </p>
+          )}
         </form>
       </div>
     </div>
