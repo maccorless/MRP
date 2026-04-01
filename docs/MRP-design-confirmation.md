@@ -1,7 +1,7 @@
 # LA28 Media Registration Portal — Design Confirmation
 
 **Status:** ACTIVE
-**Last updated:** 2026-03-31
+**Last updated:** 2026-03-31 (codebase accuracy audit — all sections reconciled with built code)
 **Covers:** v0.1 prototype through v1 launch (August 2026) and v1.1 (October 2026)
 
 ---
@@ -127,7 +127,8 @@ For LA28 2028, the IOC has committed to launching a dedicated Media Registration
 | **NOC admin** | EoI (primary owner) + PbN allocation + ENR request submission | See own territory only. Approve/return/reject EoI applications. Invite known orgs. Allocate per-category slots per org in PbN. Submit prioritised ENR request list. |
 | **IF admin** | PbN allocation + ENR request submission (NO EoI queue) | Same screens as NOC admin. No public EoI queue — IFs bring orgs in via the invited-org flow only. Allocate per-category slots per org in PbN. Submit ENR list. |
 | **OCOG admin** | PbN (formal approval + adjustment) | Cross-NOC access. Same PbN screens as NOC but across all territories. Formally approve or adjust NOC PbN submissions. Visibility only on EoI. |
-| **IOC admin** | ENR (grants from holdback) + visibility + IOC-Direct org management | Visibility only on EoI and PbN for all NOC territories. Reviews NOC ENR request lists; grants or denies ENR allocations from holdback pool. Sets total per-category quota per NOC via Excel import. **Additionally acts as the NOC-equivalent for IOC-Direct organisations**: manages the reserved org list, reviews EoI applications from IOC-Direct orgs, and submits PbN allocations for those orgs (subject to OCOG approval, same state machine as any NOC). |
+| **IOC admin** | ENR (grants from holdback) + visibility + IOC-Direct org management + sudo | Visibility only on EoI and PbN for all NOC territories. Reviews NOC ENR request lists; grants or denies ENR allocations from holdback pool. Sets total per-category quota per NOC via Excel import. **Additionally acts as the NOC-equivalent for IOC-Direct organisations**: manages the reserved org list, reviews EoI applications from IOC-Direct orgs, and submits PbN allocations for those orgs (subject to OCOG approval, same state machine as any NOC). Can use sudo mode to open a read-only session as any non-IOC admin user (see IOC Sudo Feature section). |
+| **IOC readonly** (`ioc_readonly`) | Visibility only | Same read-only visibility as IOC admin but cannot write any data. Cannot use sudo mode. |
 | **Applicant** | EoI submission | Submits their own application. Views own status. No other access. |
 
 **IF vs. NOC distinction:** IFs use the same admin screens and role as NOC admins. The key difference: IFs have no public EoI application queue. All IF-territory orgs come in via the NOC invited-org flow. Once in the system, IF admin allocates PbN slots and submits ENR lists identically to NOC admins. For schema purposes, `noc_code` / `body_code` covers both NOC and IF codes.
@@ -159,7 +160,7 @@ SYSTEM 2: ACR / ACR system (LA28's existing accreditation platform)
 - **UI:** Tailwind CSS + shadcn/ui
 - **Auth:** Magic link (applicants); email + password (all admin roles, prototype); D.TEC/DGP SSO at v1.0
 - **Deploy:** Railway (prototype); D.TEC-managed infrastructure (production)
-- **Tests:** Vitest + Playwright
+- **Tests:** Vitest (integration tests against real DB, run in `pool: "forks"` isolation). Playwright — not yet added.
 
 ### Adapter Pattern
 
@@ -175,6 +176,42 @@ Key adapter methods: `fetchQuota(noc_id, event_id)`, `pushOrgData(org[], event_i
 ---
 
 ## Scope
+
+### Build status summary (as of 2026-03-31)
+
+The following features are built and working in the v0.1 codebase. Items marked "not yet built" are in scope but not yet implemented.
+
+| Feature | Status |
+|---------|--------|
+| EoI 5-tab form (Organisation, Contacts, Accreditation, Publication, History) | Built |
+| EoI localStorage auto-save + country→NOC auto-suggest + URL validation | Built |
+| EoI E-category multi-select with per-category requested quantities | Built |
+| EoI publication types checkboxes (13 types + Other reveal) | Built |
+| EoI history tab with Olympic edition checkboxes | Built |
+| NOC EoI review queue (approve / return / reject) | Built |
+| NOC application detail page with QuotaBar impact panel | Built |
+| NOC PbN per-category slot allocation + quota enforcement | Built |
+| NOC ENR request submission | Built |
+| OCOG PbN approval (per-category overrides) + `sendToAcr` | Built |
+| IOC ENR decision (granted / partial / denied per org) | Built |
+| IOC quota import (CSV) + in-app edit | Built — **legacy press/photo totals only; per-category import not yet wired** |
+| IOC sudo (impersonation, read-only, amber banner, audit log) | Built |
+| `sudoTokens` DB table + `mrp_sudo_session` cookie | Built |
+| `ioc_readonly` role | Built (in session.ts + layout role labels) |
+| ACR adapter stub (`pushOrgData`) | Built |
+| ACR adapter `fetchQuota` / `getOrgCodes` methods | Not yet built |
+| `OrgExportRecord` noc_e_slots + enr_slots fields | Not yet built |
+| Per-category quota import/edit (replacing legacy press/photo) | Not yet built |
+| Playwright end-to-end tests | Not yet built |
+| IOC anomaly detection / concentration risk | Not yet built |
+| Games-to-Games org persistence UI | Schema ready; UI not yet built |
+| Public org directory | Not yet built |
+| NOC/IF invited-org flow | Not yet built |
+| CAPTCHA on public EoI form | Not yet built |
+| Cross-NOC dedup (provisionally eliminated) | Not in scope for v1 |
+| ENR undertaking digital signature | Planned v1.1 |
+| ACR real-time sync | Planned v1.1 |
+| D.TEC/DGP SSO | Planned v1.0 |
 
 ### V0.1 (prototype) and V1 — ships August 24, 2026
 
@@ -247,6 +284,45 @@ At EoI stage, a media organisation selects **one or more** accreditation categor
 **Multi-category = one application.** An org may select multiple categories in a single application (e.g. E + EP for a news agency with both reporters and photographers). This creates one application record with multiple category flags. During PbN, the NOC assigns slots per category independently. An org can receive slots in some categories and zero in others.
 
 **ENR is not a category in the EoI form.** ENR organisations do not self-apply.
+
+### EoI form structure (built — 5 tabs)
+
+The EoI form is a 5-tab client component (`EoiFormTabs.tsx`) with localStorage auto-save (500 ms debounce, keyed by email, skipped for resubmissions) and per-tab completion status indicators.
+
+| Tab | Fields |
+|-----|--------|
+| **1 — Organisation** | Org name, type, country (datalist), NOC code (datalist with auto-suggest from country — see below), website (URL validation), freelancer flag |
+| **2 — Contacts** | Primary contact: first name, last name, title/position, email, phone, cell. Secondary contact (all optional): first name, last name, title, email, phone, cell |
+| **3 — Accreditation** | E-category multi-select (E, Es, EP, EPs, ET, EC) with requested quantity per selected category. About/coverage free-text (required). |
+| **4 — Publication** | Publication type checkboxes (multi-select, see list below) + "Other" text reveal. Circulation/visitors, frequency, sports to cover. |
+| **5 — History** | Prior Olympic accreditation (Yes/No). If Yes: edition checkboxes (Sydney 2000 … Paris 2024) + past coverage examples. Prior Paralympic accreditation (Yes/No). If Yes: edition checkboxes. If both No: open sports-coverage prompt. Additional comments. |
+
+**Country → NOC auto-suggest:** when the applicant selects a country, the NOC code field is automatically populated with the matching NOC code (via `COUNTRY_TO_NOC` map). Auto-suggest is overridable; if the user had already typed a NOC code manually it is not overwritten unless the previous value was itself auto-suggested.
+
+**URL validation:** `https?://` pattern enforced client-side on all `type="url"` inputs before form submission.
+
+**Process intro:** a collapsible "How does this work?" disclosure (`<details>`) at the top of the form explains the EoI → PbN → accreditation process to applicants.
+
+**Publication types (actual list):**
+- App
+- Editorial Website / Blog
+- Email Newsletter
+- Magazine / Newspaper
+- Official NGB Publication
+- Photo Journal / Online Gallery
+- Podcast
+- Print Newsletter
+- Social Media
+- Television / Broadcast
+- Online Video / Streaming
+- Freelancer with confirmed assignment
+- Other *(reveals free-text input when checked)*
+
+Values are stored as `snake_case` slugs in a JSONB array (`publication_types` column).
+
+**Olympic/Paralympic edition checkboxes:** rather than free-text year entry, the History tab shows individual checkboxes for each Summer Games edition (Sydney 2000, Athens 2004, Beijing 2008, London 2012, Rio 2016, Tokyo 2020, Paris 2024). Selected editions are stored comma-joined in `prior_olympic_years` / `prior_paralympic_years`.
+
+**Accessibility needs:** a boolean field (`accessibility_needs`) is captured in the Accreditation tab and shown to the NOC reviewer.
 
 ### NOC-invited applications
 
@@ -378,9 +454,11 @@ The IOC assigns per-category quota totals per NOC (E_total, Es_total, EP_total, 
 
 ### Quota import
 
-The IOC sets quota totals in July 2026. Quotas are imported from an Excel spreadsheet (not entered through a setup screen). The import produces a viewable table in the IOC dashboard.
+The IOC sets quota totals in July 2026. Quotas are imported from a CSV payload (not Excel directly — the UI accepts CSV text). The import produces a viewable table in the IOC dashboard.
 
-**IOC can edit quota totals after import.** For v0.1, the quota table is both importable and editable in-app. The IOC can toggle an edit mode to adjust individual NOC per-category totals directly, in addition to re-importing the full Excel file. All changes (import or manual edit) are logged in the `quota_changes` audit table (previous value → new value, actor, timestamp, category). The IOC Quota screen shows the current totals with a "Re-import from Excel" button and an "Edit Quotas" toggle.
+**IOC can edit quota totals after import.** For v0.1, the quota table is both importable and editable in-app. The IOC can toggle an edit mode to adjust individual NOC totals directly, in addition to re-importing the full CSV. All changes (import or manual edit) are logged in the `quota_changes` audit table (previous value → new value, actor, timestamp).
+
+**Current implementation status (v0.1 gap):** The `importQuotas` and `saveQuotaEdits` server actions (`src/app/admin/ioc/quotas/actions.ts`) currently read and write only `pressTotal` and `photoTotal` (the legacy two-column fields on `nocQuotas`). They do NOT yet operate on the per-category fields (`eTotal`, `esTotal`, `epTotal`, `epsTotal`, `etTotal`, `ecTotal`). The CSV format is `NOC,press,photo` (three columns). The `quota_changes` records use `quotaType = 'press' | 'photo'`, not per-category codes. **This must be updated before the July 2026 quota-setting window to accept and distribute the full per-category breakdown.** The schema already has all the per-category columns; only the import/edit actions and the UI table need updating.
 
 **Prior Games comparison:** The quota table shows a comparison column for the prior edition of the same Games type (summer↔summer, winter↔winter). For development and UAT, Paris 2024 / Tokyo 2020 per-category quota totals per NOC are seeded as test data. Real historical data will be loaded from IOC OIS source exports before the July 2026 quota-setting window.
 
@@ -390,13 +468,27 @@ The NOC PbN screen always shows quota state per category:
 - Before IOC sets totals: each category shows "not yet assigned"
 - After IOC sets totals: each category shows "X of Y allocated" (e.g. "E: 12 of 50 · EP: 8 of 20 · Es: 0 of 5 …")
 
+### QuotaBar component (built — NOC EoI review detail page)
+
+The application detail page (`/admin/noc/[id]`) includes a **quota impact panel** that shows what approving this application would do to the NOC's per-category quota. Built as `<QuotaBar>` within the page component:
+
+- Shown only when: quota data exists for this NOC, and application is in an actionable state (pending or resubmitted)
+- For each category the application requested: renders a horizontal bar split into three segments — already-allocated (blue), this-request (amber or red), remaining headroom (gray)
+- Over-quota state turns the request segment red and shows "over quota" text
+- Format: `{allocated}+{requested}/{total}` per category
+- The panel is labeled "Quota impact if approved" and scoped to categories the applicant actually selected
+
 ### OCOG approval states
 
-PbN submissions track two states:
-- **NOC submitted** — NOC has finalised their allocation for review
-- **OCOG approved** — OCOG has formally accepted the allocation (with or without adjustments)
+PbN submissions track four states (the `pbn_state` enum):
+- **`draft`** — NOC is still editing their allocation
+- **`noc_submitted`** — NOC has finalised their allocation for OCOG review
+- **`ocog_approved`** — OCOG has formally accepted the allocation (with or without adjustments)
+- **`sent_to_acr`** — OCOG has pushed the approved allocation to ACR via `sendToAcr()`
 
-IOC can see both states but takes no action on them.
+IOC can see all states but takes no action on them.
+
+The `approvePbn()` OCOG action accepts per-org per-category slot overrides from the approval form, writes them to `orgSlotAllocations`, and transitions state to `ocog_approved`. The `sendToAcr()` action pushes `ocog_approved` allocations through the ACR adapter and transitions state to `sent_to_acr`.
 
 **NOC notifications:**
 - When OCOG approves (or adjusts and approves) the NOC's PbN submission → NOC receives an in-app notification and email. If OCOG adjusted any allocation, the notification shows which orgs were changed and by how much.
@@ -406,48 +498,103 @@ The NOC PbN screen shows the current state prominently (Draft → Submitted → 
 
 ### Data model
 
+The tables below reflect the built schema (`src/db/schema.ts`).
+
 ```sql
+organizations
+  id                uuid          -- stable across Games
+  event_id          text          -- default 'LA28'
+  name              text
+  country           text          -- ISO 3166-1 alpha-2
+  noc_code          text          -- e.g. USA, FRA; 'IOC_DIRECT' for reserved orgs
+  org_type          enum          -- media_print_online | media_broadcast | news_agency | enr
+  website           text
+  email_domain      text          -- extracted for dedup
+  common_codes_id   text          -- null until coded
+  status            enum          -- active | inactive | banned | pending_review
+  is_multi_territory_flag boolean
+  is_freelancer     boolean
+  -- v2 address fields (captured in EoI form, optional)
+  address, address2, city, state_province, postal_code  text
+
+applications
+  id                uuid
+  event_id          text          -- default 'LA28'
+  reference_number  text          -- unique; e.g. APP-2028-USA-00051
+  organization_id   uuid
+  noc_code          text
+  -- Primary contact
+  contact_name      text          -- backward compat: first + " " + last
+  contact_email, contact_first_name, contact_last_name, contact_title, contact_phone, contact_cell  text
+  -- Secondary contact (all optional)
+  secondary_first_name, secondary_last_name, secondary_title, secondary_email, secondary_phone, secondary_cell  text
+  -- Legacy category flags (backward compat)
+  category_press, category_photo  boolean
+  -- Per-category EoI flags
+  category_e, category_es, category_ep, category_eps, category_et, category_ec  boolean
+  -- Requested quantities per category (from EoI form)
+  requested_e, requested_es, requested_ep, requested_eps, requested_et, requested_ec  integer
+  about             text          -- required coverage description
+  -- Publication details
+  publication_types jsonb         -- string[] of slugs e.g. ["magazine___newspaper","podcast"]
+  circulation, publication_frequency  text
+  -- Accreditation history
+  prior_olympic, prior_paralympic  boolean
+  prior_olympic_years, prior_paralympic_years  text  -- comma-joined edition slugs
+  past_coverage_examples, sports_to_cover, additional_comments  text
+  accessibility_needs  boolean
+  -- Status / review
+  status            enum          -- pending | approved | returned | resubmitted | rejected
+  resubmission_count  integer
+  review_note       text          -- return/rejection reason (shown to applicant)
+  internal_note     text          -- NOC-only, never shown to applicant
+  reviewed_at       timestamp
+  reviewed_by       text
+
 noc_quotas
-  noc_code          text        -- 'IOC_DIRECT' is a valid noc_code for IOC-Direct orgs
+  noc_code          text          -- 'IOC_DIRECT' is a valid noc_code
   event_id          text
-  e_total           integer     -- Journalist quota, set by IOC
-  es_total          integer     -- Sport-specific journalist quota, set by IOC
-  ep_total          integer     -- Photographer quota, set by IOC
-  eps_total         integer     -- Sport-specific photographer quota, set by IOC
-  et_total          integer     -- Technician quota, set by IOC
-  ec_total          integer     -- Support staff quota, set by IOC
-  noc_e_total       integer     -- Press Attaché quota (formula-based pool), set by IOC
-  set_by            text        -- IOC admin user id
+  -- Legacy totals (kept for backward compat with import actions — see quota import gap note)
+  press_total       integer
+  photo_total       integer
+  -- Per-category quota totals (IOC-assigned)
+  e_total           integer       -- Journalist
+  es_total          integer       -- Sport-specific journalist
+  ep_total          integer       -- Photographer
+  eps_total         integer       -- Sport-specific photographer
+  et_total          integer       -- Technician
+  ec_total          integer       -- Support staff
+  noc_e_total       integer       -- Press Attaché (formula-based pool)
+  set_by, notes     text
   set_at            timestamp
-  notes             text
 
 enr_quotas
   noc_code          text
   event_id          text
-  enr_total         integer     -- granted by IOC from holdback
-  granted_by        text        -- IOC admin user id
+  enr_total         integer       -- granted by IOC from holdback
+  granted_by        text
   granted_at        timestamp
 
 org_slot_allocations
   id                uuid
   organization_id   uuid
-  noc_code          text        -- 'IOC_DIRECT' for IOC-Direct org allocations
+  noc_code          text          -- 'IOC_DIRECT' for IOC-Direct org allocations
   event_id          text
-  e_slots           integer     -- set by NOC (or IOC admin for IOC_DIRECT)
-  es_slots          integer
-  ep_slots          integer
-  eps_slots         integer
-  et_slots          integer
-  ec_slots          integer
-  noc_e_slots       integer     -- set by NOC via nominated-list (not public EoI)
-  allocated_by      text        -- NOC admin user id
+  -- Legacy slot counts (kept for compat; kept in sync by NOC PbN save logic)
+  press_slots       integer
+  photo_slots       integer
+  -- Per-category slot allocations (NOC-assigned in PbN)
+  e_slots, es_slots, ep_slots, eps_slots, et_slots, ec_slots  integer
+  noc_e_slots       integer       -- set by NOC via nominated-list (not public EoI)
+  allocated_by      text
   allocated_at      timestamp
-  pbn_state         text        -- 'draft' | 'noc_submitted' | 'ocog_approved'
-  ocog_reviewed_by  text        -- nullable
-  ocog_reviewed_at  timestamp   -- nullable
+  pbn_state         text          -- 'draft' | 'noc_submitted' | 'ocog_approved' | 'sent_to_acr'
+  ocog_reviewed_by  text
+  ocog_reviewed_at  timestamp
 
 quota_changes                   -- append-only audit (covers both imports and in-app edits)
-  noc_code, event_id, quota_category,  -- quota_category: 'e'|'es'|'ep'|'eps'|'et'|'ec'|'noc_e'|'enr'
+  noc_code, event_id
+  quota_type        text        -- CURRENTLY 'press' | 'photo' (legacy); per-category values not yet implemented in import/edit actions
   old_value, new_value,
   changed_by, changed_at, change_source  -- 'import' | 'manual_edit'
 
@@ -455,15 +602,51 @@ enr_requests
   id                uuid
   noc_code          text
   event_id          text
-  organization_id   uuid
+  organization_id   uuid        -- nullable; may be null for direct NOC nominations
   priority_rank     integer     -- NOC-assigned priority
-  slots_requested   integer     -- set by NOC at submission
+  slots_requested   integer     -- = mustHaveSlots + niceToHaveSlots (backward compat)
+  must_have_slots   integer     -- v2 field
+  nice_to_have_slots integer    -- v2 field
+  enr_org_name      text        -- v2: org name for direct nominations (org may not exist in organizations table)
+  enr_website       text        -- v2
+  enr_description   text        -- v2
+  enr_justification text        -- v2
   slots_granted     integer     -- set by IOC (null until decision)
   decision          text        -- 'granted' | 'partial' | 'denied' | null (pending)
   decision_notes    text        -- nullable, IOC explanation
   reviewed_by       text        -- IOC admin user id
   reviewed_at       timestamp
+
+sudo_tokens                     -- one-time IOC sudo activation tokens
+  id                uuid
+  token_hash        text        -- SHA-256 of raw token (unique)
+  actor_id          text        -- IOC admin userId who initiated
+  actor_label       text        -- IOC admin display name
+  target_email      text        -- target admin email
+  expires_at        timestamp   -- 10 minutes after creation
+  used_at           timestamp   -- set on activation; null = not yet used
+  created_at        timestamp
+
+reserved_organizations           -- IOC-Direct reserved list
+  id                uuid
+  event_id          text
+  name              text        -- canonical org name
+  email_domain      text        -- primary domain for dedup (nullable)
+  alternate_names   jsonb       -- string[] of known name variants
+  website           text
+  country           text
+  notes             text
+  added_by, updated_at, added_at  text/timestamp
 ```
+
+**Enums built in schema:**
+- `org_type`: `media_print_online | media_broadcast | news_agency | enr`
+- `application_status`: `pending | approved | returned | resubmitted | rejected`
+- `actor_type`: `applicant | noc_admin | ioc_admin | ocog_admin | if_admin | system`
+- `audit_action`: `application_submitted | application_resubmitted | application_approved | application_returned | application_rejected | email_verified | admin_login | duplicate_flag_raised | export_generated | pbn_submitted | pbn_approved | pbn_sent_to_acr | quota_changed | enr_submitted | enr_decision_made | sudo_initiated`
+- `pbn_state`: `draft | noc_submitted | ocog_approved | sent_to_acr`
+- `enr_decision`: `granted | partial | denied`
+- `org_status`: `active | inactive | banned | pending_review`
 
 ### Prior Games comparison
 
@@ -527,6 +710,23 @@ The original design included cross-NOC duplicate detection (same org applying th
 
 ## Authentication & Access Control
 
+### Session implementation (built)
+
+Admin sessions use HMAC-SHA256 signed cookies (Web Crypto, works in Node and edge runtime). Two cookies:
+
+| Cookie | Purpose | Max-age |
+|--------|---------|---------|
+| `mrp_session` | Normal admin session | 8 hours |
+| `mrp_sudo_session` | IOC sudo impersonation session | 1 hour |
+
+`getSession()` always prefers `mrp_sudo_session` when present. `getBaseSession()` bypasses sudo and reads the real `mrp_session` (used when generating a new sudo token to verify the initiating admin).
+
+`SessionPayload` fields: `userId`, `email`, `role`, `nocCode` (null except noc_admin), `ifCode` (null except if_admin), `displayName`, `isSudo?` (true only in sudo session), `sudoActorLabel?` (IOC admin display name, only in sudo session).
+
+Role helpers: `requireSession()`, `requireNocSession()`, `requireIfSession()`, `requireNocOrIfSession()`, `requireOcogSession()`, `requireIocSession()` (accepts both ioc_admin and ioc_readonly), `requireIocAdminSession()` (ioc_admin only — blocks ioc_readonly and sudo sessions from write paths). `requireWritable()` blocks any server action call made from a sudo session.
+
+**v1.0:** D.TEC/DGP SSO replaces email+password. Cookie mechanics above carry forward with SSO as the identity source.
+
 **Applicants:**
 - Public EoI form — no account required
 - Magic link (token) for session during application flow
@@ -548,6 +748,74 @@ The original design included cross-NOC duplicate detection (same org applying th
 - Actions: set per-category quota totals (via Excel import or in-app edit — all changes audit-logged); review and grant/deny ENR requests from holdback pool; dedup resolution; anomaly review; manage IOC-Direct reserved org list
 - Cannot approve/return/reject regular NOC EoI applications; cannot approve regular NOC PbN allocations
 - **Exception — IOC-Direct orgs:** the IOC admin acts as the NOC-equivalent for `IOC_DIRECT` organisations. Within that scope, they can approve/return/reject EoI applications and submit PbN allocations (subject to OCOG approval)
+- **Sudo mode:** the IOC admin can open a read-only impersonation session as any non-IOC admin user. See IOC Sudo Feature section.
+
+---
+
+## IOC Sudo Feature
+
+*Built — see `src/app/admin/ioc/sudo/`, `src/app/admin/sudo/`, `src/lib/session.ts`.*
+
+IOC admins can impersonate any non-IOC admin user in a read-only session. This allows IOC Operations to see exactly what a NOC or OCOG admin sees without needing to share credentials.
+
+### Flow
+
+1. IOC admin clicks **"Act as user"** button in the admin header (visible only to `ioc_admin` role, hidden during active sudo).
+2. A modal prompts for the target admin's email address.
+3. `initiateSudo()` server action:
+   - Verifies the caller is `ioc_admin` (via `requireIocAdminSession()`).
+   - Looks up the target in `adminUsers`. Blocks if target is an IOC account.
+   - Creates a row in `sudoTokens` (one-time token, expires in **10 minutes** if unused).
+   - Logs `sudo_initiated` to `auditLog` (actor, target name, role, NOC code).
+   - Returns a one-time activation URL: `/admin/sudo/activate?token=<raw_token>`.
+4. The modal opens the URL in a **new browser tab** (`window.open(..., "_blank")`).
+5. `GET /admin/sudo/activate` route handler:
+   - Hashes the token, looks up the `sudoTokens` row.
+   - Validates: exists, not already used, not expired.
+   - Marks token `usedAt` (consumed — cannot be replayed).
+   - Looks up the target `adminUser` and builds a `SessionPayload` with `isSudo: true` and `sudoActorLabel: <IOC admin display name>`.
+   - Sets the `mrp_sudo_session` cookie (1-hour max-age, httpOnly, secure in production).
+   - Redirects to `/admin`.
+6. In the sudo tab, `getSession()` always prefers `mrp_sudo_session` over the normal `mrp_session` cookie, so all pages load as the target user.
+7. An **amber "SUDO MODE" banner** is shown at the top of every admin page when `session.isSudo === true`. Banner shows: target display name, role, NOC code (if any), and initiating IOC admin's name.
+8. **"Exit sudo" button** in the banner calls `exitSudo()` → clears `mrp_sudo_session` cookie → redirects to `/admin/sudo/exited` (a confirmation page instructing the user to close the tab).
+
+### Read-only enforcement
+
+All server actions that write data call `requireWritable()` at the top:
+
+```ts
+export async function requireWritable(): Promise<void> {
+  const session = await getSession();
+  if (session?.isSudo) {
+    throw new Error("SUDO_READ_ONLY");
+  }
+}
+```
+
+This is a server-side hard block — no UI trick can bypass it. The error surfaces as an unhandled server action error (not a silent failure).
+
+### DB table: `sudoTokens`
+
+```sql
+sudo_tokens
+  id           uuid
+  token_hash   text (unique)     -- SHA-256 of the raw 24-byte random token
+  actor_id     text              -- IOC admin userId who initiated
+  actor_label  text              -- IOC admin display name
+  target_email text              -- target admin email
+  expires_at   timestamp         -- 10 minutes after creation
+  used_at      timestamp         -- set on first use (one-time)
+  created_at   timestamp
+```
+
+### Constraints
+
+- IOC admins **cannot** sudo into another IOC account (`ioc_admin` or `ioc_readonly`).
+- Tokens expire after 10 minutes if not activated.
+- Once activated, the token is consumed and cannot be reused.
+- The sudo session cookie expires after **1 hour**.
+- The `sudo_initiated` audit action is always written at token creation time, even if the token is never used.
 
 ---
 
@@ -597,24 +865,44 @@ If ACR is not ready: fallback to structured CSV export (per-category slots + ENR
 - `fetchQuota()` unavailable → cache last-known quota in MRP DB, surface staleness warning
 - `pushOrgData()` fails → retry queue (exponential backoff, max 5 attempts, 24h window)
 
-**Final PbN output to ACR:**
-```
+**Final PbN output to ACR — actual `OrgExportRecord` interface (built):**
+```ts
 OrgExportRecord {
-  org_id, org_name, org_country, org_type,
-  noc_code,                             -- 'IOC_DIRECT' for IOC-Direct orgs
-  e_slots_allocated: integer,           -- Journalist
-  es_slots_allocated: integer,          -- Sport-specific journalist
-  ep_slots_allocated: integer,          -- Photographer
-  eps_slots_allocated: integer,         -- Sport-specific photographer
-  et_slots_allocated: integer,          -- Technician
-  ec_slots_allocated: integer,          -- Support staff
-  noc_e_slots_allocated: integer,       -- Press Attaché (NOC-nominated)
-  enr_slots_allocated: integer,         -- ENR (separate track)
-  pbn_state: 'ocog_approved',
-  common_code: string | null,
-  games_edition: 'LA28'
+  nocCode:        string;          -- 'IOC_DIRECT' for IOC-Direct orgs
+  organizationId: string;
+  orgName:        string;
+  country:        string;
+  orgType:        string;
+  emailDomain:    string;
+  contactName:    string;
+  contactEmail:   string;
+  // Per-category EoI flags (what was requested)
+  categoryE:   boolean;
+  categoryEs:  boolean;
+  categoryEp:  boolean;
+  categoryEps: boolean;
+  categoryEt:  boolean;
+  categoryEc:  boolean;
+  // Per-category allocated slot counts (from PbN)
+  eSlots:   number;
+  esSlots:  number;
+  epSlots:  number;
+  epsSlots: number;
+  etSlots:  number;
+  ecSlots:  number;
+  commonCodesId: string | null;
+  eventId:  string;                -- 'LA28'
 }
 ```
+
+**Note:** `noc_e_slots_allocated` and `enr_slots_allocated` are NOT yet included in the built `OrgExportRecord`. These are planned but not yet implemented in `src/lib/acr/adapter.ts`. The `AcrAdapter` interface has one method: `pushOrgData(orgs: OrgExportRecord[]): Promise<{ pushed: number }>`. The `fetchQuota()` and `getOrgCodes()` methods referenced in earlier design discussions have not been added to the interface.
+
+**Adapter methods built:**
+- `pushOrgData()` — push org slot data to ACR (stubbed in dev)
+
+**Adapter methods NOT yet built:**
+- `fetchQuota()` — pull quota data from ACR
+- `getOrgCodes()` — fetch Common Codes from ACR
 
 ---
 
@@ -798,6 +1086,20 @@ Summer 2028   LA28 Olympic Games.
 4. Auth boundary: NOC cannot see other NOC data; OCOG can; IOC can (read-only)
 5. Audit: every write action logged with actor, action, timestamp
 
+### Built test files (Vitest — integration tests against real DB)
+
+| File | Lines | Coverage |
+|------|-------|----------|
+| `src/test/uc-applicant.test.ts` | 307 | Full applicant flow: email verify, form submission, resubmission |
+| `src/test/uc-noc-evaluate.test.ts` | 218 | NOC EoI review: approve, return, reject, queue filtering |
+| `src/test/uc-noc-pbn-enr.test.ts` | 408 | NOC PbN slot allocation, quota enforcement, ENR request submission |
+| `src/test/uc-ocog-ioc.test.ts` | 503 | OCOG PbN approval, send to ACR, IOC quota import/edit, IOC ENR decisions |
+| `src/test/category-flags.test.ts` | 24 | E-category flag helper functions |
+| `src/test/helpers.ts` | — | Shared test fixtures and DB setup helpers |
+| `src/test/setup.ts` | — | Vitest setup: loads `.env.local`, runs in `pool: "forks"` isolation |
+
+Playwright end-to-end tests are **not yet added** (referenced in original design but not built).
+
 ---
 
 ## Review Status
@@ -810,6 +1112,7 @@ Summer 2028   LA28 Olympic Games.
 | Design Review | 2026-03-28 | DONE | 6 wireframes produced |
 | IOC Stakeholder Interview | 2026-03-30 | COMPLETE | Major structural clarifications — see Two Processes section and Resolved Decisions 10–15 |
 | Design Doc + Wireframe Review | 2026-03-30 | COMPLETE | ENR process separation clarified; cross-NOC dedup provisionally eliminated; PbN scope in v0.1 confirmed; NOC notifications added; IOC ENR and Quota screens created |
+| Codebase accuracy audit | 2026-03-31 | COMPLETE | Design doc updated to match built code: sudo feature added, ioc_readonly role added, EoI 5-tab form documented, QuotaBar documented, pbn_state sent_to_acr added, OrgExportRecord corrected, quota import legacy gap flagged, full schema documented, build status summary table added, test files documented |
 
 **Critical gaps remaining:**
 - F-01: Email verification bounce = silent failure (no retry UX designed)
