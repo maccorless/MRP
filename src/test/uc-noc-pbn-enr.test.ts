@@ -36,11 +36,12 @@ import {
   submitEnrToIoc,
 } from "@/app/admin/noc/enr/actions";
 import { db } from "@/db";
-import { orgSlotAllocations, enrRequests } from "@/db/schema";
+import { orgSlotAllocations, enrRequests, organizations } from "@/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import {
   callAction,
   createTestOrg,
+  createTestEnrOrg,
   createTestApplication,
   createTestAllocation,
   makeFormData,
@@ -215,35 +216,37 @@ describe("ENR Nomination", () => {
     expect(redirect).toBeDefined();
     expect(redirect!.url).toBe("/admin/noc/enr?success=added");
 
-    // Verify row was created in DB
+    // Verify row was created in DB (join to get org name)
     const rows = await db
-      .select()
+      .select({ req: enrRequests, orgName: organizations.name })
       .from(enrRequests)
-      .where(and(eq(enrRequests.nocCode, "USA"), eq(enrRequests.enrOrgName, uniqueName)));
+      .innerJoin(organizations, eq(enrRequests.organizationId, organizations.id))
+      .where(eq(enrRequests.nocCode, "USA"));
 
-    expect(rows.length).toBe(1);
-    expect(rows[0].mustHaveSlots).toBe(2);
-    expect(rows[0].niceToHaveSlots).toBe(1);
-    expect(rows[0].slotsRequested).toBe(3);
-    expect(rows[0].submittedAt).toBeNull();
+    const created = rows.find((r) => r.orgName === uniqueName);
+    expect(created).toBeDefined();
+    expect(created!.req.mustHaveSlots).toBe(2);
+    expect(created!.req.niceToHaveSlots).toBe(1);
+    expect(created!.req.slotsRequested).toBe(3);
+    expect(created!.req.submittedAt).toBeNull();
 
     // Track for cleanup
-    createdEnrIds.push(rows[0].id);
+    createdEnrIds.push(created!.req.id);
 
     clearSession();
   });
 
   it("removeEnrOrg — removes a draft nomination", async () => {
-    // Create an ENR row directly in the DB (draft: submittedAt = null)
+    // Create an ENR org + request directly in the DB (draft: submittedAt = null)
+    const orgId = await createTestEnrOrg("USA", `Remove Test Org ${Date.now()}`);
     const [req] = await db
       .insert(enrRequests)
       .values({
         nocCode: "USA",
         eventId: "LA28",
-        organizationId: null,
+        organizationId: orgId,
         priorityRank: 99,
         slotsRequested: 2,
-        enrOrgName: `Remove Test Org ${Date.now()}`,
         enrDescription: "To be removed",
         enrJustification: "Test removal",
         mustHaveSlots: 2,
@@ -279,16 +282,19 @@ describe("ENR Nomination", () => {
   });
 
   it("updateEnrRanks — updates priority order", async () => {
-    // Create 2 ENR rows
+    // Create 2 ENR orgs + requests
+    const ts = Date.now();
+    const orgId1 = await createTestEnrOrg("USA", `Rank Test Org A ${ts}`);
+    const orgId2 = await createTestEnrOrg("USA", `Rank Test Org B ${ts}`);
+
     const [req1] = await db
       .insert(enrRequests)
       .values({
         nocCode: "USA",
         eventId: "LA28",
-        organizationId: null,
+        organizationId: orgId1,
         priorityRank: 1,
         slotsRequested: 2,
-        enrOrgName: `Rank Test Org A ${Date.now()}`,
         enrDescription: "Test org A",
         enrJustification: "Rank test A",
         mustHaveSlots: 2,
@@ -302,10 +308,9 @@ describe("ENR Nomination", () => {
       .values({
         nocCode: "USA",
         eventId: "LA28",
-        organizationId: null,
+        organizationId: orgId2,
         priorityRank: 2,
         slotsRequested: 1,
-        enrOrgName: `Rank Test Org B ${Date.now()}`,
         enrDescription: "Test org B",
         enrJustification: "Rank test B",
         mustHaveSlots: 1,
@@ -347,16 +352,16 @@ describe("ENR Nomination", () => {
   });
 
   it("submitEnrToIoc — submits draft nominations", async () => {
-    // Create a fresh draft ENR row
+    // Create a fresh draft ENR org + row
+    const orgId = await createTestEnrOrg("USA", `Submit Test Org ${Date.now()}`);
     const [req] = await db
       .insert(enrRequests)
       .values({
         nocCode: "USA",
         eventId: "LA28",
-        organizationId: null,
+        organizationId: orgId,
         priorityRank: 50,
         slotsRequested: 3,
-        enrOrgName: `Submit Test Org ${Date.now()}`,
         enrDescription: "To be submitted",
         enrJustification: "Test submission",
         mustHaveSlots: 3,

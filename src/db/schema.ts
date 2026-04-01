@@ -91,11 +91,11 @@ export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
   eventId: text("event_id").notNull().default("LA28"),
   name: text("name").notNull(),
-  country: text("country").notNull(),         // ISO 3166-1 alpha-2
+  country: text("country"),                    // ISO 3166-1 alpha-2; null for ENR-only orgs
   nocCode: text("noc_code").notNull(),         // e.g. USA, FRA, JPN
   orgType: orgTypeEnum("org_type").notNull(),
   website: text("website"),
-  emailDomain: text("email_domain").notNull(), // extracted from contact email for dedup
+  emailDomain: text("email_domain"),           // extracted from contact email; null for ENR-only orgs
   commonCodesId: text("common_codes_id"),      // null until coded
   status: orgStatusEnum("org_status").notNull().default("active"),
   isMultiTerritoryFlag: boolean("is_multi_territory_flag").default(false).notNull(),
@@ -298,7 +298,7 @@ export const enrRequests = pgTable("enr_requests", {
   id: uuid("id").primaryKey().defaultRandom(),
   nocCode: text("noc_code").notNull(),
   eventId: text("event_id").notNull().default("LA28"),
-  organizationId: uuid("organization_id").references(() => organizations.id), // nullable for direct nominations
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   priorityRank: integer("priority_rank").notNull(),
   slotsRequested: integer("slots_requested").notNull(), // kept for backward compat; = mustHave + niceToHave
   slotsGranted: integer("slots_granted"),      // null until IOC decides
@@ -308,8 +308,7 @@ export const enrRequests = pgTable("enr_requests", {
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow(),
 
-  // v2: independent nomination fields (org may not exist in organizations table)
-  enrOrgName: text("enr_org_name"),
+  // ENR-specific nomination details (org is always in organizations table, orgType='enr')
   enrWebsite: text("enr_website"),
   enrDescription: text("enr_description"),
   enrJustification: text("enr_justification"),

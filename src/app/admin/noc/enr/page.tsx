@@ -1,6 +1,6 @@
 import { eq, and, asc } from "drizzle-orm";
 import { db } from "@/db";
-import { enrRequests } from "@/db/schema";
+import { enrRequests, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 import { addEnrNomination, submitEnrToIoc } from "./actions";
 import { EnrPriorityList } from "./EnrPriorityList";
@@ -21,33 +21,33 @@ export default async function NocEnrPage({
   const nocCode = session.nocCode;
   const { success, error } = await searchParams;
 
-  // ENR requests for this NOC (no join needed — org info is on the request itself)
   const requests = await db
-    .select()
+    .select({ req: enrRequests, orgName: organizations.name })
     .from(enrRequests)
+    .innerJoin(organizations, eq(enrRequests.organizationId, organizations.id))
     .where(and(eq(enrRequests.nocCode, nocCode), eq(enrRequests.eventId, "LA28")))
     .orderBy(asc(enrRequests.priorityRank));
 
-  const isSubmitted = requests.some((r) => r.submittedAt !== null);
-  const isDecided   = requests.some((r) => r.decision !== null);
-  const draftCount  = requests.filter((r) => r.submittedAt === null).length;
+  const isSubmitted = requests.some((r) => r.req.submittedAt !== null);
+  const isDecided   = requests.some((r) => r.req.decision !== null);
+  const draftCount  = requests.filter((r) => r.req.submittedAt === null).length;
 
-  const totalMustHave   = requests.reduce((s, r) => s + (r.mustHaveSlots ?? r.slotsRequested), 0);
-  const totalNiceToHave = requests.reduce((s, r) => s + (r.niceToHaveSlots ?? 0), 0);
-  const totalGranted    = requests.reduce((s, r) => s + (r.slotsGranted ?? 0), 0);
+  const totalMustHave   = requests.reduce((s, r) => s + (r.req.mustHaveSlots ?? r.req.slotsRequested), 0);
+  const totalNiceToHave = requests.reduce((s, r) => s + (r.req.niceToHaveSlots ?? 0), 0);
+  const totalGranted    = requests.reduce((s, r) => s + (r.req.slotsGranted ?? 0), 0);
 
   // Serialize for client component
-  const listRows = requests.map((r) => ({
-    id: r.id,
-    priorityRank: r.priorityRank,
-    enrOrgName: r.enrOrgName ?? "Unknown org",
-    enrDescription: r.enrDescription,
-    mustHaveSlots: r.mustHaveSlots,
-    niceToHaveSlots: r.niceToHaveSlots,
-    slotsRequested: r.slotsRequested,
-    slotsGranted: r.slotsGranted,
-    decision: r.decision,
-    submittedAt: r.submittedAt?.toISOString() ?? null,
+  const listRows = requests.map(({ req, orgName }) => ({
+    id: req.id,
+    priorityRank: req.priorityRank,
+    orgName,
+    enrDescription: req.enrDescription,
+    mustHaveSlots: req.mustHaveSlots,
+    niceToHaveSlots: req.niceToHaveSlots,
+    slotsRequested: req.slotsRequested,
+    slotsGranted: req.slotsGranted,
+    decision: req.decision,
+    submittedAt: req.submittedAt?.toISOString() ?? null,
   }));
 
   return (

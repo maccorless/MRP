@@ -4,9 +4,9 @@ export type OrgExportRecord = {
   nocCode: string;
   organizationId: string;
   orgName: string;
-  country: string;
+  country: string | null;
   orgType: string;
-  emailDomain: string;
+  emailDomain: string | null;
   contactName: string;
   contactEmail: string;
   // Per-category flags (requested in EoI)

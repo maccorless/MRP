@@ -54,6 +54,7 @@ import { eq, and } from "drizzle-orm";
 import {
   callAction,
   createTestOrg,
+  createTestEnrOrg,
   createTestApplication,
   createTestAllocation,
   makeFormData,
@@ -248,16 +249,16 @@ describe("OCOG Admin — sendToAcr", () => {
 
 describe("IOC Admin — saveEnrDecisions", () => {
   it("saves a granted decision with slot count", async () => {
-    // Insert a submitted ENR request directly
+    // Create an ENR org + submitted request
+    const orgId = await createTestEnrOrg("USA", `ENR Grant Test Org ${Date.now()}`);
     const [req] = await db
       .insert(enrRequests)
       .values({
         nocCode: "USA",
         eventId: "LA28",
-        organizationId: null,
+        organizationId: orgId,
         priorityRank: 1,
         slotsRequested: 3,
-        enrOrgName: `ENR Grant Test Org ${Date.now()}`,
         enrDescription: "Grant test org",
         enrJustification: "Test granted decision",
         mustHaveSlots: 2,
@@ -294,15 +295,15 @@ describe("IOC Admin — saveEnrDecisions", () => {
   });
 
   it("saves a partial decision with reduced slot count", async () => {
+    const orgId = await createTestEnrOrg("USA", `ENR Partial Test Org ${Date.now()}`);
     const [req] = await db
       .insert(enrRequests)
       .values({
         nocCode: "USA",
         eventId: "LA28",
-        organizationId: null,
+        organizationId: orgId,
         priorityRank: 2,
         slotsRequested: 4,
-        enrOrgName: `ENR Partial Test Org ${Date.now()}`,
         enrDescription: "Partial test org",
         enrJustification: "Test partial decision",
         mustHaveSlots: 3,
@@ -339,15 +340,15 @@ describe("IOC Admin — saveEnrDecisions", () => {
   });
 
   it("saves a denied decision with zero slots", async () => {
+    const orgId = await createTestEnrOrg("USA", `ENR Denied Test Org ${Date.now()}`);
     const [req] = await db
       .insert(enrRequests)
       .values({
         nocCode: "USA",
         eventId: "LA28",
-        organizationId: null,
+        organizationId: orgId,
         priorityRank: 3,
         slotsRequested: 2,
-        enrOrgName: `ENR Denied Test Org ${Date.now()}`,
         enrDescription: "Denied test org",
         enrJustification: "Test denied decision",
         mustHaveSlots: 2,

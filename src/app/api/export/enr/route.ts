@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq, and, asc } from "drizzle-orm";
 import { db } from "@/db";
-import { enrRequests, auditLog } from "@/db/schema";
+import { enrRequests, organizations, auditLog } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { buildCsv } from "@/lib/csv";
 
@@ -13,8 +13,9 @@ export async function GET() {
   const nocFilter = isNoc ? session.nocCode : null;
 
   let query = db
-    .select()
+    .select({ req: enrRequests, orgName: organizations.name, orgWebsite: organizations.website })
     .from(enrRequests)
+    .innerJoin(organizations, eq(enrRequests.organizationId, organizations.id))
     .orderBy(asc(enrRequests.nocCode), asc(enrRequests.priorityRank))
     .$dynamic();
 
@@ -32,9 +33,9 @@ export async function GET() {
     "Submitted", "Reviewed",
   ];
 
-  const csvRows = rows.map((r) => [
-    r.nocCode, r.priorityRank, r.enrOrgName ?? "",
-    r.enrWebsite, r.enrDescription, r.enrJustification,
+  const csvRows = rows.map(({ req: r, orgName, orgWebsite }) => [
+    r.nocCode, r.priorityRank, orgName,
+    orgWebsite, r.enrDescription, r.enrJustification,
     r.mustHaveSlots, r.niceToHaveSlots, r.slotsRequested,
     r.slotsGranted, r.decision, r.decisionNotes,
     r.submittedAt?.toISOString() ?? "",

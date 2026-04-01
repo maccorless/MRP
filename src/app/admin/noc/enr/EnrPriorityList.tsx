@@ -6,7 +6,7 @@ import { removeEnrOrg, updateEnrRanks } from "./actions";
 type EnrRow = {
   id: string;
   priorityRank: number;
-  enrOrgName: string;
+  orgName: string;
   enrDescription: string | null;
   mustHaveSlots: number | null;
   niceToHaveSlots: number | null;
@@ -119,7 +119,7 @@ export function EnrPriorityList({
                   )}
                 </td>
                 <td className="px-5 py-3">
-                  <div className="font-medium text-gray-900">{row.enrOrgName}</div>
+                  <div className="font-medium text-gray-900">{row.orgName}</div>
                   {row.enrDescription && (
                     <div className="text-xs text-gray-400 mt-0.5 line-clamp-1">{row.enrDescription}</div>
                   )}
