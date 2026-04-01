@@ -172,7 +172,41 @@ export default async function NocPbnPage({
         </div>
       )}
 
-      {!quota && (
+      {/* B5 — Quota dashboard: server-rendered committed allocations vs IOC quota */}
+      {quota ? (
+        <div className="mb-6 grid grid-cols-3 gap-3">
+          {[
+            { label: "E", desc: "Journalist",     total: quota.eTotal,   allocated: rows.reduce((s, r) => s + (r.alloc?.eSlots   ?? 0), 0) },
+            { label: "Es", desc: "Sport Journal",  total: quota.esTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.esSlots  ?? 0), 0) },
+            { label: "EP", desc: "Photographer",   total: quota.epTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.epSlots  ?? 0), 0) },
+            { label: "EPs", desc: "Sport Photo",   total: quota.epsTotal, allocated: rows.reduce((s, r) => s + (r.alloc?.epsSlots ?? 0), 0) },
+            { label: "ET", desc: "Technician",     total: quota.etTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.etSlots  ?? 0), 0) },
+            { label: "EC", desc: "Support Staff",  total: quota.ecTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.ecSlots  ?? 0), 0) },
+          ]
+            .filter(({ total }) => total > 0)
+            .map(({ label, desc, total, allocated }) => {
+              const pct = Math.min(100, Math.round((allocated / total) * 100));
+              const over = allocated > total;
+              return (
+                <div key={label} className="bg-white rounded-lg border border-gray-200 p-3">
+                  <div className="flex justify-between text-xs mb-1.5">
+                    <span className="font-medium text-gray-700">{label} — {desc}</span>
+                    <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
+                      {allocated} / {total}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${over ? "bg-red-500" : "bg-[#0057A8]"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">{total - allocated} remaining</div>
+                </div>
+              );
+            })}
+        </div>
+      ) : (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
           No quota has been assigned to {nocCode} yet. IOC must set quotas before you can submit.
           You can save draft allocations in the meantime.

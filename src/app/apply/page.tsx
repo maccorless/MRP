@@ -38,6 +38,11 @@ export default async function ApplyPage({
           Please select a valid NOC code from the list (3-letter Olympic code).
         </div>
       )}
+      {error === "window_closed" && (
+        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-md text-orange-700 text-sm">
+          The EoI window for your NOC is currently closed. Please contact your NOC directly.
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <form action={requestToken}>

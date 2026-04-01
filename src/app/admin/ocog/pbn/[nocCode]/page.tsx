@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations, organizations, applications } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
 import { ACCRED_CATEGORIES, categoryDisplayLabel } from "@/lib/category";
-import { approvePbn, sendToAcr } from "../actions";
+import { approvePbn, sendToAcr, reversePbnApproval } from "../actions";
 
 export default async function OcogPbnNocPage({
   params,
@@ -240,21 +240,38 @@ export default async function OcogPbnNocPage({
       )}
 
       {isApproved && (
-        <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-          <h2 className="text-sm font-semibold text-gray-900 mb-1">Send to ACR</h2>
-          <p className="text-xs text-gray-500 mb-4">
-            Push the approved allocation for {nocCode} to the Accreditation system.
-            {rows.length} org{rows.length !== 1 ? "s" : ""} · {grandTotal} total slots.
-          </p>
-          <form action={sendToAcr}>
-            <input type="hidden" name="noc_code" value={nocCode} />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
-            >
-              Send to ACR
-            </button>
-          </form>
+        <div className="mt-6 space-y-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">Send to ACR</h2>
+            <p className="text-xs text-gray-500 mb-4">
+              Push the approved allocation for {nocCode} to the Accreditation system.
+              {rows.length} org{rows.length !== 1 ? "s" : ""} · {grandTotal} total slots.
+            </p>
+            <form action={sendToAcr}>
+              <input type="hidden" name="noc_code" value={nocCode} />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+              >
+                Send to ACR
+              </button>
+            </form>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">Reverse Approval</h2>
+            <p className="text-xs text-gray-500 mb-4">
+              Move this allocation back to NOC-submitted if you need to revise your decision.
+            </p>
+            <form action={reversePbnApproval}>
+              <input type="hidden" name="noc_code" value={nocCode} />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer"
+              >
+                Reverse Approval
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

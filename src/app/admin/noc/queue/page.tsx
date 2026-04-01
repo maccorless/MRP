@@ -37,6 +37,7 @@ export default async function NocQueuePage({
       id: applications.id,
       referenceNumber: applications.referenceNumber,
       status: applications.status,
+      entrySource: applications.entrySource,
       categoryE:   applications.categoryE,
       categoryEs:  applications.categoryEs,
       categoryEp:  applications.categoryEp,
@@ -101,6 +102,11 @@ export default async function NocQueuePage({
           Application rejected.
         </div>
       )}
+      {success === "fast_track_submitted" && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+          Fast-track application submitted and approved.
+        </div>
+      )}
 
       {/* Toolbar: filter tabs + export */}
       <div className="flex items-center justify-between mb-4">
@@ -152,7 +158,12 @@ export default async function NocQueuePage({
                     {row.referenceNumber}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900">{row.orgName}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-900">{row.orgName}</span>
+                      {row.entrySource === "noc_direct" && (
+                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">NOC Direct</span>
+                      )}
+                    </div>
                     <div className="text-xs text-gray-400">{row.contactName}</div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">

@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/admin/noc/home",  label: "Home" },
-  { href: "/admin/noc/queue", label: "EoI Queue" },
-  { href: "/admin/noc/pbn",   label: "PbN Allocations" },
-  { href: "/admin/noc/enr",   label: "ENR Requests" },
+  { href: "/admin/noc/home",        label: "Home" },
+  { href: "/admin/noc/queue",       label: "EoI Queue" },
+  { href: "/admin/noc/fast-track",  label: "Fast-Track Entry" },
+  { href: "/admin/noc/pbn",         label: "PbN Allocations" },
+  { href: "/admin/noc/enr",         label: "ENR Requests" },
+  { href: "/admin/noc/settings",    label: "Settings" },
 ];
 
 export function NocNavTabs() {

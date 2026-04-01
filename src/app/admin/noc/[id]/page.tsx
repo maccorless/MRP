@@ -9,6 +9,8 @@ import {
   approveApplication,
   returnApplication,
   rejectApplication,
+  unApproveApplication,
+  unReturnApplication,
 } from "../actions";
 
 const STATUS_BADGE: Record<string, string> = {
@@ -515,6 +517,38 @@ export default async function ApplicationDetailPage({
               </form>
             </div>
           </section>
+        ) : app.status === "approved" ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Un-approve</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              Move this application back to Pending if you need to revise your decision.
+            </p>
+            <form action={unApproveApplication} className="space-y-3">
+              <input type="hidden" name="id" value={app.id} />
+              <input
+                name="reason" type="text" placeholder="Reason (optional)"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              />
+              <button type="submit"
+                className="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer">
+                Un-approve
+              </button>
+            </form>
+          </div>
+        ) : app.status === "returned" ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Cancel Return</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              Move this application back to Pending if you returned it in error.
+            </p>
+            <form action={unReturnApplication}>
+              <input type="hidden" name="id" value={app.id} />
+              <button type="submit"
+                className="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer">
+                Cancel Return
+              </button>
+            </form>
+          </div>
         ) : (
           <div className="p-4 bg-gray-50 border border-gray-200 rounded text-sm text-gray-500 text-center">
             This application has been {STATUS_LABEL[app.status]?.toLowerCase()} and is no longer editable.

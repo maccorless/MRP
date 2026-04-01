@@ -4,7 +4,7 @@ import { eq, and, asc, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { enrRequests, organizations } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
-import { saveEnrDecisions } from "../actions";
+import { saveEnrDecisions, reviseEnrDecision } from "../actions";
 
 const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online",
@@ -156,6 +156,31 @@ export default async function IocEnrNocPage({
           <span className="text-xs text-gray-400">Decisions are saved immediately and visible to the NOC.</span>
         </div>
       </form>
+
+      {rows.some(({ req }) => req.decision) && (
+        <div className="mt-4 bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <h2 className="text-sm font-semibold text-gray-900 mb-3">Revise Individual Decisions</h2>
+          <div className="space-y-2">
+            {rows
+              .filter(({ req }) => req.decision)
+              .map(({ req, orgName }) => (
+                <form key={req.id} action={reviseEnrDecision} className="flex items-center gap-4">
+                  <input type="hidden" name="request_id" value={req.id} />
+                  <span className="text-sm text-gray-900 flex-1">
+                    {orgName}
+                    <span className="ml-2 text-xs text-gray-400 capitalize">{req.decision} · {req.slotsGranted ?? 0} slots</span>
+                  </span>
+                  <button
+                    type="submit"
+                    className="px-3 py-1 bg-yellow-500 text-white text-xs font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer"
+                  >
+                    Revise
+                  </button>
+                </form>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -163,3 +163,40 @@ export async function sendToAcr(formData: FormData) {
 
   redirect(`/admin/ocog/pbn?success=sent_to_acr&noc=${nocCode}&count=${pushed}`);
 }
+
+export async function reversePbnApproval(formData: FormData) {
+  await requireWritable();
+  const session = await requireOcogSession();
+  const nocCode = formData.get("noc_code") as string;
+  if (!nocCode) redirect("/admin/ocog/pbn");
+
+  const allocs = await db
+    .select()
+    .from(orgSlotAllocations)
+    .where(
+      and(
+        eq(orgSlotAllocations.nocCode, nocCode),
+        eq(orgSlotAllocations.eventId, "LA28"),
+        eq(orgSlotAllocations.pbnState, "ocog_approved")
+      )
+    );
+
+  if (allocs.length === 0) redirect(`/admin/ocog/pbn/${nocCode}?error=not_approved`);
+
+  for (const alloc of allocs) {
+    await db
+      .update(orgSlotAllocations)
+      .set({ pbnState: "noc_submitted", ocogReviewedBy: null, ocogReviewedAt: null })
+      .where(eq(orgSlotAllocations.id, alloc.id));
+  }
+
+  await db.insert(auditLog).values({
+    actorType: "ocog_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "pbn_unapproved",
+    detail: `${nocCode} · approval reversed by ${session.displayName}`,
+  });
+
+  redirect(`/admin/ocog/pbn/${nocCode}?success=unapproved`);
+}

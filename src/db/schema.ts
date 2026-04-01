@@ -52,6 +52,15 @@ export const auditActionEnum = pgEnum("audit_action", [
   "enr_submitted",
   "enr_decision_made",
   "sudo_initiated",
+  // B4
+  "noc_direct_entry",
+  // B3
+  "eoi_window_toggled",
+  // B1 reversals
+  "application_unapproved",
+  "application_unreturned",
+  "pbn_unapproved",
+  "enr_decision_revised",
 ]);
 
 export const pbnStateEnum = pgEnum("pbn_state", [
@@ -176,6 +185,9 @@ export const applications = pgTable("applications", {
   sportsToCover: text("sports_to_cover"),
   additionalComments: text("additional_comments"),
   accessibilityNeeds: boolean("accessibility_needs"),
+
+  // Entry source — how this application entered the system
+  entrySource: text("entry_source").notNull().default("self_submitted"), // 'self_submitted' | 'noc_direct'
 
   // Status
   status: applicationStatusEnum("status").default("pending").notNull(),
@@ -339,6 +351,24 @@ export const sudoTokens = pgTable("sudo_tokens", {
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   usedAt: timestamp("used_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Reserved Organizations ───────────────────────────────────────────────────
+
+// ─── NOC EoI Windows (B3 — per-NOC submission window control) ────────────────
+// Absence of a row means the window is OPEN (safe default).
+// NOC admin toggles is_open; public /apply form checks before issuing a token.
+
+export const nocEoiWindows = pgTable("noc_eoi_windows", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  isOpen: boolean("is_open").notNull().default(true),
+  openedAt: timestamp("opened_at", { withTimezone: true }).defaultNow(),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+  toggledBy: text("toggled_by"),    // admin user id
+  toggledAt: timestamp("toggled_at", { withTimezone: true }).defaultNow(),
+  notes: text("notes"),
 });
 
 // ─── Reserved Organizations ───────────────────────────────────────────────────

@@ -9,6 +9,7 @@ import {
   applications,
   auditLog,
   reservedOrganizations,
+  nocEoiWindows,
 } from "@/db/schema";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";
@@ -209,6 +210,16 @@ export async function submitApplication(formData: FormData) {
   if (!NOC_CODE_SET.has(nocCode)) {
     redirect("/apply?error=invalid_noc");
   }
+
+  // Check if EoI window is closed for this NOC (absence of row = open)
+  const [windowRow] = await db
+    .select({ isOpen: nocEoiWindows.isOpen })
+    .from(nocEoiWindows)
+    .where(and(eq(nocEoiWindows.nocCode, nocCode), eq(nocEoiWindows.eventId, "LA28")));
+  if (windowRow && !windowRow.isOpen) {
+    redirect("/apply?error=window_closed");
+  }
+
   const orgType = formData.get("org_type") as
     | "media_print_online"
     | "media_broadcast"

@@ -64,3 +64,32 @@ export async function saveEnrDecisions(formData: FormData) {
 
   redirect(`/admin/ioc/enr/${nocCode}?success=saved`);
 }
+
+export async function reviseEnrDecision(formData: FormData) {
+  await requireWritable();
+  const session = await requireIocAdminSession();
+  const requestId = formData.get("request_id") as string;
+  if (!requestId) redirect("/admin/ioc/enr");
+
+  const [req] = await db
+    .select()
+    .from(enrRequests)
+    .where(eq(enrRequests.id, requestId));
+
+  if (!req || !req.decision) redirect(`/admin/ioc/enr/${req?.nocCode ?? ""}`);
+
+  await db
+    .update(enrRequests)
+    .set({ decision: null, slotsGranted: null, reviewedBy: null, reviewedAt: null })
+    .where(eq(enrRequests.id, requestId));
+
+  await db.insert(auditLog).values({
+    actorType: "ioc_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "enr_decision_revised",
+    detail: `ENR decision for org ${req.organizationId} (${req.nocCode}) revised by ${session.displayName}`,
+  });
+
+  redirect(`/admin/ioc/enr/${req.nocCode}?success=revised`);
+}

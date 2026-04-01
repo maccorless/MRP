@@ -122,3 +122,55 @@ export async function rejectApplication(formData: FormData) {
 
   redirect("/admin/noc/queue?success=rejected");
 }
+
+export async function unApproveApplication(formData: FormData) {
+  await requireWritable();
+  const session = await requireNocSession();
+  const id = formData.get("id") as string;
+  const reason = (formData.get("reason") as string)?.trim() || null;
+
+  const app = await getApplicationForNoc(id, session.nocCode);
+  if (!app || app.status !== "approved") redirect("/admin/noc/queue");
+
+  await db
+    .update(applications)
+    .set({ status: "pending", reviewNote: null, updatedAt: new Date() })
+    .where(eq(applications.id, id));
+
+  await db.insert(auditLog).values({
+    actorType: "noc_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "application_unapproved",
+    applicationId: id,
+    organizationId: app.organizationId,
+    detail: reason,
+  });
+
+  redirect(`/admin/noc/${id}?success=unapproved`);
+}
+
+export async function unReturnApplication(formData: FormData) {
+  await requireWritable();
+  const session = await requireNocSession();
+  const id = formData.get("id") as string;
+
+  const app = await getApplicationForNoc(id, session.nocCode);
+  if (!app || app.status !== "returned") redirect("/admin/noc/queue");
+
+  await db
+    .update(applications)
+    .set({ status: "pending", reviewNote: null, updatedAt: new Date() })
+    .where(eq(applications.id, id));
+
+  await db.insert(auditLog).values({
+    actorType: "noc_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "application_unreturned",
+    applicationId: id,
+    organizationId: app.organizationId,
+  });
+
+  redirect(`/admin/noc/${id}?success=unreturned`);
+}

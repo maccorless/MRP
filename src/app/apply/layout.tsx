@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ApplyLayout({
   children,
 }: {
@@ -6,18 +8,23 @@ export default function ApplyLayout({
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-[#0057A8] text-white px-6 py-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center shrink-0">
-            <span className="font-bold text-sm">M</span>
-          </div>
-          <div>
-            <div className="font-semibold text-sm leading-tight">
-              Media Registration Portal
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center shrink-0">
+              <span className="font-bold text-sm">M</span>
             </div>
-            <div className="text-xs text-blue-200 leading-tight">
-              LA 2028 Olympic Games
+            <div>
+              <div className="font-semibold text-sm leading-tight">
+                Media Registration Portal
+              </div>
+              <div className="text-xs text-blue-200 leading-tight">
+                LA 2028 Olympic Games
+              </div>
             </div>
           </div>
+          <Link href="/apply/status" className="text-xs text-blue-200 hover:text-white transition-colors">
+            Check status →
+          </Link>
         </div>
       </header>
 
