@@ -24,6 +24,11 @@ build/
 *.avi
 *.mkv
 
+# Sensitive/proprietary reference documents (keep locally, not in git)
+docs/V19-NOC-USA-3-3-2.xlsx
+docs/NOC Immersion Visit Nov 25.pptx
+docs/Olympic Games Guide on Media - Part 1 - General Services and Press Operations - December 2023.pdf
+
 # OS
 .DS_Store
 Thumbs.db
