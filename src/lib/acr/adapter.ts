@@ -16,13 +16,16 @@ export type OrgExportRecord = {
   categoryEps: boolean;
   categoryEt:  boolean;
   categoryEc:  boolean;
-  // Per-category allocated slots
+  // Per-category allocated slots (PbN)
   eSlots:   number;
   esSlots:  number;
   epSlots:  number;
   epsSlots: number;
   etSlots:  number;
   ecSlots:  number;
+  nocESlots: number;        // NOC-attached press attachés (separate quota pool)
+  // ENR (Extended Non-Rights Broadcaster) — null for regular EoI orgs
+  enrSlotsGranted: number | null;
   commonCodesId: string | null;
   eventId: string;
 };

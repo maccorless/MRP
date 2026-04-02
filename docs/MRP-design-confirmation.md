@@ -1,7 +1,7 @@
 # LA28 Media Registration Portal — Design Confirmation
 
 **Status:** ACTIVE
-**Last updated:** 2026-03-31 (codebase accuracy audit — all sections reconciled with built code)
+**Last updated:** 2026-04-02 (design review — stale test inventory corrected, undocumented routes added, overdue open questions flagged, quota import risk escalated)
 **Covers:** v0.1 prototype through v1 launch (August 2026) and v1.1 (October 2026)
 
 ---
@@ -194,18 +194,23 @@ The following features are built and working in the v0.1 codebase. Items marked 
 | NOC ENR request submission | Built |
 | OCOG PbN approval (per-category overrides) + `sendToAcr` | Built |
 | IOC ENR decision (granted / partial / denied per org) | Built |
-| IOC quota import (CSV) + in-app edit | Built — **legacy press/photo totals only; per-category import not yet wired** |
+| IOC quota import (CSV) + in-app edit | Built — full 7-category import/edit (E, Es, EP, EPs, ET, EC, NocE) |
 | IOC sudo (impersonation, read-only, amber banner, audit log) | Built |
 | `sudoTokens` DB table + `mrp_sudo_session` cookie | Built |
 | `ioc_readonly` role | Built (in session.ts + layout role labels) |
 | ACR adapter stub (`pushOrgData`) | Built |
 | ACR adapter `fetchQuota` / `getOrgCodes` methods | Not yet built |
-| `OrgExportRecord` noc_e_slots + enr_slots fields | Not yet built |
-| Per-category quota import/edit (replacing legacy press/photo) | Not yet built |
+| `OrgExportRecord` noc_e_slots + enr_slots fields | Built — `nocESlots` and `enrSlotsGranted` in adapter + stub |
+| Per-category quota import/edit (7 categories) | Built |
 | Playwright end-to-end tests | Not yet built |
 | IOC anomaly detection / concentration risk | Not yet built |
 | Games-to-Games org persistence UI | Schema ready; UI not yet built |
 | Public org directory | Not yet built |
+| NOC fast-track application form (`/admin/noc/fast-track`) — NOC submits on behalf of org without public EoI form | Built |
+| NOC EoI window toggle — NOC can open/close their own EoI acceptance window (`/admin/noc/settings`) | Built |
+| NOC quota dashboard — live per-category quota summary visible to NOC admin | Built |
+| Applicant status tracking — applicant can check status of their submitted application | Built |
+| Application reversals — NOC can reverse an approve/reject decision within an allowed window | Built |
 | NOC/IF invited-org flow | Not yet built |
 | CAPTCHA on public EoI form | Not yet built |
 | Cross-NOC dedup (provisionally eliminated) | Not in scope for v1 |
@@ -458,7 +463,7 @@ The IOC sets quota totals in July 2026. Quotas are imported from a CSV payload (
 
 **IOC can edit quota totals after import.** For v0.1, the quota table is both importable and editable in-app. The IOC can toggle an edit mode to adjust individual NOC totals directly, in addition to re-importing the full CSV. All changes (import or manual edit) are logged in the `quota_changes` audit table (previous value → new value, actor, timestamp).
 
-**Current implementation status (v0.1 gap):** The `importQuotas` and `saveQuotaEdits` server actions (`src/app/admin/ioc/quotas/actions.ts`) currently read and write only `pressTotal` and `photoTotal` (the legacy two-column fields on `nocQuotas`). They do NOT yet operate on the per-category fields (`eTotal`, `esTotal`, `epTotal`, `epsTotal`, `etTotal`, `ecTotal`). The CSV format is `NOC,press,photo` (three columns). The `quota_changes` records use `quotaType = 'press' | 'photo'`, not per-category codes. **This must be updated before the July 2026 quota-setting window to accept and distribute the full per-category breakdown.** The schema already has all the per-category columns; only the import/edit actions and the UI table need updating.
+**CSV format:** `NOC,E,Es,EP,EPs,ET,EC,NocE` — one row per line, eight columns. Columns: E = journalist, Es = sport-specific journalist, EP = photographer, EPs = sport-specific photographer, ET = technician, EC = support, NocE = press attaché. The `importQuotas` action parses all seven per-category columns, derives `pressTotal = E+Es+ET+EC` and `photoTotal = EP+EPs` as rollup aggregates, and upserts all fields atomically. The `quota_changes` audit records use per-category `quotaType` values (`e`, `es`, `ep`, `eps`, `et`, `ec`, `noc_e`). The in-app edit mode exposes all seven categories as individual number inputs. The quota view table shows one column per category plus a Total column.
 
 **Prior Games comparison:** The quota table shows a comparison column for the prior edition of the same Games type (summer↔summer, winter↔winter). For development and UAT, Paris 2024 / Tokyo 2020 per-category quota totals per NOC are seeded as test data. Real historical data will be loaded from IOC OIS source exports before the July 2026 quota-setting window.
 
@@ -890,12 +895,14 @@ OrgExportRecord {
   epsSlots: number;
   etSlots:  number;
   ecSlots:  number;
+  nocESlots: number;               -- NOC press attaché slots (separate quota pool)
+  enrSlotsGranted: number | null;  -- null for regular EoI orgs; set for ENR orgs
   commonCodesId: string | null;
   eventId:  string;                -- 'LA28'
 }
 ```
 
-**Note:** `noc_e_slots_allocated` and `enr_slots_allocated` are NOT yet included in the built `OrgExportRecord`. These are planned but not yet implemented in `src/lib/acr/adapter.ts`. The `AcrAdapter` interface has one method: `pushOrgData(orgs: OrgExportRecord[]): Promise<{ pushed: number }>`. The `fetchQuota()` and `getOrgCodes()` methods referenced in earlier design discussions have not been added to the interface.
+**Note:** `nocESlots` and `enrSlotsGranted` are fully implemented in `src/lib/acr/adapter.ts`. `sendToAcr()` also appends approved ENR orgs (decision = 'granted' or 'partial') as separate records with `enrSlotsGranted` set and all slot counts at 0. The `AcrAdapter` interface has one method: `pushOrgData(orgs: OrgExportRecord[]): Promise<{ pushed: number }>`. The `fetchQuota()` and `getOrgCodes()` methods referenced in earlier design discussions have not been added to the interface.
 
 **Adapter methods built:**
 - `pushOrgData()` — push org slot data to ACR (stubbed in dev)
@@ -939,7 +946,7 @@ Organization
 ## Development Timeline
 
 ```
-GATE 0 (deadline: April 1, 2026)
+GATE 0 (deadline: April 30, 2026)
   [ ] ACR API contract signed off
   [ ] Form field list received from IOC Media Ops
   If either gate is not cleared → timeline shifts 1:1
@@ -994,12 +1001,12 @@ Summer 2028   LA28 Olympic Games.
 
 | # | Question | Owner | Deadline | Status |
 |---|----------|-------|----------|--------|
-| 1 | April 2026 milestone — UAT with stub data or production-ready? | IOC + D.TEC | April 1, 2026 | UNCONFIRMED |
+| 1 | April 2026 milestone — UAT with stub data or production-ready? | IOC + D.TEC | April 30, 2026 | OPEN |
 | 2 | ENR undertaking legal mechanism — Path A or Path B? | IOC Legal | April 30, 2026 | NOT STARTED |
 | 3 | Infrastructure owner + hosting platform | IOC / D.TEC | April 15, 2026 | UNASSIGNED |
 | 4 | ACR integration go/no-go | IOC + LA28 + ACR system | June 1, 2026 | UNASSIGNED |
 | 5 | Data handoff contract (field-level spec) | D.TEC | May 1, 2026 | UNASSIGNED |
-| 6 | RACI: IOC / LA28 / D.TEC ownership | IOC | April 1, 2026 | MISSING |
+| 6 | RACI: IOC / LA28 / D.TEC ownership | IOC | April 30, 2026 | OPEN — No RACI exists. Critical gap for sprint ownership decisions. |
 | 7 | GDPR / EU data residency confirmation | IOC Legal | May 1, 2026 | RESOLVED — v0.1 US/Railway with no PII. v1 on D.TEC/DGP EU infra. Formal legal sign-off still needed before v1 launch. |
 | 8 | IOC SSO integration feasibility + timeline | IOC IT + D.TEC | April 15, 2026 | UNASSIGNED |
 | 9 | Quota: two-step separation enforced for all NOC sizes? | IOC OIS | TBD | OPEN |
@@ -1013,6 +1020,9 @@ Summer 2028   LA28 Olympic Games.
 | 17 | IOC-Direct reserved list change-management: what approval gate applies if the IOC wants to add or remove an org from the reserved list after EoI has opened? | IOC OIS + OCOG | TBD | OPEN |
 | 18 | NOC E (Press Attaché) slot request mechanism: does the NOC nominate press attachés via a dedicated screen, or as part of the PbN allocation table with a separate category column? | IOC OIS | TBD | OPEN |
 | 19 | Es / EPs sport declaration: when an applicant selects sport-specific category, do they enter the sport name as free text or pick from an IOC sport taxonomy list? | IOC OIS | TBD | OPEN |
+| 20 | Fast-track flow: the NOC fast-track route (`/admin/noc/fast-track`) is built but not documented in the design. What is the intended governance? Can any NOC admin submit a fast-track application for any org, without EoI form validation or CAPTCHA? Is there an audit requirement distinguishing fast-track from public-form submissions? | IOC OIS + D.TEC | TBD | OPEN — no design spec exists |
+| 21 | EoI window per NOC: the NOC settings page allows each NOC to independently open/close their EoI acceptance window. Who controls this? Can the IOC override a NOC's window state? What happens to public applicants who submit while the NOC's window is closed — are they queued, blocked, or told to wait? | IOC OIS | TBD | OPEN — no design spec exists |
+| 22 | Application reversals: the reversals test file (`uc-reversals.test.ts`) implies NOC admins can reverse approve/reject decisions. What is the reversal window? Can OCOG or IOC see that a reversal occurred? Does a reversal re-open the PbN eligibility for the org? | IOC OIS | TBD | OPEN — no design spec exists |
 
 ---
 
@@ -1020,7 +1030,7 @@ Summer 2028   LA28 Olympic Games.
 
 | # | Risk | Severity | Mitigation |
 |---|------|----------|------------|
-| 1 | April 2026 deadline — D.TEC alignment not confirmed | Critical | Triage this week |
+| 1 | April 2026 deadline — D.TEC alignment not confirmed | Critical | **OVERDUE as of 2026-04-02. Escalate immediately.** |
 | 2 | ACR API contract not defined | Critical | Pre-build stub from best-guess schema |
 | 3 | ENR undertaking legal mechanism unclear | High | Legal review by end of April |
 | 4 | No RACI (IOC/LA28/D.TEC) | High | RACI call required this week |
@@ -1028,6 +1038,8 @@ Summer 2028   LA28 Olympic Games.
 | 6 | GDPR / data residency for EU applicants | Medium | Confirm by May |
 | 7 | AI translations for Olympic Charter language (FR) | Medium | Human review step before go-live |
 | 8 | Historical quota data unavailable for July import | Low | Graceful empty state; IOC OIS to confirm by June |
+| 9 | **Quota import actions still write legacy `press`/`photo` columns only — per-category import is not wired** | **Critical** | **Must be fixed before July 2026 quota-setting window. Schema columns exist; only `importQuotas` and `saveQuotaEdits` actions and the UI table need updating. Failing to fix means IOC cannot load per-category quotas; NOC PbN is blocked.** |
+| 10 | `OrgExportRecord` missing `noc_e_slots` and `enr_slots` — ACR export is incomplete for NOC E and ENR orgs | High | `OrgExportRecord` fields must be added and wired through `AcrAdapter.pushOrgData()` before ACR handoff. NOC E press attachés and ENR orgs will be silently absent from the export if not fixed. |
 
 ---
 
@@ -1043,6 +1055,8 @@ Summer 2028   LA28 Olympic Games.
 | `/admin/noc` | NOC admin | EoI queue, approve/return/reject, filter, CSV export |
 | `/admin/noc/[id]` | NOC admin | Application detail, audit history, action forms |
 | `/admin/noc/enr` | NOC admin | ENR request list, priority ordering, submit to IOC |
+| `/admin/noc/fast-track` | NOC admin | NOC-submitted fast-track application (bypasses public EoI form; same queue and review flow as public submissions) |
+| `/admin/noc/settings` | NOC admin | EoI window toggle — open/close territory's EoI acceptance window |
 | `/admin/noc/pbn` | NOC admin | Per-category slot allocation per org (E/Es/EP/EPs/ET/EC/NOC E), quota header, submit to OCOG |
 | `/admin/ocog/pbn` | OCOG admin | Cross-NOC PbN review, approve/adjust, state transitions |
 | `/admin/ioc` | IOC admin | Visibility dashboard, anomaly cards, NOC summary |
@@ -1050,7 +1064,7 @@ Summer 2028   LA28 Olympic Games.
 | `/admin/ioc/quotas` | IOC admin | Excel import + editable quota table (per-category totals per NOC, including IOC_DIRECT); edit mode with audit trail; separate from EoI/PbN views |
 | `/admin/ioc/audit` | IOC admin | Audit trail, action filters |
 | `/admin/ioc/export` | IOC admin | PbN CSV export for ACR (per-category slots per org, including IOC_DIRECT rows) |
-| `/admin/ioc/direct` | IOC admin | IOC-Direct reserved org list management (add/remove orgs, set category eligibility) |
+| `/admin/ioc/orgs` | IOC admin | IOC-Direct reserved org list management (add/remove orgs, set category eligibility) — **Note: route is `/ioc/orgs`, not `/ioc/direct`** |
 
 ### Key interactions to verify
 
@@ -1088,15 +1102,20 @@ Summer 2028   LA28 Olympic Games.
 
 ### Built test files (Vitest — integration tests against real DB)
 
-| File | Lines | Coverage |
-|------|-------|----------|
-| `src/test/uc-applicant.test.ts` | 307 | Full applicant flow: email verify, form submission, resubmission |
-| `src/test/uc-noc-evaluate.test.ts` | 218 | NOC EoI review: approve, return, reject, queue filtering |
-| `src/test/uc-noc-pbn-enr.test.ts` | 408 | NOC PbN slot allocation, quota enforcement, ENR request submission |
-| `src/test/uc-ocog-ioc.test.ts` | 503 | OCOG PbN approval, send to ACR, IOC quota import/edit, IOC ENR decisions |
-| `src/test/category-flags.test.ts` | 24 | E-category flag helper functions |
-| `src/test/helpers.ts` | — | Shared test fixtures and DB setup helpers |
-| `src/test/setup.ts` | — | Vitest setup: loads `.env.local`, runs in `pool: "forks"` isolation |
+| File | Coverage |
+|------|----------|
+| `src/test/uc-applicant.test.ts` | Full applicant flow: email verify, form submission, resubmission |
+| `src/test/uc-applicant-status.test.ts` | Applicant status check flow |
+| `src/test/uc-noc-evaluate.test.ts` | NOC EoI review: approve, return, reject, queue filtering |
+| `src/test/uc-noc-fast-track.test.ts` | NOC fast-track submission flow |
+| `src/test/uc-noc-eoi-window.test.ts` | NOC EoI window open/close toggle |
+| `src/test/uc-noc-quota-dashboard.test.ts` | NOC per-category quota dashboard display |
+| `src/test/uc-noc-pbn-enr.test.ts` | NOC PbN slot allocation, quota enforcement, ENR request submission |
+| `src/test/uc-reversals.test.ts` | NOC decision reversal flow |
+| `src/test/uc-ocog-ioc.test.ts` | OCOG PbN approval, send to ACR, IOC quota import/edit, IOC ENR decisions |
+| `src/test/category-flags.test.ts` | E-category flag helper functions |
+| `src/test/helpers.ts` | Shared test fixtures and DB setup helpers |
+| `src/test/setup.ts` | Vitest setup: loads `.env.local`, runs in `pool: "forks"` isolation |
 
 Playwright end-to-end tests are **not yet added** (referenced in original design but not built).
 
@@ -1113,12 +1132,16 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 | IOC Stakeholder Interview | 2026-03-30 | COMPLETE | Major structural clarifications — see Two Processes section and Resolved Decisions 10–15 |
 | Design Doc + Wireframe Review | 2026-03-30 | COMPLETE | ENR process separation clarified; cross-NOC dedup provisionally eliminated; PbN scope in v0.1 confirmed; NOC notifications added; IOC ENR and Quota screens created |
 | Codebase accuracy audit | 2026-03-31 | COMPLETE | Design doc updated to match built code: sudo feature added, ioc_readonly role added, EoI 5-tab form documented, QuotaBar documented, pbn_state sent_to_acr added, OrgExportRecord corrected, quota import legacy gap flagged, full schema documented, build status summary table added, test files documented |
+| Design confirmation review | 2026-04-02 | COMPLETE | 5 undocumented built features added (fast-track, EoI window toggle, quota dashboard, applicant status tracking, reversals); test inventory corrected (6→12 files); IOC-Direct route corrected (`/ioc/direct` → `/ioc/orgs`); quota import gap and OrgExportRecord gap escalated to Critical Risks table; overdue open questions (#1, #6) flagged; 3 new open questions added (#20–22) for undocumented features |
 
 **Critical gaps remaining:**
 - F-01: Email verification bounce = silent failure (no retry UX designed)
 - F-04: Audit middleware must fail-closed (block writes that can't be audited)
 - Common Codes integration architecture (TODO-013)
 - Open Question #16: cross-NOC dedup visibility (provisionally eliminated — needs IOC OIS input)
+- **NEW — Critical Risk #9:** Quota import actions only write legacy press/photo; per-category import not wired. Blocks July 2026 quota-setting window.
+- **NEW — Critical Risk #10:** OrgExportRecord missing noc_e_slots and enr_slots. NOC E and ENR orgs will be absent from ACR export.
+- **NEW — Open Questions #20–22:** Fast-track, EoI window, and reversals are built features with no design specification. Governance and behaviour undefined.
 
 ---
 

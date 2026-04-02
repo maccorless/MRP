@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { orgSlotAllocations, organizations, applications, auditLog } from "@/db/schema";
+import { orgSlotAllocations, organizations, applications, auditLog, enrRequests } from "@/db/schema";
 import { requireOcogSession, requireWritable } from "@/lib/session";
 import { acrClient } from "@/lib/acr/stub-client";
 import type { OrgExportRecord } from "@/lib/acr/adapter";
@@ -118,6 +118,7 @@ export async function sendToAcr(formData: FormData) {
 
   if (rows.length === 0) redirect(`/admin/ocog/pbn/${nocCode}?error=not_approved`);
 
+  // PbN org records
   const records: OrgExportRecord[] = rows.map(({ alloc, org, app }) => ({
     nocCode,
     organizationId: org.id,
@@ -139,9 +140,45 @@ export async function sendToAcr(formData: FormData) {
     epsSlots: alloc.epsSlots ?? 0,
     etSlots:  alloc.etSlots  ?? 0,
     ecSlots:  alloc.ecSlots  ?? 0,
+    nocESlots: alloc.nocESlots ?? 0,
+    enrSlotsGranted: null,
     commonCodesId: org.commonCodesId,
     eventId: "LA28",
   }));
+
+  // Append approved ENR records for this NOC
+  const enrRows = await db
+    .select({ org: organizations, enr: enrRequests })
+    .from(enrRequests)
+    .innerJoin(organizations, eq(enrRequests.organizationId, organizations.id))
+    .where(
+      and(
+        eq(enrRequests.nocCode, nocCode),
+        eq(enrRequests.eventId, "LA28"),
+        inArray(enrRequests.decision, ["granted", "partial"])
+      )
+    );
+
+  for (const { org, enr } of enrRows) {
+    if (!enr.slotsGranted) continue;
+    records.push({
+      nocCode,
+      organizationId: org.id,
+      orgName: org.name,
+      country: org.country,
+      orgType: org.orgType,
+      emailDomain: org.emailDomain,
+      contactName: "",
+      contactEmail: "",
+      categoryE: false, categoryEs: false, categoryEp: false,
+      categoryEps: false, categoryEt: false, categoryEc: false,
+      eSlots: 0, esSlots: 0, epSlots: 0, epsSlots: 0, etSlots: 0, ecSlots: 0,
+      nocESlots: 0,
+      enrSlotsGranted: enr.slotsGranted,
+      commonCodesId: org.commonCodesId,
+      eventId: "LA28",
+    });
+  }
 
   const { pushed } = await acrClient.pushOrgData(records);
 
