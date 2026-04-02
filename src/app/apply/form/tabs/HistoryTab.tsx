@@ -40,6 +40,7 @@ function EditionCheckboxes({
               type="checkbox"
               checked={checked.includes(val)}
               onChange={(e) => onChange(val, e.target.checked)}
+              data-tab="4"
               className="rounded"
             />
             {edition}
@@ -87,8 +88,8 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
       </div>
 
       {/* Olympic history */}
-      <div>
-        <label className={LABEL}>Has your organisation received Olympic accreditation in the past?</label>
+      <fieldset>
+        <legend className={LABEL}>Has your organisation received Olympic accreditation in the past?</legend>
         <div className="flex gap-4 mt-1">
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_olympic" value="yes" data-tab="4"
@@ -99,7 +100,7 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
               checked={priorOlympic === "no"} onChange={() => setPriorOlympic("no")} className="accent-[#0057A8]" /> No
           </label>
         </div>
-      </div>
+      </fieldset>
 
       {priorOlympic === "yes" && (
         <div className="pl-6 border-l-2 border-blue-200 space-y-4">
@@ -125,8 +126,8 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
       )}
 
       {/* Paralympic history */}
-      <div>
-        <label className={LABEL}>Has your organisation received Paralympic accreditation in the past?</label>
+      <fieldset>
+        <legend className={LABEL}>Has your organisation received Paralympic accreditation in the past?</legend>
         <div className="flex gap-4 mt-1">
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_paralympic" value="yes" data-tab="4"
@@ -137,7 +138,7 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
               checked={priorParalympic === "no"} onChange={() => setPriorParalympic("no")} className="accent-[#0057A8]" /> No
           </label>
         </div>
-      </div>
+      </fieldset>
 
       {priorParalympic === "yes" && (
         <div className="pl-6 border-l-2 border-blue-200 space-y-4">

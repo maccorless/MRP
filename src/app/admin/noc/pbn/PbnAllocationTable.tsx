@@ -192,6 +192,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search organisations..."
+          aria-label="Search organisations"
           className="w-full max-w-xs border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
@@ -208,14 +209,19 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }
               <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                 <tr>
                   <th
+                    scope="col"
+                    aria-sort={sortAsc ? "ascending" : "descending"}
+                    tabIndex={0}
                     className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide cursor-pointer select-none hover:text-gray-700 whitespace-nowrap"
                     onClick={() => setSortAsc((v) => !v)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSortAsc((v) => !v); } }}
                   >
                     Organisation {sortAsc ? "↑" : "↓"}
                   </th>
                   {activeCategories.map((cat) => (
                     <th
                       key={cat}
+                      scope="col"
                       colSpan={2}
                       className="text-center px-2 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap border-l border-gray-200"
                     >
@@ -261,6 +267,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }
                                     onChange={(e) => handleChange(row.orgId, cat, e.target.value)}
                                     onFocus={(e) => e.target.select()}
                                     min={0}
+                                    aria-label={`${cat} slots for ${row.orgName}`}
                                     className="w-16 border border-gray-300 rounded px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
                                   />
                                 ) : (

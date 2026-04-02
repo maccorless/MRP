@@ -69,17 +69,17 @@ export default async function QuotasPage({
 
       {/* Banners */}
       {success === "imported" && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
           Imported {count} NOC quota{count !== "1" ? "s" : ""} successfully.
         </div>
       )}
       {success === "saved" && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
           Quota edits saved.
         </div>
       )}
       {error === "empty" && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
           CSV was empty — nothing imported.
         </div>
       )}

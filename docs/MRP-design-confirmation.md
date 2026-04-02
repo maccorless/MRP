@@ -1,7 +1,7 @@
 # LA28 Media Registration Portal — Design Confirmation
 
 **Status:** ACTIVE
-**Last updated:** 2026-04-02 (design review — stale test inventory corrected, undocumented routes added, overdue open questions flagged, quota import risk escalated)
+**Last updated:** 2026-04-02 (full doc/code audit — 5 stale items corrected, Critical Risks #9/#10 resolved, session timeout updated to 8h, 24 audit actions documented, Stakeholder Confirmation Register added with 24 items)
 **Covers:** v0.1 prototype through v1 launch (August 2026) and v1.1 (October 2026)
 
 ---
@@ -599,7 +599,7 @@ org_slot_allocations
 
 quota_changes                   -- append-only audit (covers both imports and in-app edits)
   noc_code, event_id
-  quota_type        text        -- CURRENTLY 'press' | 'photo' (legacy); per-category values not yet implemented in import/edit actions
+  quota_type        text        -- per-category values: 'e' | 'es' | 'ep' | 'eps' | 'et' | 'ec' | 'noc_e' (fully implemented in import/edit actions as of 2026-04-01)
   old_value, new_value,
   changed_by, changed_at, change_source  -- 'import' | 'manual_edit'
 
@@ -648,7 +648,7 @@ reserved_organizations           -- IOC-Direct reserved list
 - `org_type`: `media_print_online | media_broadcast | news_agency | enr`
 - `application_status`: `pending | approved | returned | resubmitted | rejected`
 - `actor_type`: `applicant | noc_admin | ioc_admin | ocog_admin | if_admin | system`
-- `audit_action`: `application_submitted | application_resubmitted | application_approved | application_returned | application_rejected | email_verified | admin_login | duplicate_flag_raised | export_generated | pbn_submitted | pbn_approved | pbn_sent_to_acr | quota_changed | enr_submitted | enr_decision_made | sudo_initiated`
+- `audit_action`: `application_submitted | application_resubmitted | application_approved | application_returned | application_rejected | email_verified | admin_login | duplicate_flag_raised | export_generated | pbn_submitted | pbn_approved | pbn_sent_to_acr | quota_changed | enr_submitted | enr_decision_made | sudo_initiated | noc_direct_entry | eoi_window_toggled | application_unapproved | application_unreturned | pbn_unapproved | enr_decision_revised` (24 total)
 - `pbn_state`: `draft | noc_submitted | ocog_approved | sent_to_acr`
 - `enr_decision`: `granted | partial | denied`
 - `org_status`: `active | inactive | banned | pending_review`
@@ -855,8 +855,8 @@ sudo_tokens
 - NOCs see only their own applicants — zero cross-NOC leakage at data layer
 
 **Authentication:**
-- NOC/OCOG/IOC: IOC-provisioned credentials; MFA required
-- Session timeout: 30 minutes idle
+- NOC/OCOG/IOC: IOC-provisioned credentials; MFA required (v1.0 via D.TEC SSO)
+- Session timeout: 8-hour max-age (no idle timeout in v0.1; easily adjustable — see `SESSION_MAX_AGE` in `src/lib/session.ts`)
 
 ---
 
@@ -1018,11 +1018,11 @@ Summer 2028   LA28 Olympic Games.
 | 15 | IFs — same role as NOCs for their sport's quota/PbN workflow? | IOC OIS | TBD | RESOLVED — Yes. Same screens as NOC. No public EoI queue — invited-org flow only. See Decision #19. |
 | 16 | Cross-NOC dedup for EoI — provisionally eliminated. What (if anything) should be flagged to IOC or OCOG when the same org appears in multiple NOC queues? | IOC OIS | TBD | OPEN |
 | 17 | IOC-Direct reserved list change-management: what approval gate applies if the IOC wants to add or remove an org from the reserved list after EoI has opened? | IOC OIS + OCOG | TBD | OPEN |
-| 18 | NOC E (Press Attaché) slot request mechanism: does the NOC nominate press attachés via a dedicated screen, or as part of the PbN allocation table with a separate category column? | IOC OIS | TBD | OPEN |
-| 19 | Es / EPs sport declaration: when an applicant selects sport-specific category, do they enter the sport name as free text or pick from an IOC sport taxonomy list? | IOC OIS | TBD | OPEN |
-| 20 | Fast-track flow: the NOC fast-track route (`/admin/noc/fast-track`) is built but not documented in the design. What is the intended governance? Can any NOC admin submit a fast-track application for any org, without EoI form validation or CAPTCHA? Is there an audit requirement distinguishing fast-track from public-form submissions? | IOC OIS + D.TEC | TBD | OPEN — no design spec exists |
-| 21 | EoI window per NOC: the NOC settings page allows each NOC to independently open/close their EoI acceptance window. Who controls this? Can the IOC override a NOC's window state? What happens to public applicants who submit while the NOC's window is closed — are they queued, blocked, or told to wait? | IOC OIS | TBD | OPEN — no design spec exists |
-| 22 | Application reversals: the reversals test file (`uc-reversals.test.ts`) implies NOC admins can reverse approve/reject decisions. What is the reversal window? Can OCOG or IOC see that a reversal occurred? Does a reversal re-open the PbN eligibility for the org? | IOC OIS | TBD | OPEN — no design spec exists |
+| 18 | NOC E (Press Attaché) slot request mechanism: does the NOC nominate press attachés via a dedicated screen, or as part of the PbN allocation table with a separate category column? | IOC OIS | TBD | PROVISIONAL DECISION — see SCR-05 below. NOC creates a self-entered "NOC communication staff" org and allocates nocESlots during PbN. No dedicated screen needed. |
+| 19 | Es / EPs sport declaration: when an applicant selects sport-specific category, do they enter the sport name as free text or pick from an IOC sport taxonomy list? | IOC OIS | TBD | PROVISIONAL DECISION — free text. See SCR-06 below. |
+| 20 | Fast-track flow: the NOC fast-track route (`/admin/noc/fast-track`) is built but not documented in the design. What is the intended governance? Can any NOC admin submit a fast-track application for any org, without EoI form validation or CAPTCHA? Is there an audit requirement distinguishing fast-track from public-form submissions? | IOC OIS + D.TEC | TBD | PROVISIONAL DECISION — any NOC admin can fast-track; audit-logged with `noc_direct_entry`. See SCR-07 below. |
+| 21 | EoI window per NOC: the NOC settings page allows each NOC to independently open/close their EoI acceptance window. Who controls this? Can the IOC override a NOC's window state? What happens to public applicants who submit while the NOC's window is closed — are they queued, blocked, or told to wait? | IOC OIS | TBD | OPEN — see SCR-08 below. |
+| 22 | Application reversals: the reversals test file (`uc-reversals.test.ts`) implies NOC admins can reverse approve/reject decisions. What is the reversal window? Can OCOG or IOC see that a reversal occurred? Does a reversal re-open the PbN eligibility for the org? | IOC OIS | TBD | PROVISIONAL DECISION — no time limit; reversals are audit-logged; PbN allocations reset to draft on unapprove. See SCR-09 below. |
 
 ---
 
@@ -1038,8 +1038,8 @@ Summer 2028   LA28 Olympic Games.
 | 6 | GDPR / data residency for EU applicants | Medium | Confirm by May |
 | 7 | AI translations for Olympic Charter language (FR) | Medium | Human review step before go-live |
 | 8 | Historical quota data unavailable for July import | Low | Graceful empty state; IOC OIS to confirm by June |
-| 9 | **Quota import actions still write legacy `press`/`photo` columns only — per-category import is not wired** | **Critical** | **Must be fixed before July 2026 quota-setting window. Schema columns exist; only `importQuotas` and `saveQuotaEdits` actions and the UI table need updating. Failing to fix means IOC cannot load per-category quotas; NOC PbN is blocked.** |
-| 10 | `OrgExportRecord` missing `noc_e_slots` and `enr_slots` — ACR export is incomplete for NOC E and ENR orgs | High | `OrgExportRecord` fields must be added and wired through `AcrAdapter.pushOrgData()` before ACR handoff. NOC E press attachés and ENR orgs will be silently absent from the export if not fixed. |
+| 9 | ~~Quota import actions still write legacy `press`/`photo` columns only~~ | ~~Critical~~ | **RESOLVED 2026-04-01.** `importQuotas()` and `saveQuotaEdits()` now write all 7 per-category values (`e`, `es`, `ep`, `eps`, `et`, `ec`, `noc_e`) and derive `pressTotal`/`photoTotal` as rollup aggregates. `quota_changes` audit records use per-category `quotaType` values. |
+| 10 | ~~`OrgExportRecord` missing `noc_e_slots` and `enr_slots`~~ | ~~High~~ | **RESOLVED 2026-04-01.** `OrgExportRecord` includes `nocESlots` and `enrSlotsGranted`. `sendToAcr()` populates both: PbN orgs get `nocESlots` from allocations; ENR orgs get `enrSlotsGranted` from granted/partial decisions. |
 
 ---
 
@@ -1133,15 +1133,380 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 | Design Doc + Wireframe Review | 2026-03-30 | COMPLETE | ENR process separation clarified; cross-NOC dedup provisionally eliminated; PbN scope in v0.1 confirmed; NOC notifications added; IOC ENR and Quota screens created |
 | Codebase accuracy audit | 2026-03-31 | COMPLETE | Design doc updated to match built code: sudo feature added, ioc_readonly role added, EoI 5-tab form documented, QuotaBar documented, pbn_state sent_to_acr added, OrgExportRecord corrected, quota import legacy gap flagged, full schema documented, build status summary table added, test files documented |
 | Design confirmation review | 2026-04-02 | COMPLETE | 5 undocumented built features added (fast-track, EoI window toggle, quota dashboard, applicant status tracking, reversals); test inventory corrected (6→12 files); IOC-Direct route corrected (`/ioc/direct` → `/ioc/orgs`); quota import gap and OrgExportRecord gap escalated to Critical Risks table; overdue open questions (#1, #6) flagged; 3 new open questions added (#20–22) for undocumented features |
+| Full doc/code audit | 2026-04-02 | COMPLETE | 5 stale items corrected (Critical Risks #9/#10 resolved, quota_changes quotaType updated, audit_action enum completed). 13 discrepancies identified between design and code. Session timeout updated from 30min to 8h. Stakeholder Confirmation Register added (24 items across 6 stakeholder groups). IOC-Direct provisional decision: direct setup + PbN, no EoI flow. NOC E provisional decision: NOC self-enters as org. Email/notifications confirmed deferred to v1.0. Security and WCAG accessibility audits initiated. |
 
 **Critical gaps remaining:**
 - F-01: Email verification bounce = silent failure (no retry UX designed)
 - F-04: Audit middleware must fail-closed (block writes that can't be audited)
 - Common Codes integration architecture (TODO-013)
 - Open Question #16: cross-NOC dedup visibility (provisionally eliminated — needs IOC OIS input)
-- **NEW — Critical Risk #9:** Quota import actions only write legacy press/photo; per-category import not wired. Blocks July 2026 quota-setting window.
-- **NEW — Critical Risk #10:** OrgExportRecord missing noc_e_slots and enr_slots. NOC E and ENR orgs will be absent from ACR export.
-- **NEW — Open Questions #20–22:** Fast-track, EoI window, and reversals are built features with no design specification. Governance and behaviour undefined.
+- ~~Critical Risk #9: Quota import~~ — **RESOLVED 2026-04-01** (per-category import fully wired)
+- ~~Critical Risk #10: OrgExportRecord~~ — **RESOLVED 2026-04-01** (nocESlots + enrSlotsGranted wired)
+- Open Questions #20–22: Fast-track, EoI window, and reversals are built with provisional defaults — see Stakeholder Confirmation Register below
+- IOC-Direct workflow: dedup block built; management UI and PbN workflow not yet built (provisional decision: direct setup screen, no EoI flow — see SCR-04)
+- NOC E (Press Attaché): provisional model decided but not yet built (NOC self-enters as org in PbN — see SCR-05)
+- Email/notification system: deferred to v1.0; no email infrastructure exists
+
+---
+
+## Stakeholder Confirmation Register
+
+*Added 2026-04-02. This section lists every provisional decision, open design question, and governance confirmation needed from stakeholders. Each item describes the current provisional decision (what is built or will be built), the rationale, and what we need confirmed or changed.*
+
+*Recommended approach: circulate this section as a standalone document to each stakeholder group. Items are tagged with the recommended reviewer(s).*
+
+### SCR-01: RACI — Who owns what between IOC, LA28, and D.TEC
+
+**Status:** OPEN — no RACI exists (maps to Open Question #6, TODO-001)
+**Provisional decision:** D.TEC is building and operating the portal. IOC OIS owns the business rules and form field list. LA28/OCOG owns PbN formal approval.
+**What we need:** A one-page RACI covering: (a) EoI form field ownership, (b) PbN approval authority, (c) ENR grant authority, (d) infrastructure/hosting, (e) security review sign-off, (f) NOC onboarding/account provisioning, (g) production incident response.
+**Deadline:** April 30, 2026 — **OVERDUE relative to original plan. Escalate.**
+**Confirm with:** IOC Media Operations, LA28 OCOG, D.TEC leadership
+**Implementation status:** Not applicable (governance document, not code)
+
+---
+
+### SCR-02: April milestone scope — UAT with stub data or production-ready?
+
+**Status:** OPEN (maps to Open Question #1, Critical Risk #1)
+**Provisional decision:** April deliverable is a **functional prototype** with stub ACR integration and synthetic test data. Not production-ready — production requires EU hosting, SSO, CAPTCHA, and rate limiting which are planned for v1 (August).
+**What we need:** Explicit agreement on what "systems ready and tested" means for April 2026. Is the April demo for internal D.TEC/IOC review only, or will NOCs see it?
+**Deadline:** Immediate — we are past April 1
+**Confirm with:** IOC Media Operations, D.TEC leadership
+
+---
+
+### SCR-03: EoI form field list — final fields from IOC
+
+**Status:** OPEN (maps to TODO-003)
+**Provisional decision:** Form is built with 5 tabs (Organisation, Contacts, Accreditation, Publication, History) based on USOPC EoI forms and IOC stakeholder interview. We have ~35 fields implemented. The IOC may want additional fields (e.g., media accreditation number from prior Games, ISSN, specific affiliation details).
+**What we need:** IOC Media Ops to review the current form fields and confirm or add. The form is easily extensible — new fields are low effort.
+**Deadline:** Before any NOC-facing demo
+**Confirm with:** IOC Media Operations (Emma / IOC OIS)
+**Implementation status:** Built; extensible
+
+---
+
+### SCR-04: IOC-Direct organisations — setup screen, no EoI flow
+
+**Status:** PROVISIONAL DECISION (maps to Decision #26, Open Question #17)
+**Provisional decision:** IOC-Direct organisations (AFP, AP, Reuters, Xinhua, ~5-10 total) do **not** go through the public EoI form. Instead:
+1. IOC admin manages a reserved org list via a dedicated management screen (`/admin/ioc/orgs`) — add, edit, remove orgs with name, domain, country, category eligibility
+2. Reserved orgs are automatically blocked from NOC EoI queues (dedup block by domain + name/country match)
+3. IOC admin acts as the "NOC" for `IOC_DIRECT` orgs during PbN — allocates per-category slots from a separate `IOC_DIRECT` quota pool
+4. `IOC_DIRECT` PbN submissions go through the same OCOG approval state machine as any NOC
+5. No self-nomination form for IOC-Direct orgs — IOC enters their details directly
+
+**Rationale:** These are a small, stable set of organisations that the IOC already manages directly. A full EoI flow adds unnecessary process. The IOC just needs to (a) register them, (b) allocate their credentials, and (c) get OCOG sign-off.
+
+**What we need confirmed:**
+- Is this list truly ~5-10 orgs, or could it grow significantly?
+- After EoI opens, can the IOC add new orgs to the reserved list without OCOG sign-off, or is a joint approval gate needed?
+- Does the OCOG need any additional visibility or approval authority over IOC-Direct orgs beyond the standard PbN approval?
+
+**Confirm with:** IOC Media Operations, OCOG (LA28)
+**Implementation status:** Dedup block built; reserved org management actions and IOC-Direct PbN workflow not yet built
+**Effort to complete:** M (~2-3 days)
+
+---
+
+### SCR-05: NOC E (Press Attaché) — NOC self-enters as org in PbN
+
+**Status:** PROVISIONAL DECISION (maps to Open Question #18)
+**Provisional decision:** NOC E (press attaché) credentials cover NOC communications staff, not external media organisations. The NOC does **not** need a dedicated nomination screen. Instead:
+1. The NOC creates a single organisation record representing their own communications team (e.g., "USA NOC Communications Staff") — this can be done via the fast-track entry route
+2. During PbN, the NOC allocates `nocESlots` to this org like any other allocation
+3. The IOC sets `nocETotal` per NOC as part of the quota import (already built — the 7th column in the CSV)
+4. Individual press attaché names are not collected in MRP — that's Press by Name (ACR system, 2027)
+
+**Rationale:** Press attachés are NOC internal staff, not independent applicants. Treating "NOC comms staff" as an org-of-N is consistent with the existing data model and avoids building a separate nomination UI.
+
+**What we need confirmed:**
+- Is the NOC E quota formula-based (e.g., based on delegation size), or does the IOC set it manually per NOC like other categories?
+- Are there cases where multiple distinct NOC entities (e.g., NOC comms team + NOC broadcast team) need separate org records?
+- Does the IOC or OCOG need to see the individual names of press attachés at any stage, or is a slot count sufficient for MRP?
+
+**Confirm with:** IOC OIS
+**Also consider getting input from:** 2-3 large NOCs (USA, GBR, FRA) to validate the workflow makes sense from their perspective
+**Implementation status:** Schema supports it (`nocETotal` in quotas, `nocESlots` in allocations); UX for creating the NOC-self org not yet specifically designed
+
+---
+
+### SCR-06: Sport-specific categories (Es/EPs) — free text sport declaration
+
+**Status:** PROVISIONAL DECISION (maps to Open Question #19)
+**Provisional decision:** When an applicant selects Es (sport-specific journalist) or EPs (sport-specific photographer), they enter the sport name as **free text** in the existing `sportsToCover` field. No dropdown from an IOC sport taxonomy list.
+**Rationale:** Free text is simpler to build and flexible. The IOC sport taxonomy is well-defined (LA28 programme has ~32 sports), but the form already captures `sportsToCover` as free text, which serves double duty.
+**What we need confirmed:** Is free text sufficient, or does the IOC need a structured sport dropdown for filtering/reporting? A dropdown would be low effort to add if needed.
+**Confirm with:** IOC OIS
+**Implementation status:** Built (free text `sportsToCover` field in History tab)
+
+---
+
+### SCR-07: Fast-track NOC entry — governance model
+
+**Status:** PROVISIONAL DECISION (maps to Open Question #20)
+**Provisional decision:** The NOC fast-track route (`/admin/noc/fast-track`) allows any NOC admin to submit an application on behalf of an organisation without going through the public EoI form. Current behaviour:
+1. NOC admin fills in org details + category selection directly
+2. Application is created with `status = 'approved'` and `entrySource = 'noc_direct'`
+3. The `noc_direct_entry` audit action is logged with the NOC admin as actor
+4. No CAPTCHA, no email verification (the NOC admin is already authenticated)
+5. The org appears in the NOC's approved list and is eligible for PbN slot allocation immediately
+
+**Rationale:** NOCs have legitimate organisations they already know (e.g., their national wire service, long-standing press partners). Requiring these known orgs to self-apply via the public form creates unnecessary friction. The audit trail distinguishes fast-track from public submissions.
+
+**What we need confirmed:**
+- Is there a limit on how many orgs a NOC can fast-track?
+- Should the IOC or OCOG be notified when a NOC uses fast-track, or is the audit log sufficient?
+- Should fast-tracked orgs skip OCOG visibility during EoI phase, or should they appear in OCOG's cross-NOC view alongside public applicants?
+
+**Confirm with:** IOC OIS, OCOG (LA28)
+**Also consider getting input from:** NOC administrators (does this match their expected workflow?)
+**Implementation status:** Built and tested
+
+---
+
+### SCR-08: EoI window per NOC — control and applicant experience
+
+**Status:** OPEN (maps to Open Question #21)
+**Current behaviour (built):**
+1. Each NOC has an independent EoI window toggle at `/admin/noc/settings`
+2. Default state: window **open** (no row in `nocEoiWindows` = open)
+3. When a NOC closes their window, public applicants who attempt to submit see a "submissions are not currently being accepted" message and are **blocked** (not queued)
+4. The toggle is audit-logged (`eoi_window_toggled`)
+5. Only the NOC admin for that territory can toggle their own window
+
+**What we need decided:**
+- Can the IOC override a NOC's window state? (e.g., force-open a NOC that has prematurely closed, or force-close all NOCs at the global deadline)
+- When the global EoI deadline passes (October 23, 2026), should all windows close automatically, or does each NOC close manually?
+- Should blocked applicants see a "try again later" message, or "contact your NOC at [email]"?
+- Should the IOC have visibility into which NOCs have their windows open/closed?
+
+**Confirm with:** IOC OIS (governance), OCOG (process coordination)
+**Also consider getting input from:** NOC administrators
+**Implementation status:** Built and tested; IOC override and global deadline auto-close not yet built
+
+---
+
+### SCR-09: Application reversals — no time limit, audit-logged
+
+**Status:** PROVISIONAL DECISION (maps to Open Question #22)
+**Provisional decision:** NOC admins can reverse approve and return decisions with **no time limit**. Current behaviour:
+1. **Unapprove** (`approved → pending`): resets all PbN allocations for that org to `draft` state. Audit-logged as `application_unapproved`.
+2. **Unreturn** (`returned → pending`): allows NOC to re-evaluate without waiting for applicant resubmission. Audit-logged as `application_unreturned`.
+3. **Rejections cannot be reversed** — `rejected` is a terminal state.
+4. **OCOG PbN approval can be reversed** (`ocog_approved → noc_submitted`). Audit-logged as `pbn_unapproved`.
+5. All reversals are visible in the audit log to IOC admins.
+
+**Rationale:** Reversals are an administrative necessity — NOC reviewers make mistakes. A time limit adds complexity without clear benefit given the audit trail provides full visibility.
+
+**What we need confirmed:**
+- Is it acceptable that rejection is permanent? Or should there be a path to reverse a rejection (e.g., with IOC approval)?
+- Should OCOG/IOC see a visual indicator on reversed applications (beyond the audit log)?
+- As the ACR system becomes the master record: at what point should reversals be blocked because the data has already been pushed to ACR? Currently, `sent_to_acr` is a terminal PbN state with no reversal path.
+
+**Confirm with:** IOC OIS (policy), OCOG (operational impact)
+**Implementation status:** Built and tested
+
+---
+
+### SCR-10: Cross-NOC duplicate detection — provisionally eliminated
+
+**Status:** OPEN (maps to Open Question #16, TODO-014, TODO-015)
+**Provisional decision:** Cross-NOC dedup is **not in v1 scope**. Only within-territory dedup (same org, same NOC = block) and the IOC-Direct reserved-list block remain.
+**What was removed:** Detection of the same org applying through multiple NOCs (e.g., Reuters UK + Reuters France). The `isMultiTerritoryFlag` column exists in the schema but is not surfaced in any UI.
+**Rationale:** The flat org identity model (Decision #6) treats AP-UK and AP-France as independent records. Cross-NOC flagging requires a policy decision about what, if anything, the IOC should do when the same domain appears in multiple NOC queues.
+
+**What we need decided:**
+- Should the IOC or OCOG see a report of organisations that appear in multiple NOC territories?
+- If so, what action can they take? (Informational only? Flag to NOCs? Block one submission?)
+- Is the `isMultiTerritoryFlag` useful for any downstream process?
+
+**Confirm with:** IOC OIS (policy), OCOG (operational impact)
+**Implementation status:** Schema column exists; UI surfacing removed; within-NOC dedup not yet built as separate feature
+
+---
+
+### SCR-11: Dedup "fail open" policy — need explicit sign-off
+
+**Status:** OPEN (maps to TODO-005)
+**Provisional decision:** If the dedup check times out at submission time, the application is **accepted** (fail open). An async catch-up job would flag potential duplicates after the fact.
+**Alternative:** Fail closed — reject submission on timeout, ask user to retry.
+
+**What we need:** Named decision-maker to sign off on fail-open policy. This has accreditation integrity implications — a duplicate org could flow into ACR if the dedup check fails.
+**Confirm with:** IOC Media Operations (policy owner)
+**Implementation status:** Dedup timeout handling not yet built; reserved-org block is synchronous and does not fail open
+
+---
+
+### SCR-12: ACR integration scope boundary — where does MRP end?
+
+**Status:** OPEN (maps to TODO-016)
+**Provisional decision:** MRP handles EoI + PbN + ENR. Approved org list + per-category slot allocations flow to ACR via structured export. Press by Name (individual journalist accreditation) is entirely in ACR (2027). MRP never handles individual PII (passports, photos).
+**What we need confirmed:** When the NOC finishes PbN in MRP and data is sent to ACR, does the NOC then log into ACR to do Press by Name? Or does MRP collect any person-level data for ACR?
+**Confirm with:** IOC OIS, OCOG ACR team, D.TEC
+**Implementation status:** Export built; ACR adapter stubbed
+
+---
+
+### SCR-13: Common Codes integration — lookup and coding trigger
+
+**Status:** OPEN (maps to Open Question #13, TODO-017)
+**Provisional decision:** MRP does not assign Common Codes. When an org is approved in MRP, a downstream process (manual or API-triggered) initiates the Common Codes coding workflow. MRP stores `commonCodesId` once assigned.
+**What we need decided:**
+- Should MRP look up existing Common Codes at EoI submission time (to pre-fill org data)?
+- Should MRP trigger the coding workflow via API on approval, or does OCOG ACR staff initiate it manually?
+- What is the lookup API? (Field: org name? Domain? Country?)
+
+**Confirm with:** D.TEC Common Codes team (internal), OCOG ACR staff
+**Implementation status:** `commonCodesId` column exists; no lookup or trigger implemented
+
+---
+
+### SCR-14: Freelancer data model — individual vs. collective
+
+**Status:** OPEN (maps to TODO-022)
+**Provisional decision:** Freelancers are treated as "org of 1" — each freelancer creates their own org record. The `isFreelancer` boolean flag is captured in the form.
+**What we need decided:**
+- Are freelancer collectives (multiple freelancers under a shared umbrella) a real use case, or an edge case?
+- If collectives exist, should individual freelancers be associated with the collective, or each create their own org record?
+- Dedup for freelancers: currently planned as name + country (not domain). Is this sufficient?
+
+**Confirm with:** IOC OIS (policy), OCOG (operational experience from prior Games)
+**Also consider getting input from:** NOC administrators who deal with freelancer applications
+**Implementation status:** `isFreelancer` flag built; collective model not built
+
+---
+
+### SCR-15: ENR process — remaining open questions
+
+**Status:** MOSTLY RESOLVED; 4 sub-questions open (maps to TODO-023)
+**Provisional decision:** Core ENR model is built and confirmed: NOC submits prioritised list → IOC grants from holdback pool → per-org decisions (granted/partial/denied).
+**What we need confirmed:**
+- (a) Is there a separate deadline for NOC ENR submissions, distinct from the EoI deadline?
+- (b) Can a NOC amend their ENR priority list after initial submission to IOC?
+- (c) Does the ENR undertaking apply at the org-level request stage, or only when individual names are submitted later?
+- (d) Notifications to NOC of IOC grant/denial decisions — in-app, email, or both? (Note: all notification is deferred to v1.0; this is a design question, not a build question)
+
+**Confirm with:** IOC OIS
+**Implementation status:** Built and tested
+
+---
+
+### SCR-16: ENR undertaking — legal mechanism
+
+**Status:** NOT STARTED (maps to Open Question #2, TODO-007)
+**Provisional decision:** Two paths prepared: Path A (typed name + checkbox + timestamp, build first); Path B (DocuSign-grade e-signature, additive if legal requires it).
+**What we need:** Legal review determining which path is legally sufficient. Path A is ~1 day of work; Path B is ~3-4 weeks.
+**Deadline:** April 30, 2026 (to inform v1.1 design)
+**Confirm with:** IOC Legal
+**Implementation status:** Neither path built yet; external Adobe Acrobat process continues for v1
+
+---
+
+### SCR-17: Infrastructure and hosting — EU data residency for v1
+
+**Status:** RESOLVED for v0.1; v1 needs formal sign-off (maps to Open Question #3, #7)
+**Provisional decision:** v0.1 = US/Railway/synthetic data. v1 = D.TEC/DGP EU infrastructure.
+**What we need:** (a) Formal legal sign-off on D.TEC/DGP EU hosting for v1. (b) Named infrastructure owner. (c) Deployment timeline from D.TEC infra team.
+**Confirm with:** IOC Legal (data residency), D.TEC infrastructure team (hosting)
+
+---
+
+### SCR-18: SSO integration — feasibility and timeline
+
+**Status:** UNASSIGNED (maps to Open Question #8)
+**Provisional decision:** v0.1 uses email + password (prototype auth). v1.0 replaces with D.TEC/DGP SSO.
+**What we need:** (a) Is D.TEC/DGP SSO the confirmed identity provider? (b) What protocol (SAML, OIDC)? (c) Can integration be completed by August 2026? (d) Who provisions admin accounts — IOC, D.TEC, or self-registration?
+**Confirm with:** IOC IT, D.TEC
+**Implementation status:** Cookie-based HMAC session built; SSO adapter not started
+
+---
+
+### SCR-19: Dashboard filtering and candidate quality signals
+
+**Status:** OPEN (maps to TODO-020)
+**Provisional decision:** Basic status filtering is built. Advanced quality signals (org type, category, quota impact, prior Games history, completion rate) are not yet implemented.
+**What we need:** IOC OIS to define what signals help NOC and IOC reviewers prioritise applications. This is especially important for large NOCs (USA, GBR) that may receive thousands of applications against a limited quota.
+**Confirm with:** IOC OIS (what quality signals matter?), OCOG (what filtering do they need across NOCs?)
+**Also consider getting input from:** Large-territory NOC administrators (USA, GBR, GER, FRA, JPN)
+**Implementation status:** Basic table with status filter built; advanced filtering not built
+
+---
+
+### SCR-20: NOC/IF setup — ENRS ranking and high-demand event lead
+
+**Status:** OPEN (maps to TODO-021)
+**Provisional decision:** These fields are not yet in the system. The NOC/IF setup/profile screen does not exist.
+**What we need:** (a) Exact field definitions for ENRS ranking (scale? per-org or per-NOC?) and high-demand event lead (named contact or role?). (b) Where these fields surface in the PbN workflow.
+**Confirm with:** IOC OIS
+**Implementation status:** Not built
+
+---
+
+### SCR-21: Quota model — two-step separation for all NOC sizes
+
+**Status:** OPEN (maps to Open Question #9)
+**Provisional decision:** The two-step separation (EoI approval → PbN slot assignment) is always enforced, regardless of NOC size. A small NOC with 5 applicants and 3 quota slots still goes through the same process as USA with 500 applicants.
+**What we need confirmed:** Is this acceptable for small NOCs, or can they combine approval and slot assignment into one step?
+**Confirm with:** IOC OIS
+**Also consider getting input from:** Small-territory NOC representatives
+**Implementation status:** Two-step separation is enforced in code (no slot assignment at EoI approval time)
+
+---
+
+### SCR-22: Quota assignees — INOs and edge cases beyond NOCs and IFs
+
+**Status:** PARTIALLY RESOLVED (maps to Open Question #10)
+**Provisional decision:** NOCs and IFs are resolved (IFs use same screens as NOCs, Decision #19). IOC-Direct is resolved (Decision #26). INOs (International Non-Governmental Organisations) and other edge-case assignees are not yet addressed.
+**What we need:** Are there quota assignees beyond NOCs, IFs, and IOC-Direct? If so, do they follow the NOC workflow or need their own?
+**Confirm with:** IOC OIS
+
+---
+
+### SCR-23: Email notification and communication system
+
+**Status:** DEFERRED TO v1.0
+**Provisional decision:** No email infrastructure is built in v0.1. All notifications are currently in-app only (URL query parameter success/error messages). The design specifies email notifications at several points:
+- Applicant: magic link for form access, confirmation of submission, return-for-correction notice
+- NOC: notification of OCOG PbN approval/adjustment, notification of ACR send
+- IOC: anomaly detection digest (P2)
+
+**What we need decided:**
+- What email provider will v1.0 use? (SendGrid, SES, D.TEC internal?)
+- Which emails are mandatory for August launch vs. nice-to-have?
+- Does the IOC or D.TEC provide email sending infrastructure, or does MRP self-host?
+
+**Confirm with:** D.TEC infrastructure team, IOC IT
+**Implementation status:** Not built; deferred to v1.0
+
+---
+
+### SCR-24: v1.1 scope and October 5 deadline
+
+**Status:** OPEN (maps to TODO-008)
+**Provisional decision:** v1.1 ships late September 2026, before October 5 PbN process launch. Planned scope: ACR real-time sync, ENR undertaking in-system, French/Spanish localisation, self-service NOC account registration.
+**What we need:** Reality check — can all of this ship in 4 weeks (September 1-25) given unresolved legal reviews (ENR undertaking) and unassigned procurement (translators)? May need to split into v1.1 (ACR sync only, hard October 5 requirement) and v1.2 (everything else).
+**Confirm with:** IOC Media Operations, D.TEC leadership
+
+---
+
+### Summary by stakeholder
+
+**IOC Media Operations / OIS (primary contact: Emma):**
+SCR-01, SCR-02, SCR-03, SCR-04, SCR-05, SCR-06, SCR-07, SCR-08, SCR-09, SCR-10, SCR-11, SCR-12, SCR-14, SCR-15, SCR-19, SCR-20, SCR-21, SCR-22, SCR-24
+
+**OCOG / LA28:**
+SCR-01, SCR-02, SCR-04, SCR-08, SCR-09, SCR-10, SCR-12, SCR-19
+
+**IOC Legal:**
+SCR-16, SCR-17
+
+**IOC IT / D.TEC:**
+SCR-01, SCR-02, SCR-13, SCR-17, SCR-18, SCR-23, SCR-24
+
+**NOC Administrators (recommend consulting 2-3 large + 2-3 small NOCs):**
+SCR-05, SCR-07, SCR-08, SCR-14, SCR-19, SCR-21
 
 ---
 

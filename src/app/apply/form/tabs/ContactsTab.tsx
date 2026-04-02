@@ -13,7 +13,7 @@ function inp(name: string, errors?: FormErrors) {
 }
 function Err({ name, errors }: { name: string; errors?: FormErrors }) {
   if (!errors?.[name]) return null;
-  return <p className="text-xs text-red-500 mt-1" role="alert">{errors[name]}</p>;
+  return <p id={`err-${name}`} className="text-xs text-red-500 mt-1" role="alert">{errors[name]}</p>;
 }
 
 export function ContactsTab({
@@ -42,13 +42,15 @@ export function ContactsTab({
             <div>
               <label htmlFor="contact_first_name" className={LABEL}>First name <span className="text-red-500">*</span></label>
               <input id="contact_first_name" name="contact_first_name" type="text" required data-tab="1"
-                defaultValue={prefill?.contactFirstName ?? ""} placeholder="First" className={inp("contact_first_name", errors)} />
+                defaultValue={prefill?.contactFirstName ?? ""} placeholder="First" className={inp("contact_first_name", errors)}
+                aria-invalid={!!errors?.contact_first_name} aria-describedby={errors?.contact_first_name ? "err-contact_first_name" : undefined} />
               <Err name="contact_first_name" errors={errors} />
             </div>
             <div>
               <label htmlFor="contact_last_name" className={LABEL}>Last name <span className="text-red-500">*</span></label>
               <input id="contact_last_name" name="contact_last_name" type="text" required data-tab="1"
-                defaultValue={prefill?.contactLastName ?? ""} placeholder="Last" className={inp("contact_last_name", errors)} />
+                defaultValue={prefill?.contactLastName ?? ""} placeholder="Last" className={inp("contact_last_name", errors)}
+                aria-invalid={!!errors?.contact_last_name} aria-describedby={errors?.contact_last_name ? "err-contact_last_name" : undefined} />
               <Err name="contact_last_name" errors={errors} />
             </div>
           </div>
@@ -58,8 +60,9 @@ export function ContactsTab({
               defaultValue={prefill?.contactTitle ?? ""} placeholder="e.g. Sports Editor, Bureau Chief" className={INPUT} />
           </div>
           <div>
-            <label className={LABEL}>Email address</label>
-            <div className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500">{email}</div>
+            <label htmlFor="contact_email_display" className={LABEL}>Email address</label>
+            <input id="contact_email_display" type="email" value={email} disabled
+              className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500" />
             <p className={HELP}>Verified via your access link. Cannot be changed.</p>
           </div>
           <div className="grid grid-cols-2 gap-4">

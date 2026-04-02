@@ -88,22 +88,22 @@ export default async function NocQueuePage({
 
       {/* Success banner */}
       {success === "approved" && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
           Application approved.
         </div>
       )}
       {success === "returned" && (
-        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded text-orange-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded text-orange-800 text-sm">
           Application returned for corrections.
         </div>
       )}
       {success === "rejected" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
           Application rejected.
         </div>
       )}
       {success === "fast_track_submitted" && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
           Fast-track application submitted and approved.
         </div>
       )}

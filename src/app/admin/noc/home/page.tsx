@@ -182,13 +182,16 @@ export default async function NocHomePage() {
         <div className="flex flex-col gap-3">
           {MILESTONES.map((m) => (
             <div key={m.label} className="flex items-center gap-3">
-              <span className={`w-2 h-2 rounded-full shrink-0 ${
+              <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
                 m.state === "done"    ? "bg-green-500" :
                 m.state === "active"  ? "bg-[#0057A8] ring-2 ring-blue-200" :
                 "bg-gray-200"
               }`} />
               <span className={`text-sm flex-1 ${m.state === "active" ? "font-medium text-gray-900" : "text-gray-500"}`}>
                 {m.label}
+                <span className="sr-only">
+                  {m.state === "done" ? " (completed)" : m.state === "active" ? " (current)" : " (upcoming)"}
+                </span>
               </span>
               <span className={`text-xs ${m.state === "active" ? "font-semibold text-[#0057A8]" : "text-gray-400"}`}>
                 {m.date}

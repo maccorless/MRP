@@ -61,23 +61,24 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
       </div>
 
       {/* Category checkboxes */}
-      <div>
-        <label className={LABEL}>
-          Accreditation categories <span className="text-red-500">*</span>
-        </label>
+      <fieldset>
+        <legend className={LABEL}>
+          Accreditation categories <span className="text-red-500" aria-hidden="true">*</span>
+          <span className="sr-only">(required)</span>
+        </legend>
         <p className={`${HELP} mb-3`}>Select all that apply to your organisation.</p>
         <div className="space-y-2">
           {ACCRED_CATEGORIES.map((cat) => {
             const isChecked = selected[cat.value];
             return (
-              <div
+              <label
                 key={cat.value}
-                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                htmlFor={`category_${cat.value}`}
+                className={`block border rounded-lg p-4 cursor-pointer transition-colors ${
                   isChecked
                     ? "border-[#0057A8] bg-blue-50"
                     : "border-gray-200 hover:bg-gray-50"
                 }`}
-                onClick={() => toggle(cat.value)}
               >
                 <div className="flex items-start gap-3">
                   <input
@@ -88,7 +89,6 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
                     onChange={() => toggle(cat.value)}
                     data-tab="2"
                     className="mt-0.5 accent-[#0057A8] cursor-pointer"
-                    onClick={(e) => e.stopPropagation()}
                   />
                   <div className="flex-1">
                     <div className="flex items-center">
@@ -103,13 +103,13 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
 
                 {/* Quantity input — shown when checked */}
                 {isChecked && (
-                  <div className="mt-3 ml-7" onClick={(e) => e.stopPropagation()}>
+                  <div className="mt-3 ml-7" onClick={(e) => e.preventDefault()}>
                     <label
                       htmlFor={`requested_${cat.value}`}
                       className="block text-xs font-medium text-gray-700 mb-1"
                     >
                       How many {cat.shortLabel} accreditations are you requesting?{" "}
-                      <span className="text-red-500">*</span>
+                      <span className="text-red-500" aria-hidden="true">*</span>
                     </label>
                     <input
                       id={`requested_${cat.value}`}
@@ -131,16 +131,16 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
                     />
                   </div>
                 )}
-              </div>
+              </label>
             );
           })}
         </div>
         {(errors?.category || !anySelected) && (
-          <p className="mt-2 text-xs text-red-500" role="alert">
+          <p id="err-category" className="mt-2 text-xs text-red-500" role="alert">
             {errors?.category ?? "Please select at least one accreditation category."}
           </p>
         )}
-      </div>
+      </fieldset>
 
       {/* NOC E note */}
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-xs text-gray-500">
@@ -163,8 +163,10 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
           defaultValue={prefill?.about ?? ""}
           placeholder="Describe your organisation's editorial focus, the events and sports you plan to cover, the size of your on-site team, and any specific venue access requirements."
           className={`${errors?.about ? BASE_INPUT + " border-red-500" : INPUT} resize-none`}
+          aria-invalid={!!errors?.about}
+          aria-describedby={errors?.about ? "err-about" : undefined}
         />
-        {errors?.about && <p className="text-xs text-red-500 mt-1" role="alert">{errors.about}</p>}
+        {errors?.about && <p id="err-about" className="text-xs text-red-500 mt-1" role="alert">{errors.about}</p>}
         <p className={HELP}>
           Be specific. Your NOC uses this to evaluate and prioritise your request. Include
           details about your audience reach and how you plan to cover LA 2028.

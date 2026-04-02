@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { initiateSudo } from "./actions";
 
 export default function SudoModal() {
@@ -8,6 +8,31 @@ export default function SudoModal() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap + Escape key
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") { handleClose(); return; }
+    if (e.key !== "Tab" || !dialogRef.current) return;
+    const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+      'input, button, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [open, handleKeyDown]);
 
   function handleOpen() {
     setOpen(true);
@@ -48,9 +73,12 @@ export default function SudoModal() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" aria-hidden="true" />
+      )}
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="sudo-modal-title" ref={dialogRef}>
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Act as another user</h2>
+            <h2 id="sudo-modal-title" className="text-base font-semibold text-gray-900 mb-1">Act as another user</h2>
             <p className="text-sm text-gray-500 mb-4">
               Opens a new read-only window as the specified admin user. You cannot
               save or submit data in sudo mode.
@@ -74,7 +102,7 @@ export default function SudoModal() {
               </div>
 
               {error && (
-                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <p role="alert" className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
                   {error}
                 </p>
               )}

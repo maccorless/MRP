@@ -9,7 +9,7 @@ function inp(name: string, errors?: FormErrors) {
 }
 function Err({ name, errors }: { name: string; errors?: FormErrors }) {
   if (!errors?.[name]) return null;
-  return <p className="text-xs text-red-500 mt-1" role="alert">{errors[name]}</p>;
+  return <p id={`err-${name}`} className="text-xs text-red-500 mt-1" role="alert">{errors[name]}</p>;
 }
 
 export function OrganisationTab({
@@ -54,13 +54,15 @@ export function OrganisationTab({
             Organisation name <span className="text-red-500">*</span>
           </label>
           <input id="org_name" name="org_name" type="text" required data-tab="0"
-            defaultValue={prefill?.orgName ?? ""} placeholder="e.g. The Associated Press" className={inp("org_name", errors)} />
+            defaultValue={prefill?.orgName ?? ""} placeholder="e.g. The Associated Press" className={inp("org_name", errors)}
+            aria-invalid={!!errors?.org_name} aria-describedby={errors?.org_name ? "err-org_name" : undefined} />
           <Err name="org_name" errors={errors} />
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label htmlFor="website" className={LABEL}>Website</label>
           <input id="website" name="website" type="url" data-tab="0"
-            defaultValue={prefill?.orgWebsite ?? ""} placeholder="https://" className={inp("website", errors)} />
+            defaultValue={prefill?.orgWebsite ?? ""} placeholder="https://" className={inp("website", errors)}
+            aria-invalid={!!errors?.website} aria-describedby={errors?.website ? "err-website" : undefined} />
           <Err name="website" errors={errors} />
         </div>
       </div>
@@ -70,7 +72,8 @@ export function OrganisationTab({
           Organisation type <span className="text-red-500">*</span>
         </label>
         <select id="org_type" name="org_type" required data-tab="0"
-          defaultValue={prefill?.orgType ?? ""} className={inp("org_type", errors)}>
+          defaultValue={prefill?.orgType ?? ""} className={inp("org_type", errors)}
+          aria-invalid={!!errors?.org_type} aria-describedby={errors?.org_type ? "err-org_type" : undefined}>
           <option value="" disabled>Select type...</option>
           <option value="media_print_online">Print / Online Media</option>
           <option value="media_broadcast">Broadcast</option>
@@ -83,7 +86,8 @@ export function OrganisationTab({
         <div>
           <label htmlFor="country" className={LABEL}>Country <span className="text-red-500">*</span></label>
           <input id="country" name="country" type="text" required data-tab="0"
-            list="country-codes" placeholder="US — United States" className={inp("country", errors)} />
+            list="country-codes" placeholder="US — United States" className={inp("country", errors)}
+            aria-invalid={!!errors?.country} aria-describedby={errors?.country ? "err-country" : undefined} />
           <datalist id="country-codes">
             {countryCodes.map(({ code, name }) => (
               <option key={code} value={`${code} — ${name}`} />
@@ -95,7 +99,8 @@ export function OrganisationTab({
         <div>
           <label htmlFor="noc_code" className={LABEL}>NOC code <span className="text-red-500">*</span></label>
           <input id="noc_code" name="noc_code" type="text" required data-tab="0"
-            list="noc-codes" placeholder="USA — United States of America" className={inp("noc_code", errors)} />
+            list="noc-codes" placeholder="USA — United States of America" className={inp("noc_code", errors)}
+            aria-invalid={!!errors?.noc_code} aria-describedby={errors?.noc_code ? "err-noc_code" : undefined} />
           <datalist id="noc-codes">
             {nocCodes.map(({ code, name }) => (
               <option key={code} value={`${code} — ${name}`} />
@@ -110,33 +115,48 @@ export function OrganisationTab({
       <div className="border-t border-gray-100 pt-6">
         <h3 className="text-sm font-medium text-gray-700 mb-3">Mailing Address <span className="text-gray-400 font-normal">(optional)</span></h3>
         <div className="space-y-3">
-          <input name="address" type="text" data-tab="0" placeholder="Street address" className={BASE_INPUT + " border-gray-300"} />
-          <input name="address2" type="text" data-tab="0" placeholder="Suite, floor, building (optional)" className={BASE_INPUT + " border-gray-300"} />
+          <div>
+            <label htmlFor="address" className="sr-only">Street address</label>
+            <input id="address" name="address" type="text" data-tab="0" placeholder="Street address" className={BASE_INPUT + " border-gray-300"} />
+          </div>
+          <div>
+            <label htmlFor="address2" className="sr-only">Suite, floor, building</label>
+            <input id="address2" name="address2" type="text" data-tab="0" placeholder="Suite, floor, building (optional)" className={BASE_INPUT + " border-gray-300"} />
+          </div>
           <div className="grid grid-cols-3 gap-3">
-            <input name="city" type="text" data-tab="0" placeholder="City" className={BASE_INPUT + " border-gray-300"} />
-            <input name="state_province" type="text" data-tab="0" placeholder="State / Province" className={BASE_INPUT + " border-gray-300"} />
-            <input name="postal_code" type="text" data-tab="0" placeholder="Postal code" className={BASE_INPUT + " border-gray-300"} />
+            <div>
+              <label htmlFor="city" className="sr-only">City</label>
+              <input id="city" name="city" type="text" data-tab="0" placeholder="City" className={BASE_INPUT + " border-gray-300"} />
+            </div>
+            <div>
+              <label htmlFor="state_province" className="sr-only">State / Province</label>
+              <input id="state_province" name="state_province" type="text" data-tab="0" placeholder="State / Province" className={BASE_INPUT + " border-gray-300"} />
+            </div>
+            <div>
+              <label htmlFor="postal_code" className="sr-only">Postal code</label>
+              <input id="postal_code" name="postal_code" type="text" data-tab="0" placeholder="Postal code" className={BASE_INPUT + " border-gray-300"} />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Flags */}
       <div className="border-t border-gray-100 pt-6 space-y-4">
-        <div>
-          <label className={LABEL}>Are you a freelancer?</label>
+        <fieldset>
+          <legend className={LABEL}>Are you a freelancer?</legend>
           <div className="flex gap-4 mt-1">
             <label className="flex items-center gap-2 text-sm"><input type="radio" name="is_freelancer" value="yes" data-tab="0" className="accent-[#0057A8]" /> Yes</label>
             <label className="flex items-center gap-2 text-sm"><input type="radio" name="is_freelancer" value="no" data-tab="0" className="accent-[#0057A8]" defaultChecked /> No</label>
           </div>
-        </div>
-        <div>
-          <label className={LABEL}>Will any attending media member require wheelchair accessibility?</label>
+        </fieldset>
+        <fieldset>
+          <legend className={LABEL}>Will any attending media member require wheelchair accessibility?</legend>
           <div className="flex gap-4 mt-1">
             <label className="flex items-center gap-2 text-sm"><input type="radio" name="accessibility_needs" value="yes" data-tab="0" className="accent-[#0057A8]" /> Yes</label>
             <label className="flex items-center gap-2 text-sm"><input type="radio" name="accessibility_needs" value="no" data-tab="0" className="accent-[#0057A8]" defaultChecked /> No</label>
           </div>
           <p className={HELP}>Venue accessibility arrangements will be coordinated if needed.</p>
-        </div>
+        </fieldset>
       </div>
     </div>
   );

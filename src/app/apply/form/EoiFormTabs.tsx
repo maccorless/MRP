@@ -96,12 +96,20 @@ export function EoiFormTabs({
 }) {
   const [activeTab, setActiveTab] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+  const tabListRef = useRef<HTMLDivElement>(null);
   const [tabStatus, setTabStatus] = useState<("empty" | "partial" | "complete")[]>(
     TABS.map(() => "empty")
   );
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+  const [errorAnnouncement, setErrorAnnouncement] = useState("");
   const [nocWindowClosed, setNocWindowClosed] = useState(false);
   const autoSuggestedNocRef = useRef<string | null>(null);
+
+  const STATUS_LABELS: Record<string, string> = {
+    empty: "Not started",
+    partial: "Partially filled",
+    complete: "Complete",
+  };
 
   // localStorage key scoped to this email
   const storageKey = `eoi-draft-${email}`;
@@ -277,6 +285,7 @@ export function EoiFormTabs({
 
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
+      setErrorAnnouncement("");
       return; // valid — let the form action proceed
     }
 
@@ -289,6 +298,9 @@ export function EoiFormTabs({
       ? parseInt(firstErrEl.getAttribute("data-tab") ?? "0", 10)
       : errs["category"] ? 2 : 0;
     setActiveTab(firstErrTab);
+
+    const errCount = Object.keys(errs).length;
+    setErrorAnnouncement(`${errCount} error${errCount > 1 ? "s" : ""} found. Please review your answers starting on the ${TABS[firstErrTab].label} tab.`);
 
     // After React re-renders the correct tab, scroll to + focus first invalid field
     setTimeout(() => {
@@ -336,16 +348,41 @@ export function EoiFormTabs({
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
 
+      {/* Error summary live region */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">{errorAnnouncement}</div>
+
       {/* Tab bar */}
       <div className="bg-white border border-gray-200 rounded-t-lg overflow-hidden">
-        <div className="flex overflow-x-auto">
+        <div
+          ref={tabListRef}
+          role="tablist"
+          aria-label="Application form sections"
+          className="flex overflow-x-auto"
+          onKeyDown={(e) => {
+            let next = activeTab;
+            if (e.key === "ArrowRight") next = (activeTab + 1) % TABS.length;
+            else if (e.key === "ArrowLeft") next = (activeTab - 1 + TABS.length) % TABS.length;
+            else if (e.key === "Home") next = 0;
+            else if (e.key === "End") next = TABS.length - 1;
+            else return;
+            e.preventDefault();
+            setActiveTab(next);
+            const btn = tabListRef.current?.querySelector(`[id="eoi-tab-${next}"]`) as HTMLElement | null;
+            btn?.focus();
+          }}
+        >
           {TABS.map((tab, i) => {
             const active = activeTab === i;
             const status = tabStatus[i];
             return (
               <button
                 key={i}
+                id={`eoi-tab-${i}`}
                 type="button"
+                role="tab"
+                aria-selected={active}
+                aria-controls={`eoi-panel-${i}`}
+                tabIndex={active ? 0 : -1}
                 onClick={() => setActiveTab(i)}
                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                   active
@@ -354,12 +391,13 @@ export function EoiFormTabs({
                 }`}
               >
                 {/* Status dot */}
-                <span className={`w-2 h-2 rounded-full shrink-0 ${
+                <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
                   status === "complete" ? "bg-green-500" :
                   status === "partial"  ? "bg-[#0057A8]" :
                   "bg-gray-300"
                 }`} />
                 {tab.label}
+                <span className="sr-only">({STATUS_LABELS[status]})</span>
               </button>
             );
           })}
@@ -368,19 +406,19 @@ export function EoiFormTabs({
 
       {/* Tab panels — all rendered, only active visible */}
       <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-8">
-        <div className={activeTab === 0 ? "" : "hidden"}>
+        <div id="eoi-panel-0" role="tabpanel" aria-labelledby="eoi-tab-0" hidden={activeTab !== 0}>
           <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} errors={fieldErrors} />
         </div>
-        <div className={activeTab === 1 ? "" : "hidden"}>
+        <div id="eoi-panel-1" role="tabpanel" aria-labelledby="eoi-tab-1" hidden={activeTab !== 1}>
           <ContactsTab prefill={prefill} email={email} errors={fieldErrors} />
         </div>
-        <div className={activeTab === 2 ? "" : "hidden"}>
+        <div id="eoi-panel-2" role="tabpanel" aria-labelledby="eoi-tab-2" hidden={activeTab !== 2}>
           <AccreditationTab prefill={prefill} errors={fieldErrors} />
         </div>
-        <div className={activeTab === 3 ? "" : "hidden"}>
+        <div id="eoi-panel-3" role="tabpanel" aria-labelledby="eoi-tab-3" hidden={activeTab !== 3}>
           <PublicationTab prefill={prefill} />
         </div>
-        <div className={activeTab === 4 ? "" : "hidden"}>
+        <div id="eoi-panel-4" role="tabpanel" aria-labelledby="eoi-tab-4" hidden={activeTab !== 4}>
           <HistoryTab prefill={prefill} />
         </div>
 

@@ -33,7 +33,7 @@ export default function AppHeader({
           <form action={logout}>
             <button
               type="submit"
-              className="text-xs text-white/50 hover:text-white/85 transition-colors cursor-pointer"
+              className="text-xs text-white/90 hover:text-white transition-colors cursor-pointer"
             >
               Sign out
             </button>
