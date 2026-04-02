@@ -10,12 +10,16 @@
 
 **How to use this document:** Each item describes a real scenario that will happen in the portal, explains what we've built or plan to build, and asks for your input. Items marked **PROVISIONAL** have a working default — we'll keep it unless you tell us otherwise. Items marked **OPEN** need a decision before we can build.
 
+> **IOC feedback received 2026-04-02:** Emma Morris (IOC Media Operations) has reviewed the design confirmation document and provided 29 inline comments plus written feedback. Key themes from that review are reflected throughout this document. Items updated or added based on Emma's feedback are marked [EM 2026-04-02] in their description where applicable.
+
 **Where NOC input would help:** Some questions affect how NOC administrators experience the portal day-to-day. We've flagged these — you may want to run them past 2–3 NOC representatives (ideally one large territory like USA/GBR/FRA and one smaller territory) to validate that the workflow makes sense from their side.
 
 **A note on roles:** Throughout this document, please keep in mind the general role boundaries:
 - **OCOG (LA28)** is the primary review and approval authority for most workflows — EoI visibility across NOCs, PbN formal approval, and cross-NOC oversight.
 - **IOC** oversees the process but generally does not approve — with specific carved-out exceptions: ENR grants from the holdback pool, IOC-Direct reserved organisations, and setting per-category quota totals.
 - **NOC** owns their territory's EoI review and PbN slot allocation.
+
+**Terminology note [EM 2026-04-02]:** Emma Morris (IOC) requests that the term **"Responsible Organisation"** be used instead of "sponsoring organisation" throughout the portal and documentation. This applies wherever we previously described one organisation as "sponsoring" or acting as the owning body for another, particularly in the IOC-Direct context.
 
 ---
 
@@ -218,6 +222,39 @@ These questions relate to how the IOC assigns per-category quotas to each NOC an
 
 ---
 
+### 3.2 Quota Ownership — OCOG Sets, IOC Approves? [EM 2026-04-02]
+
+**Status:** OPEN — major conflict with current design
+
+**Scenario:** Emma's comments (103, 137, 150, 151) and her email collectively describe a quota and PbN approval model that differs significantly from what we have built. This needs to be resolved with both Emma (IOC) and Martyn (OCOG) in the same meeting.
+
+**Current design (Model A — what is built today):**
+1. The IOC imports or manually enters per-category quota totals for each NOC in the portal.
+2. The OCOG reviews and formally approves each NOC's PbN slot allocations.
+3. IOC has read-only visibility on PbN.
+
+**Emma's model (Model B — what IOC feedback describes):**
+1. The OCOG enters quota totals into the portal — working from the list the IOC provides externally (not through the portal itself).
+2. The IOC validates and approves the final PbN from each NOC.
+3. OCOG coordinates the PbN process: releases information to NOCs, produces the guide, and inputs quotas in the system. IOC's role is final approval of the PbN, not quota entry.
+
+These are not compatible. In Model A, the IOC is the active party in quota setup and the OCOG approves PbN. In Model B, the OCOG is the active party in quota entry and the IOC approves PbN.
+
+Emma's email states: "the Press by Number process is led by the OCOG who release the information to the NOCs, produce the guide, input the quotas in the system." She also notes: "some of the roles in the document need to be aligned as some belong to the OCOG not the IOC."
+
+Emma's comment on the quota edit screen (Comment 137): "OCOG is handling the quotas it receives from IOC. To discuss how to manage." Comment 151: "OCOG to set NOC category quota as per IOC list. IOC approves the PBN."
+
+**What we need:** This needs to be confirmed at the 15/16 April meeting with Emma + Martyn + Amy Millstone (LA28 Press Services Manager). Until confirmed, we will not change the code — but this decision will require significant rework if Model B is chosen, as the entire quota-entry and PbN-approval screens are currently built for Model A.
+
+**Questions for the meeting:**
+1. Which model is correct: does the IOC enter quotas directly into the portal, or does the OCOG enter them on behalf of the IOC?
+2. Who formally approves each NOC's final PbN allocation: OCOG or IOC?
+3. If both need to sign off at different stages, what is the approval sequence?
+
+**Roles impacted:** IOC Admin, OCOG Admin (approval authority is the core dispute)
+
+---
+
 ## 4. Press by Number (PbN) — Allocating Slots to Organisations
 
 These questions relate to the process where NOCs assign their IOC-given quotas to specific media organisations, and the OCOG formally approves those allocations.
@@ -245,29 +282,33 @@ These people do not apply through the public EoI form. The NOC nominates them di
 
 ---
 
-### 4.2 IOC-Direct Organisations — Setup and Workflow
+### 4.2 IOC-Direct Organisations — Setup and Workflow [EM 2026-04-02]
 
-**Status:** PROVISIONAL — partially built
+**Status:** OPEN — current design is incorrect per IOC; significant code change required
 
-**Scenario:** A small number of major international wire services — AFP, AP, Reuters, Xinhua, and potentially the host-country national agency — don't belong to any single NOC. The IOC acts as their sponsor, filling the same role a NOC would play. These organisations bypass the normal NOC application process entirely.
+**Background:** The existing portal code implements a "reserved list" model for IOC-Direct organisations, with domain-blocking, an IOC-managed screen for adding/removing orgs, and OCOG approval of IOC-Direct PbN allocations. Emma's comments (106, 128, 131, 133, 154) make clear this design does not match the actual IOC process. The current code for this feature will need to be substantially revised once the correct approach is confirmed with OCOG.
 
-Currently in the portal:
-- A `reservedOrganizations` table holds the IOC-Direct list.
-- If a regular NOC tries to submit an EoI for an org that matches a reserved-list entry (by email domain), the form blocks the submission and tells the applicant this org is IOC-managed.
+**What Emma describes — the actual IOC-Direct process:**
 
-**Our provisional decision:** IOC-Direct orgs do not go through the public EoI form. Instead:
-1. The IOC admin manages the reserved list through a dedicated screen — adding, editing, and removing organisations before EoI opens.
-2. The IOC admin allocates per-category slots to each reserved org from an `IOC_DIRECT` quota pool during PbN.
-3. Those allocations go through the same OCOG approval process as any NOC's PbN submission.
+- There are approximately 20 IOC-direct international organisations. These are managed entirely offline by the IOC.
+- **No EoI in the portal.** These organisations do not apply via the portal — neither through a public form nor through any portal-based reserved-list entry.
+- **No portal-based reserved list.** There is no list to manage in a portal screen. The IOC holds the predetermined list and sends it to the OCOG directly.
+- **OCOG imports/enrolls them.** The OCOG receives the IOC's predetermined list and imports or enrolls those organisations directly into the system. The IOC approves them; the OCOG enrolls them.
+- **No domain-blocking needed.** These organisations (AFP, AP, Reuters, Xinhua, etc.) are so well-known that there is no meaningful risk of them accidentally applying via a NOC. The domain-blocking feature we built is unnecessary.
+- **No OCOG approval of IOC-Direct PbN.** The OCOG does not need to approve IOC-direct organisations — the IOC has already approved them through the predetermined list. Emma's comment 154: "No need to approve directly accredited orgs, we will have the pre-determined list."
 
-**Questions we need answered:**
+**Revised model (to be confirmed with OCOG):**
 
-1. Is this list truly ~5–10 organisations, or could it be larger?
-2. Once EoI opens, can the IOC add new orgs to the reserved list? If so, does that require OCOG sign-off or just an audit log entry?
-3. Does the OCOG need any additional visibility or approval authority over IOC-Direct orgs beyond the standard PbN approval?
-4. These orgs currently appear in the dedup check by email domain only. Should we also match by organisation name + country (to catch cases where the domain doesn't match but the org name does)?
+1. IOC compiles the ~20 IOC-direct org list offline and shares it with the OCOG.
+2. OCOG imports or manually enrolls these orgs directly into the portal (or ACR — to be clarified).
+3. No EoI, no portal approval flow, no OCOG PbN review step for these orgs.
+4. Cross-NOC deduplication for these orgs: Emma's comment 132 notes "we will see the organisations in the final PBN versions so we will be able to spot it" — suggesting this is handled by human review rather than automated blocking.
 
-**Roles impacted:** IOC Admin (manages the list, allocates slots), OCOG Admin (approves PbN)
+**Open question:** The import/enroll mechanism for the OCOG still needs to be defined. Does the OCOG enter these orgs through MRP, directly in ACR, or some other route? This needs Martyn's input. The IOC-Direct section should be marked as requiring discussion at the April 15/16 meeting. Emma's comment 148 on this section simply notes: "To discuss."
+
+**Terminology:** Per the terminology note above, "Responsible Organisation" should be used in any UI copy that previously said "sponsoring organisation" in relation to IOC-Direct orgs.
+
+**Roles impacted:** IOC (holds the list, approves), OCOG Admin (enrolls/imports), Martyn/OCOG (defines import mechanism)
 
 ---
 
@@ -291,6 +332,33 @@ Two possible models:
 
 ---
 
+### 4.4 NOC Direct-Entry into PbN — No EoI Required [EM 2026-04-02]
+
+**Status:** OPEN — distinct from current fast-track design
+
+**Scenario:** Emma's comments (96, 98) and her email describe a pattern we have not fully accounted for: some NOCs will not use the EoI form at all, and will want to enter organisations directly into their PbN allocation table without any prior EoI record. Emma notes (Comment 98): "There will be press orgs who will not have submitted an EoI that will need to be entered in the PbN stage directly by the NOC." Her email adds: "some might not use the EoI form, some might enter information directly in the Press by Number form."
+
+This is distinct from our current "fast-track" feature. Our fast-track still creates an EoI record (just pre-approved), so the org passes through the EoI layer before PbN. The question Emma raises is whether a NOC should be able to bypass EoI entirely — adding an org to their PbN table with no corresponding EoI record at all.
+
+**Concrete example:** The NOC press officer for a large European territory knows their national broadcaster will receive PbN slots — they have every Games for the past 20 years. They never asked the broadcaster to fill out an EoI form. At PbN time, they want to add them directly to the allocation table. There is no EoI record and no desire to create one.
+
+**Two design options:**
+
+**Option A — Expedited EoI-like entry (current fast-track):** The NOC creates an EoI record via the fast-track route (minimal fields, auto-approved). The org then flows through the PbN layer normally. The EoI record exists as a lightweight audit item. This is what is currently built.
+
+**Option B — True PbN direct-entry (bypass EoI entirely):** The NOC can add an org directly to their PbN allocation table with no EoI record created. The org exists only in PbN. The OCOG sees it in the PbN review and approves (or questions) it there.
+
+**Questions we need answered:**
+
+1. Is Option A acceptable in practice — can NOC admins be asked to create a minimal EoI entry (even auto-approved) for any org they want in PbN? Or will this feel like unnecessary bureaucracy to busy NOC press officers?
+2. If Option B is preferred, does the OCOG need any visibility into which PbN entries had a corresponding EoI vs. which were added directly? Is there an audit/governance concern about orgs appearing in PbN without an EoI trail?
+3. Emma's email notes that quota categories are fixed in PbN and NOCs cannot go over their totals. This constraint holds regardless of whether an org came through EoI or was added directly. Please confirm the system should enforce this hard cap regardless of entry route.
+
+**Roles impacted:** NOC Admin (primary — needs a simple path), OCOG Admin (sees the PbN result and approves), IOC Admin (audit visibility)
+**NOC input recommended** — ask a NOC press officer how they'd want to handle known major media outlets they never collected an EoI from.
+
+---
+
 ## 5. ENR — Extended Non-Rights Broadcasters
 
 These questions relate to the separate ENR track, where NOCs nominate broadcasters without Olympic media rights and the IOC grants allocations from a holdback pool. ENR is one of the carved-out areas where the IOC is the direct decision-maker (not the OCOG).
@@ -299,34 +367,41 @@ These questions relate to the separate ENR track, where NOCs nominate broadcaste
 
 ### 5.1 ENR Process — Remaining Open Questions
 
-**Status:** MOSTLY RESOLVED — four sub-questions remain
+**Status:** MOSTLY RESOLVED — additional sub-questions added from IOC review
 
 **Scenario:** A NOC submits a prioritised list of five ENR organisations to the IOC. The IOC reviews the list and grants allocations from the holdback pool — Organisation A gets the full 20 slots requested, Organisation B gets a partial grant of 10 (out of 22 requested), and Organisation C is denied. The NOC sees the IOC's per-org decisions. The core process is built and tested.
+
+**ENR pool size — confirmed [EM 2026-04-02]:** Emma confirms the total ENR holdback pool is **350 slots** across all NOCs. This is a confirmed figure, not an open question.
+
+**IOC visibility requirement — confirmed [EM 2026-04-02]:** Emma states (Comment 119): "It is important that the IOC is able to see all requests from all NOCs when granting ENRs. The total amount is 350 so visibility on all NOC requests is needed before allocation can begin." This is a confirmed requirement. The current IOC ENR screen — which shows one NOC's list at a time — may need to be redesigned to show a combined multi-NOC view with a running total against the 350-slot cap. This redesign should be scoped before the April 15/16 meeting.
 
 **Questions we need answered:**
 
 1. **ENR submission deadline:** Is there a separate deadline for NOC ENR submissions, distinct from the EoI deadline (October 23)? Or does the same deadline apply?
 2. **Amending after submission:** Once a NOC submits their ENR list to the IOC, can they amend it (add an org, change the priority order)? Or is submission final?
-3. **ENR undertaking timing:** The ENR undertaking (currently an external Adobe Acrobat process) — does it apply at the org-level request stage, or only later when individual names are submitted?
+3. **ENR undertaking timing:** See section 5.2 — this is now deferred. [EM 2026-04-02]
 4. **Decision notification:** When the IOC makes grant/deny decisions, how should the NOC be notified? (Note: email notifications are planned for v1.0; this is a design question about what the notification should contain.)
+5. **ENR self-application via the EoI portal [EM 2026-04-02]:** Emma explicitly raises (Comments 94, 95, 118 and her email) whether ENR organisations should be allowed to apply via the EoI portal themselves, rather than only being nominated by NOCs. The reasoning: NOCs still need to know which ENR organisations are interested in credentials, and ENR organisations will see the public portal and try to apply regardless. If ENR orgs can submit via the portal, one possible flow would be: ENR org selects their category on the EoI form → NOC sees their interest and nominates them for the ENR track → IOC approves. Emma notes (Comment 94): "We may let ENRs apply directly so the NOC knows which ENRs are interested. However the same process of the IOC approving them and letting the NOC know would follow." This is currently **OPEN**. A decision is needed before we can design the ENR form entry. If ENR self-application is enabled, we also need to decide whether ENR applicants share the public EoI form or have a separate intake flow.
 
-**Roles impacted:** NOC Admin (submits ENR list), IOC Admin (makes grant decisions)
+**Roles impacted:** NOC Admin (submits ENR list, may see ENR self-applications), IOC Admin (makes grant decisions, needs multi-NOC combined view), ENR organisations (potential self-applicants)
 
 ---
 
-### 5.2 ENR Undertaking — Legal Mechanism
+### 5.2 ENR Undertaking — Legal Mechanism [EM 2026-04-02]
 
-**Status:** OPEN — waiting on IOC Legal
+**Status:** OPEN — waiting on IOC Legal; timing updated per IOC feedback
 
-**Scenario:** Before an ENR organisation can receive accreditation, they must sign an undertaking acknowledging specific terms. This is currently handled outside the portal via Adobe Acrobat. For v1.1 (September 2026), we could bring it in-system.
+**Updated timing [EM 2026-04-02]:** Emma confirms (Comment 120) that the ENR undertaking will be needed later in the process — likely at the Press by Name stage, not at the ENR nomination or grant stage. IOC News Access Rules need to be finalised before the undertaking text can be drafted. This pushes the in-portal ENR undertaking feature later than originally planned — it is now out of scope for v1.1 and should be re-scoped once IOC News Access Rules are ready. Emma notes: "It is important to scope it" — so it remains on the roadmap, just with a later delivery window than previously estimated.
 
-**Three options:**
+**Scenario:** Before an ENR organisation can receive accreditation, they must sign an undertaking acknowledging specific terms. This is currently handled outside the portal via Adobe Acrobat.
+
+**Three options — for when this is in scope:**
 
 - **Path A (typed name):** The signatory types their full legal name, checks a consent box, and the system records a timestamp and IP address. A PDF receipt is emailed. This is a small amount of development effort.
 - **Path B (DocuSign-grade):** A full e-signature flow with cryptographic proof. Required only if IOC Legal determines typed-name is insufficient. This is significantly more investment than Path A, though Path A work is not discarded.
-- **Path C (external process):** Continue using Adobe Acrobat outside the portal indefinitely. Zero development effort, but the undertaking process remains disconnected from the portal workflow and requires manual tracking.
+- **Path C (external process):** Continue using Adobe Acrobat outside the portal. Zero development effort, but the undertaking remains disconnected from the portal workflow and requires manual tracking.
 
-**What we need:** IOC Legal to determine which path is legally sufficient. This decision is needed by April 30, 2026 to inform the v1.1 build.
+**What we need:** IOC Legal to determine which path is legally sufficient — but this decision is not on the critical path until IOC News Access Rules are ready. The decision target date of April 30, 2026 is now deferred accordingly.
 
 **Roles impacted:** ENR organisations (sign the undertaking), IOC Legal (determines the mechanism), IOC Admin (manages ENR workflow)
 
@@ -390,6 +465,39 @@ This is primarily a D.TEC internal question, but the OCOG may have operational i
 
 ---
 
+### 6.4 NOC Onboarding and System Manual [EM 2026-04-02]
+
+**Status:** OPEN — governance question
+
+**Scenario:** Emma asks (Comment 185): "As the NOCs will need to be onboarded on to the ACR system, will LA28ACR onboard them? A manual will need to be planned to help the NOCs. Will the system be set up in French too." These are governance questions that need answers before launch.
+
+**Questions we need answered:**
+
+1. **Onboarding responsibility:** Who is responsible for onboarding NOC administrators to the portal — provisioning accounts, communicating login details, and providing initial guidance? Is this D.TEC, OCOG, or IOC? Given OCOG's role as operational coordinator of the PbN process, this feels like an OCOG responsibility, but we need confirmation.
+2. **User manual:** Will a user manual or guide be produced for NOC administrators? If so, who writes it — D.TEC (technical), OCOG (process), or a joint effort? Emma notes that the OCOG has been working on a Press by Number template, which may inform or align with any portal guide.
+3. **French localisation:** French is planned for v1.1 of the portal. Emma's question implies there may be an expectation of French availability at launch. Is French required at launch (blocking), or is English-first acceptable for the initial prototype and v1.0 rollout, with French following in v1.1?
+
+**Roles impacted:** NOC Admin (receives onboarding), OCOG Admin (may deliver onboarding), D.TEC (may produce manual), IOC (may set language requirements)
+
+---
+
+### 6.5 Pilot NOC Testing [EM 2026-04-02]
+
+**Status:** OPEN — pre-launch strategy question
+
+**Scenario:** Emma suggests (Comment 184): "I think we should test the system with a select number of NOCs." This aligns with the general principle of controlled rollout before full launch, but we have not yet defined the pilot structure. Emma also notes (Comment 168) that the IOC only received test URLs on 30 March before the Easter break, and that OCOG and NOCs also need time to review before agreeing on any launch timeline: "I think we need to agree on this together and be realistic but also recognising time is tight."
+
+**Questions we need answered:**
+
+1. **Pilot NOC selection:** Who selects the pilot NOCs, and by what criteria? (Suggestions: one large territory with high application volume, one mid-size, one small to represent different workflow complexity levels. Geographic and linguistic diversity may also be a factor.)
+2. **Pilot timeline:** When would pilot NOC testing begin, and how long would the pilot run before full launch? What is the process for collecting and acting on pilot feedback?
+3. **Go/no-go threshold:** What is the threshold for moving from pilot to full launch? Who makes that call — OCOG, IOC, or joint?
+4. **April 15/16 meeting:** Emma's comment 168 makes clear that the prototype launch date is not currently agreed. The 15/16 April meeting should include a realistic timeline discussion. D.TEC will prepare a revised timeline proposal for that meeting.
+
+**Roles impacted:** OCOG Admin (may coordinate pilot), IOC (may set go/no-go criteria), NOC Admin (pilot participants), D.TEC (operates the pilot environment)
+
+---
+
 ## Resolved Decisions — For Confirmation
 
 The following decisions have been made and implemented. We're listing them here so you can confirm they match your understanding. If anything needs revisiting, we can — these are not locked.
@@ -414,8 +522,10 @@ The following decisions have been made and implemented. We're listing them here 
 - **ENR:** The IOC grants ENR allocations from the holdback pool (separate track, not PbN).
 - **IOC-managed quotas:** The IOC sets per-category quota totals per NOC.
 
+**Important caveat [EM 2026-04-02]:** Emma's feedback suggests the approval authority described above may be reversed from the actual process — specifically that the IOC approves the PbN (not just reads it) and the OCOG's role is quota entry and coordination rather than final PbN approval. See section 3.2 for full detail. This resolved decision should be treated as provisional until the April 15/16 meeting with Emma and Martyn confirms which model is correct.
+
 **Roles impacted:** NOC Admin, OCOG Admin, IOC Admin
-**Please confirm** the OCOG owns PbN approval and the IOC exceptions are correctly scoped.
+**Please confirm** the OCOG owns PbN approval and the IOC exceptions are correctly scoped — noting that IOC feedback indicates this may need to be reversed (see 3.2).
 
 ---
 
@@ -428,17 +538,19 @@ The following decisions have been made and implemented. We're listing them here 
 
 ---
 
-### R-4. IFs — Quota and Fast-Track Only, No Public EoI
+### R-4. IFs — Quota and Fast-Track Only, No Public EoI [EM 2026-04-02 updated]
 
 **Decision:** International Federations (IFs) do not have a public EoI queue. They do not receive self-nomination applications from media organisations. Instead:
 1. The IOC sets per-category quotas for each IF (same as for NOCs).
 2. IFs enter their own organisations directly via the fast-track route (same simplified form as NOC fast-track).
 3. IF fast-track entries go to the OCOG for PbN approval through the same state machine as NOC allocations.
 
-IFs manage PbN and ENR submissions identically to NOCs in all other respects.
+**Confirmed — IFs have NO ENR accreditations [EM 2026-04-02]:** Emma confirms (Comments 100, 112) that IFs do not participate in the ENR track at all. ENR accreditations do not exist for IFs. Any ENR-related screens or logic for IF admin roles should be removed or hidden.
 
-**Roles impacted:** IF Admin, OCOG Admin (approves), IOC Admin (sets quotas)
-**Please confirm** IFs should not have a public EoI queue and should use fast-track entry only. (Note: we may need to adjust the current code to align with this — the IF admin screen currently mirrors the full NOC experience including an EoI queue.)
+**IF scope significantly narrowed [EM 2026-04-02]:** Emma clarifies (Comments 100, 112) that only approximately 6 IFs need to submit PbN for sport specialist media. All other IFs get quotas for their own staff, and the process for them starts directly at Press by Name (the individual name submission stage, handled in ACR in 2027) — not at the EoI or PbN stage in MRP. This means the IF use-case in MRP is much narrower than previously scoped: only ~6 IFs will actively use the portal for PbN submissions.
+
+**Roles impacted:** IF Admin (only ~6 IFs in scope), OCOG Admin (approves those ~6 IFs' PbN), IOC Admin (sets quotas for all IFs)
+**Please confirm** IFs should not have a public EoI queue and should use fast-track entry only. (Note: we may need to adjust the current code to align with this — the IF admin screen currently mirrors the full NOC experience including an EoI queue.) Also confirm: should the ~200 IFs that go straight to Press by Name have any presence in MRP at all, or only in ACR?
 
 ---
 
