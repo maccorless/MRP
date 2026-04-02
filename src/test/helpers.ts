@@ -142,6 +142,19 @@ export async function createTestOrg(nocCode: string, opts?: { type?: string }): 
   return org.id;
 }
 
+/** Creates a test ENR org (no emailDomain/country) and returns its id. */
+export async function createTestEnrOrg(nocCode: string, name?: string): Promise<string> {
+  const [org] = await db
+    .insert(organizations)
+    .values({
+      name: name ?? `${TAG} ENR Org`,
+      nocCode,
+      orgType: "enr",
+    })
+    .returning({ id: organizations.id });
+  return org.id;
+}
+
 /** Creates a test application (default: pending) and returns its id and referenceNumber. */
 export async function createTestApplication(
   orgId: string,

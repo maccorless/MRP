@@ -9,8 +9,18 @@ import {
   applications,
   auditLog,
   reservedOrganizations,
+  nocEoiWindows,
 } from "@/db/schema";
+
+export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean }> {
+  const [row] = await db
+    .select({ isOpen: nocEoiWindows.isOpen })
+    .from(nocEoiWindows)
+    .where(and(eq(nocEoiWindows.nocCode, nocCode), eq(nocEoiWindows.eventId, "LA28")));
+  return { closed: row ? !row.isOpen : false };
+}
 import { generateToken, hashToken } from "@/lib/tokens";
+import { nextApplicationRef } from "@/lib/ref-seq";
 import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";
 import {
   parseCategorySelections,
@@ -209,6 +219,16 @@ export async function submitApplication(formData: FormData) {
   if (!NOC_CODE_SET.has(nocCode)) {
     redirect("/apply?error=invalid_noc");
   }
+
+  // Check if EoI window is closed for this NOC (absence of row = open)
+  const [windowRow] = await db
+    .select({ isOpen: nocEoiWindows.isOpen })
+    .from(nocEoiWindows)
+    .where(and(eq(nocEoiWindows.nocCode, nocCode), eq(nocEoiWindows.eventId, "LA28")));
+  if (windowRow && !windowRow.isOpen) {
+    redirect("/apply?error=window_closed");
+  }
+
   const orgType = formData.get("org_type") as
     | "media_print_online"
     | "media_broadcast"
@@ -283,12 +303,7 @@ export async function submitApplication(formData: FormData) {
       .returning();
   }
 
-  const nocApps = await db
-    .select({ id: applications.id })
-    .from(applications)
-    .where(eq(applications.nocCode, nocCode));
-  const seq = String(nocApps.length + 1).padStart(5, "0");
-  const referenceNumber = `APP-2028-${nocCode}-${seq}`;
+  const referenceNumber = await nextApplicationRef(nocCode);
 
   const [app] = await db
     .insert(applications)

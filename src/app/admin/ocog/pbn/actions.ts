@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { orgSlotAllocations, organizations, applications, auditLog } from "@/db/schema";
 import { requireOcogSession, requireWritable } from "@/lib/session";
@@ -37,18 +37,18 @@ export async function approvePbn(formData: FormData) {
   let grandTotal = 0;
   const catSummaryParts: string[] = [];
 
-  for (const alloc of allocs) {
-    function getVal(key: string, fallback: number): number {
-      const raw = formData.get(`${key}_${alloc.organizationId}`);
-      return raw !== null ? (parseInt(raw as string, 10) || 0) : fallback;
-    }
+  function getVal(alloc: typeof allocs[number], key: string, fallback: number): number {
+    const raw = formData.get(`${key}_${alloc.organizationId}`);
+    return raw !== null ? (parseInt(raw as string, 10) || 0) : fallback;
+  }
 
-    const eSlots   = getVal("e",   alloc.eSlots   ?? 0);
-    const esSlots  = getVal("es",  alloc.esSlots  ?? 0);
-    const epSlots  = getVal("ep",  alloc.epSlots  ?? 0);
-    const epsSlots = getVal("eps", alloc.epsSlots ?? 0);
-    const etSlots  = getVal("et",  alloc.etSlots  ?? 0);
-    const ecSlots  = getVal("ec",  alloc.ecSlots  ?? 0);
+  for (const alloc of allocs) {
+    const eSlots   = getVal(alloc, "e",   alloc.eSlots   ?? 0);
+    const esSlots  = getVal(alloc, "es",  alloc.esSlots  ?? 0);
+    const epSlots  = getVal(alloc, "ep",  alloc.epSlots  ?? 0);
+    const epsSlots = getVal(alloc, "eps", alloc.epsSlots ?? 0);
+    const etSlots  = getVal(alloc, "et",  alloc.etSlots  ?? 0);
+    const ecSlots  = getVal(alloc, "ec",  alloc.ecSlots  ?? 0);
     const press    = eSlots + esSlots + etSlots + ecSlots;
     const photo    = epSlots + epsSlots;
 
@@ -146,12 +146,11 @@ export async function sendToAcr(formData: FormData) {
   const { pushed } = await acrClient.pushOrgData(records);
 
   // Mark all sent allocations as sent_to_acr
-  for (const { alloc } of rows) {
-    await db
-      .update(orgSlotAllocations)
-      .set({ pbnState: "sent_to_acr" })
-      .where(eq(orgSlotAllocations.id, alloc.id));
-  }
+  const sentIds = rows.map(({ alloc }) => alloc.id);
+  await db
+    .update(orgSlotAllocations)
+    .set({ pbnState: "sent_to_acr" })
+    .where(inArray(orgSlotAllocations.id, sentIds));
 
   await db.insert(auditLog).values({
     actorType: "ocog_admin",
@@ -162,4 +161,45 @@ export async function sendToAcr(formData: FormData) {
   });
 
   redirect(`/admin/ocog/pbn?success=sent_to_acr&noc=${nocCode}&count=${pushed}`);
+}
+
+export async function reversePbnApproval(formData: FormData) {
+  await requireWritable();
+  const session = await requireOcogSession();
+  const nocCode = formData.get("noc_code") as string;
+  if (!nocCode) redirect("/admin/ocog/pbn");
+
+  const [existing] = await db
+    .select({ id: orgSlotAllocations.id })
+    .from(orgSlotAllocations)
+    .where(
+      and(
+        eq(orgSlotAllocations.nocCode, nocCode),
+        eq(orgSlotAllocations.eventId, "LA28"),
+        eq(orgSlotAllocations.pbnState, "ocog_approved")
+      )
+    );
+
+  if (!existing) redirect(`/admin/ocog/pbn/${nocCode}?error=not_approved`);
+
+  await db
+    .update(orgSlotAllocations)
+    .set({ pbnState: "noc_submitted", ocogReviewedBy: null, ocogReviewedAt: null })
+    .where(
+      and(
+        eq(orgSlotAllocations.nocCode, nocCode),
+        eq(orgSlotAllocations.eventId, "LA28"),
+        eq(orgSlotAllocations.pbnState, "ocog_approved")
+      )
+    );
+
+  await db.insert(auditLog).values({
+    actorType: "ocog_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "pbn_unapproved",
+    detail: `${nocCode} · approval reversed by ${session.displayName}`,
+  });
+
+  redirect(`/admin/ocog/pbn/${nocCode}?success=unapproved`);
 }

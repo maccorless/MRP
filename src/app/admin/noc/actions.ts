@@ -1,9 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, auditLog } from "@/db/schema";
+import { applications, auditLog, orgSlotAllocations } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
 
 async function getApplicationForNoc(id: string, nocCode: string) {
@@ -121,4 +121,69 @@ export async function rejectApplication(formData: FormData) {
   });
 
   redirect("/admin/noc/queue?success=rejected");
+}
+
+export async function unApproveApplication(formData: FormData) {
+  await requireWritable();
+  const session = await requireNocSession();
+  const id = formData.get("id") as string;
+  const reason = (formData.get("reason") as string)?.trim() || null;
+
+  const app = await getApplicationForNoc(id, session.nocCode);
+  if (!app || app.status !== "approved") redirect("/admin/noc/queue");
+
+  await db
+    .update(applications)
+    .set({ status: "pending", reviewNote: null, updatedAt: new Date() })
+    .where(eq(applications.id, id));
+
+  // Revert any draft/submitted allocation for this org back to draft so the
+  // NOC can edit and resubmit without losing their slot data.
+  await db
+    .update(orgSlotAllocations)
+    .set({ pbnState: "draft" })
+    .where(
+      and(
+        eq(orgSlotAllocations.organizationId, app.organizationId),
+        eq(orgSlotAllocations.eventId, "LA28"),
+        inArray(orgSlotAllocations.pbnState, ["draft", "noc_submitted"])
+      )
+    );
+
+  await db.insert(auditLog).values({
+    actorType: "noc_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "application_unapproved",
+    applicationId: id,
+    organizationId: app.organizationId,
+    detail: reason,
+  });
+
+  redirect(`/admin/noc/${id}?success=unapproved`);
+}
+
+export async function unReturnApplication(formData: FormData) {
+  await requireWritable();
+  const session = await requireNocSession();
+  const id = formData.get("id") as string;
+
+  const app = await getApplicationForNoc(id, session.nocCode);
+  if (!app || app.status !== "returned") redirect("/admin/noc/queue");
+
+  await db
+    .update(applications)
+    .set({ status: "pending", reviewNote: null, updatedAt: new Date() })
+    .where(eq(applications.id, id));
+
+  await db.insert(auditLog).values({
+    actorType: "noc_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "application_unreturned",
+    applicationId: id,
+    organizationId: app.organizationId,
+  });
+
+  redirect(`/admin/noc/${id}?success=unreturned`);
 }

@@ -7,9 +7,10 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     // Run each test file in its own process so module-level state (TAG, mockCookieStore)
-    // is isolated. Prevents cross-file cleanup from deleting data still in use by
-    // another file's tests, and prevents submitPbnToOcog side-effects from leaking.
+    // is isolated. Files run sequentially (fileParallelism: false) because they share a real DB
+    // and concurrent cleanup hooks (beforeAll/afterAll) cause TOCTOU audit log failures.
     pool: "forks",
+    fileParallelism: false,
     env: (() => {
       // Load .env.local for integration tests so DATABASE_URL and NEXTAUTH_SECRET
       // are available in vitest worker threads (loadEnvConfig in setup.ts only

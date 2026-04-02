@@ -56,7 +56,7 @@ export default async function FormPage({
       orgName: org.name,
       orgWebsite: org.website,
       orgType: org.orgType,
-      orgCountry: org.country,
+      orgCountry: org.country ?? undefined,
       orgNocCode: org.nocCode,
       contactFirstName: app.contactFirstName,
       contactLastName: app.contactLastName,

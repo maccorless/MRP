@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq, and, asc, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { enrRequests, auditLog } from "@/db/schema";
+import { enrRequests, organizations, auditLog } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
 
 /** Add an ENR nomination (independent of EoI — NOC enters org details directly). */
@@ -12,51 +12,49 @@ export async function addEnrNomination(formData: FormData) {
   const session = await requireNocSession();
   const nocCode = session.nocCode;
 
-  const enrOrgName = (formData.get("enr_org_name") as string)?.trim();
+  const orgName = (formData.get("enr_org_name") as string)?.trim();
   const enrWebsite = (formData.get("enr_website") as string)?.trim() || null;
   const enrDescription = (formData.get("enr_description") as string)?.trim();
   const enrJustification = (formData.get("enr_justification") as string)?.trim();
   const mustHaveRaw = parseInt(formData.get("must_have_slots") as string, 10);
   const niceToHaveRaw = parseInt(formData.get("nice_to_have_slots") as string, 10);
 
-  if (!enrOrgName || !enrDescription || !enrJustification) {
+  if (!orgName || !enrDescription || !enrJustification) {
     redirect("/admin/noc/enr?error=missing_fields");
   }
 
   const mustHaveSlots = isNaN(mustHaveRaw) || mustHaveRaw < 1 ? 1 : mustHaveRaw;
   const niceToHaveSlots = isNaN(niceToHaveRaw) ? 0 : Math.max(0, niceToHaveRaw);
 
-  // Duplicate check by org name (case-insensitive)
-  const existing = await db
-    .select({ id: enrRequests.id })
+  // Duplicate check: case-insensitive name match against existing ENR org names for this NOC
+  const existingOrgs = await db
+    .select({ orgName: organizations.name, reqId: enrRequests.id })
     .from(enrRequests)
-    .where(
-      and(
-        eq(enrRequests.nocCode, nocCode),
-        eq(enrRequests.eventId, "LA28")
-      )
-    );
-
-  // Check name collision
-  const allReqs = await db
-    .select({ id: enrRequests.id, enrOrgName: enrRequests.enrOrgName })
-    .from(enrRequests)
+    .innerJoin(organizations, eq(enrRequests.organizationId, organizations.id))
     .where(and(eq(enrRequests.nocCode, nocCode), eq(enrRequests.eventId, "LA28")));
 
-  const duplicate = allReqs.some(
-    (r) => r.enrOrgName?.toLowerCase() === enrOrgName.toLowerCase()
-  );
-  if (duplicate) redirect("/admin/noc/enr?error=already_added");
+  if (existingOrgs.some((r) => r.orgName.toLowerCase() === orgName.toLowerCase())) {
+    redirect("/admin/noc/enr?error=already_added");
+  }
 
-  // Next priority rank
-  const nextRank = existing.length + 1;
+  const nextRank = existingOrgs.length + 1;
+
+  // Create the organization record first, then the ENR request that references it
+  const [org] = await db
+    .insert(organizations)
+    .values({
+      name: orgName,
+      nocCode,
+      orgType: "enr",
+      website: enrWebsite,
+    })
+    .returning({ id: organizations.id });
 
   await db.insert(enrRequests).values({
     nocCode,
-    organizationId: null,
+    organizationId: org.id,
     priorityRank: nextRank,
     slotsRequested: mustHaveSlots + niceToHaveSlots,
-    enrOrgName,
     enrWebsite,
     enrDescription,
     enrJustification,
@@ -83,6 +81,15 @@ export async function removeEnrOrg(formData: FormData) {
   if (!req || req.submittedAt !== null) redirect("/admin/noc/enr");
 
   await db.delete(enrRequests).where(eq(enrRequests.id, requestId));
+
+  // Delete the linked org record if it is ENR-type (created solely for this nomination)
+  const [org] = await db
+    .select({ id: organizations.id, orgType: organizations.orgType })
+    .from(organizations)
+    .where(eq(organizations.id, req.organizationId));
+  if (org?.orgType === "enr") {
+    await db.delete(organizations).where(eq(organizations.id, org.id));
+  }
 
   // Re-rank remaining entries
   const remaining = await db

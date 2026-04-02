@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { eq, asc, isNotNull, isNull } from "drizzle-orm";
+import { eq, asc, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { enrRequests, enrQuotas, organizations } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";

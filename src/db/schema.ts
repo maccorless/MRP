@@ -52,6 +52,15 @@ export const auditActionEnum = pgEnum("audit_action", [
   "enr_submitted",
   "enr_decision_made",
   "sudo_initiated",
+  // B4
+  "noc_direct_entry",
+  // B3
+  "eoi_window_toggled",
+  // B1 reversals
+  "application_unapproved",
+  "application_unreturned",
+  "pbn_unapproved",
+  "enr_decision_revised",
 ]);
 
 export const pbnStateEnum = pgEnum("pbn_state", [
@@ -91,11 +100,11 @@ export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
   eventId: text("event_id").notNull().default("LA28"),
   name: text("name").notNull(),
-  country: text("country").notNull(),         // ISO 3166-1 alpha-2
+  country: text("country"),                    // ISO 3166-1 alpha-2; null for ENR-only orgs
   nocCode: text("noc_code").notNull(),         // e.g. USA, FRA, JPN
   orgType: orgTypeEnum("org_type").notNull(),
   website: text("website"),
-  emailDomain: text("email_domain").notNull(), // extracted from contact email for dedup
+  emailDomain: text("email_domain"),           // extracted from contact email; null for ENR-only orgs
   commonCodesId: text("common_codes_id"),      // null until coded
   status: orgStatusEnum("org_status").notNull().default("active"),
   isMultiTerritoryFlag: boolean("is_multi_territory_flag").default(false).notNull(),
@@ -176,6 +185,9 @@ export const applications = pgTable("applications", {
   sportsToCover: text("sports_to_cover"),
   additionalComments: text("additional_comments"),
   accessibilityNeeds: boolean("accessibility_needs"),
+
+  // Entry source — how this application entered the system
+  entrySource: text("entry_source").notNull().default("self_submitted"), // 'self_submitted' | 'noc_direct'
 
   // Status
   status: applicationStatusEnum("status").default("pending").notNull(),
@@ -298,7 +310,7 @@ export const enrRequests = pgTable("enr_requests", {
   id: uuid("id").primaryKey().defaultRandom(),
   nocCode: text("noc_code").notNull(),
   eventId: text("event_id").notNull().default("LA28"),
-  organizationId: uuid("organization_id").references(() => organizations.id), // nullable for direct nominations
+  organizationId: uuid("organization_id").references(() => organizations.id).notNull(),
   priorityRank: integer("priority_rank").notNull(),
   slotsRequested: integer("slots_requested").notNull(), // kept for backward compat; = mustHave + niceToHave
   slotsGranted: integer("slots_granted"),      // null until IOC decides
@@ -308,8 +320,7 @@ export const enrRequests = pgTable("enr_requests", {
   reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow(),
 
-  // v2: independent nomination fields (org may not exist in organizations table)
-  enrOrgName: text("enr_org_name"),
+  // ENR-specific nomination details (org is always in organizations table, orgType='enr')
   enrWebsite: text("enr_website"),
   enrDescription: text("enr_description"),
   enrJustification: text("enr_justification"),
@@ -340,6 +351,33 @@ export const sudoTokens = pgTable("sudo_tokens", {
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   usedAt: timestamp("used_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Reserved Organizations ───────────────────────────────────────────────────
+
+// ─── NOC EoI Windows (B3 — per-NOC submission window control) ────────────────
+// Absence of a row means the window is OPEN (safe default).
+// NOC admin toggles is_open; public /apply form checks before issuing a token.
+
+export const nocEoiWindows = pgTable("noc_eoi_windows", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  isOpen: boolean("is_open").notNull().default(true),
+  openedAt: timestamp("opened_at", { withTimezone: true }).defaultNow(),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+  toggledBy: text("toggled_by"),    // admin user id
+  toggledAt: timestamp("toggled_at", { withTimezone: true }).defaultNow(),
+  notes: text("notes"),
+});
+
+// ─── Application Reference Number Sequences ──────────────────────────────────
+// Atomic per-NOC counters. Use nextApplicationSeq() from @/lib/ref-seq to get
+// the next value — never read this table directly for seq generation.
+
+export const applicationSequences = pgTable("application_sequences", {
+  nocCode: text("noc_code").primaryKey(),
+  seq: integer("seq").notNull().default(0),
 });
 
 // ─── Reserved Organizations ───────────────────────────────────────────────────
