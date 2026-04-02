@@ -12,6 +12,7 @@ import {
   nocEoiWindows,
 } from "@/db/schema";
 import { generateToken, hashToken } from "@/lib/tokens";
+import { nextApplicationRef } from "@/lib/ref-seq";
 import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";
 import {
   parseCategorySelections,
@@ -294,12 +295,7 @@ export async function submitApplication(formData: FormData) {
       .returning();
   }
 
-  const nocApps = await db
-    .select({ id: applications.id })
-    .from(applications)
-    .where(eq(applications.nocCode, nocCode));
-  const seq = String(nocApps.length + 1).padStart(5, "0");
-  const referenceNumber = `APP-2028-${nocCode}-${seq}`;
+  const referenceNumber = await nextApplicationRef(nocCode);
 
   const [app] = await db
     .insert(applications)

@@ -78,6 +78,24 @@ describe("unApproveApplication (NOC)", () => {
     clearSession();
   });
 
+  it("reverts a draft PbN allocation back to draft when unapproving", async () => {
+    await setSession(SESSIONS.nocUSA);
+    const orgId = await createTestOrg("USA");
+    const { id } = await createTestApplication(orgId, "USA", { status: "approved" });
+    await createTestAllocation(orgId, "USA", { pbnState: "noc_submitted", eSlots: 4 });
+
+    const { redirect } = await callAction(() => unApproveApplication(makeFormData({ id })));
+    expect(redirect?.url).toBe(`/admin/noc/${id}?success=unapproved`);
+
+    const [alloc] = await db
+      .select({ pbnState: orgSlotAllocations.pbnState })
+      .from(orgSlotAllocations)
+      .where(and(eq(orgSlotAllocations.organizationId, orgId), eq(orgSlotAllocations.eventId, "LA28")));
+    expect(alloc.pbnState).toBe("draft");
+
+    clearSession();
+  });
+
   it("blocks in sudo mode", async () => {
     await setSession(SESSIONS.sudoAsNocUSA);
     const { error } = await callAction(() => unApproveApplication(makeFormData({ id: "irrelevant" })));

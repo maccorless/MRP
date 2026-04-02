@@ -371,6 +371,15 @@ export const nocEoiWindows = pgTable("noc_eoi_windows", {
   notes: text("notes"),
 });
 
+// ─── Application Reference Number Sequences ──────────────────────────────────
+// Atomic per-NOC counters. Use nextApplicationSeq() from @/lib/ref-seq to get
+// the next value — never read this table directly for seq generation.
+
+export const applicationSequences = pgTable("application_sequences", {
+  nocCode: text("noc_code").primaryKey(),
+  seq: integer("seq").notNull().default(0),
+});
+
 // ─── Reserved Organizations ───────────────────────────────────────────────────
 
 export const reservedOrganizations = pgTable("reserved_organizations", {

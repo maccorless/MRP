@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
+import { nextApplicationRef } from "@/lib/ref-seq";
 
 export async function submitFastTrackApplication(formData: FormData) {
   await requireWritable();
@@ -50,12 +50,7 @@ export async function submitFastTrackApplication(formData: FormData) {
   const requestedEc  = categoryEc  ? parseSlots("requested_ec")  : null;
 
   // ── Reference number ───────────────────────────────────────────────────────
-  const nocApps = await db
-    .select({ id: applications.id })
-    .from(applications)
-    .where(eq(applications.nocCode, nocCode));
-  const seq = String(nocApps.length + 1).padStart(5, "0");
-  const referenceNumber = `APP-2028-${nocCode}-${seq}`;
+  const referenceNumber = await nextApplicationRef(nocCode);
 
   // ── Create org record ──────────────────────────────────────────────────────
   const [org] = await db

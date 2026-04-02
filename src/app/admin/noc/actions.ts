@@ -1,9 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, auditLog } from "@/db/schema";
+import { applications, auditLog, orgSlotAllocations } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
 
 async function getApplicationForNoc(id: string, nocCode: string) {
@@ -136,6 +136,19 @@ export async function unApproveApplication(formData: FormData) {
     .update(applications)
     .set({ status: "pending", reviewNote: null, updatedAt: new Date() })
     .where(eq(applications.id, id));
+
+  // Revert any draft/submitted allocation for this org back to draft so the
+  // NOC can edit and resubmit without losing their slot data.
+  await db
+    .update(orgSlotAllocations)
+    .set({ pbnState: "draft" })
+    .where(
+      and(
+        eq(orgSlotAllocations.organizationId, app.organizationId),
+        eq(orgSlotAllocations.eventId, "LA28"),
+        inArray(orgSlotAllocations.pbnState, ["draft", "noc_submitted"])
+      )
+    );
 
   await db.insert(auditLog).values({
     actorType: "noc_admin",
