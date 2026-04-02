@@ -11,6 +11,14 @@ import {
   reservedOrganizations,
   nocEoiWindows,
 } from "@/db/schema";
+
+export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean }> {
+  const [row] = await db
+    .select({ isOpen: nocEoiWindows.isOpen })
+    .from(nocEoiWindows)
+    .where(and(eq(nocEoiWindows.nocCode, nocCode), eq(nocEoiWindows.eventId, "LA28")));
+  return { closed: row ? !row.isOpen : false };
+}
 import { generateToken, hashToken } from "@/lib/tokens";
 import { nextApplicationRef } from "@/lib/ref-seq";
 import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";

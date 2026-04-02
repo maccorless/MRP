@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { submitApplication } from "../actions";
+import { submitApplication, checkNocWindow } from "../actions";
 import { OrganisationTab } from "./tabs/OrganisationTab";
 import { ContactsTab } from "./tabs/ContactsTab";
 import { AccreditationTab } from "./tabs/AccreditationTab";
 import { PublicationTab } from "./tabs/PublicationTab";
 import { HistoryTab } from "./tabs/HistoryTab";
-import { COUNTRY_TO_NOC } from "@/lib/codes";
+import { COUNTRY_TO_NOC, NOC_CODE_SET } from "@/lib/codes";
 
 export type FormErrors = Record<string, string>;
 
@@ -100,6 +100,7 @@ export function EoiFormTabs({
     TABS.map(() => "empty")
   );
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+  const [nocWindowClosed, setNocWindowClosed] = useState(false);
   const autoSuggestedNocRef = useRef<string | null>(null);
 
   // localStorage key scoped to this email
@@ -232,6 +233,17 @@ export function EoiFormTabs({
     }
   }
 
+  async function handleFormBlur(e: React.FocusEvent<HTMLFormElement>) {
+    const target = e.target as unknown as HTMLInputElement;
+    if (target.name !== "noc_code") return;
+    const raw = target.value.trim();
+    if (!raw) { setNocWindowClosed(false); return; }
+    const nocCode = raw.split(" — ")[0].trim().toUpperCase();
+    if (!NOC_CODE_SET.has(nocCode)) return;
+    const { closed } = await checkNocWindow(nocCode);
+    setNocWindowClosed(closed);
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     const form = formRef.current;
     if (!form) return;
@@ -309,7 +321,17 @@ export function EoiFormTabs({
         </div>
       </details>
 
-    <form ref={formRef} action={submitApplication} onInput={handleInput} onChange={(e) => handleCountryChange(e.nativeEvent)} onSubmit={handleSubmit} className="space-y-0">
+    {nocWindowClosed && (
+      <div className="mb-4 p-4 bg-orange-50 border border-orange-300 rounded-lg" role="alert">
+        <div className="text-sm font-semibold text-orange-800 mb-1">EoI window closed</div>
+        <p className="text-sm text-orange-700">
+          This NOC has closed its Expression of Interest window. New applications are not currently being accepted.
+          Please contact your NOC directly for more information.
+        </p>
+      </div>
+    )}
+
+    <form ref={formRef} action={submitApplication} onInput={handleInput} onChange={(e) => handleCountryChange(e.nativeEvent)} onBlur={handleFormBlur} onSubmit={handleSubmit} className="space-y-0">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
