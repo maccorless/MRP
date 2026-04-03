@@ -460,9 +460,9 @@ export default async function ApplicationDetailPage({
 
             {/* Approve */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">Approve</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Approve as Candidate</h3>
               <p className="text-xs text-gray-500 mb-3">
-                Marks the application as approved. The organisation becomes eligible for PbN slot allocation.
+                Marks this organisation as a <strong>candidate</strong> for press accreditation. Approval at this stage does not guarantee credentials — slot allocation happens separately in Press by Number, subject to your IOC quota. An approved org may ultimately receive zero slots.
               </p>
               <form action={approveApplication} className="space-y-3">
                 <input type="hidden" name="id" value={app.id} />
@@ -476,7 +476,7 @@ export default async function ApplicationDetailPage({
                   type="submit"
                   className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer"
                 >
-                  Approve Application
+                  Approve as Candidate
                 </button>
               </form>
             </div>

@@ -4,6 +4,7 @@ import { applications, organizations, orgSlotAllocations, nocQuotas } from "@/db
 import { requireNocSession } from "@/lib/session";
 import { ACCRED_CATEGORIES } from "@/lib/category";
 import { PbnAllocationTable } from "./PbnAllocationTable";
+import { AddOrgToPbnPanel } from "./AddOrgToPbnPanel";
 
 const ERROR_MSG: Record<string, string> = {
   no_quota:       "No quota has been assigned to your NOC yet. Contact IOC to set quotas.",
@@ -14,6 +15,7 @@ const ERROR_MSG: Record<string, string> = {
   over_eps_quota: "EPs (Sport-Specific Photographer) slot total exceeds your quota.",
   over_et_quota:  "ET (Technician) slot total exceeds your quota.",
   over_ec_quota:  "EC (Support Staff) slot total exceeds your quota.",
+  invalid_org:    "Organisation name and type are required.",
 };
 
 export default async function NocPbnPage({
@@ -115,6 +117,43 @@ export default async function NocPbnPage({
     ecSlots:  alloc?.ecSlots  ?? 0,
   }));
 
+  // Also include orgs added directly to PbN (no EoI application)
+  const approvedOrgIdSet = new Set(tableRows.map((r) => r.orgId));
+  const allNocAllocs = await db
+    .select({
+      orgId:    organizations.id,
+      orgName:  organizations.name,
+      eSlots:   orgSlotAllocations.eSlots,
+      esSlots:  orgSlotAllocations.esSlots,
+      epSlots:  orgSlotAllocations.epSlots,
+      epsSlots: orgSlotAllocations.epsSlots,
+      etSlots:  orgSlotAllocations.etSlots,
+      ecSlots:  orgSlotAllocations.ecSlots,
+    })
+    .from(orgSlotAllocations)
+    .innerJoin(organizations, eq(orgSlotAllocations.organizationId, organizations.id))
+    .where(and(eq(orgSlotAllocations.nocCode, nocCode), eq(orgSlotAllocations.eventId, "LA28")));
+
+  const directTableRows = allNocAllocs
+    .filter((a) => !approvedOrgIdSet.has(a.orgId))
+    .map((a) => ({
+      orgId:    a.orgId,
+      orgName:  a.orgName,
+      // Direct entries are eligible for all categories — NOC decides what to allocate
+      categoryE: true, categoryEs: true, categoryEp: true,
+      categoryEps: true, categoryEt: true, categoryEc: true,
+      requestedE: null, requestedEs: null, requestedEp: null,
+      requestedEps: null, requestedEt: null, requestedEc: null,
+      eSlots:   a.eSlots,
+      esSlots:  a.esSlots,
+      epSlots:  a.epSlots,
+      epsSlots: a.epsSlots,
+      etSlots:  a.etSlots,
+      ecSlots:  a.ecSlots,
+    }));
+
+  const allTableRows = [...tableRows, ...directTableRows];
+
   const quotaProps = quota
     ? {
         eTotal:   quota.eTotal   ?? 0,
@@ -126,13 +165,14 @@ export default async function NocPbnPage({
       }
     : null;
 
-  // Determine which categories any org in this NOC actually requested
-  const activeCategories = ACCRED_CATEGORIES.filter((cat) =>
-    rows.some((r) => {
+  // Active categories: any category requested via EoI, or all if direct-entry orgs exist
+  const activeCategories = ACCRED_CATEGORIES.filter((cat) => {
+    if (directTableRows.length > 0) return true; // direct entries are eligible for all cats
+    return rows.some((r) => {
       const key = `category${cat.value}` as keyof typeof r.app;
       return r.app[key] === true;
-    })
-  ).map((c) => c.value);
+    });
+  }).map((c) => c.value);
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -156,6 +196,11 @@ export default async function NocPbnPage({
         </div>
       </div>
 
+      {success === "org_added" && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+          Organisation added to PbN.
+        </div>
+      )}
       {success === "submitted" && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
           Allocation submitted to OCOG for review.
@@ -213,14 +258,14 @@ export default async function NocPbnPage({
         </div>
       )}
 
-      {rows.length === 0 ? (
+      {allTableRows.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
-          No approved applications for {nocCode} yet. Approve applications in the EoI Queue first.
+          No organisations in your PbN yet. Approve applications in the EoI Queue, or add an organisation directly below.
         </div>
       ) : (
         <>
           <PbnAllocationTable
-            rows={tableRows}
+            rows={allTableRows}
             quota={quotaProps}
             activeCategories={activeCategories}
             isEditable={isEditable}
@@ -238,6 +283,12 @@ export default async function NocPbnPage({
             </div>
           )}
         </>
+      )}
+
+      {isEditable && (
+        <div className="mt-6">
+          <AddOrgToPbnPanel />
+        </div>
       )}
     </div>
   );

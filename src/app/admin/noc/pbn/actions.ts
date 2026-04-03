@@ -7,6 +7,55 @@ import { applications, organizations, orgSlotAllocations, nocQuotas, auditLog } 
 import { requireNocSession, requireWritable, type SessionPayload } from "@/lib/session";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 
+/** Add an organisation directly to PbN without going through EoI. */
+export async function addOrgDirectlyToPbn(formData: FormData) {
+  await requireWritable();
+  const session = await requireNocSession();
+  const nocCode = session.nocCode;
+
+  const name = ((formData.get("name") as string | null) ?? "").trim();
+  const orgType = (formData.get("orgType") as string | null) ?? "";
+  const country = ((formData.get("country") as string | null) ?? "").trim() || null;
+
+  if (!name || !orgType) redirect("/admin/noc/pbn?error=invalid_org");
+
+  const [org] = await db
+    .insert(organizations)
+    .values({
+      name,
+      nocCode,
+      orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr",
+      ...(country ? { country } : {}),
+      status: "active",
+    })
+    .returning({ id: organizations.id });
+
+  await db.insert(orgSlotAllocations).values({
+    organizationId: org.id,
+    nocCode,
+    eSlots:   0,
+    esSlots:  0,
+    epSlots:  0,
+    epsSlots: 0,
+    etSlots:  0,
+    ecSlots:  0,
+    pressSlots: 0,
+    photoSlots: 0,
+    allocatedBy: session.userId,
+    pbnState: "draft",
+  });
+
+  await db.insert(auditLog).values({
+    actorType: "noc_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "noc_direct_entry",
+    detail: name,
+  });
+
+  redirect("/admin/noc/pbn?success=org_added");
+}
+
 type CategorySlots = Record<AccredCategory, number>;
 
 function parseCategorySlots(formData: FormData, orgId: string): CategorySlots {
@@ -26,15 +75,31 @@ async function persistDraftAllocations(
 ): Promise<CategorySlots> {
   const nocCode = session.nocCode;
 
+  // Orgs from approved EoI applications
   const approvedApps = await db
     .select({ org: organizations })
     .from(applications)
     .innerJoin(organizations, eq(applications.organizationId, organizations.id))
     .where(and(eq(applications.nocCode, nocCode), eq(applications.status, "approved")));
 
+  const approvedOrgIds = new Set(approvedApps.map((a) => a.org.id));
+
+  // Orgs added directly to PbN (no EoI application)
+  const allNocAllocs = await db
+    .select({ org: organizations })
+    .from(orgSlotAllocations)
+    .innerJoin(organizations, eq(orgSlotAllocations.organizationId, organizations.id))
+    .where(and(eq(orgSlotAllocations.nocCode, nocCode), eq(orgSlotAllocations.eventId, "LA28")));
+
+  const directOrgs = allNocAllocs
+    .map((a) => a.org)
+    .filter((o) => !approvedOrgIds.has(o.id));
+
+  const allOrgs = [...approvedApps.map((a) => a.org), ...directOrgs];
+
   const totals: CategorySlots = { E: 0, Es: 0, EP: 0, EPs: 0, ET: 0, EC: 0 };
 
-  for (const { org } of approvedApps) {
+  for (const org of allOrgs) {
     const slots = parseCategorySlots(formData, org.id);
 
     for (const cat of ACCRED_CATEGORIES) {

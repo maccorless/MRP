@@ -222,36 +222,36 @@ These questions relate to how the IOC assigns per-category quotas to each NOC an
 
 ---
 
-### 3.2 Quota Ownership — OCOG Sets, IOC Approves? [EM 2026-04-02]
+### 3.2 Quota Ownership — IOC Enters Direct vs. OCOG Re-keys from Spreadsheet [EM 2026-04-02]
 
-**Status:** OPEN — major conflict with current design
+**Status:** PROVISIONAL — Model A (IOC enters quotas directly) is our recommendation; challenging Emma's preference for OCOG re-keying
 
-**Scenario:** Emma's comments (103, 137, 150, 151) and her email collectively describe a quota and PbN approval model that differs significantly from what we have built. This needs to be resolved with both Emma (IOC) and Martyn (OCOG) in the same meeting.
+**Scenario:** The IOC determines per-category quota totals for each of the 206 NOCs. The question is how those numbers get into the portal.
 
-**Current design (Model A — what is built today):**
-1. The IOC imports or manually enters per-category quota totals for each NOC in the portal.
+**Current design (Model A — what is built and our recommendation):**
+1. The IOC imports or manually enters per-category quota totals directly into the portal.
 2. The OCOG reviews and formally approves each NOC's PbN slot allocations.
 3. IOC has read-only visibility on PbN.
 
-**Emma's model (Model B — what IOC feedback describes):**
-1. The OCOG enters quota totals into the portal — working from the list the IOC provides externally (not through the portal itself).
+**Emma's preferred approach (Model B — IOC sends spreadsheet, OCOG re-keys):**
+1. The IOC provides quotas externally — via spreadsheet or similar — and the OCOG enters them into the portal on IOC's behalf.
 2. The IOC validates and approves the final PbN from each NOC.
-3. OCOG coordinates the PbN process: releases information to NOCs, produces the guide, and inputs quotas in the system. IOC's role is final approval of the PbN, not quota entry.
+3. Emma's email: "the Press by Number process is led by the OCOG who release the information to the NOCs, produce the guide, input the quotas in the system." Comment 151: "OCOG to set NOC category quota as per IOC list. IOC approves the PBN."
 
-These are not compatible. In Model A, the IOC is the active party in quota setup and the OCOG approves PbN. In Model B, the OCOG is the active party in quota entry and the IOC approves PbN.
+**Our challenge to Model B:**
 
-Emma's email states: "the Press by Number process is led by the OCOG who release the information to the NOCs, produce the guide, input the quotas in the system." She also notes: "some of the roles in the document need to be aligned as some belong to the OCOG not the IOC."
+We would like to understand whether there is a reason IOC cannot enter quotas directly in the portal. Entering quotas directly gives IOC full ownership of the record, a complete audit trail of what was set and when, and eliminates re-keying errors — a 206-NOC quota table entered from a spreadsheet by a third party is a significant source of transcription risk. If IOC can enter them directly, we believe that is the better workflow.
 
-Emma's comment on the quota edit screen (Comment 137): "OCOG is handling the quotas it receives from IOC. To discuss how to manage." Comment 151: "OCOG to set NOC category quota as per IOC list. IOC approves the PBN."
+Model A is already built. We are not asking for confirmation of Model B — we are asking Emma and Martyn to explain whether there is a process or policy reason IOC cannot enter quotas directly, so we can evaluate whether that reason outweighs the accuracy and audit benefits of direct entry.
 
-**What we need:** This needs to be confirmed at the 15/16 April meeting with Emma + Martyn + Amy Millstone (LA28 Press Services Manager). Until confirmed, we will not change the code — but this decision will require significant rework if Model B is chosen, as the entire quota-entry and PbN-approval screens are currently built for Model A.
+If Model B is the confirmed answer, this will require significant rework: the quota-entry screen currently built for IOC Admin would need to be moved to OCOG Admin, and a separate IOC PbN-approval step would need to be added.
 
-**Questions for the meeting:**
-1. Which model is correct: does the IOC enter quotas directly into the portal, or does the OCOG enter them on behalf of the IOC?
-2. Who formally approves each NOC's final PbN allocation: OCOG or IOC?
+**Questions for the April 15/16 meeting:**
+1. Is there a process or policy reason the IOC cannot enter quotas directly into the portal?
+2. If Model B is required: who formally approves each NOC's final PbN allocation — IOC, OCOG, or both in sequence?
 3. If both need to sign off at different stages, what is the approval sequence?
 
-**Roles impacted:** IOC Admin, OCOG Admin (approval authority is the core dispute)
+**Roles impacted:** IOC Admin, OCOG Admin (quota-entry and approval authority are the core dispute)
 
 ---
 
@@ -284,31 +284,33 @@ These people do not apply through the public EoI form. The NOC nominates them di
 
 ### 4.2 IOC-Direct Organisations — Setup and Workflow [EM 2026-04-02]
 
-**Status:** OPEN — current design is incorrect per IOC; significant code change required
+**Status:** PROVISIONAL — current design has IOC managing in-app; challenging Emma's offline preference
 
-**Background:** The existing portal code implements a "reserved list" model for IOC-Direct organisations, with domain-blocking, an IOC-managed screen for adding/removing orgs, and OCOG approval of IOC-Direct PbN allocations. Emma's comments (106, 128, 131, 133, 154) make clear this design does not match the actual IOC process. The current code for this feature will need to be substantially revised once the correct approach is confirmed with OCOG.
+**Background:** There are approximately 20 IOC-direct international organisations (AFP, AP, Reuters, Xinhua, etc.) that receive press credentials outside the NOC EoI/PbN track. The portal currently implements a model where the IOC manages these organisations in-app — with an IOC-managed screen for adding/removing orgs and OCOG visibility and approval of IOC-Direct PbN allocations. Emma's comments (106, 128, 131, 133, 154) suggest an offline model instead: IOC holds the list externally and shares it with the OCOG, who imports or enrolls those orgs directly into the system.
 
-**What Emma describes — the actual IOC-Direct process:**
+**Our current design (what is built):**
 
-- There are approximately 20 IOC-direct international organisations. These are managed entirely offline by the IOC.
-- **No EoI in the portal.** These organisations do not apply via the portal — neither through a public form nor through any portal-based reserved-list entry.
-- **No portal-based reserved list.** There is no list to manage in a portal screen. The IOC holds the predetermined list and sends it to the OCOG directly.
-- **OCOG imports/enrolls them.** The OCOG receives the IOC's predetermined list and imports or enrolls those organisations directly into the system. The IOC approves them; the OCOG enrolls them.
-- **No domain-blocking needed.** These organisations (AFP, AP, Reuters, Xinhua, etc.) are so well-known that there is no meaningful risk of them accidentally applying via a NOC. The domain-blocking feature we built is unnecessary.
-- **No OCOG approval of IOC-Direct PbN.** The OCOG does not need to approve IOC-direct organisations — the IOC has already approved them through the predetermined list. Emma's comment 154: "No need to approve directly accredited orgs, we will have the pre-determined list."
+- The IOC manages the ~20 IOC-Direct orgs through a dedicated portal screen — adding, removing, and managing the list entirely within the system.
+- The OCOG can see IOC-Direct orgs and the associated PbN state machine — the IOC approves, the OCOG enrolls.
+- Full audit trail: every add, remove, or allocation change is logged with actor and timestamp.
+- Real-time OCOG visibility: the OCOG can see the current state of all IOC-Direct org allocations at any point in the process.
 
-**Revised model (to be confirmed with OCOG):**
+**Emma's preferred approach (offline):**
 
-1. IOC compiles the ~20 IOC-direct org list offline and shares it with the OCOG.
-2. OCOG imports or manually enrolls these orgs directly into the portal (or ACR — to be clarified).
-3. No EoI, no portal approval flow, no OCOG PbN review step for these orgs.
-4. Cross-NOC deduplication for these orgs: Emma's comment 132 notes "we will see the organisations in the final PBN versions so we will be able to spot it" — suggesting this is handled by human review rather than automated blocking.
+- IOC manages the ~20 IOC-Direct org list entirely offline and sends it to the OCOG directly.
+- No portal-based management screen. The OCOG receives the list and imports or enrolls those orgs.
+- Emma's comment 154: "No need to approve directly accredited orgs, we will have the pre-determined list."
+- Domain-blocking feature we built is unnecessary in Emma's model, as these orgs are well-known and the risk of them accidentally applying via a NOC is low.
 
-**Open question:** The import/enroll mechanism for the OCOG still needs to be defined. Does the OCOG enter these orgs through MRP, directly in ACR, or some other route? This needs Martyn's input. The IOC-Direct section should be marked as requiring discussion at the April 15/16 meeting. Emma's comment 148 on this section simply notes: "To discuss."
+**Our challenge to the offline model:**
 
-**Terminology:** Per the terminology note above, "Responsible Organisation" should be used in any UI copy that previously said "sponsoring organisation" in relation to IOC-Direct orgs.
+We would like to understand the reason for keeping this offline. The portal can handle this workflow with full audit trail and OCOG visibility. Is there a policy or process reason IOC-Direct must remain outside the portal? Managing these organisations in the system gives IOC full ownership of the record, eliminates manual handoffs to the OCOG, provides a complete audit trail (who added which org, when, and what allocations they received), and gives the OCOG real-time visibility rather than depending on an emailed list. The current design supports the IOC entering and managing these orgs directly — we think this is the better workflow, and we'd like Emma and Martyn to confirm whether there is a process or policy reason it cannot work this way.
 
-**Roles impacted:** IOC (holds the list, approves), OCOG Admin (enrolls/imports), Martyn/OCOG (defines import mechanism)
+**Terminology [EM 2026-04-02]:** Per the terminology note above, "Responsible Organisation" (not "sponsoring organisation") should be used in UI copy relating to IOC-Direct orgs where one organisation acts as the owning body for another.
+
+**Open question for April 15/16 meeting:** Does the OCOG enroll IOC-Direct orgs through MRP or directly in ACR? This needs Martyn's input regardless of which model is chosen.
+
+**Roles impacted:** IOC (holds the list, approves), OCOG Admin (enrolls/imports, has OCOG visibility), Martyn/OCOG (defines import mechanism)
 
 ---
 
@@ -334,28 +336,26 @@ Two possible models:
 
 ### 4.4 NOC Direct-Entry into PbN — No EoI Required [EM 2026-04-02]
 
-**Status:** OPEN — distinct from current fast-track design
+**Status:** CONFIRMED FEATURE — being built
 
-**Scenario:** Emma's comments (96, 98) and her email describe a pattern we have not fully accounted for: some NOCs will not use the EoI form at all, and will want to enter organisations directly into their PbN allocation table without any prior EoI record. Emma notes (Comment 98): "There will be press orgs who will not have submitted an EoI that will need to be entered in the PbN stage directly by the NOC." Her email adds: "some might not use the EoI form, some might enter information directly in the Press by Number form."
+**Scenario:** Emma's comments (96, 98) and her email describe a pattern that will be supported: some NOCs will not use the EoI form at all and will want to enter organisations directly into their PbN allocation table without any prior EoI record. Emma notes (Comment 98): "There will be press orgs who will not have submitted an EoI that will need to be entered in the PbN stage directly by the NOC." Her email adds: "some might not use the EoI form, some might enter information directly in the Press by Number form."
 
-This is distinct from our current "fast-track" feature. Our fast-track still creates an EoI record (just pre-approved), so the org passes through the EoI layer before PbN. The question Emma raises is whether a NOC should be able to bypass EoI entirely — adding an org to their PbN table with no corresponding EoI record at all.
+**Concrete example:** The NOC press officer for a large European territory knows their national broadcaster will receive PbN slots — they have at every Games for the past 20 years. They never asked the broadcaster to fill out an EoI form. At PbN time, they add them directly to the allocation table. No EoI record is created.
 
-**Concrete example:** The NOC press officer for a large European territory knows their national broadcaster will receive PbN slots — they have every Games for the past 20 years. They never asked the broadcaster to fill out an EoI form. At PbN time, they want to add them directly to the allocation table. There is no EoI record and no desire to create one.
+**Confirmed design — direct PbN addition:**
 
-**Two design options:**
+NOC admins will be able to add a new org row directly in the PbN allocation table with no EoI record required. A simple inline form captures the minimum needed to create the org record and add it to the allocation in one step: org name, type, country, and category. The OCOG sees the org in their PbN review and approves (or questions) it there — the same approval flow as any other PbN entry. The OCOG will be able to see which PbN entries had a corresponding EoI record and which were added directly, providing audit visibility without creating a bureaucratic barrier for NOC press officers.
 
-**Option A — Expedited EoI-like entry (current fast-track):** The NOC creates an EoI record via the fast-track route (minimal fields, auto-approved). The org then flows through the PbN layer normally. The EoI record exists as a lightweight audit item. This is what is currently built.
+The quota cap still applies: NOCs cannot add direct-entry orgs past their per-category total. This hard cap is enforced regardless of entry route.
 
-**Option B — True PbN direct-entry (bypass EoI entirely):** The NOC can add an org directly to their PbN allocation table with no EoI record created. The org exists only in PbN. The OCOG sees it in the PbN review and approves (or questions) it there.
+**Note on IFs:** This direct PbN entry mechanism also solves the small-IF workflow (see R-4 and the note below).
 
-**Questions we need answered:**
+**Questions for confirmation:**
+1. Please confirm the OCOG is comfortable with orgs appearing in PbN without an EoI trail, provided they can see the distinction.
+2. Please confirm the hard quota cap applies equally to direct-entry orgs.
 
-1. Is Option A acceptable in practice — can NOC admins be asked to create a minimal EoI entry (even auto-approved) for any org they want in PbN? Or will this feel like unnecessary bureaucracy to busy NOC press officers?
-2. If Option B is preferred, does the OCOG need any visibility into which PbN entries had a corresponding EoI vs. which were added directly? Is there an audit/governance concern about orgs appearing in PbN without an EoI trail?
-3. Emma's email notes that quota categories are fixed in PbN and NOCs cannot go over their totals. This constraint holds regardless of whether an org came through EoI or was added directly. Please confirm the system should enforce this hard cap regardless of entry route.
-
-**Roles impacted:** NOC Admin (primary — needs a simple path), OCOG Admin (sees the PbN result and approves), IOC Admin (audit visibility)
-**NOC input recommended** — ask a NOC press officer how they'd want to handle known major media outlets they never collected an EoI from.
+**Roles impacted:** NOC Admin (primary — uses direct entry), OCOG Admin (sees and approves PbN result), IOC Admin (audit visibility)
+**NOC input recommended** — ask a NOC press officer whether the inline form approach (org name, type, country, category in one step) is simple enough for busy press officers.
 
 ---
 
@@ -381,7 +381,17 @@ These questions relate to the separate ENR track, where NOCs nominate broadcaste
 2. **Amending after submission:** Once a NOC submits their ENR list to the IOC, can they amend it (add an org, change the priority order)? Or is submission final?
 3. **ENR undertaking timing:** See section 5.2 — this is now deferred. [EM 2026-04-02]
 4. **Decision notification:** When the IOC makes grant/deny decisions, how should the NOC be notified? (Note: email notifications are planned for v1.0; this is a design question about what the notification should contain.)
-5. **ENR self-application via the EoI portal [EM 2026-04-02]:** Emma explicitly raises (Comments 94, 95, 118 and her email) whether ENR organisations should be allowed to apply via the EoI portal themselves, rather than only being nominated by NOCs. The reasoning: NOCs still need to know which ENR organisations are interested in credentials, and ENR organisations will see the public portal and try to apply regardless. If ENR orgs can submit via the portal, one possible flow would be: ENR org selects their category on the EoI form → NOC sees their interest and nominates them for the ENR track → IOC approves. Emma notes (Comment 94): "We may let ENRs apply directly so the NOC knows which ENRs are interested. However the same process of the IOC approving them and letting the NOC know would follow." This is currently **OPEN**. A decision is needed before we can design the ENR form entry. If ENR self-application is enabled, we also need to decide whether ENR applicants share the public EoI form or have a separate intake flow.
+5. **ENR self-application via the EoI portal [EM 2026-04-02] — proposed model:** Emma raises (Comments 94, 95, 118 and her email) whether ENR organisations should be allowed to apply via the EoI portal themselves, rather than only being nominated by NOCs. Ken's clarification: if ENR self-application is enabled, ENR organisations still flow through the PbN process — they still need quota assigned from the 350-slot pool. The proposed flow is:
+   1. ENR org selects "ENR" type on the EoI form and submits.
+   2. Application routes to the NOC queue. The NOC's action is not approve/reject — it is to **prioritise and rank** the ENR org within their territory.
+   3. The NOC submits a prioritised ENR list to the IOC (orgs ordered by priority, no quantities — the NOC is ranking, not allocating).
+   4. IOC views all NOC submissions combined against the 350-slot pool and decides grant amounts per org.
+
+   This is structurally similar to the EoI → PbN flow, but with IOC as the allocator rather than OCOG, and with the NOC's role being prioritisation rather than approval. The 350-slot pool is IOC-owned and IOC-allocated regardless of whether ENR orgs self-apply or are nominated.
+
+   **IOC ENR allocation screen (confirmed requirement):** The IOC ENR allocation screen should mirror the OCOG PbN screen — a cross-NOC table of ENR candidates, showing which NOC nominated/ranked each org, with a running total against the 350-slot cap, and editable allocation per org that the IOC fills in. This is a confirmed design requirement. The current IOC ENR screen shows one NOC's list at a time and needs to be redesigned to this combined multi-NOC view.
+
+   **Open questions:** Should ENR applicants share the public EoI form (with ENR as a selectable org type) or have a separate intake flow? Is the proposed prioritise-and-rank model (no NOC approve/reject) acceptable to both IOC and OCOG?
 
 **Roles impacted:** NOC Admin (submits ENR list, may see ENR self-applications), IOC Admin (makes grant decisions, needs multi-NOC combined view), ENR organisations (potential self-applicants)
 
@@ -508,8 +518,12 @@ The following decisions have been made and implemented. We're listing them here 
 
 **Decision:** During the EoI phase, the NOC reviews, approves, returns, or rejects applications for their own territory. The OCOG can see all applications across NOCs (read-only during EoI) and will have filtering tools to identify problematic applications. The IOC has visibility but does not approve or reject EoI applications.
 
+**Clarification — EoI approval = candidacy, not accreditation [Ken 2026-04-02]:** When a NOC approves an EoI, they are approving the organisation as a *candidate for quota consideration* — not granting accreditation. An approved organisation may receive zero slots in PbN. This two-stage model (candidacy → allocation) is intentional and important: a NOC with a quota of 80 press slots might approve 200 organisations as candidates, then allocate slots to the 80 they prioritise in PbN. The remaining 120 approved-but-unallocated orgs receive no credentials.
+
+This distinction is currently implicit in the portal but not made explicit to users. We are updating the portal UI to make the candidacy stage clearer — for example, renaming the "Approve" button to "Approve as Candidate" or adding a tooltip/explanatory note that explains approval does not guarantee a credential allocation. This document note reflects that same language change.
+
 **Roles impacted:** NOC Admin, OCOG Admin, IOC Admin
-**Please confirm** the role boundaries during EoI.
+**Please confirm** the role boundaries during EoI, and confirm that framing EoI approval as "candidacy" (not accreditation) accurately reflects how IOC and OCOG expect NOCs to use this stage.
 
 ---
 
@@ -551,6 +565,8 @@ The following decisions have been made and implemented. We're listing them here 
 
 **Roles impacted:** IF Admin (only ~6 IFs in scope), OCOG Admin (approves those ~6 IFs' PbN), IOC Admin (sets quotas for all IFs)
 **Please confirm** IFs should not have a public EoI queue and should use fast-track entry only. (Note: we may need to adjust the current code to align with this — the IF admin screen currently mirrors the full NOC experience including an EoI queue.) Also confirm: should the ~200 IFs that go straight to Press by Name have any presence in MRP at all, or only in ACR?
+
+**Note on small IFs — proposed model [Ken 2026-04-02]:** Emma notes that only ~6 IFs use MRP for sport-specialist PbN. All other IFs go straight to Press by Name in ACR. Ken's challenge: if IOC still sets the quota for small IFs, why not also manage them in MRP and avoid manual ACR entry? The proposed model is: all IFs are in MRP. Large IFs (~6) use the full PbN flow as currently designed. Small IFs skip EoI entirely and use the direct PbN entry feature (see 4.4) — the IF admin adds their orgs directly to the PbN table, which flows to OCOG approval and then ACR export. Nothing needs to be manually keyed into ACR. Please confirm whether this is feasible or whether there is a reason small IFs should remain outside MRP.
 
 ---
 
