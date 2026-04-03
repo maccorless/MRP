@@ -39,6 +39,18 @@ export default async function FastTrackPage({
         </p>
       </div>
 
+      {/* NOC E guidance */}
+      <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
+        <p className="font-semibold mb-1">Tip: Nominating your own communications staff (NOC E slots)</p>
+        <p>
+          Your IOC quota includes <strong>E (Journalist)</strong> slots that can be used for your NOC&apos;s own
+          communications and media staff — not just external media organisations. To use these, create an entry
+          here for your NOC communications team (e.g. &ldquo;USA Olympic &amp; Paralympic Committee — Communications&rdquo;),
+          select category E, and enter the number of staff you wish to credential. This will be allocated from
+          your E quota during Press by Number.
+        </p>
+      </div>
+
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
           {ERROR_MSG[error] ?? "An error occurred."}

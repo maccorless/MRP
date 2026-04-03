@@ -4,6 +4,9 @@ import { useState, useMemo } from "react";
 import { saveSlotAllocations, submitPbnToOcog } from "./actions";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ServerAction = (formData: FormData) => Promise<any>;
+
 type PbnRow = {
   orgId: string;
   orgName: string;
@@ -41,6 +44,9 @@ type Props = {
   quota: Quota | null;
   activeCategories: AccredCategory[];
   isEditable: boolean;
+  saveAction?: ServerAction;
+  submitAction?: ServerAction;
+  submitLabel?: string;
 };
 
 // Stable map from category value to row field names
@@ -64,7 +70,9 @@ const CAT_ENABLED_FIELD: Record<AccredCategory, keyof PbnRow> = {
 
 type SlotValues = Record<AccredCategory, number>;
 
-export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }: Props) {
+export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, saveAction, submitAction, submitLabel }: Props) {
+  const effectiveSave   = saveAction   ?? saveSlotAllocations;
+  const effectiveSubmit = submitAction ?? submitPbnToOcog;
   const [values, setValues] = useState<Record<string, SlotValues>>(
     () => Object.fromEntries(
       rows.map((r) => [
@@ -199,7 +207,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }
 
       {/* Table */}
       <form
-        action={isEditable ? saveSlotAllocations : undefined}
+        action={isEditable ? effectiveSave : undefined}
         onSubmit={undefined}
         className="space-y-4"
       >
@@ -315,14 +323,14 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }
           <div className="flex items-center gap-3">
             <button
               type="submit"
-              formAction={saveSlotAllocations}
+              formAction={effectiveSave}
               className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded hover:bg-gray-50 transition-colors cursor-pointer"
             >
               Save Draft
             </button>
             <button
               type="submit"
-              formAction={submitPbnToOcog}
+              formAction={effectiveSubmit}
               onClick={(e) => {
                 const form = (e.target as HTMLButtonElement).closest("form");
                 if (form) {
@@ -332,7 +340,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable }
               }}
               className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
             >
-              Submit to OCOG
+              {submitLabel ?? "Submit to OCOG"}
             </button>
             <span className="text-xs text-gray-400">Submission locks allocations — OCOG may adjust before final approval.</span>
           </div>
