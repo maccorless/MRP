@@ -6,7 +6,7 @@ import { AuditTrailView } from "@/components/AuditTrailView";
 
 const PAGE_SIZE = 200;
 
-export default async function IocAuditPage({
+export default async function OcogAuditPage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
@@ -57,15 +57,17 @@ export default async function IocAuditPage({
   const exportHref = `/api/export/audit${exportParams.size > 0 ? "?" + exportParams.toString() : ""}`;
 
   return (
-    <AuditTrailView
-      logs={logs}
-      total={total}
-      page={page}
-      totalPages={totalPages}
-      q={q}
-      filterDescription={describeAuditQuery(parsed)}
-      basePath="/admin/ioc/audit"
-      exportHref={exportHref}
-    />
+    <div className="p-6 max-w-6xl mx-auto">
+      <AuditTrailView
+        logs={logs}
+        total={total}
+        page={page}
+        totalPages={totalPages}
+        q={q}
+        filterDescription={describeAuditQuery(parsed)}
+        basePath="/admin/ocog/audit"
+        exportHref={exportHref}
+      />
+    </div>
   );
 }

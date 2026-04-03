@@ -18,29 +18,34 @@ export default async function ApplyPage({
       </p>
 
       {error === "invalid_email" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
           Please enter a valid email address.
         </div>
       )}
       {error === "invalid_token" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
           Your access code has expired or has already been used. Please request
           a new one.
         </div>
       )}
       {error === "invalid_country" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
           Please select a valid country from the list (2-letter ISO code).
         </div>
       )}
       {error === "invalid_noc" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
           Please select a valid NOC code from the list (3-letter Olympic code).
         </div>
       )}
       {error === "window_closed" && (
-        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-md text-orange-700 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-md text-orange-700 text-sm">
           The EoI window for your NOC is currently closed. Please contact your NOC directly.
+        </div>
+      )}
+      {error === "rate_limited" && (
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+          Too many requests. Please wait before trying again.
         </div>
       )}
 

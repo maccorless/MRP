@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/admin/ocog",     label: "Home" },
-  { href: "/admin/ocog/pbn", label: "PbN Approvals" },
+  { href: "/admin/ocog",          label: "Home" },
+  { href: "/admin/ocog/pbn",      label: "PbN Approvals" },
+  { href: "/admin/ocog/audit",    label: "Audit Trail" },
 ];
 
 export function OcogNavTabs() {

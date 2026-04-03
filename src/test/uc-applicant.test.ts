@@ -19,6 +19,9 @@ vi.mock("next/headers", () => ({
     set: (name: string, value: string) => mockCookieStore.set(name, value),
     delete: (name: string) => mockCookieStore.delete(name),
   }),
+  headers: async () => ({
+    get: (_name: string) => null,
+  }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -168,6 +171,25 @@ describe("requestToken", () => {
 
     expect(redirect).toBeDefined();
     expect(redirect!.url).toBe("/apply?error=invalid_email");
+  });
+
+  it("rate limits after 5 token requests from the same email in one hour", async () => {
+    const email = testEmail("rate_limit");
+
+    // Insert 5 tokens directly (simulating 5 prior requests within the last hour)
+    for (let i = 0; i < 5; i++) {
+      await db.insert(magicLinkTokens).values({
+        email,
+        tokenHash: hashToken(`RATELIMIT_${TS}_${i}`),
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      });
+    }
+
+    const fd = makeFormData({ email });
+    const { redirect } = await callAction(() => requestToken(fd));
+
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toBe("/apply?error=rate_limited");
   });
 });
 

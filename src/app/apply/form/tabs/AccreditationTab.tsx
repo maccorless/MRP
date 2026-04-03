@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import type { FormErrors, PrefillData } from "../EoiFormTabs";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 
@@ -11,19 +11,28 @@ const HELP = "text-xs text-gray-400 mt-1";
 
 function InfoTooltip({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
+  const tooltipId = useId();
   return (
     <span className="relative inline-block ml-1.5 align-middle">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
+        onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
         className="w-4 h-4 rounded-full bg-gray-200 text-gray-600 text-[10px] font-bold leading-none flex items-center justify-center hover:bg-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0057A8] cursor-pointer"
         aria-label="More information"
+        aria-describedby={open ? tooltipId : undefined}
+        aria-expanded={open}
       >
         i
       </button>
       {open && (
-        <div className="absolute z-10 left-5 top-0 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs text-gray-600 leading-relaxed">
+        <div
+          id={tooltipId}
+          role="tooltip"
+          className="absolute z-10 left-5 top-0 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs text-gray-600 leading-relaxed"
+        >
           {text}
         </div>
       )}

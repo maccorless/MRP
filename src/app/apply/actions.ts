@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte, count } from "drizzle-orm";
 import { db } from "@/db";
 import {
   magicLinkTokens,
@@ -19,6 +19,7 @@ export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean
     .where(and(eq(nocEoiWindows.nocCode, nocCode), eq(nocEoiWindows.eventId, "LA28")));
   return { closed: row ? !row.isOpen : false };
 }
+import { headers } from "next/headers";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { nextApplicationRef } from "@/lib/ref-seq";
 import { COUNTRY_CODE_SET, NOC_CODE_SET } from "@/lib/codes";
@@ -35,12 +36,32 @@ export async function requestToken(formData: FormData) {
     redirect("/apply?error=invalid_email");
   }
 
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+  // Per-email rate limit: max 5 token requests per hour
+  const [{ emailCount }] = await db
+    .select({ emailCount: count() })
+    .from(magicLinkTokens)
+    .where(and(eq(magicLinkTokens.email, email), gte(magicLinkTokens.createdAt, oneHourAgo)));
+  if (emailCount >= 5) redirect("/apply?error=rate_limited");
+
+  // Per-IP rate limit: max 15 token requests per hour
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0].trim() ?? h.get("x-real-ip") ?? null;
+  if (ip) {
+    const [{ ipCount }] = await db
+      .select({ ipCount: count() })
+      .from(magicLinkTokens)
+      .where(and(eq(magicLinkTokens.ipAddress, ip), gte(magicLinkTokens.createdAt, oneHourAgo)));
+    if (ipCount >= 15) redirect("/apply?error=rate_limited");
+  }
+
   const token = generateToken();
   const tokenHash = hashToken(token);
   const expiryHours = parseInt(process.env.TOKEN_EXPIRY_HOURS ?? "24", 10);
   const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
 
-  await db.insert(magicLinkTokens).values({ email, tokenHash, expiresAt });
+  await db.insert(magicLinkTokens).values({ email, tokenHash, expiresAt, ipAddress: ip });
 
   redirect(`/apply/verify?token=${token}&email=${encodeURIComponent(email)}`);
 }

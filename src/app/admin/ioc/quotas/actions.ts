@@ -3,8 +3,17 @@
 import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { nocQuotas, quotaChanges } from "@/db/schema";
+import { nocQuotas, quotaChanges, auditLog } from "@/db/schema";
 import { requireIocAdminSession, requireWritable } from "@/lib/session";
+
+const CAT_LABEL: Record<string, string> = {
+  e: "E", es: "Es", ep: "EP", eps: "EPs", et: "ET", ec: "EC", noc_e: "NocE",
+};
+
+function quotaDiffDetail(nocCode: string, diffs: { quotaType: string; oldValue: number; newValue: number }[], source: "import" | "manual"): string {
+  const parts = diffs.map((d) => `${CAT_LABEL[d.quotaType] ?? d.quotaType}: ${d.oldValue}→${d.newValue}`);
+  return `${nocCode} — ${parts.join(", ")} [${source}]`;
+}
 
 // All per-category quota keys in column order
 const CAT_KEYS = ["e", "es", "ep", "eps", "et", "ec", "noc_e"] as const;
@@ -88,6 +97,14 @@ export async function importQuotas(formData: FormData) {
             changedBy: session.userId, changeSource: "import" as const,
           }))
         );
+
+        await db.insert(auditLog).values({
+          actorType: "ioc_admin",
+          actorId: session.userId,
+          actorLabel: session.displayName,
+          action: "quota_changed",
+          detail: quotaDiffDetail(nocCode, changes, "import"),
+        });
       }
     } else {
       await db.insert(nocQuotas).values({
@@ -100,6 +117,10 @@ export async function importQuotas(formData: FormData) {
         setBy: session.userId, setAt: new Date(),
       });
 
+      const initialChanges = CAT_KEYS
+        .filter((k) => vals[k] !== 0)
+        .map((k) => ({ quotaType: k, oldValue: 0, newValue: vals[k] }));
+
       await db.insert(quotaChanges).values(
         CAT_KEYS.map((k) => ({
           nocCode, quotaType: k,
@@ -107,6 +128,16 @@ export async function importQuotas(formData: FormData) {
           changedBy: session.userId, changeSource: "import" as const,
         }))
       );
+
+      if (initialChanges.length > 0) {
+        await db.insert(auditLog).values({
+          actorType: "ioc_admin",
+          actorId: session.userId,
+          actorLabel: session.displayName,
+          action: "quota_changed",
+          detail: quotaDiffDetail(nocCode, initialChanges, "import"),
+        });
+      }
     }
 
     imported++;
@@ -186,6 +217,14 @@ export async function saveQuotaEdits(formData: FormData) {
         changedBy: session.userId, changeSource: "manual_edit" as const,
       }))
     );
+
+    await db.insert(auditLog).values({
+      actorType: "ioc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "quota_changed",
+      detail: quotaDiffDetail(nocCode, changes, "manual"),
+    });
   }
 
   redirect("/admin/ioc/quotas?success=saved");
