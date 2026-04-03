@@ -18,12 +18,14 @@ export function OrganisationTab({
   countryCodes,
   nocCodes,
   errors,
+  nocAutoSuggestedName,
 }: {
   prefill: PrefillData | null;
   isResubmission: boolean;
   countryCodes: { code: string; name: string }[];
   nocCodes: { code: string; name: string }[];
   errors?: FormErrors;
+  nocAutoSuggestedName?: string | null;
 }) {
   if (isResubmission && prefill) {
     return (
@@ -97,17 +99,29 @@ export function OrganisationTab({
           <p className={HELP}>Type a code or country name</p>
         </div>
         <div>
-          <label htmlFor="noc_code" className={LABEL}>NOC code <span className="text-red-500">*</span></label>
+          <label htmlFor="noc_code" className={LABEL}>
+            Responsible NOC <span className="text-red-500">*</span>
+          </label>
           <input id="noc_code" name="noc_code" type="text" required data-tab="0"
             list="noc-codes" placeholder="USA — United States of America" className={inp("noc_code", errors)}
-            aria-invalid={!!errors?.noc_code} aria-describedby={errors?.noc_code ? "err-noc_code" : undefined} />
+            aria-invalid={!!errors?.noc_code} aria-describedby="noc-help" />
           <datalist id="noc-codes">
             {nocCodes.map(({ code, name }) => (
               <option key={code} value={`${code} — ${name}`} />
             ))}
           </datalist>
           <Err name="noc_code" errors={errors} />
-          <p className={HELP}>Type a code or country name</p>
+          {nocAutoSuggestedName ? (
+            <p id="noc-help" className="text-xs text-[#0057A8] mt-1">
+              Auto-selected: <strong>{nocAutoSuggestedName}</strong> based on your country.
+              Change this if your organisation is reviewed by a different NOC.
+            </p>
+          ) : (
+            <p id="noc-help" className={HELP}>
+              The National Olympic Committee responsible for reviewing your application.
+              Usually matches your country — select your country above to auto-fill.
+            </p>
+          )}
         </div>
       </div>
 

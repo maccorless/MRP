@@ -103,6 +103,7 @@ export function EoiFormTabs({
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
   const [errorAnnouncement, setErrorAnnouncement] = useState("");
   const [nocWindowClosed, setNocWindowClosed] = useState(false);
+  const [nocAutoSuggestedName, setNocAutoSuggestedName] = useState<string | null>(null);
   const autoSuggestedNocRef = useRef<string | null>(null);
 
   const STATUS_LABELS: Record<string, string> = {
@@ -236,6 +237,7 @@ export function EoiFormTabs({
         const newVal = `${nocEntry.code} — ${nocEntry.name}`;
         nocInput.value = newVal;
         autoSuggestedNocRef.current = newVal;
+        setNocAutoSuggestedName(nocEntry.name);
         updateTabStatus();
       }
     }
@@ -245,6 +247,8 @@ export function EoiFormTabs({
     const target = e.target as unknown as HTMLInputElement;
     if (target.name !== "noc_code") return;
     const raw = target.value.trim();
+    // If the user changed the NOC from what was auto-suggested, clear the indicator
+    if (raw !== autoSuggestedNocRef.current) setNocAutoSuggestedName(null);
     if (!raw) { setNocWindowClosed(false); return; }
     const nocCode = raw.split(" — ")[0].trim().toUpperCase();
     if (!NOC_CODE_SET.has(nocCode)) return;
@@ -407,7 +411,7 @@ export function EoiFormTabs({
       {/* Tab panels — all rendered, only active visible */}
       <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-8">
         <div id="eoi-panel-0" role="tabpanel" aria-labelledby="eoi-tab-0" hidden={activeTab !== 0}>
-          <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} errors={fieldErrors} />
+          <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} errors={fieldErrors} nocAutoSuggestedName={nocAutoSuggestedName} />
         </div>
         <div id="eoi-panel-1" role="tabpanel" aria-labelledby="eoi-tab-1" hidden={activeTab !== 1}>
           <ContactsTab prefill={prefill} email={email} errors={fieldErrors} />
