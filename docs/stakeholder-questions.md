@@ -130,22 +130,24 @@ These questions relate to how OCOG and NOC administrators evaluate applications 
 
 **Status:** PROVISIONAL — confirm with NOC representatives
 
-**Scenario:** A NOC press accreditation manager opens the portal for the first time after the EoI window opens. They have 180 applications waiting. Our expected workflow is:
+**Scenario:** A NOC press accreditation manager logs into the portal. They may be there to process new applications, or to work on their slot allocation — or both, across different sessions. Our model is that the NOC operates in two distinct **modes** depending on their intention for that session, not two strictly sequential phases:
 
-**Phase 1 — Clear the EoI queue.** The NOC works through all incoming applications, marking each as: approved as candidate, returned for corrections, or rejected. The goal is an empty pending queue. Fast-track entries (known returning orgs the NOC adds directly) also appear here as pre-approved. This phase is primarily about eligibility decisions — "is this a legitimate media organisation?" — not about how many slots they will get.
+**Mode 1 — "Clear the queue" sessions.** The NOC works through pending and resubmitted applications, deciding: approved as candidate, returned for corrections, or rejected. The goal is to keep the queue empty as applications arrive. Fast-track entries (known returning orgs the NOC adds directly) appear here as pre-approved. This mode is purely about eligibility — "is this a legitimate media organisation?" — not about slot quantities.
 
-**Phase 2 — PbN allocation screen.** Once the EoI queue is cleared, the NOC moves to the Press by Number screen. This screen shows all approved candidates (from EoI + fast-track + direct PbN entries) and is where the NOC assigns slot numbers against their IOC quota. This is where most of the NOC's ongoing work happens — adjusting allocations, responding to OCOG feedback, and submitting for approval.
+**Mode 2 — "Work on allocation" sessions.** The NOC opens the Press by Number screen and assigns slot numbers to approved candidates against their IOC quota. This includes candidates from EoI, fast-track entries, and direct PbN additions. The NOC will return to this screen multiple times as they refine their allocation, respond to OCOG feedback, and eventually submit.
 
-**Our provisional design:** The EoI queue and PbN screen are kept strictly separate. The EoI queue does not show PbN slot status, and the PbN screen does not replicate EoI decision controls. The NOC home dashboard shows a high-level count ("X of Y approved candidates have slots assigned") to give pipeline visibility without mixing the two workflows.
+**How they interact:** The two modes iterate in practice. New applications may arrive while the NOC is mid-allocation. A NOC might clear a batch of applications in the morning, then switch to the allocation screen in the afternoon. The key design principle is that **each screen serves one intent clearly** — the EoI queue is for eligibility decisions; the PbN screen is for allocation. The NOC home dashboard bridges the two with a summary ("X of Y approved candidates have slots assigned") so they always know where they stand.
+
+**Our provisional design:** EoI queue and PbN screen remain separate. The EoI queue does not show PbN slot status; the PbN screen does not replicate EoI decision controls. The home dashboard provides the cross-screen summary.
 
 **Questions we need answered:**
 
-1. Does this two-phase workflow match how NOC press accreditation managers actually operate? Or do NOCs tend to interleave EoI review and slot assignment rather than doing them sequentially?
-2. For larger NOCs (USA, GBR, JPN, GER, FRA) with hundreds of applications: is a clean queue-clearing phase realistic, or do they need to review and allocate simultaneously?
-3. Should the EoI queue show any PbN progress indicator for approved orgs (e.g. "slots assigned" vs "no slots yet")? Or is the PbN screen the right and only place to track that?
+1. Does this session-intent model match how NOC press accreditation managers actually work in practice?
+2. Should the EoI queue show any lightweight PbN progress indicator for approved orgs (e.g. a dot meaning "slots assigned" vs "no slots yet")? Or is the home dashboard summary sufficient?
+3. Are there NOCs who would want a combined view — a single screen showing both EoI status and PbN allocation side by side? If so, is this a large-territory-only need?
 
 **Roles impacted:** NOC Admin (primary), OCOG Admin (visibility)
-**NOC input strongly recommended** — this is a workflow question that requires input from at least one large-territory and one small-territory NOC representative.
+**NOC input strongly recommended** — validate with at least one large-territory and one small-territory NOC representative.
 
 ---
 
