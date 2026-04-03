@@ -1,7 +1,7 @@
 # MRP Manual Test Walkthrough
 
 **Version**: v0.1  
-**Last updated**: 2026-03-31  
+**Last updated**: 2026-04-03  
 **Production URL**: https://mrp-production-8073.up.railway.app/
 
 ---
@@ -12,14 +12,19 @@ Each section anchors to one **role**. Under each role you'll find one or more **
 
 Work through roles in order — **Applicant → NOC Admin → IOC Admin** — because each role produces data the next one consumes. IF Admin mirrors NOC Admin and can be tested in parallel.
 
-> **Missing use cases (flagged for product review)**
-> The following are implemented but not covered by the use cases below. They should be added to a future test pass:
-> - **OCOG Admin role** — the OCOG admin reviews and approves NOC PbN submissions before they go to ACR. Route: `https://mrp-production-8073.up.railway.app/admin/ocog/pbn`. Login as `ocog.admin@la28.org`.
-> - **IOC quota management** — the IOC sets per-NOC, per-category quotas. These are currently seeded from Paris 2024 fixture data; the IOC quota management UI is not yet built.
-> - **IOC data exports (CSV)** — IOC Admin can download PbN allocations and ENR nominations as CSV files. Routes: `/api/export/pbn-allocations` and `/api/export/enr-nominations`.
-> - **IOC audit trail** — all admin actions are logged. No dedicated view yet.
-> - **Sudo / impersonate user** — listed as an IOC use case below, but **this feature is not yet built**. The test case is a placeholder for the roadmap.
-> - **IF Admin sport scoping** — IF Admin currently redirects to the same NOC UI with no sport filter applied. Sport-scoped views are not yet implemented.
+> **Features ready for testing** — The following are fully built and should be included in any full test pass. Test cases for these are included in their respective role sections below.
+> - **OCOG Admin** — reviews and approves NOC PbN submissions. Login: `ocog.admin@la28.org` / `Password1!`. Route: `/admin/ocog/pbn`
+> - **IOC quota management** — IOC sets per-NOC, per-category quotas at `/admin/ioc/quotas`. Import via CSV or edit in-app.
+> - **IOC data exports** — CSV download of PbN allocations and ENR nominations. Routes: `/api/export/pbn-allocations`, `/api/export/enr-nominations`
+> - **IOC audit trail** — all admin actions logged and searchable at `/admin/ioc/audit`
+> - **IOC sudo / impersonation** — IOC admin can open a read-only session as any NOC or OCOG admin at `/admin/ioc/sudo`
+> - **NOC fast-track entry** — NOC admin can submit a pre-approved org directly at `/admin/noc/fast-track`
+> - **NOC PbN direct entry** — NOC admin can add an org directly to the PbN table without an EoI at `/admin/noc/pbn` (click "+ Add organisation directly to PbN")
+> - **EoI window toggle** — NOC admin can open/close their territory's EoI window at `/admin/noc/settings`
+> - **Application reversals** — NOC admin can unapprove or unreturn an application from the application detail page; OCOG admin can reverse a PbN approval
+> - **IOC-Direct org management** — IOC admin can add and manage IOC-Direct organisations and allocate their PbN slots at `/admin/ioc/direct`
+>
+> **Not yet built (deferred):** email notifications, CAPTCHA, anomaly detection, org directory search, D.TEC SSO, French localisation, IF sport-scoped views.
 
 ---
 
@@ -442,6 +447,36 @@ After approving applications, the NOC admin decides how many accreditation slots
 
 ---
 
+## Use Case 2b: Fast-Track and Direct PbN Entry
+
+Fast-track lets a NOC submit a pre-approved org (skipping the public EoI queue). Direct PbN entry lets a NOC add an org straight to the allocation table with no EoI record at all.
+
+### Test 2.12 — Fast-track a known organisation
+
+**Who:** NOC Admin (S. Kim, USOPC)
+**Route:** `/admin/noc/fast-track`
+
+| # | Action | Expected |
+|---|--------|----------|
+| 1 | Navigate to Fast-Track Entry | Form appears with Organisation, Primary Contact, Accreditation Categories, and About sections |
+| 2 | Fill in: org name "USA Today Sports", type "Print / Online", country "US", contact name and email, check category E, enter 3 slots | All fields accept input |
+| 3 | Click "Submit & Approve" | Redirected to NOC queue with success banner; "USA Today Sports" appears in the queue with status "Approved" and badge "NOC Direct" |
+| 4 | Open the EoI queue and filter by "Approved" | "USA Today Sports" is visible with source badge "NOC Direct"; it is already in the PbN allocation table |
+
+### Test 2.13 — Add an organisation directly to PbN
+
+**Who:** NOC Admin (S. Kim, USOPC)
+**Route:** `/admin/noc/pbn`
+
+| # | Action | Expected |
+|---|--------|----------|
+| 1 | Scroll to bottom of PbN page; click "+ Add organisation directly to PbN" | Inline form expands with: Organisation name, Type, Country (optional) |
+| 2 | Enter "National Press Association", type "Print / Online", country "US"; click "Add to PbN" | Page reloads with success banner; "National Press Association" appears as a new row in the allocation table |
+| 3 | Note the new row | All category input fields are enabled (all categories eligible); Req. column shows "—" (no EoI request) |
+| 4 | Enter 2 slots for E and save draft | Slot total updates in the quota progress bar |
+
+---
+
 ## Use Case 3: Enter / Prioritize ENR Requests
 
 After PbN submission, the NOC can nominate specific media organisations for Extra National Representative slots and rank them by priority.
@@ -695,9 +730,9 @@ After approving, the OCOG transmits the final allocation to the ACR system.
 
 ## Use Case 1: Evaluate EoI Forms
 
-Same as NOC Admin — see Tests 2.1 through 2.4 above. Log in as `if.admin@worldathletics.org`.
+IF Admin uses the same screens as NOC Admin. Note: IFs do not have a public EoI queue — all IF territory orgs come in via fast-track entry. IF admins should use the Fast-Track page to add their sport-specialist organisations, then allocate PbN slots directly. IF admins do not use the ENR workflow.
 
-The IF admin can view the application list and take approve/return/reject actions. The screen will show all applications for the IF's associated NOC rather than filtered to Athletics specifically.
+Log in as `if.admin@worldathletics.org` and follow Tests 2.1 through 2.4 above for queue review behaviour. For adding IF orgs, use the Fast-Track flow (Tests 2.12–2.13).
 
 ---
 
@@ -851,6 +886,33 @@ After NOCs submit their ENR nominations, the IOC reviews each org and makes a de
 
 ---
 
+## Use Case 4: Manage Quotas
+
+### Test 4.6 — View and edit NOC quotas
+
+**Who:** IOC Admin
+**Route:** `/admin/ioc/quotas`
+
+| # | Action | Expected |
+|---|--------|----------|
+| 1 | Navigate to Quotas | Table shows all NOCs with per-category totals (E, Es, EP, EPs, ET, EC, NOC E). Import CSV button visible. |
+| 2 | Click "Edit" for USA row | Per-category fields become editable inline |
+| 3 | Change USA E total from current value to 150; click Save | Page reloads with success banner; USA E shows 150; audit trail records the change |
+| 4 | Return to NOC admin for USA and open PbN | Quota dashboard now shows E total of 150 |
+
+### Test 4.7 — Import quotas from CSV
+
+**Who:** IOC Admin
+**Route:** `/admin/ioc/quotas`
+
+| # | Action | Expected |
+|---|--------|----------|
+| 1 | Download a CSV export from the export page | CSV has columns for NOC code and per-category totals |
+| 2 | Edit one NOC's E total in the CSV, save | — |
+| 3 | Import the CSV via "Import CSV" | Success banner; changed NOC shows new value; audit trail records import |
+
+---
+
 ## Use Case 3: Act as Another User (Sudo)
 
 The IOC admin can open a read-only window impersonating any admin user for support and debugging. All form controls are disabled in sudo mode. The sudo event is audit logged.
@@ -923,6 +985,35 @@ The IOC admin can open a read-only window impersonating any admin user for suppo
 **Expected**: Audit entry shows: actor = IOC Admin, action = `sudo_initiated`, detail = "Sudo initiated as S. Kim (noc_admin · USA)".
 
 ---
+
+---
+
+## Use Case: EoI Window Management (NOC Admin)
+
+### Test 5.1 — Close and reopen the EoI window
+
+**Who:** NOC Admin
+**Route:** `/admin/noc/settings`
+
+| # | Action | Expected |
+|---|--------|----------|
+| 1 | Navigate to Settings | EoI window toggle is visible showing "Open" state |
+| 2 | Click "Close Window" | Window shows as "Closed"; confirmation banner appears |
+| 3 | In a separate browser/incognito, navigate to the EoI form and select USA as country | Applicant sees "This NOC has closed its Expression of Interest window" message |
+| 4 | Return to settings and click "Open Window" | Window returns to "Open"; applicant flow works again |
+
+## Use Case: Application Reversals (NOC Admin)
+
+### Test 5.2 — Unapprove an application
+
+**Who:** NOC Admin
+**Route:** `/admin/noc/queue` → application detail
+
+| # | Action | Expected |
+|---|--------|----------|
+| 1 | Open an approved application | Detail page shows "Un-approve" section below the current status |
+| 2 | Click "Un-approve" | Status reverts to "Pending"; organisation is removed from PbN candidate pool; any draft PbN slot allocation for this org is reset to 0 |
+| 3 | Check the audit trail (IOC sudo view or IOC audit page) | "application_unapproved" event recorded |
 
 ---
 

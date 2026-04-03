@@ -124,7 +124,7 @@ For LA28 2028, the IOC has committed to launching a dedicated Media Registration
 
 | Role | Primary process | Permissions |
 |------|----------------|-------------|
-| **NOC admin** | EoI (primary owner) + PbN allocation + ENR request submission | See own territory only. Approve/return/reject EoI applications. Invite known orgs. Allocate per-category slots per org in PbN. Submit prioritised ENR request list. |
+| **NOC admin** | EoI (primary owner) + PbN allocation + ENR request submission | See own territory only. Approve/return/reject EoI applications. Invite known orgs. Allocate per-category slots per org in PbN. Submit prioritised ENR request list. Nominate own communications staff (NOC E press attachés) via Fast-Track Entry — create a single 'NOC Communications Staff' org using fast-track, then allocate NOC E slots to that org during PbN. |
 | **IF admin** | PbN allocation + ENR request submission (NO EoI queue) | Same screens as NOC admin. No public EoI queue — IFs bring orgs in via the invited-org flow only. Allocate per-category slots per org in PbN. Submit ENR list. |
 | **OCOG admin** | PbN (formal approval + adjustment) | Cross-NOC access. Same PbN screens as NOC but across all territories. Formally approve or adjust NOC PbN submissions. Visibility only on EoI. |
 | **IOC admin** | ENR (grants from holdback) + visibility + IOC-Direct org management + sudo | Visibility only on EoI and PbN for all NOC territories. Reviews NOC ENR request lists; grants or denies ENR allocations from holdback pool. Sets total per-category quota per NOC via Excel import. **Additionally acts as the NOC-equivalent for IOC-Direct organisations**: manages the reserved org list, reviews EoI applications from IOC-Direct orgs, and submits PbN allocations for those orgs (subject to OCOG approval, same state machine as any NOC). Can use sudo mode to open a read-only session as any non-IOC admin user (see IOC Sudo Feature section). |
@@ -177,7 +177,7 @@ Key adapter methods: `fetchQuota(noc_id, event_id)`, `pushOrgData(org[], event_i
 
 ## Scope
 
-### Build status summary (as of 2026-03-31)
+### Build status summary (as of 2026-04-03)
 
 The following features are built and working in the v0.1 codebase. Items marked "not yet built" are in scope but not yet implemented.
 
@@ -207,6 +207,8 @@ The following features are built and working in the v0.1 codebase. Items marked 
 | Games-to-Games org persistence UI | Schema ready; UI not yet built |
 | Public org directory | Not yet built |
 | NOC fast-track application form (`/admin/noc/fast-track`) — NOC submits on behalf of org without public EoI form | Built |
+| NOC direct PbN entry (add org to PbN without EoI) | Built — inline form on PbN page |
+| IOC-Direct org management (add/manage reserved orgs + PbN allocation) | Built — full management UI at /admin/ioc/direct |
 | NOC EoI window toggle — NOC can open/close their own EoI acceptance window (`/admin/noc/settings`) | Built |
 | NOC quota dashboard — live per-category quota summary visible to NOC admin | Built |
 | Applicant status tracking — applicant can check status of their submitted application | Built |
