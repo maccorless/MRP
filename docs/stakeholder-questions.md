@@ -126,7 +126,30 @@ These questions relate to how OCOG and NOC administrators evaluate applications 
 
 ---
 
-### 2.1 Application Reversals — Differentiating EoI Approval from PbN Allocation
+### 2.1 NOC Workflow — EoI Queue vs PbN Screen
+
+**Status:** PROVISIONAL — confirm with NOC representatives
+
+**Scenario:** A NOC press accreditation manager opens the portal for the first time after the EoI window opens. They have 180 applications waiting. Our expected workflow is:
+
+**Phase 1 — Clear the EoI queue.** The NOC works through all incoming applications, marking each as: approved as candidate, returned for corrections, or rejected. The goal is an empty pending queue. Fast-track entries (known returning orgs the NOC adds directly) also appear here as pre-approved. This phase is primarily about eligibility decisions — "is this a legitimate media organisation?" — not about how many slots they will get.
+
+**Phase 2 — PbN allocation screen.** Once the EoI queue is cleared, the NOC moves to the Press by Number screen. This screen shows all approved candidates (from EoI + fast-track + direct PbN entries) and is where the NOC assigns slot numbers against their IOC quota. This is where most of the NOC's ongoing work happens — adjusting allocations, responding to OCOG feedback, and submitting for approval.
+
+**Our provisional design:** The EoI queue and PbN screen are kept strictly separate. The EoI queue does not show PbN slot status, and the PbN screen does not replicate EoI decision controls. The NOC home dashboard shows a high-level count ("X of Y approved candidates have slots assigned") to give pipeline visibility without mixing the two workflows.
+
+**Questions we need answered:**
+
+1. Does this two-phase workflow match how NOC press accreditation managers actually operate? Or do NOCs tend to interleave EoI review and slot assignment rather than doing them sequentially?
+2. For larger NOCs (USA, GBR, JPN, GER, FRA) with hundreds of applications: is a clean queue-clearing phase realistic, or do they need to review and allocate simultaneously?
+3. Should the EoI queue show any PbN progress indicator for approved orgs (e.g. "slots assigned" vs "no slots yet")? Or is the PbN screen the right and only place to track that?
+
+**Roles impacted:** NOC Admin (primary), OCOG Admin (visibility)
+**NOC input strongly recommended** — this is a workflow question that requires input from at least one large-territory and one small-territory NOC representative.
+
+---
+
+### 2.2 Application Reversals — Differentiating EoI Approval from PbN Allocation
 
 **Status:** PROVISIONAL — built and working
 
@@ -158,7 +181,7 @@ There is no time limit on any reversal. All reversals are visible in the audit t
 
 ---
 
-### 2.2 Dashboard Filtering — What Signals Help Reviewers Prioritise?
+### 2.3 Dashboard Filtering — What Signals Help Reviewers Prioritise?
 
 **Status:** OPEN — we need your input
 
@@ -177,7 +200,7 @@ The dashboards currently show simple tables with status filters (pending, approv
 
 ---
 
-### 2.3 Cross-NOC Duplicate Detection — Currently Disabled
+### 2.4 Cross-NOC Duplicate Detection — Currently Disabled
 
 **Status:** OPEN — we need your input
 
