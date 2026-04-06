@@ -98,8 +98,9 @@ describe("unApproveApplication (NOC)", () => {
 
   it("blocks in sudo mode", async () => {
     await setSession(SESSIONS.sudoAsNocUSA);
-    const { error } = await callAction(() => unApproveApplication(makeFormData({ id: "irrelevant" })));
-    expect(error).toBeDefined();
+    const { redirect } = await callAction(() => unApproveApplication(makeFormData({ id: "irrelevant" })));
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toContain("sudo_readonly");
     clearSession();
   });
 });
@@ -157,11 +158,11 @@ describe("reversePbnApproval (OCOG)", () => {
   });
 
   it("blocks in sudo mode", async () => {
-    // Use sudoAsNocUSA — it's an OCOG session but... actually sudo test should use an OCOG sudo
-    // requireWritable checks isSudo, not role — so any sudo session is blocked
+    // Use sudoAsNocUSA — requireWritable checks isSudo, not role — so any sudo session is blocked
     await setSession(SESSIONS.sudoAsNocUSA);
-    const { error } = await callAction(() => reversePbnApproval(makeFormData({ noc_code: "USA" })));
-    expect(error).toBeDefined();
+    const { redirect } = await callAction(() => reversePbnApproval(makeFormData({ noc_code: "USA" })));
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toContain("sudo_readonly");
     clearSession();
   });
 });

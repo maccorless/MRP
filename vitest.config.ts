@@ -9,6 +9,7 @@ export default defineConfig({
     // Run each test file in its own process so module-level state (TAG, mockCookieStore)
     // is isolated. Files run sequentially (fileParallelism: false) because they share a real DB
     // and concurrent cleanup hooks (beforeAll/afterAll) cause TOCTOU audit log failures.
+    testTimeout: 15000,
     pool: "forks",
     fileParallelism: false,
     env: (() => {

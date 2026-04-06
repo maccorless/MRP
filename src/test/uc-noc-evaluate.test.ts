@@ -207,9 +207,9 @@ describe("approveApplication — sudo read-only guard", () => {
       approveApplication(makeFormData({ id: appId }))
     );
 
-    // requireWritable() throws "SUDO_READ_ONLY" — callAction surfaces it as error
-    expect(error).toBeDefined();
-    expect(error?.message).toBe("SUDO_READ_ONLY");
+    // requireWritable() redirects to /admin?error=sudo_readonly
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toContain("sudo_readonly");
 
     // DB must be unchanged
     const row = await getAppStatus(appId);

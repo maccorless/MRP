@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { getSession } from "@/lib/session";
@@ -66,16 +66,14 @@ export async function GET(request: Request) {
     .orderBy(asc(applications.nocCode), asc(applications.referenceNumber))
     .$dynamic();
 
-  if (nocFilter) {
-    query = query.where(eq(applications.nocCode, nocFilter));
+  const conditions = [];
+  if (nocFilter) conditions.push(eq(applications.nocCode, nocFilter));
+  if (statusFilter) conditions.push(eq(applications.status, statusFilter as typeof applications.status.enumValues[number]));
+  if (conditions.length > 0) {
+    query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
   }
 
-  const rows = await query;
-
-  // Apply status filter in JS (simpler than dynamic where chaining)
-  const filtered = statusFilter
-    ? rows.filter((r) => r.status === statusFilter)
-    : rows;
+  const filtered = await query;
 
   const header = [
     "Reference", "NOC", "Organisation", "Country", "Org Type",

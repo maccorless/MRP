@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, orgSlotAllocations, nocQuotas, auditLog } from "@/db/schema";
 import { requireNocSession, requireWritable, type SessionPayload } from "@/lib/session";
@@ -19,38 +19,40 @@ export async function addOrgDirectlyToPbn(formData: FormData) {
 
   if (!name || !orgType) redirect("/admin/noc/pbn?error=invalid_org");
 
-  const [org] = await db
-    .insert(organizations)
-    .values({
-      name,
+  await db.transaction(async (tx) => {
+    const [org] = await tx
+      .insert(organizations)
+      .values({
+        name,
+        nocCode,
+        orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr",
+        ...(country ? { country } : {}),
+        status: "active",
+      })
+      .returning({ id: organizations.id });
+
+    await tx.insert(orgSlotAllocations).values({
+      organizationId: org.id,
       nocCode,
-      orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr",
-      ...(country ? { country } : {}),
-      status: "active",
-    })
-    .returning({ id: organizations.id });
+      eSlots:   0,
+      esSlots:  0,
+      epSlots:  0,
+      epsSlots: 0,
+      etSlots:  0,
+      ecSlots:  0,
+      pressSlots: 0,
+      photoSlots: 0,
+      allocatedBy: session.userId,
+      pbnState: "draft",
+    });
 
-  await db.insert(orgSlotAllocations).values({
-    organizationId: org.id,
-    nocCode,
-    eSlots:   0,
-    esSlots:  0,
-    epSlots:  0,
-    epsSlots: 0,
-    etSlots:  0,
-    ecSlots:  0,
-    pressSlots: 0,
-    photoSlots: 0,
-    allocatedBy: session.userId,
-    pbnState: "draft",
-  });
-
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "noc_direct_entry",
-    detail: name,
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "noc_direct_entry",
+      detail: name,
+    });
   });
 
   redirect("/admin/noc/pbn?success=org_added");
@@ -211,24 +213,25 @@ export async function submitPbnToOcog(formData: FormData) {
 
   if (draftAllocs.length === 0) redirect("/admin/noc/pbn?error=no_allocations");
 
-  for (const { id } of draftAllocs) {
-    await db
-      .update(orgSlotAllocations)
-      .set({ pbnState: "noc_submitted" })
-      .where(eq(orgSlotAllocations.id, id));
-  }
-
+  const draftAllocIds = draftAllocs.map((a) => a.id);
   const summary = ACCRED_CATEGORIES
     .filter((c) => totals[c.value] > 0)
     .map((c) => `${c.value}:${totals[c.value]}`)
     .join(" · ");
 
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "pbn_submitted",
-    detail: `${draftAllocs.length} orgs · ${summary}`,
+  await db.transaction(async (tx) => {
+    await tx
+      .update(orgSlotAllocations)
+      .set({ pbnState: "noc_submitted" })
+      .where(inArray(orgSlotAllocations.id, draftAllocIds));
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "pbn_submitted",
+      detail: `${draftAllocs.length} orgs · ${summary}`,
+    });
   });
 
   redirect("/admin/noc/pbn?success=submitted");

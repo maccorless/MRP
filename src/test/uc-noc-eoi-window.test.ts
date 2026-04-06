@@ -159,8 +159,9 @@ describe("NOC EoI window toggle", () => {
   it("blocks toggle in sudo mode", async () => {
     await setSession(SESSIONS.sudoAsNocUSA);
     const fd = makeFormData({ set_open: "false" });
-    const { error } = await callAction(() => toggleEoiWindow(fd));
-    expect(error).toBeDefined();
+    const { redirect } = await callAction(() => toggleEoiWindow(fd));
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toContain("sudo_readonly");
     clearSession();
   });
 });

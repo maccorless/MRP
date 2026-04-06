@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and, gte, count } from "drizzle-orm";
+import { eq, and, gte, count, isNull, gt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   magicLinkTokens,
@@ -73,23 +73,21 @@ export async function submitApplication(formData: FormData) {
 
   if (!token || !email) redirect("/apply");
 
-  // Validate token
+  // Lightweight pre-check (non-authoritative — the real gate is the atomic consume inside the tx)
   const tokenHash = hashToken(token);
-  const [tokenRecord] = await db
-    .select()
+  const [tokenCheck] = await db
+    .select({ id: magicLinkTokens.id })
     .from(magicLinkTokens)
     .where(
       and(
         eq(magicLinkTokens.tokenHash, tokenHash),
-        eq(magicLinkTokens.email, email)
+        eq(magicLinkTokens.email, email),
+        isNull(magicLinkTokens.usedAt),
+        gt(magicLinkTokens.expiresAt, new Date())
       )
     );
 
-  if (
-    !tokenRecord ||
-    tokenRecord.usedAt !== null ||
-    tokenRecord.expiresAt < new Date()
-  ) {
+  if (!tokenCheck) {
     redirect("/apply?error=invalid_token");
   }
 
@@ -194,34 +192,50 @@ export async function submitApplication(formData: FormData) {
 
     if (!returnedApp) redirect("/apply?error=invalid_token");
 
-    await db
-      .update(applications)
-      .set({
-        contactName,
-        categoryPress,
-        categoryPhoto,
-        about,
-        ...expandedFields,
-        status: "resubmitted",
-        resubmissionCount: returnedApp.resubmissionCount + 1,
-        reviewNote: null,
-        updatedAt: new Date(),
-      })
-      .where(eq(applications.id, resubmitId));
+    await db.transaction(async (tx) => {
+      // Atomic token consumption — prevents concurrent double-submission
+      const [consumed] = await tx
+        .update(magicLinkTokens)
+        .set({ usedAt: new Date() })
+        .where(
+          and(
+            eq(magicLinkTokens.tokenHash, tokenHash),
+            eq(magicLinkTokens.email, email),
+            isNull(magicLinkTokens.usedAt),
+            gt(magicLinkTokens.expiresAt, new Date())
+          )
+        )
+        .returning({ id: magicLinkTokens.id });
 
-    await db.insert(auditLog).values({
-      actorType: "applicant",
-      actorId: email,
-      actorLabel: contactName,
-      action: "application_resubmitted",
-      applicationId: returnedApp.id,
-      organizationId: returnedApp.organizationId,
+      if (!consumed) {
+        // Token was consumed by a concurrent request — abort
+        redirect("/apply?error=invalid_token");
+      }
+
+      await tx
+        .update(applications)
+        .set({
+          contactName,
+          categoryPress,
+          categoryPhoto,
+          about,
+          ...expandedFields,
+          status: "resubmitted",
+          resubmissionCount: returnedApp.resubmissionCount + 1,
+          reviewNote: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(applications.id, resubmitId));
+
+      await tx.insert(auditLog).values({
+        actorType: "applicant",
+        actorId: email,
+        actorLabel: contactName,
+        action: "application_resubmitted",
+        applicationId: returnedApp.id,
+        organizationId: returnedApp.organizationId,
+      });
     });
-
-    await db
-      .update(magicLinkTokens)
-      .set({ usedAt: new Date() })
-      .where(eq(magicLinkTokens.id, tokenRecord.id));
 
     redirect(`/apply/submitted?ref=${returnedApp.referenceNumber}&resubmit=1`);
   }
@@ -283,88 +297,103 @@ export async function submitApplication(formData: FormData) {
       )
     );
 
-  let org;
-  if (existingOrg) {
-    org = existingOrg;
-  } else {
-    // CRIT-04: detect multi-territory but do NOT surface it in UI.
-    // Flag is stored for future IOC analysis (Open Question #16).
-    const samedomainOrgs = await db
-      .select()
-      .from(organizations)
-      .where(eq(organizations.emailDomain, emailDomain));
-
-    const isMultiTerritory = samedomainOrgs.length > 0;
-
-    // Org address fields
-    const orgAddress = (formData.get("address") as string)?.trim() || null;
-    const orgAddress2 = (formData.get("address2") as string)?.trim() || null;
-    const orgCity = (formData.get("city") as string)?.trim() || null;
-    const orgStateProvince = (formData.get("state_province") as string)?.trim() || null;
-    const orgPostalCode = (formData.get("postal_code") as string)?.trim() || null;
-    const isFreelancer = formData.get("is_freelancer") === "yes" ? true : null;
-
-    [org] = await db
-      .insert(organizations)
-      .values({
-        name: orgName,
-        country,
-        nocCode,
-        orgType,
-        website,
-        emailDomain,
-        isMultiTerritoryFlag: isMultiTerritory,
-        address: orgAddress,
-        address2: orgAddress2,
-        city: orgCity,
-        stateProvince: orgStateProvince,
-        postalCode: orgPostalCode,
-        isFreelancer,
-      })
-      .returning();
-  }
+  // Org address fields (parsed before transaction)
+  const orgAddress = (formData.get("address") as string)?.trim() || null;
+  const orgAddress2 = (formData.get("address2") as string)?.trim() || null;
+  const orgCity = (formData.get("city") as string)?.trim() || null;
+  const orgStateProvince = (formData.get("state_province") as string)?.trim() || null;
+  const orgPostalCode = (formData.get("postal_code") as string)?.trim() || null;
+  const isFreelancer = formData.get("is_freelancer") === "yes" ? true : null;
 
   const referenceNumber = await nextApplicationRef(nocCode);
 
-  const [app] = await db
-    .insert(applications)
-    .values({
-      referenceNumber,
-      organizationId: org.id,
-      nocCode,
-      contactName,
-      contactEmail: email,
-      categoryPress,
-      categoryPhoto,
-      about,
-      ...expandedFields,
-      status: "pending",
-    })
-    .returning();
+  await db.transaction(async (tx) => {
+    // Atomic token consumption — prevents concurrent double-submission
+    const [consumed] = await tx
+      .update(magicLinkTokens)
+      .set({ usedAt: new Date() })
+      .where(
+        and(
+          eq(magicLinkTokens.tokenHash, tokenHash),
+          eq(magicLinkTokens.email, email),
+          isNull(magicLinkTokens.usedAt),
+          gt(magicLinkTokens.expiresAt, new Date())
+        )
+      )
+      .returning({ id: magicLinkTokens.id });
 
-  await db.insert(auditLog).values([
-    {
-      actorType: "applicant",
-      actorId: email,
-      actorLabel: contactName,
-      action: "email_verified",
-      applicationId: app.id,
-      organizationId: org.id,
-    },
-    {
-      actorType: "applicant",
-      actorId: email,
-      actorLabel: contactName,
-      action: "application_submitted",
-      applicationId: app.id,
-      organizationId: org.id,
-    },
-  ]);
+    if (!consumed) {
+      redirect("/apply?error=invalid_token");
+    }
 
-  await db
-    .update(magicLinkTokens)
-    .set({ usedAt: new Date() })
-    .where(eq(magicLinkTokens.id, tokenRecord.id));
+    let org;
+    if (existingOrg) {
+      org = existingOrg;
+    } else {
+      // CRIT-04: detect multi-territory but do NOT surface it in UI.
+      // Flag is stored for future IOC analysis (Open Question #16).
+      const samedomainOrgs = await tx
+        .select()
+        .from(organizations)
+        .where(eq(organizations.emailDomain, emailDomain));
+
+      const isMultiTerritory = samedomainOrgs.length > 0;
+
+      [org] = await tx
+        .insert(organizations)
+        .values({
+          name: orgName,
+          country,
+          nocCode,
+          orgType,
+          website,
+          emailDomain,
+          isMultiTerritoryFlag: isMultiTerritory,
+          address: orgAddress,
+          address2: orgAddress2,
+          city: orgCity,
+          stateProvince: orgStateProvince,
+          postalCode: orgPostalCode,
+          isFreelancer,
+        })
+        .returning();
+    }
+
+    const [app] = await tx
+      .insert(applications)
+      .values({
+        referenceNumber,
+        organizationId: org.id,
+        nocCode,
+        contactName,
+        contactEmail: email,
+        categoryPress,
+        categoryPhoto,
+        about,
+        ...expandedFields,
+        status: "pending",
+      })
+      .returning();
+
+    await tx.insert(auditLog).values([
+      {
+        actorType: "applicant",
+        actorId: email,
+        actorLabel: contactName,
+        action: "email_verified",
+        applicationId: app.id,
+        organizationId: org.id,
+      },
+      {
+        actorType: "applicant",
+        actorId: email,
+        actorLabel: contactName,
+        action: "application_submitted",
+        applicationId: app.id,
+        organizationId: org.id,
+      },
+    ]);
+  });
 
   redirect(`/apply/submitted?ref=${referenceNumber}`);
 }

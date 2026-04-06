@@ -42,49 +42,51 @@ export async function addIocDirectOrg(formData: FormData) {
 
   if (!name || !orgType) redirect("/admin/ioc/direct?error=missing_fields");
 
-  // Create the org record (used for PbN allocation)
-  const [org] = await db
-    .insert(organizations)
-    .values({
+  await db.transaction(async (tx) => {
+    // Create the org record (used for PbN allocation)
+    const [org] = await tx
+      .insert(organizations)
+      .values({
+        name,
+        nocCode: IOC_DIRECT,
+        orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr",
+        ...(country      ? { country }      : {}),
+        ...(website      ? { website }      : {}),
+        ...(emailDomain  ? { emailDomain }  : {}),
+        status: "active",
+      })
+      .returning({ id: organizations.id });
+
+    // Also add to reserved list for dedup blocking
+    await tx.insert(reservedOrganizations).values({
       name,
+      emailDomain,
+      website,
+      country,
+      notes,
+      addedBy: session.userId,
+      eventId: EVENT_ID,
+    });
+
+    // Create a draft allocation row at zero
+    await tx.insert(orgSlotAllocations).values({
+      organizationId: org.id,
       nocCode: IOC_DIRECT,
-      orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr",
-      ...(country      ? { country }      : {}),
-      ...(website      ? { website }      : {}),
-      ...(emailDomain  ? { emailDomain }  : {}),
-      status: "active",
-    })
-    .returning({ id: organizations.id });
+      eventId: EVENT_ID,
+      eSlots: 0, esSlots: 0, epSlots: 0,
+      epsSlots: 0, etSlots: 0, ecSlots: 0,
+      pressSlots: 0, photoSlots: 0,
+      allocatedBy: session.userId,
+      pbnState: "draft",
+    });
 
-  // Also add to reserved list for dedup blocking
-  await db.insert(reservedOrganizations).values({
-    name,
-    emailDomain,
-    website,
-    country,
-    notes,
-    addedBy: session.userId,
-    eventId: EVENT_ID,
-  });
-
-  // Create a draft allocation row at zero
-  await db.insert(orgSlotAllocations).values({
-    organizationId: org.id,
-    nocCode: IOC_DIRECT,
-    eventId: EVENT_ID,
-    eSlots: 0, esSlots: 0, epSlots: 0,
-    epsSlots: 0, etSlots: 0, ecSlots: 0,
-    pressSlots: 0, photoSlots: 0,
-    allocatedBy: session.userId,
-    pbnState: "draft",
-  });
-
-  await db.insert(auditLog).values({
-    actorType: "ioc_admin",
-    actorId:    session.userId,
-    actorLabel: session.displayName,
-    action:     "noc_direct_entry",
-    detail:     `IOC-Direct: ${name} added`,
+    await tx.insert(auditLog).values({
+      actorType: "ioc_admin",
+      actorId:    session.userId,
+      actorLabel: session.displayName,
+      action:     "noc_direct_entry",
+      detail:     `IOC-Direct: ${name} added`,
+    });
   });
 
   redirect("/admin/ioc/direct?success=org_added");
@@ -182,22 +184,24 @@ export async function submitIocDirectToOcog(formData: FormData) {
   // Save first, then transition draft → noc_submitted (IOC acts as the NOC here)
   await saveIocDirectAllocations(formData);
 
-  await db.update(orgSlotAllocations)
-    .set({ pbnState: "noc_submitted" })
-    .where(
-      and(
-        eq(orgSlotAllocations.nocCode, IOC_DIRECT),
-        eq(orgSlotAllocations.eventId, EVENT_ID),
-        eq(orgSlotAllocations.pbnState, "draft"),
-      )
-    );
+  await db.transaction(async (tx) => {
+    await tx.update(orgSlotAllocations)
+      .set({ pbnState: "noc_submitted" })
+      .where(
+        and(
+          eq(orgSlotAllocations.nocCode, IOC_DIRECT),
+          eq(orgSlotAllocations.eventId, EVENT_ID),
+          eq(orgSlotAllocations.pbnState, "draft"),
+        )
+      );
 
-  await db.insert(auditLog).values({
-    actorType: "ioc_admin",
-    actorId:    session.userId,
-    actorLabel: session.displayName,
-    action:     "pbn_submitted",
-    detail:     "IOC-Direct allocation submitted to OCOG",
+    await tx.insert(auditLog).values({
+      actorType: "ioc_admin",
+      actorId:    session.userId,
+      actorLabel: session.displayName,
+      action:     "pbn_submitted",
+      detail:     "IOC-Direct allocation submitted to OCOG",
+    });
   });
 
   redirect("/admin/ioc/direct?success=submitted");

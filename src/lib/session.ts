@@ -145,7 +145,7 @@ export async function getBaseSession(): Promise<SessionPayload | null> {
 export async function requireWritable(): Promise<void> {
   const session = await getSession();
   if (session?.isSudo) {
-    throw new Error("SUDO_READ_ONLY");
+    redirect("/admin?error=sudo_readonly");
   }
 }
 

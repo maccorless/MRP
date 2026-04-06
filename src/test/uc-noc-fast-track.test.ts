@@ -188,9 +188,10 @@ describe("NOC Fast-Track EoI", () => {
       about: "Sudo test.",
     });
 
-    // requireWritable() throws Error("SUDO_READ_ONLY") — not a redirect
-    const { error } = await callAction(() => submitFastTrackApplication(fd));
-    expect(error).toBeDefined();
+    // requireWritable() redirects with sudo_readonly error
+    const { redirect } = await callAction(() => submitFastTrackApplication(fd));
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toContain("sudo_readonly");
     clearSession();
   });
 });

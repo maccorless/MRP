@@ -42,42 +42,44 @@ export async function approvePbn(formData: FormData) {
     return raw !== null ? (parseInt(raw as string, 10) || 0) : fallback;
   }
 
-  for (const alloc of allocs) {
-    const eSlots   = getVal(alloc, "e",   alloc.eSlots   ?? 0);
-    const esSlots  = getVal(alloc, "es",  alloc.esSlots  ?? 0);
-    const epSlots  = getVal(alloc, "ep",  alloc.epSlots  ?? 0);
-    const epsSlots = getVal(alloc, "eps", alloc.epsSlots ?? 0);
-    const etSlots  = getVal(alloc, "et",  alloc.etSlots  ?? 0);
-    const ecSlots  = getVal(alloc, "ec",  alloc.ecSlots  ?? 0);
-    const press    = eSlots + esSlots + etSlots + ecSlots;
-    const photo    = epSlots + epsSlots;
+  await db.transaction(async (tx) => {
+    for (const alloc of allocs) {
+      const eSlots   = getVal(alloc, "e",   alloc.eSlots   ?? 0);
+      const esSlots  = getVal(alloc, "es",  alloc.esSlots  ?? 0);
+      const epSlots  = getVal(alloc, "ep",  alloc.epSlots  ?? 0);
+      const epsSlots = getVal(alloc, "eps", alloc.epsSlots ?? 0);
+      const etSlots  = getVal(alloc, "et",  alloc.etSlots  ?? 0);
+      const ecSlots  = getVal(alloc, "ec",  alloc.ecSlots  ?? 0);
+      const press    = eSlots + esSlots + etSlots + ecSlots;
+      const photo    = epSlots + epsSlots;
 
-    totalPress += press;
-    totalPhoto += photo;
-    grandTotal += press + photo;
+      totalPress += press;
+      totalPhoto += photo;
+      grandTotal += press + photo;
 
-    await db
-      .update(orgSlotAllocations)
-      .set({
-        eSlots, esSlots, epSlots, epsSlots, etSlots, ecSlots,
-        pressSlots: press,
-        photoSlots: photo,
-        pbnState: "ocog_approved",
-        ocogReviewedBy: session.userId,
-        ocogReviewedAt: new Date(),
-      })
-      .where(eq(orgSlotAllocations.id, alloc.id));
-  }
+      await tx
+        .update(orgSlotAllocations)
+        .set({
+          eSlots, esSlots, epSlots, epsSlots, etSlots, ecSlots,
+          pressSlots: press,
+          photoSlots: photo,
+          pbnState: "ocog_approved",
+          ocogReviewedBy: session.userId,
+          ocogReviewedAt: new Date(),
+        })
+        .where(eq(orgSlotAllocations.id, alloc.id));
+    }
 
-  if (totalPress > 0) catSummaryParts.push(`${totalPress} press`);
-  if (totalPhoto > 0) catSummaryParts.push(`${totalPhoto} photo`);
+    if (totalPress > 0) catSummaryParts.push(`${totalPress} press`);
+    if (totalPhoto > 0) catSummaryParts.push(`${totalPhoto} photo`);
 
-  await db.insert(auditLog).values({
-    actorType: "ocog_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "pbn_approved",
-    detail: `${nocCode} · ${allocs.length} orgs · ${grandTotal} total (${catSummaryParts.join(", ")})`,
+    await tx.insert(auditLog).values({
+      actorType: "ocog_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "pbn_approved",
+      detail: `${nocCode} · ${allocs.length} orgs · ${grandTotal} total (${catSummaryParts.join(", ")})`,
+    });
   });
 
   redirect(`/admin/ocog/pbn?success=approved&noc=${nocCode}`);
@@ -184,17 +186,19 @@ export async function sendToAcr(formData: FormData) {
 
   // Mark all sent allocations as sent_to_acr
   const sentIds = rows.map(({ alloc }) => alloc.id);
-  await db
-    .update(orgSlotAllocations)
-    .set({ pbnState: "sent_to_acr" })
-    .where(inArray(orgSlotAllocations.id, sentIds));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(orgSlotAllocations)
+      .set({ pbnState: "sent_to_acr" })
+      .where(inArray(orgSlotAllocations.id, sentIds));
 
-  await db.insert(auditLog).values({
-    actorType: "ocog_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "pbn_sent_to_acr",
-    detail: `${nocCode} · ${pushed} orgs sent to ACR`,
+    await tx.insert(auditLog).values({
+      actorType: "ocog_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "pbn_sent_to_acr",
+      detail: `${nocCode} · ${pushed} orgs sent to ACR`,
+    });
   });
 
   redirect(`/admin/ocog/pbn?success=sent_to_acr&noc=${nocCode}&count=${pushed}`);
@@ -219,23 +223,25 @@ export async function reversePbnApproval(formData: FormData) {
 
   if (!existing) redirect(`/admin/ocog/pbn/${nocCode}?error=not_approved`);
 
-  await db
-    .update(orgSlotAllocations)
-    .set({ pbnState: "noc_submitted", ocogReviewedBy: null, ocogReviewedAt: null })
-    .where(
-      and(
-        eq(orgSlotAllocations.nocCode, nocCode),
-        eq(orgSlotAllocations.eventId, "LA28"),
-        eq(orgSlotAllocations.pbnState, "ocog_approved")
-      )
-    );
+  await db.transaction(async (tx) => {
+    await tx
+      .update(orgSlotAllocations)
+      .set({ pbnState: "noc_submitted", ocogReviewedBy: null, ocogReviewedAt: null })
+      .where(
+        and(
+          eq(orgSlotAllocations.nocCode, nocCode),
+          eq(orgSlotAllocations.eventId, "LA28"),
+          eq(orgSlotAllocations.pbnState, "ocog_approved")
+        )
+      );
 
-  await db.insert(auditLog).values({
-    actorType: "ocog_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "pbn_unapproved",
-    detail: `${nocCode} · approval reversed by ${session.displayName}`,
+    await tx.insert(auditLog).values({
+      actorType: "ocog_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "pbn_unapproved",
+      detail: `${nocCode} · approval reversed by ${session.displayName}`,
+    });
   });
 
   redirect(`/admin/ocog/pbn/${nocCode}?success=unapproved`);

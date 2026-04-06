@@ -3,7 +3,7 @@ import { decodeSession } from "@/lib/session";
 
 const COOKIE_NAME = "mrp_session";
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only guard /admin routes (not /admin/login itself)

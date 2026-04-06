@@ -1,0 +1,35 @@
+{
+  "date": "2026-04-06",
+  "window": "7d",
+  "metrics": {
+    "commits": 45,
+    "contributors": 1,
+    "prs_merged": 1,
+    "insertions": 23300,
+    "deletions": 4600,
+    "net_loc": 18700,
+    "test_loc": 3100,
+    "test_ratio": 0.13,
+    "active_days": 5,
+    "sessions": 10,
+    "deep_sessions": 5,
+    "avg_session_minutes": 85,
+    "loc_per_session_hour": 1350,
+    "feat_pct": 0.53,
+    "fix_pct": 0.22,
+    "peak_hour": 9,
+    "ai_assisted_commits": 0
+  },
+  "authors": {
+    "mac": { "commits": 45, "insertions": 23300, "deletions": 4600, "test_ratio": 0.13, "top_area": "src/app/admin/" }
+  },
+  "version_range": ["0.1.0", "0.1.0"],
+  "streak_days": 5,
+  "tweetable": "Week of Mar 30: 45 commits, 23.3k LOC, 13% tests, 5 active days, peak: 9am | Streak: 5d",
+  "test_health": {
+    "total_test_files": 13,
+    "tests_added_this_period": 10,
+    "regression_test_commits": 0,
+    "test_files_changed": 10
+  }
+}

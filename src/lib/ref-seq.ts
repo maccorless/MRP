@@ -15,6 +15,7 @@
 
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
+import { CURRENT_EVENT_YEAR } from "@/lib/constants";
 
 export async function nextApplicationRef(nocCode: string): Promise<string> {
   const result = await db.execute(sql`
@@ -27,5 +28,5 @@ export async function nextApplicationRef(nocCode: string): Promise<string> {
 
   if (!result[0]) throw new Error("ref-seq: no row returned from sequence upsert");
   const seq = Number((result[0] as { seq: number | string }).seq);
-  return `APP-2028-${nocCode}-${String(seq).padStart(5, "0")}`;
+  return `APP-${CURRENT_EVENT_YEAR}-${nocCode}-${String(seq).padStart(5, "0")}`;
 }

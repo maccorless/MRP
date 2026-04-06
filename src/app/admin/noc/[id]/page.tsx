@@ -5,6 +5,8 @@ import { db } from "@/db";
 import { applications, organizations, auditLog, nocQuotas, orgSlotAllocations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 import { categoryDisplayLabel } from "@/lib/category";
+import { sumAllocations } from "@/lib/quota-calc";
+import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
 import {
   approveApplication,
   returnApplication,
@@ -12,22 +14,6 @@ import {
   unApproveApplication,
   unReturnApplication,
 } from "../actions";
-
-const STATUS_BADGE: Record<string, string> = {
-  pending:     "bg-yellow-100 text-yellow-800",
-  resubmitted: "bg-blue-100 text-blue-800",
-  approved:    "bg-green-100 text-green-800",
-  returned:    "bg-orange-100 text-orange-800",
-  rejected:    "bg-red-100 text-red-800",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pending:     "Pending",
-  resubmitted: "Resubmitted",
-  approved:    "Approved",
-  returned:    "Returned",
-  rejected:    "Rejected",
-};
 
 const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online Media",
@@ -144,14 +130,7 @@ export default async function ApplicationDetailPage({
       eq(orgSlotAllocations.eventId, "LA28")
     ));
 
-  const allocated = {
-    E:   existingAllocs.reduce((s, a) => s + (a.eSlots   ?? 0), 0),
-    Es:  existingAllocs.reduce((s, a) => s + (a.esSlots  ?? 0), 0),
-    EP:  existingAllocs.reduce((s, a) => s + (a.epSlots  ?? 0), 0),
-    EPs: existingAllocs.reduce((s, a) => s + (a.epsSlots ?? 0), 0),
-    ET:  existingAllocs.reduce((s, a) => s + (a.etSlots  ?? 0), 0),
-    EC:  existingAllocs.reduce((s, a) => s + (a.ecSlots  ?? 0), 0),
-  };
+  const allocated = sumAllocations(existingAllocs);
 
   const isActionable = app.status === "pending" || app.status === "resubmitted";
 
@@ -178,10 +157,8 @@ export default async function ApplicationDetailPage({
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">{org.name}</p>
           </div>
-          <span
-            className={`shrink-0 inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_BADGE[app.status]}`}
-          >
-            {STATUS_LABEL[app.status]}
+          <span className="shrink-0">
+            <StatusBadge status={app.status} />
           </span>
         </div>
       </div>
@@ -455,6 +432,12 @@ export default async function ApplicationDetailPage({
             {error === "note_required" && (
               <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
                 A note is required when returning or rejecting an application.
+              </div>
+            )}
+
+            {error === "stale" && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                This application was modified by another user. Please review the current state and try again.
               </div>
             )}
 

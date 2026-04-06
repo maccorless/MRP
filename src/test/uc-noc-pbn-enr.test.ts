@@ -401,12 +401,11 @@ describe("ENR Nomination", () => {
       nice_to_have_slots: 0,
     });
 
-    const { error, redirect } = await callAction(() => addEnrNomination(fd));
+    const { redirect } = await callAction(() => addEnrNomination(fd));
 
-    // requireWritable() throws Error("SUDO_READ_ONLY") — not a redirect
-    expect(error).toBeDefined();
-    expect(error!.message).toBe("SUDO_READ_ONLY");
-    expect(redirect).toBeUndefined();
+    // requireWritable() redirects with sudo_readonly error
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toContain("sudo_readonly");
 
     clearSession();
   });

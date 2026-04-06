@@ -52,50 +52,50 @@ export async function submitFastTrackApplication(formData: FormData) {
   // ── Reference number ───────────────────────────────────────────────────────
   const referenceNumber = await nextApplicationRef(nocCode);
 
-  // ── Create org record ──────────────────────────────────────────────────────
-  const [org] = await db
-    .insert(organizations)
-    .values({
-      name: orgName,
-      country,
-      nocCode,
-      orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency",
-      website,
-      emailDomain: contactEmail.split("@")[1] ?? null,
-    })
-    .returning({ id: organizations.id });
-
-  // ── Create application — auto-approved since NOC is vouching ──────────────
+  // Create org, application, and audit log atomically
   const now = new Date();
-  const [app] = await db
-    .insert(applications)
-    .values({
-      referenceNumber,
-      organizationId: org.id,
-      nocCode,
-      contactName,
-      contactEmail,
-      about,
-      categoryE, categoryEs, categoryEp, categoryEps, categoryEt, categoryEc,
-      categoryPress: categoryE || categoryEs || categoryEt || categoryEc,
-      categoryPhoto: categoryEp || categoryEps,
-      requestedE, requestedEs, requestedEp, requestedEps, requestedEt, requestedEc,
-      status: "approved",
-      entrySource: "noc_direct",
-      reviewedAt: now,
-      reviewedBy: session.userId,
-    })
-    .returning({ id: applications.id });
+  await db.transaction(async (tx) => {
+    const [org] = await tx
+      .insert(organizations)
+      .values({
+        name: orgName,
+        country,
+        nocCode,
+        orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency",
+        website,
+        emailDomain: contactEmail.split("@")[1] ?? null,
+      })
+      .returning({ id: organizations.id });
 
-  // ── Audit log ──────────────────────────────────────────────────────────────
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "noc_direct_entry",
-    applicationId: app.id,
-    organizationId: org.id,
-    detail: `${orgName} — fast-track entry by ${session.displayName}`,
+    const [app] = await tx
+      .insert(applications)
+      .values({
+        referenceNumber,
+        organizationId: org.id,
+        nocCode,
+        contactName,
+        contactEmail,
+        about,
+        categoryE, categoryEs, categoryEp, categoryEps, categoryEt, categoryEc,
+        categoryPress: categoryE || categoryEs || categoryEt || categoryEc,
+        categoryPhoto: categoryEp || categoryEps,
+        requestedE, requestedEs, requestedEp, requestedEps, requestedEt, requestedEc,
+        status: "approved",
+        entrySource: "noc_direct",
+        reviewedAt: now,
+        reviewedBy: session.userId,
+      })
+      .returning({ id: applications.id });
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "noc_direct_entry",
+      applicationId: app.id,
+      organizationId: org.id,
+      detail: `${orgName} — fast-track entry by ${session.displayName}`,
+    });
   });
 
   redirect("/admin/noc/queue?success=fast_track_submitted");

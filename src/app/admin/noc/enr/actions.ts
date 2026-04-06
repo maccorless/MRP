@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and, asc, isNull } from "drizzle-orm";
+import { eq, and, asc, isNull, inArray, sql, count } from "drizzle-orm";
 import { db } from "@/db";
 import { enrRequests, organizations, auditLog } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
@@ -26,9 +26,9 @@ export async function addEnrNomination(formData: FormData) {
   const mustHaveSlots = isNaN(mustHaveRaw) || mustHaveRaw < 1 ? 1 : mustHaveRaw;
   const niceToHaveSlots = isNaN(niceToHaveRaw) ? 0 : Math.max(0, niceToHaveRaw);
 
-  // Duplicate check: case-insensitive name match against existing ENR org names for this NOC
+  // Duplicate check outside transaction (fast fail)
   const existingOrgs = await db
-    .select({ orgName: organizations.name, reqId: enrRequests.id })
+    .select({ orgName: organizations.name })
     .from(enrRequests)
     .innerJoin(organizations, eq(enrRequests.organizationId, organizations.id))
     .where(and(eq(enrRequests.nocCode, nocCode), eq(enrRequests.eventId, "LA28")));
@@ -37,30 +37,38 @@ export async function addEnrNomination(formData: FormData) {
     redirect("/admin/noc/enr?error=already_added");
   }
 
-  const nextRank = existingOrgs.length + 1;
+  // Create org + ENR request inside transaction; derive rank under lock
+  await db.transaction(async (tx) => {
+    // Derive nextRank inside the transaction so concurrent adds serialize
+    const [{ currentCount }] = await tx
+      .select({ currentCount: count() })
+      .from(enrRequests)
+      .where(and(eq(enrRequests.nocCode, nocCode), eq(enrRequests.eventId, "LA28")));
 
-  // Create the organization record first, then the ENR request that references it
-  const [org] = await db
-    .insert(organizations)
-    .values({
-      name: orgName,
+    const nextRank = currentCount + 1;
+
+    const [org] = await tx
+      .insert(organizations)
+      .values({
+        name: orgName,
+        nocCode,
+        orgType: "enr",
+        website: enrWebsite,
+      })
+      .returning({ id: organizations.id });
+
+    await tx.insert(enrRequests).values({
       nocCode,
-      orgType: "enr",
-      website: enrWebsite,
-    })
-    .returning({ id: organizations.id });
-
-  await db.insert(enrRequests).values({
-    nocCode,
-    organizationId: org.id,
-    priorityRank: nextRank,
-    slotsRequested: mustHaveSlots + niceToHaveSlots,
-    enrWebsite,
-    enrDescription,
-    enrJustification,
-    mustHaveSlots,
-    niceToHaveSlots,
-    submittedAt: null, // draft
+      organizationId: org.id,
+      priorityRank: nextRank,
+      slotsRequested: mustHaveSlots + niceToHaveSlots,
+      enrWebsite,
+      enrDescription,
+      enrJustification,
+      mustHaveSlots,
+      niceToHaveSlots,
+      submittedAt: null, // draft
+    });
   });
 
   redirect("/admin/noc/enr?success=added");
@@ -80,30 +88,29 @@ export async function removeEnrOrg(formData: FormData) {
 
   if (!req || req.submittedAt !== null) redirect("/admin/noc/enr");
 
-  await db.delete(enrRequests).where(eq(enrRequests.id, requestId));
+  await db.transaction(async (tx) => {
+    await tx.delete(enrRequests).where(eq(enrRequests.id, requestId));
 
-  // Delete the linked org record if it is ENR-type (created solely for this nomination)
-  const [org] = await db
-    .select({ id: organizations.id, orgType: organizations.orgType })
-    .from(organizations)
-    .where(eq(organizations.id, req.organizationId));
-  if (org?.orgType === "enr") {
-    await db.delete(organizations).where(eq(organizations.id, org.id));
-  }
+    // Delete the linked org record if it is ENR-type (created solely for this nomination)
+    const [org] = await tx
+      .select({ id: organizations.id, orgType: organizations.orgType })
+      .from(organizations)
+      .where(eq(organizations.id, req.organizationId));
+    if (org?.orgType === "enr") {
+      await tx.delete(organizations).where(eq(organizations.id, org.id));
+    }
 
-  // Re-rank remaining entries
-  const remaining = await db
-    .select({ id: enrRequests.id })
-    .from(enrRequests)
-    .where(and(eq(enrRequests.nocCode, nocCode), eq(enrRequests.eventId, "LA28")))
-    .orderBy(asc(enrRequests.priorityRank));
-
-  for (let i = 0; i < remaining.length; i++) {
-    await db
-      .update(enrRequests)
-      .set({ priorityRank: i + 1 })
-      .where(eq(enrRequests.id, remaining[i].id));
-  }
+    // Re-rank remaining entries into contiguous 1..N
+    await tx.execute(sql`
+      UPDATE enr_requests SET priority_rank = sub.new_rank
+      FROM (
+        SELECT id, ROW_NUMBER() OVER (ORDER BY priority_rank) AS new_rank
+        FROM enr_requests
+        WHERE noc_code = ${nocCode} AND event_id = 'LA28'
+      ) sub
+      WHERE enr_requests.id = sub.id
+    `);
+  });
 
   redirect("/admin/noc/enr?success=removed");
 }
@@ -118,23 +125,46 @@ export async function updateEnrRanks(formData: FormData) {
   if (!ranksJson) redirect("/admin/noc/enr");
 
   const ranks: { id: string; rank: number }[] = JSON.parse(ranksJson);
+  const rankIds = ranks.map((r) => r.id);
 
-  // Validate all belong to this NOC and are draft
-  for (const { id, rank } of ranks) {
-    const [req] = await db
-      .select({ nocCode: enrRequests.nocCode, submittedAt: enrRequests.submittedAt })
-      .from(enrRequests)
-      .where(eq(enrRequests.id, id));
+  // Batch validate: all submitted IDs must belong to this NOC and be draft
+  const existing = await db
+    .select({ id: enrRequests.id })
+    .from(enrRequests)
+    .where(and(
+      inArray(enrRequests.id, rankIds),
+      eq(enrRequests.nocCode, nocCode),
+      eq(enrRequests.eventId, "LA28"),
+      isNull(enrRequests.submittedAt)
+    ));
 
-    if (!req || req.nocCode !== nocCode || req.submittedAt !== null) {
-      redirect("/admin/noc/enr?error=invalid_rank");
-    }
-
-    await db
-      .update(enrRequests)
-      .set({ priorityRank: rank })
-      .where(eq(enrRequests.id, id));
+  if (existing.length !== rankIds.length) {
+    redirect("/admin/noc/enr?error=invalid_rank");
   }
+
+  // No duplicate IDs or rank values in the payload
+  if (new Set(rankIds).size !== rankIds.length) {
+    redirect("/admin/noc/enr?error=invalid_rank");
+  }
+  const rankValues = ranks.map((r) => r.rank);
+  if (new Set(rankValues).size !== rankValues.length) {
+    redirect("/admin/noc/enr?error=invalid_rank");
+  }
+
+  // Ranks must be positive integers
+  if (rankValues.some((r) => !Number.isInteger(r) || r < 1)) {
+    redirect("/admin/noc/enr?error=invalid_rank");
+  }
+
+  // Update all ranks atomically within a transaction
+  await db.transaction(async (tx) => {
+    for (const { id, rank } of ranks) {
+      await tx
+        .update(enrRequests)
+        .set({ priorityRank: rank })
+        .where(eq(enrRequests.id, id));
+    }
+  });
 
   redirect("/admin/noc/enr?success=reordered");
 }
@@ -159,18 +189,22 @@ export async function submitEnrToIoc() {
   if (unsubmitted.length === 0) redirect("/admin/noc/enr?error=nothing_to_submit");
 
   const now = new Date();
-  for (const { id } of unsubmitted) {
-    await db.update(enrRequests).set({ submittedAt: now }).where(eq(enrRequests.id, id));
-  }
-
   const totalSlots = unsubmitted.reduce((s, r) => s + r.slotsRequested, 0);
+  const unsubmittedIds = unsubmitted.map((r) => r.id);
 
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "enr_submitted",
-    detail: `${unsubmitted.length} orgs · ${totalSlots} slots requested`,
+  await db.transaction(async (tx) => {
+    await tx
+      .update(enrRequests)
+      .set({ submittedAt: now })
+      .where(inArray(enrRequests.id, unsubmittedIds));
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "enr_submitted",
+      detail: `${unsubmitted.length} orgs · ${totalSlots} slots requested`,
+    });
   });
 
   redirect("/admin/noc/enr?success=submitted");

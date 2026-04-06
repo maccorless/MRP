@@ -265,9 +265,9 @@ export async function cleanupTestData(): Promise<void> {
     }
   }
 
-  // 4. magicLinkTokens
+  // 4. magicLinkTokens — only delete test tokens (email-based marker)
   await db.delete(magicLinkTokens).where(like(magicLinkTokens.email, `%@test.invalid`));
-  await db.delete(magicLinkTokens).where(like(magicLinkTokens.tokenHash, "%"));
+  await db.delete(magicLinkTokens).where(like(magicLinkTokens.email, `${TAG}%`));
 
   // 5. sudo tokens (table may not exist in all environments — swallow error gracefully)
   try {

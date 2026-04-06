@@ -4,22 +4,7 @@ import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 import { categoryDisplayLabel } from "@/lib/category";
-
-const STATUS_BADGE: Record<string, string> = {
-  pending:     "bg-yellow-100 text-yellow-800",
-  resubmitted: "bg-blue-100 text-blue-800",
-  approved:    "bg-green-100 text-green-800",
-  returned:    "bg-orange-100 text-orange-800",
-  rejected:    "bg-red-100 text-red-800",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pending:     "Pending",
-  resubmitted: "Resubmitted",
-  approved:    "Approved",
-  returned:    "Returned",
-  rejected:    "Rejected",
-};
+import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
 
 type StatusFilter = "all" | "pending" | "resubmitted" | "approved" | "returned" | "rejected";
 
@@ -170,9 +155,7 @@ export default async function NocQueuePage({
                     {categoryDisplayLabel(row.categoryE, row.categoryEs, row.categoryEp, row.categoryEps, row.categoryEt, row.categoryEc)}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[row.status]}`}>
-                      {STATUS_LABEL[row.status] ?? row.status}
-                    </span>
+                    <StatusBadge status={row.status} />
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
                     {new Date(row.submittedAt).toLocaleDateString("en-US", {

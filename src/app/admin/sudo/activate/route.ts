@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull, gt } from "drizzle-orm";
 import { db } from "@/db";
 import { sudoTokens, adminUsers } from "@/db/schema";
-import { setSudoSession } from "@/lib/session";
 import type { SessionPayload, AdminRole } from "@/lib/session";
 
 async function hashToken(token: string): Promise<string> {
@@ -21,29 +20,31 @@ export async function GET(req: NextRequest) {
 
   const tokenHash = await hashToken(token);
 
+  // Atomic consume: only succeeds if token exists, is unused, and not expired
   const [row] = await db
-    .select()
-    .from(sudoTokens)
-    .where(eq(sudoTokens.tokenHash, tokenHash))
-    .limit(1);
-
-  if (!row) {
-    return NextResponse.redirect(new URL("/admin?error=sudo_invalid", req.url));
-  }
-
-  if (row.usedAt) {
-    return NextResponse.redirect(new URL("/admin?error=sudo_already_used", req.url));
-  }
-
-  if (row.expiresAt < new Date()) {
-    return NextResponse.redirect(new URL("/admin?error=sudo_expired", req.url));
-  }
-
-  // Mark token as consumed
-  await db
     .update(sudoTokens)
     .set({ usedAt: new Date() })
-    .where(eq(sudoTokens.id, row.id));
+    .where(
+      and(
+        eq(sudoTokens.tokenHash, tokenHash),
+        isNull(sudoTokens.usedAt),
+        gt(sudoTokens.expiresAt, new Date())
+      )
+    )
+    .returning();
+
+  if (!row) {
+    // Token not found, already used, or expired — check which for better error message
+    const [existing] = await db
+      .select({ usedAt: sudoTokens.usedAt, expiresAt: sudoTokens.expiresAt })
+      .from(sudoTokens)
+      .where(eq(sudoTokens.tokenHash, tokenHash))
+      .limit(1);
+
+    if (!existing) return NextResponse.redirect(new URL("/admin?error=sudo_invalid", req.url));
+    if (existing.usedAt) return NextResponse.redirect(new URL("/admin?error=sudo_already_used", req.url));
+    return NextResponse.redirect(new URL("/admin?error=sudo_expired", req.url));
+  }
 
   // Look up the target user
   const [target] = await db

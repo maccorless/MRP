@@ -329,14 +329,6 @@ export const enrRequests = pgTable("enr_requests", {
   niceToHaveSlots: integer("nice_to_have_slots"),
 });
 
-// ─── Reserved Organizations (IOC-direct — bypass NOC quota) ──────────────────
-//
-// AFP, AP, Reuters, Xinhua, and similar orgs are allocated directly by the IOC.
-// The IOC acts as their "NOC" using noc_code = 'IOC_DIRECT'.
-// When a real NOC submits an EoI from an org whose email domain or name matches
-// a reserved entry, they receive a dedup warning and the application is blocked.
-// The IOC admin manages this list before the EoI window opens.
-
 // ─── Sudo Tokens ─────────────────────────────────────────────────────────────
 // One-time tokens allowing an IOC admin to open a read-only session as another
 // admin user. Consumed on first use; expire after 10 minutes if unused.
@@ -353,8 +345,6 @@ export const sudoTokens = pgTable("sudo_tokens", {
   usedAt: timestamp("used_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
-
-// ─── Reserved Organizations ───────────────────────────────────────────────────
 
 // ─── NOC EoI Windows (B3 — per-NOC submission window control) ────────────────
 // Absence of a row means the window is OPEN (safe default).

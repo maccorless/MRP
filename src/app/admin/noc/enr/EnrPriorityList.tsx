@@ -72,13 +72,13 @@ export function EnrPriorityList({
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-16">#</th>
-              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organisation</th>
-              <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Must-have</th>
-              <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Nice-to-have</th>
-              <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Granted</th>
-              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Decision</th>
-              {!isSubmitted && <th className="px-5 py-3 w-16" />}
+              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-16">#</th>
+              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organisation</th>
+              <th scope="col" className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Must-have</th>
+              <th scope="col" className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Nice-to-have</th>
+              <th scope="col" className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Granted</th>
+              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Decision</th>
+              {!isSubmitted && <th scope="col" className="px-5 py-3 w-16"><span className="sr-only">Actions</span></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -87,12 +87,34 @@ export function EnrPriorityList({
                 key={row.id}
                 className="hover:bg-gray-50"
                 draggable={!isSubmitted}
+                tabIndex={!isSubmitted ? 0 : undefined}
+                role={!isSubmitted ? "row" : undefined}
+                aria-label={!isSubmitted ? `${row.orgName}, rank ${row.priorityRank}. Use arrow keys to reorder.` : undefined}
                 onDragStart={() => { dragRef.current = index; }}
                 onDragOver={(e) => { e.preventDefault(); }}
                 onDrop={() => {
                   if (dragRef.current !== null) {
                     moveRow(dragRef.current, index);
                     dragRef.current = null;
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (isSubmitted) return;
+                  if (e.key === "ArrowUp" && index > 0) {
+                    e.preventDefault();
+                    moveRow(index, index - 1);
+                    // Focus the moved row after render
+                    requestAnimationFrame(() => {
+                      const prev = (e.target as HTMLElement).previousElementSibling as HTMLElement | null;
+                      prev?.focus();
+                    });
+                  } else if (e.key === "ArrowDown" && index < rows.length - 1) {
+                    e.preventDefault();
+                    moveRow(index, index + 1);
+                    requestAnimationFrame(() => {
+                      const next = (e.target as HTMLElement).nextElementSibling as HTMLElement | null;
+                      next?.focus();
+                    });
                   }
                 }}
                 style={!isSubmitted ? { cursor: "grab" } : undefined}

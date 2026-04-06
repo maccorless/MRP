@@ -180,11 +180,10 @@ describe("OCOG Admin — approvePbn", () => {
       [`ec_${orgId}`]: 0,
     });
 
-    const { error, redirect } = await callAction(() => approvePbn(fd));
+    const { redirect } = await callAction(() => approvePbn(fd));
 
-    expect(error).toBeDefined();
-    expect(error!.message).toBe("SUDO_READ_ONLY");
-    expect(redirect).toBeUndefined();
+    expect(redirect).toBeDefined();
+    expect(redirect!.url).toContain("sudo_readonly");
 
     // Verify pbnState was NOT changed
     const [alloc] = await db

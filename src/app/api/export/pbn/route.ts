@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { categoryDisplayLabel } from "@/lib/category";
-import { csvEscape } from "@/lib/csv";
+import { buildCsv } from "@/lib/csv";
 
 export async function GET() {
   const session = await getSession();
@@ -45,20 +45,18 @@ export async function GET() {
     "Email Domain", "Website", "Common Codes ID",
     "Contact Name", "Contact Email", "Category", "About",
     "Resubmission Count", "Submitted", "Reviewed",
-  ].map(csvEscape).join(",");
+  ];
 
-  const csvRows = rows.map((r) =>
-    [
-      r.referenceNumber, r.nocCode, r.orgName, r.country, r.orgType,
-      r.emailDomain, r.website, r.commonCodesId,
-      r.contactName, r.contactEmail, categoryDisplayLabel(r.categoryE, r.categoryEs, r.categoryEp, r.categoryEps, r.categoryEt, r.categoryEc), r.about,
-      String(r.resubmissionCount),
-      r.submittedAt.toISOString(),
-      r.reviewedAt?.toISOString() ?? "",
-    ].map(csvEscape).join(",")
-  );
+  const csvRows = rows.map((r) => [
+    r.referenceNumber, r.nocCode, r.orgName, r.country, r.orgType,
+    r.emailDomain, r.website, r.commonCodesId,
+    r.contactName, r.contactEmail, categoryDisplayLabel(r.categoryE, r.categoryEs, r.categoryEp, r.categoryEps, r.categoryEt, r.categoryEc), r.about,
+    String(r.resubmissionCount),
+    r.submittedAt.toISOString(),
+    r.reviewedAt?.toISOString() ?? "",
+  ]);
 
-  const csv = [header, ...csvRows].join("\n");
+  const csv = buildCsv(header, csvRows);
   const date = new Date().toISOString().slice(0, 10);
 
   // Write audit log entry

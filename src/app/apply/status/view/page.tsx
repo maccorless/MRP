@@ -4,15 +4,9 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { magicLinkTokens, applications, orgSlotAllocations, organizations } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
+import { STATUS_BADGE } from "@/components/StatusBadge";
 
-const STATUS_BADGE: Record<string, string> = {
-  pending:     "bg-yellow-100 text-yellow-800",
-  resubmitted: "bg-blue-100 text-blue-800",
-  approved:    "bg-green-100 text-green-800",
-  returned:    "bg-orange-100 text-orange-800",
-  rejected:    "bg-red-100 text-red-800",
-};
-
+// Applicant-facing labels differ slightly from admin labels
 const STATUS_LABEL: Record<string, string> = {
   pending:     "Pending Review",
   resubmitted: "Resubmitted",

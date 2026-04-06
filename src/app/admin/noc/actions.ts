@@ -25,25 +25,32 @@ export async function approveApplication(formData: FormData) {
   }
 
   const internalNote = (formData.get("internal_note") as string)?.trim() || null;
+  const now = new Date();
 
-  await db
-    .update(applications)
-    .set({
-      status: "approved",
-      internalNote,
-      reviewedAt: new Date(),
-      reviewedBy: session.userId,
-      updatedAt: new Date(),
-    })
-    .where(eq(applications.id, id));
+  await db.transaction(async (tx) => {
+    // Optimistic lock: only update if status hasn't changed since we read it
+    const [updated] = await tx
+      .update(applications)
+      .set({
+        status: "approved",
+        internalNote,
+        reviewedAt: now,
+        reviewedBy: session.userId,
+        updatedAt: now,
+      })
+      .where(and(eq(applications.id, id), eq(applications.status, app.status)))
+      .returning({ id: applications.id });
 
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "application_approved",
-    applicationId: id,
-    organizationId: app.organizationId,
+    if (!updated) redirect(`/admin/noc/${id}?error=stale`);
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "application_approved",
+      applicationId: id,
+      organizationId: app.organizationId,
+    });
   });
 
   redirect("/admin/noc/queue?success=approved");
@@ -62,25 +69,32 @@ export async function returnApplication(formData: FormData) {
     redirect("/admin/noc/queue");
   }
 
-  await db
-    .update(applications)
-    .set({
-      status: "returned",
-      reviewNote: note,
-      reviewedAt: new Date(),
-      reviewedBy: session.userId,
-      updatedAt: new Date(),
-    })
-    .where(eq(applications.id, id));
+  const now = new Date();
 
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "application_returned",
-    applicationId: id,
-    organizationId: app.organizationId,
-    detail: note,
+  await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(applications)
+      .set({
+        status: "returned",
+        reviewNote: note,
+        reviewedAt: now,
+        reviewedBy: session.userId,
+        updatedAt: now,
+      })
+      .where(and(eq(applications.id, id), eq(applications.status, app.status)))
+      .returning({ id: applications.id });
+
+    if (!updated) redirect(`/admin/noc/${id}?error=stale`);
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "application_returned",
+      applicationId: id,
+      organizationId: app.organizationId,
+      detail: note,
+    });
   });
 
   redirect("/admin/noc/queue?success=returned");
@@ -99,25 +113,32 @@ export async function rejectApplication(formData: FormData) {
     redirect("/admin/noc/queue");
   }
 
-  await db
-    .update(applications)
-    .set({
-      status: "rejected",
-      reviewNote: note,
-      reviewedAt: new Date(),
-      reviewedBy: session.userId,
-      updatedAt: new Date(),
-    })
-    .where(eq(applications.id, id));
+  const now = new Date();
 
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "application_rejected",
-    applicationId: id,
-    organizationId: app.organizationId,
-    detail: note,
+  await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(applications)
+      .set({
+        status: "rejected",
+        reviewNote: note,
+        reviewedAt: now,
+        reviewedBy: session.userId,
+        updatedAt: now,
+      })
+      .where(and(eq(applications.id, id), eq(applications.status, app.status)))
+      .returning({ id: applications.id });
+
+    if (!updated) redirect(`/admin/noc/${id}?error=stale`);
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "application_rejected",
+      applicationId: id,
+      organizationId: app.organizationId,
+      detail: note,
+    });
   });
 
   redirect("/admin/noc/queue?success=rejected");
@@ -132,32 +153,39 @@ export async function unApproveApplication(formData: FormData) {
   const app = await getApplicationForNoc(id, session.nocCode);
   if (!app || app.status !== "approved") redirect("/admin/noc/queue");
 
-  await db
-    .update(applications)
-    .set({ status: "pending", reviewNote: null, updatedAt: new Date() })
-    .where(eq(applications.id, id));
+  const now = new Date();
 
-  // Revert any draft/submitted allocation for this org back to draft so the
-  // NOC can edit and resubmit without losing their slot data.
-  await db
-    .update(orgSlotAllocations)
-    .set({ pbnState: "draft" })
-    .where(
-      and(
-        eq(orgSlotAllocations.organizationId, app.organizationId),
-        eq(orgSlotAllocations.eventId, "LA28"),
-        inArray(orgSlotAllocations.pbnState, ["draft", "noc_submitted"])
-      )
-    );
+  await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(applications)
+      .set({ status: "pending", reviewNote: null, updatedAt: now })
+      .where(and(eq(applications.id, id), eq(applications.status, "approved")))
+      .returning({ id: applications.id });
 
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "application_unapproved",
-    applicationId: id,
-    organizationId: app.organizationId,
-    detail: reason,
+    if (!updated) redirect(`/admin/noc/${id}?error=stale`);
+
+    // Revert any draft/submitted allocation for this org back to draft so the
+    // NOC can edit and resubmit without losing their slot data.
+    await tx
+      .update(orgSlotAllocations)
+      .set({ pbnState: "draft" })
+      .where(
+        and(
+          eq(orgSlotAllocations.organizationId, app.organizationId),
+          eq(orgSlotAllocations.eventId, "LA28"),
+          inArray(orgSlotAllocations.pbnState, ["draft", "noc_submitted"])
+        )
+      );
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "application_unapproved",
+      applicationId: id,
+      organizationId: app.organizationId,
+      detail: reason,
+    });
   });
 
   redirect(`/admin/noc/${id}?success=unapproved`);
@@ -171,18 +199,25 @@ export async function unReturnApplication(formData: FormData) {
   const app = await getApplicationForNoc(id, session.nocCode);
   if (!app || app.status !== "returned") redirect("/admin/noc/queue");
 
-  await db
-    .update(applications)
-    .set({ status: "pending", reviewNote: null, updatedAt: new Date() })
-    .where(eq(applications.id, id));
+  const now = new Date();
 
-  await db.insert(auditLog).values({
-    actorType: "noc_admin",
-    actorId: session.userId,
-    actorLabel: session.displayName,
-    action: "application_unreturned",
-    applicationId: id,
-    organizationId: app.organizationId,
+  await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(applications)
+      .set({ status: "pending", reviewNote: null, updatedAt: now })
+      .where(and(eq(applications.id, id), eq(applications.status, "returned")))
+      .returning({ id: applications.id });
+
+    if (!updated) redirect(`/admin/noc/${id}?error=stale`);
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "application_unreturned",
+      applicationId: id,
+      organizationId: app.organizationId,
+    });
   });
 
   redirect(`/admin/noc/${id}?success=unreturned`);
