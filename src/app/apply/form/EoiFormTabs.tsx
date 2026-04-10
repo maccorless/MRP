@@ -105,6 +105,14 @@ export function EoiFormTabs({
   const [nocWindowClosed, setNocWindowClosed] = useState(false);
   const [nocAutoSuggestedName, setNocAutoSuggestedName] = useState<string | null>(null);
   const autoSuggestedNocRef = useRef<string | null>(null);
+  const confirmedRef = useRef(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [modalSummary, setModalSummary] = useState<{
+    orgName: string;
+    categories: string[];
+    contactName: string;
+    contactEmail: string;
+  } | null>(null);
 
   const STATUS_LABELS: Record<string, string> = {
     empty: "Not started",
@@ -290,7 +298,33 @@ export function EoiFormTabs({
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
       setErrorAnnouncement("");
-      return; // valid — let the form action proceed
+      // If already confirmed by the modal, let the form action proceed
+      if (confirmedRef.current) {
+        confirmedRef.current = false;
+        return;
+      }
+      // Otherwise show the confirmation modal first
+      e.preventDefault();
+      const catMap: Record<string, string> = {
+        category_e: "E", category_es: "Es", category_ep: "EP",
+        category_eps: "EPs", category_et: "ET", category_ec: "EC",
+      };
+      const categories: string[] = [];
+      for (const [name, label] of Object.entries(catMap)) {
+        const cb = form.elements.namedItem(name) as HTMLInputElement | null;
+        if (cb?.checked) categories.push(label);
+      }
+      const firstEl = form.elements.namedItem("contact_first_name") as HTMLInputElement | null;
+      const lastEl  = form.elements.namedItem("contact_last_name")  as HTMLInputElement | null;
+      const orgEl   = form.elements.namedItem("org_name")           as HTMLInputElement | null;
+      setModalSummary({
+        orgName:      orgEl?.value ?? "",
+        categories,
+        contactName:  [firstEl?.value, lastEl?.value].filter(Boolean).join(" "),
+        contactEmail: email,
+      });
+      setShowConfirmModal(true);
+      return;
     }
 
     e.preventDefault();
@@ -463,6 +497,63 @@ export function EoiFormTabs({
         Your progress is saved automatically. By submitting you confirm this information is accurate.
       </p>
     </form>
+
+    {/* Pre-submission confirmation modal */}
+    {showConfirmModal && modalSummary && (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      >
+        <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+          <h2 id="confirm-modal-title" className="text-lg font-bold text-gray-900 mb-1">
+            {isResubmission ? "Confirm resubmission" : "Confirm submission"}
+          </h2>
+          <p className="text-sm text-gray-500 mb-5">
+            {isResubmission
+              ? "Your corrected application will be sent back to your NOC for review."
+              : "Your application will be sent to your NOC for review. You won't be able to edit it until your NOC returns it."}
+          </p>
+          <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2 mb-6">
+            <div>
+              <span className="text-gray-500">Organisation</span>
+              <span className="ml-2 font-medium text-gray-900">{modalSummary.orgName}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Categories</span>
+              <span className="ml-2 font-medium text-gray-900">{modalSummary.categories.join(", ")}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Contact</span>
+              <span className="ml-2 font-medium text-gray-900">
+                {modalSummary.contactName} · {modalSummary.contactEmail}
+              </span>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setShowConfirmModal(false)}
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              Go back
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                confirmedRef.current = true;
+                setShowConfirmModal(false);
+                formRef.current?.requestSubmit();
+              }}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
+            >
+              {isResubmission ? "Confirm resubmit" : "Confirm & submit"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }

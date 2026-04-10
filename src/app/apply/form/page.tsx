@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
@@ -100,9 +101,16 @@ export default async function FormPage({
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">
-          {isResubmission ? "Resubmit Application" : "LA 2028 Media Accreditation"}
-        </h1>
+        <div className="flex items-start justify-between gap-4 mb-1">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isResubmission ? "Resubmit Application" : "LA 2028 Media Accreditation"}
+          </h1>
+          {!isResubmission && (
+            <Link href="/apply/how-it-works" className="shrink-0 text-sm text-[#0057A8] hover:underline mt-1">
+              How does this work?
+            </Link>
+          )}
+        </div>
         <p className="text-sm text-gray-500 leading-relaxed">
           {isResubmission
             ? "Review the feedback below, correct the relevant sections, and resubmit."

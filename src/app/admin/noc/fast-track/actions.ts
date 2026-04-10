@@ -18,10 +18,10 @@ export async function submitFastTrackApplication(formData: FormData) {
   const website       = (formData.get("website") as string)?.trim() || null;
   const contactName   = (formData.get("contact_name") as string)?.trim();
   const contactEmail  = (formData.get("contact_email") as string)?.trim().toLowerCase();
-  const about         = (formData.get("about") as string)?.trim();
+  const about         = (formData.get("about") as string)?.trim() || null;
 
   const VALID_ORG_TYPES = ["media_print_online", "media_broadcast", "news_agency"];
-  if (!orgName || !orgType || !VALID_ORG_TYPES.includes(orgType) || !contactName || !contactEmail || !about) {
+  if (!orgName || !orgType || !VALID_ORG_TYPES.includes(orgType) || !country || !contactName || !contactEmail) {
     redirect("/admin/noc/fast-track?error=missing_fields");
   }
 

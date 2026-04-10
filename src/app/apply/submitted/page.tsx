@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function SubmittedPage({
@@ -55,6 +56,15 @@ export default async function SubmittedPage({
           <li>You&apos;ll be contacted if corrections are needed</li>
           <li>Approved applications are forwarded to the IOC</li>
         </ol>
+      </div>
+
+      <div className="mt-6">
+        <Link
+          href="/apply/status"
+          className="text-sm text-[#0057A8] hover:underline"
+        >
+          Check your application status →
+        </Link>
       </div>
     </div>
   );

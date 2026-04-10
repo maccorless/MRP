@@ -86,9 +86,11 @@ export default async function FastTrackPage({
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Country</label>
+              <label className="block text-xs text-gray-500 mb-1">
+                Country <span className="text-red-500">*</span>
+              </label>
               <input
-                name="country" type="text" list="country-list"
+                name="country" type="text" list="country-list" required
                 placeholder="e.g. US"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
@@ -159,15 +161,16 @@ export default async function FastTrackPage({
           </div>
         </div>
 
-        {/* About */}
+        {/* Notes */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-3">
-          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">About</h2>
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Notes</h2>
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              Brief description of the organisation and coverage plans <span className="text-red-500">*</span>
+              Notes (optional)
             </label>
             <textarea
-              name="about" required rows={3}
+              name="about" rows={3}
+              placeholder="Internal context for this organisation (not shown to the applicant)"
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
             />
           </div>
