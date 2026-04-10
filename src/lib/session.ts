@@ -4,6 +4,7 @@
  * Replaced by D.TEC/DGP SSO at v1.0.
  */
 
+import { timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -55,7 +56,9 @@ async function sign(data: string, secret: string): Promise<string> {
 
 async function verify(data: string, signature: string, secret: string): Promise<boolean> {
   const expected = await sign(data, secret);
-  return expected === signature;
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signature);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 export async function encodeSession(payload: SessionPayload): Promise<string> {
