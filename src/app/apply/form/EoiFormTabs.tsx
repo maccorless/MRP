@@ -298,6 +298,12 @@ export function EoiFormTabs({
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
       setErrorAnnouncement("");
+      // If triggered from a non-last tab (e.g. Enter key), navigate forward instead of submitting
+      if (activeTab < TABS.length - 1) {
+        e.preventDefault();
+        setActiveTab(TABS.length - 1);
+        return;
+      }
       // If already confirmed by the modal, let the form action proceed
       if (confirmedRef.current) {
         confirmedRef.current = false;

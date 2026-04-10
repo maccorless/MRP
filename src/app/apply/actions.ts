@@ -237,7 +237,7 @@ export async function submitApplication(formData: FormData) {
       });
     });
 
-    redirect(`/apply/submitted?ref=${returnedApp.referenceNumber}&resubmit=1`);
+    redirect(`/apply/submitted?ref=${returnedApp.referenceNumber}&resubmit=1&email=${encodeURIComponent(email)}`);
   }
 
   // ── NEW APPLICATION PATH ───────────────────────────────────────────────────
@@ -395,5 +395,5 @@ export async function submitApplication(formData: FormData) {
     ]);
   });
 
-  redirect(`/apply/submitted?ref=${referenceNumber}`);
+  redirect(`/apply/submitted?ref=${referenceNumber}&email=${encodeURIComponent(email)}`);
 }

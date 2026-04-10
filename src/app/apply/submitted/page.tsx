@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 export default async function SubmittedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ref?: string; resubmit?: string }>;
+  searchParams: Promise<{ ref?: string; resubmit?: string; email?: string }>;
 }) {
-  const { ref, resubmit } = await searchParams;
+  const { ref, resubmit, email } = await searchParams;
 
   if (!ref) redirect("/apply");
 
@@ -60,10 +60,10 @@ export default async function SubmittedPage({
 
       <div className="mt-6">
         <Link
-          href="/apply/status"
-          className="text-sm text-[#0057A8] hover:underline"
+          href={email ? `/apply/status?email=${encodeURIComponent(email)}` : "/apply/status"}
+          className="inline-block px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
         >
-          Check your application status →
+          View application status →
         </Link>
       </div>
     </div>

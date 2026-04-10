@@ -3,9 +3,9 @@ import { requestStatusToken } from "./actions";
 export default async function StatusPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; email?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, email } = await searchParams;
 
   return (
     <div>
@@ -31,6 +31,7 @@ export default async function StatusPage({
             type="email"
             required
             autoComplete="email"
+            defaultValue={email ?? ""}
             placeholder="you@newsorg.com"
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
           />
