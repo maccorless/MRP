@@ -132,6 +132,8 @@ export function EoiFormTabs({
     contactName: string;
     contactEmail: string;
   } | null>(null);
+  const visitedTabsRef = useRef<Set<number>>(new Set());
+  const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set());
 
   const STATUS_LABELS: Record<string, string> = {
     empty: "Not started",
@@ -139,8 +141,18 @@ export function EoiFormTabs({
     complete: "Complete",
   };
 
-  // localStorage key scoped to this email
+  // localStorage keys scoped to this email
   const storageKey = `eoi-draft-${email}`;
+  const visitedKey = `eoi-visited-${email}`;
+
+  const markVisited = useCallback((tabIndex: number) => {
+    if (visitedTabsRef.current.has(tabIndex)) return;
+    visitedTabsRef.current = new Set(visitedTabsRef.current).add(tabIndex);
+    setVisitedTabs(new Set(visitedTabsRef.current));
+    try {
+      localStorage.setItem(visitedKey, serializeVisited(visitedTabsRef.current));
+    } catch { /* storage full */ }
+  }, [visitedKey]);
 
   // Restore from localStorage on mount (skip for resubmissions and invite arrivals)
   useEffect(() => {
@@ -173,6 +185,13 @@ export function EoiFormTabs({
         }
       }
     } catch { /* ignore corrupt localStorage */ }
+
+    // Restore visited tabs
+    const savedVisited = localStorage.getItem(visitedKey);
+    const restoredVisited = deserializeVisited(savedVisited);
+    visitedTabsRef.current = restoredVisited;
+    setVisitedTabs(restoredVisited);
+
     updateTabStatus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -446,7 +465,7 @@ export function EoiFormTabs({
                 aria-selected={active}
                 aria-controls={`eoi-panel-${i}`}
                 tabIndex={active ? 0 : -1}
-                onClick={() => setActiveTab(i)}
+                onClick={() => { markVisited(i); setActiveTab(i); }}
                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                   active
                     ? "border-[#0057A8] text-[#0057A8] bg-white"
@@ -490,7 +509,7 @@ export function EoiFormTabs({
           {activeTab > 0 ? (
             <button
               type="button"
-              onClick={() => setActiveTab(activeTab - 1)}
+              onClick={() => { markVisited(activeTab); setActiveTab(activeTab - 1); }}
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 cursor-pointer"
             >
               ← Back
@@ -502,7 +521,7 @@ export function EoiFormTabs({
           {activeTab < TABS.length - 1 ? (
             <button
               type="button"
-              onClick={() => setActiveTab(activeTab + 1)}
+              onClick={() => { markVisited(activeTab); setActiveTab(activeTab + 1); }}
               className="px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
             >
               Continue →
