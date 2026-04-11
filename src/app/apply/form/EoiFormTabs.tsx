@@ -537,13 +537,26 @@ export function EoiFormTabs({
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                {/* Status dot — TODO(Task 4): replace partial branch */}
-                <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
-                  status === "complete" ? "bg-green-500" :
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (status as any) === "partial"  ? "bg-[#0057A8]" :
-                  "bg-gray-300"
-                }`} />
+                {/* Status indicator */}
+                {status === "full" ? (
+                  <svg
+                    aria-hidden="true"
+                    className="w-4 h-4 shrink-0 text-green-500"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="8" cy="8" r="7" />
+                    <polyline points="5,8.5 7,10.5 11,6.5" />
+                  </svg>
+                ) : (
+                  <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
+                    status === "complete" ? "bg-green-500" : "bg-gray-300"
+                  }`} />
+                )}
                 {tab.label}
                 <span className="sr-only">({STATUS_LABELS[status]})</span>
               </button>
