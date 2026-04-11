@@ -136,6 +136,7 @@ export function EoiFormTabs({
   const autoSuggestedNocRef = useRef<string | null>(null);
   const confirmedRef = useRef(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [allTabsFull, setAllTabsFull] = useState(false);
   const [modalSummary, setModalSummary] = useState<{
     orgName: string;
     categories: string[];
@@ -432,6 +433,8 @@ export function EoiFormTabs({
         contactName:  [firstEl?.value, lastEl?.value].filter(Boolean).join(" "),
         contactEmail: email,
       });
+      const allFull = tabStatus.every((s) => s === "full");
+      setAllTabsFull(allFull);
       setShowConfirmModal(true);
       return;
     }
@@ -639,7 +642,9 @@ export function EoiFormTabs({
               ? "Your corrected application will be sent back to your NOC for review."
               : "Your application will be sent to your NOC for review. You won't be able to edit it until your NOC returns it."}
           </p>
-          <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2 mb-6">
+
+          {/* Summary */}
+          <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2 mb-5">
             <div>
               <span className="text-gray-500">Organisation</span>
               <span className="ml-2 font-medium text-gray-900">{modalSummary.orgName}</span>
@@ -655,25 +660,69 @@ export function EoiFormTabs({
               </span>
             </div>
           </div>
+
+          {/* Nudge — shown only when optional fields are incomplete */}
+          {!allTabsFull && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 mb-5">
+              <p className="font-semibold mb-1">Some optional sections are incomplete.</p>
+              <p>
+                Your application is ready to submit — all required information is complete.
+                To give your organisation the best chance of approval, we recommend including
+                supporting details such as publication history and coverage examples.
+                NOCs give the most consideration to applications with full information.
+              </p>
+            </div>
+          )}
+
+          {/* CTAs */}
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setShowConfirmModal(false)}
-              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
-            >
-              Go back
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                confirmedRef.current = true;
-                setShowConfirmModal(false);
-                formRef.current?.requestSubmit();
-              }}
-              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
-            >
-              {isResubmission ? "Confirm resubmit" : "Confirm & submit"}
-            </button>
+            {allTabsFull ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  Go back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    confirmedRef.current = true;
+                    setShowConfirmModal(false);
+                    formRef.current?.requestSubmit();
+                  }}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
+                >
+                  {isResubmission ? "Confirm resubmit" : "Confirm & submit"}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowConfirmModal(false);
+                    const firstIncomplete = tabStatus.findIndex((s) => s !== "full");
+                    if (firstIncomplete !== -1) setActiveTab(firstIncomplete);
+                  }}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
+                >
+                  Complete my application
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    confirmedRef.current = true;
+                    setShowConfirmModal(false);
+                    formRef.current?.requestSubmit();
+                  }}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  Submit as-is
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
