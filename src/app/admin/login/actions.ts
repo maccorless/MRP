@@ -34,6 +34,7 @@ export async function login(formData: FormData) {
     nocCode: user.nocCode ?? null,
     ifCode: user.ifCode ?? null,
     displayName: user.displayName,
+    canaryFlags: Array.isArray(user.canaryFlags) ? (user.canaryFlags as string[]) : [],
   });
 
   // Audit log

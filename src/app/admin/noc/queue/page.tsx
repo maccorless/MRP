@@ -1,61 +1,123 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 import { categoryDisplayLabel } from "@/lib/category";
 import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
+import { Paginator } from "@/components/Paginator";
 
 type StatusFilter = "all" | "pending" | "resubmitted" | "approved" | "returned" | "rejected";
+type ApplicationStatus = "pending" | "resubmitted" | "approved" | "returned" | "rejected";
+
+const PAGE_SIZE = 50;
 
 export default async function NocQueuePage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; success?: string }>;
+  searchParams: Promise<{ status?: string; page?: string; success?: string }>;
 }) {
   const session = await requireNocSession();
-  const { status: statusParam, success } = await searchParams;
+  const { status: statusParam, page: pageParam, success } = await searchParams;
   const activeFilter = (statusParam ?? "all") as StatusFilter;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10));
+  const offset = (page - 1) * PAGE_SIZE;
 
-  const rows = await db
-    .select({
-      id: applications.id,
-      referenceNumber: applications.referenceNumber,
-      status: applications.status,
-      entrySource: applications.entrySource,
-      categoryE:   applications.categoryE,
-      categoryEs:  applications.categoryEs,
-      categoryEp:  applications.categoryEp,
-      categoryEps: applications.categoryEps,
-      categoryEt:  applications.categoryEt,
-      categoryEc:  applications.categoryEc,
-      contactName: applications.contactName,
-      submittedAt: applications.submittedAt,
-      orgName: organizations.name,
-    })
-    .from(applications)
-    .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-    .where(eq(applications.nocCode, session.nocCode))
-    .orderBy(desc(applications.submittedAt));
+  // Parallel queries:
+  // 1. Status counts for all statuses (tab bar)
+  // 2. Paginated rows for the active filter
+  // 3. Total count for the active filter (pagination controls)
+  const [allCounts, rows, countResult] = await Promise.all([
+    // Tab bar counts — one GROUP BY query, no full fetch
+    db
+      .select({
+        status: applications.status,
+        count: sql<number>`cast(count(*) as int)`,
+      })
+      .from(applications)
+      .where(
+        and(
+          eq(applications.nocCode, session.nocCode),
+          eq(applications.eventId, "LA28"),
+        ),
+      )
+      .groupBy(applications.status),
 
-  // Counts per status
-  const counts = rows.reduce<Record<string, number>>((acc, r) => {
-    acc[r.status] = (acc[r.status] ?? 0) + 1;
-    return acc;
-  }, {});
+    // Paginated rows for the active tab
+    db
+      .select({
+        id: applications.id,
+        referenceNumber: applications.referenceNumber,
+        status: applications.status,
+        entrySource: applications.entrySource,
+        categoryE:   applications.categoryE,
+        categoryEs:  applications.categoryEs,
+        categoryEp:  applications.categoryEp,
+        categoryEps: applications.categoryEps,
+        categoryEt:  applications.categoryEt,
+        categoryEc:  applications.categoryEc,
+        contactName: applications.contactName,
+        submittedAt: applications.submittedAt,
+        orgName: organizations.name,
+      })
+      .from(applications)
+      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+      .where(
+        activeFilter === "all"
+          ? and(
+              eq(applications.nocCode, session.nocCode),
+              eq(applications.eventId, "LA28"),
+            )
+          : and(
+              eq(applications.nocCode, session.nocCode),
+              eq(applications.eventId, "LA28"),
+              eq(applications.status, activeFilter as ApplicationStatus),
+            ),
+      )
+      .orderBy(desc(applications.submittedAt))
+      .limit(PAGE_SIZE)
+      .offset(offset),
+
+    // Total count for pagination — matches the active filter's WHERE clause
+    db
+      .select({ total: sql<number>`cast(count(*) as int)` })
+      .from(applications)
+      .where(
+        activeFilter === "all"
+          ? and(
+              eq(applications.nocCode, session.nocCode),
+              eq(applications.eventId, "LA28"),
+            )
+          : and(
+              eq(applications.nocCode, session.nocCode),
+              eq(applications.eventId, "LA28"),
+              eq(applications.status, activeFilter as ApplicationStatus),
+            ),
+      ),
+  ]);
+
+  const counts = Object.fromEntries(allCounts.map((r) => [r.status, r.count]));
+  const totalAll = allCounts.reduce((s, r) => s + r.count, 0);
+  const total = countResult[0]?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
   const actionableCount = (counts.pending ?? 0) + (counts.resubmitted ?? 0);
 
-  const filtered =
-    activeFilter === "all" ? rows : rows.filter((r) => r.status === activeFilter);
-
   const filters: { key: StatusFilter; label: string }[] = [
-    { key: "all", label: `All (${rows.length})` },
-    { key: "pending", label: `Pending (${counts.pending ?? 0})` },
+    { key: "all",         label: `All (${totalAll})` },
+    { key: "pending",     label: `Pending (${counts.pending ?? 0})` },
     { key: "resubmitted", label: `Resubmitted (${counts.resubmitted ?? 0})` },
-    { key: "approved", label: `Approved (${counts.approved ?? 0})` },
-    { key: "returned", label: `Returned (${counts.returned ?? 0})` },
-    { key: "rejected", label: `Rejected (${counts.rejected ?? 0})` },
+    { key: "approved",    label: `Approved (${counts.approved ?? 0})` },
+    { key: "returned",    label: `Returned (${counts.returned ?? 0})` },
+    { key: "rejected",    label: `Rejected (${counts.rejected ?? 0})` },
   ];
+
+  function pageHref(p: number): string {
+    const params = new URLSearchParams();
+    if (activeFilter !== "all") params.set("status", activeFilter);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return qs ? `/admin/noc/queue?${qs}` : "/admin/noc/queue";
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -95,32 +157,32 @@ export default async function NocQueuePage({
 
       {/* Toolbar: filter tabs + export */}
       <div className="flex items-center justify-between mb-4">
-      <div className="flex gap-1 flex-wrap">
-        {filters.map(({ key, label }) => (
-          <Link
-            key={key}
-            href={key === "all" ? "/admin/noc/queue" : `/admin/noc/queue?status=${key}`}
-            className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-              activeFilter === key
-                ? "bg-[#0057A8] text-white"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
-      </div>
-      <a
-        href={activeFilter === "all" ? "/api/export/eoi" : `/api/export/eoi?status=${activeFilter}`}
-        className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
-      >
-        Export CSV ↓
-      </a>
+        <div className="flex gap-1 flex-wrap">
+          {filters.map(({ key, label }) => (
+            <Link
+              key={key}
+              href={key === "all" ? "/admin/noc/queue" : `/admin/noc/queue?status=${key}`}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                activeFilter === key
+                  ? "bg-[#0057A8] text-white"
+                  : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+        <a
+          href={activeFilter === "all" ? "/api/export/eoi" : `/api/export/eoi?status=${activeFilter}`}
+          className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+        >
+          Export CSV ↓
+        </a>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {filtered.length === 0 ? (
+        {rows.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-400">
             No applications in this category.
           </div>
@@ -137,7 +199,7 @@ export default async function NocQueuePage({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filtered.map((row) => (
+              {rows.map((row) => (
                 <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 font-mono text-xs text-gray-700">
                     {row.referenceNumber}
@@ -178,6 +240,15 @@ export default async function NocQueuePage({
           </table>
         )}
       </div>
+
+      {/* Pagination controls */}
+      <Paginator
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        pageSize={PAGE_SIZE}
+        pageHref={pageHref}
+      />
     </div>
   );
 }

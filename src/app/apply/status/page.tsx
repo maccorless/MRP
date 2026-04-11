@@ -1,3 +1,7 @@
+import { redirect } from "next/navigation";
+import { db } from "@/db";
+import { magicLinkTokens } from "@/db/schema";
+import { generateToken, hashToken } from "@/lib/tokens";
 import { requestStatusToken } from "./actions";
 
 export default async function StatusPage({
@@ -6,6 +10,19 @@ export default async function StatusPage({
   searchParams: Promise<{ error?: string; email?: string }>;
 }) {
   const { error, email } = await searchParams;
+
+  // When email is passed in the URL (e.g. arriving from the submission confirmation page),
+  // skip the form and generate a status token directly.
+  if (email && !error) {
+    const clean = email.trim().toLowerCase();
+    if (clean.includes("@") && clean.includes(".")) {
+      const token = generateToken();
+      const expiryHours = parseInt(process.env.TOKEN_EXPIRY_HOURS ?? "24", 10);
+      const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
+      await db.insert(magicLinkTokens).values({ email: clean, tokenHash: hashToken(token), expiresAt });
+      redirect(`/apply/status/view?token=${token}&email=${encodeURIComponent(clean)}`);
+    }
+  }
 
   return (
     <div>

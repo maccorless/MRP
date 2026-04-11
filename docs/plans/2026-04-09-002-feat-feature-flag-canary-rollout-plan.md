@@ -1,8 +1,9 @@
 ---
 title: "feat: Feature flag / canary rollout system"
 type: feat
-status: active
+status: partial
 date: 2026-04-09
+completed_phases: "Phase 1 (schema + session + hasFlag helper) and Phase 3 (docs/feature-flags.md) are shipped. Phase 2 (admin UI at /admin/ioc/flags) is not built — deferred to v1.0."
 ---
 
 # feat: Feature Flag / Canary Rollout System

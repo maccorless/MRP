@@ -1,9 +1,21 @@
 # MRP v1 Implementation Plan — Sprint 1 (Apr 1–25, 2026)
 
-**Status:** READY TO BUILD
-**Last updated:** 2026-03-30
+**Status:** COMPLETE
+**Last updated:** 2026-04-10
 **Basis:** Design-to-code gap analysis + all resolved CONFIRM items as of 2026-03-30
 **Source of truth:** `docs/MRP-design-confirmation.md`
+
+> **Sprint 1 complete as of 2026-04-10.** All four critical fixes (CRIT-01–04) and all in-scope missing features (MISS-01–04, MISS-06) are shipped. See `docs/design-to-code-gap-analysis.md` for the full resolved-item list.
+>
+> Additional features shipped during Sprint 1 (beyond the original plan):
+> - **IOC-Direct org management** (`/admin/ioc/direct`) — IOC adds major wire services that bypass the NOC EoI process; PbN allocations managed via same state machine as NOC submissions
+> - **Applicant status page** (`/apply/status`) — applicants look up their application status by email; magic link delivered with 1-hour expiry (resolves TODO-018)
+> - **EoI window toggle** (`/admin/noc/settings`) — NOC opens/closes their territory's application window
+> - **Application reversals** — NOC can unapprove or unreturn; OCOG can reverse a PbN approval
+> - **Security + WCAG hardening** — DB transactions, optimistic locking, atomic tokens, middleware guards, error boundaries, 17 WCAG accessibility fixes
+> - **Audit trail upgrade** — full action log at `/admin/ioc/audit`
+>
+> Still deferred to v1.1: invited-org flow (MISS-05), anomaly detection (MISS-07), feature flags admin UI, EU data residency migration, ACR live integration (Gate 0 Jun 1).
 
 ---
 

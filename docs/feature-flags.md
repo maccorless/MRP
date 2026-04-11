@@ -152,6 +152,8 @@ If your feature requires a non-additive schema change, it cannot be shipped behi
 
 ## Admin UI quick reference
 
+> **Note (2026-04-10):** The feature flags admin UI is not yet built. The DB schema (`feature_flags` table), `hasFlag` helper, and session model are implemented and ready to use, but the management routes below do not exist yet. Building the admin UI is deferred to v1.1.
+
 | Path | Access | Purpose |
 |------|--------|---------|
 | `/admin/ioc/flags` | IOC admin (D.TEC) only | Create / list / delete flags |

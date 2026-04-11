@@ -10,9 +10,18 @@ import { EoiFormTabs, type PrefillData } from "./EoiFormTabs";
 export default async function FormPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; email?: string }>;
+  searchParams: Promise<{
+    token?: string;
+    email?: string;
+    from?: string;
+    org_name?: string;
+    org_type?: string;
+    country?: string;
+    noc_code?: string;
+    website?: string;
+  }>;
 }) {
-  const { token, email } = await searchParams;
+  const { token, email, from, org_name, org_type, country, noc_code, website } = await searchParams;
 
   if (!token || !email) redirect("/apply");
 
@@ -51,6 +60,19 @@ export default async function FormPage({
 
   // Build prefill data
   let prefill: PrefillData | null = null;
+  const isFromInvite = from === "invite";
+
+  // Invite pre-fill: read org-level fields from URL params
+  if (isFromInvite && !returnedRow) {
+    prefill = {
+      orgName: org_name ?? "",
+      orgWebsite: website ?? null,
+      orgType: org_type ?? undefined,
+      orgCountry: country ?? undefined,
+      orgNocCode: noc_code ?? undefined,
+    };
+  }
+
   if (returnedRow) {
     const { app, org } = returnedRow;
     prefill = {
@@ -155,6 +177,7 @@ export default async function FormPage({
         resubmitId={isResubmission && returnedRow ? returnedRow.app.id : null}
         prefill={prefill}
         isResubmission={isResubmission}
+        isFromInvite={isFromInvite}
         countryCodes={COUNTRY_CODES}
         nocCodes={NOC_CODES}
       />

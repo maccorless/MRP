@@ -288,6 +288,44 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 
 ---
 
+### Test 1.6 — Check application status
+
+**Goal**: Confirm an applicant can look up their submission status without logging in.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Check Application Status                                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Enter the email address you used to apply to view your        │
+│  application status.                                            │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  you@newsorg.com                                        │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  [ View My Status ]                                             │
+│                                                                 │
+│  The status link is valid for 1 hour.                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Steps**:
+1. Navigate to `https://mrp-production-8073.up.railway.app/apply/status`
+2. Enter the email address used for a seeded application (e.g. `demo@test.com`)
+3. Click **View My Status**
+4. Follow the magic link sent to that email (or use the pre-seeded token path if testing in isolation)
+
+**Expected**: Status page shows the application reference number, current status (e.g. Pending, Returned, Approved), submission date, and organisation name.
+
+**Negative — unknown email**: Enter `nobody@unknown.com` → page shows "No application found for this email address."
+
+**Negative — invalid email**: Enter `notanemail` → inline validation error before submission.
+
+**Token expiry test**: Wait for the 1-hour window to pass (or use an expired token) → error page "This status link has expired. Request a new one."
+
+---
+
 ---
 
 # Role 2 — NOC Admin

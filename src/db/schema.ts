@@ -61,7 +61,15 @@ export const auditActionEnum = pgEnum("audit_action", [
   "application_unreturned",
   "pbn_unapproved",
   "enr_decision_revised",
+  // Feature flags
+  "feature_flag_state_changed",
+  "feature_flag_enrollment_changed",
+  // MISS-05 — invited-org flow
+  "invitation_created",
+  "invitation_accepted",
 ]);
+
+export const flagStateEnum = pgEnum("flag_state", ["off", "canary", "on"]);
 
 export const pbnStateEnum = pgEnum("pbn_state", [
   "draft",
@@ -188,7 +196,7 @@ export const applications = pgTable("applications", {
   accessibilityNeeds: boolean("accessibility_needs"),
 
   // Entry source — how this application entered the system
-  entrySource: text("entry_source").notNull().default("self_submitted"), // 'self_submitted' | 'noc_direct'
+  entrySource: text("entry_source").notNull().default("self_submitted"), // 'self_submitted' | 'noc_direct' | 'invited'
 
   // Status
   status: applicationStatusEnum("status").default("pending").notNull(),
@@ -230,6 +238,7 @@ export const adminUsers = pgTable("admin_users", {
   displayName: text("display_name").notNull(),
   // v1.0: replaced by D.TEC/DGP SSO — no password stored in production
   passwordHash: text("password_hash"),         // prototype only
+  canaryFlags: jsonb("canary_flags"),          // string[] of feature flag names; null = no canary memberships
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -371,6 +380,20 @@ export const applicationSequences = pgTable("application_sequences", {
   seq: integer("seq").notNull().default(0),
 });
 
+// ─── Feature Flags ────────────────────────────────────────────────────────────
+// Two-tier system: global state (off/canary/on) + per-user canary membership.
+// Global state changes take effect immediately on next request (live DB read).
+// Per-user canary membership is baked into the session cookie at login.
+
+export const featureFlags = pgTable("feature_flags", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),        // e.g. "new_pbn_ui"
+  state: flagStateEnum("state").notNull().default("off"),
+  description: text("description").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
 // ─── Reserved Organizations ───────────────────────────────────────────────────
 
 export const reservedOrganizations = pgTable("reserved_organizations", {
@@ -385,4 +408,21 @@ export const reservedOrganizations = pgTable("reserved_organizations", {
   addedBy: text("added_by"),                        // IOC admin user id
   addedAt: timestamp("added_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Invitations (MISS-05 — NOC/IF invited-org flow) ─────────────────────────
+// NOC and IF admins create invite links that pre-fill the EoI form for known orgs.
+// Token is stored hashed; raw token is only in the shareable URL.
+
+export const invitations = pgTable("invitations", {
+  id:             uuid("id").defaultRandom().primaryKey(),
+  tokenHash:      text("token_hash").notNull().unique(),
+  nocCode:        text("noc_code").notNull(),
+  createdBy:      uuid("created_by").references(() => adminUsers.id),
+  prefillData:    jsonb("prefill_data").notNull().default({}),
+  recipientEmail: text("recipient_email"),            // nullable — NOC may not know email yet
+  expiresAt:      timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt:         timestamp("used_at", { withTimezone: true }),           // null = unused
+  acceptedAppId:  uuid("accepted_app_id"),            // FK to applications.id on conversion
+  createdAt:      timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

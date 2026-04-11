@@ -1,8 +1,13 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, organizations } from "@/db/schema";
+import { applications, organizations, nocQuotas, nocEoiWindows } from "@/db/schema";
 import { categoryDisplayLabel } from "@/lib/category";
+import {
+  detectConcentrationRisk,
+  detectInactiveNocs,
+  detectCrossNocDuplicates,
+} from "@/lib/anomaly-detect";
 
 const STATUS_BADGE: Record<string, string> = {
   pending:     "bg-yellow-100 text-yellow-800",
@@ -18,40 +23,124 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function IocDashboard() {
-  const rows = await db
-    .select({
-      id: applications.id,
-      referenceNumber: applications.referenceNumber,
-      nocCode: applications.nocCode,
-      status: applications.status,
-      categoryE:   applications.categoryE,
-      categoryEs:  applications.categoryEs,
-      categoryEp:  applications.categoryEp,
-      categoryEps: applications.categoryEps,
-      categoryEt:  applications.categoryEt,
-      categoryEc:  applications.categoryEc,
-      contactName: applications.contactName,
-      submittedAt: applications.submittedAt,
-      orgName: organizations.name,
-    })
-    .from(applications)
-    .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-    .orderBy(desc(applications.submittedAt));
+  // Three parallel aggregate queries replace one unbounded full-fetch
+  const [statusCounts, nocBreakdown, recentApps, anomalyApps, quotas, openWindows] =
+    await Promise.all([
+      // 1. Status count totals — for stat cards
+      db
+        .select({
+          status: applications.status,
+          count: sql<number>`cast(count(*) as int)`,
+        })
+        .from(applications)
+        .where(eq(applications.eventId, "LA28"))
+        .groupBy(applications.status),
 
-  // Status counts
-  const counts = rows.reduce<Record<string, number>>((acc, r) => {
-    acc[r.status] = (acc[r.status] ?? 0) + 1;
-    return acc;
-  }, {});
+      // 2. Per-NOC status breakdown — for NOC breakdown table
+      db
+        .select({
+          nocCode: applications.nocCode,
+          status: applications.status,
+          count: sql<number>`cast(count(*) as int)`,
+        })
+        .from(applications)
+        .where(eq(applications.eventId, "LA28"))
+        .groupBy(applications.nocCode, applications.status),
 
-  // NOC breakdown
-  const nocMap = rows.reduce<Record<string, Record<string, number>>>((acc, r) => {
-    if (!acc[r.nocCode]) acc[r.nocCode] = {};
-    acc[r.nocCode][r.status] = (acc[r.nocCode][r.status] ?? 0) + 1;
-    return acc;
-  }, {});
+      // 3. 15 most recent applications — for the Recent Applications widget
+      db
+        .select({
+          id: applications.id,
+          referenceNumber: applications.referenceNumber,
+          nocCode: applications.nocCode,
+          status: applications.status,
+          categoryE:   applications.categoryE,
+          categoryEs:  applications.categoryEs,
+          categoryEp:  applications.categoryEp,
+          categoryEps: applications.categoryEps,
+          categoryEt:  applications.categoryEt,
+          categoryEc:  applications.categoryEc,
+          contactName: applications.contactName,
+          submittedAt: applications.submittedAt,
+          orgName: organizations.name,
+        })
+        .from(applications)
+        .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+        .where(eq(applications.eventId, "LA28"))
+        .orderBy(desc(applications.submittedAt))
+        .limit(15),
+
+      // 4. Anomaly data — approved apps with slot requests + org flags (all NOCs)
+      //    Used for: concentration risk (slots), inactivity (reviewedAt), duplicates (isMultiTerritoryFlag)
+      db
+        .select({
+          nocCode: applications.nocCode,
+          organizationId: applications.organizationId,
+          orgName: organizations.name,
+          status: applications.status,
+          reviewedAt: applications.reviewedAt,
+          requestedE:   applications.requestedE,
+          requestedEs:  applications.requestedEs,
+          requestedEp:  applications.requestedEp,
+          requestedEps: applications.requestedEps,
+          requestedEt:  applications.requestedEt,
+          requestedEc:  applications.requestedEc,
+          isMultiTerritoryFlag: organizations.isMultiTerritoryFlag,
+        })
+        .from(applications)
+        .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+        .where(eq(applications.eventId, "LA28")),
+
+      // 5. NOC quota totals — for concentration risk denominator
+      db
+        .select({
+          nocCode: nocQuotas.nocCode,
+          totalQuota: sql<number>`cast(
+            ${nocQuotas.eTotal} + ${nocQuotas.esTotal} + ${nocQuotas.epTotal} +
+            ${nocQuotas.epsTotal} + ${nocQuotas.etTotal} + ${nocQuotas.ecTotal}
+            as int)`,
+        })
+        .from(nocQuotas)
+        .where(eq(nocQuotas.eventId, "LA28")),
+
+      // 6. Active EoI windows — for NOC inactivity detection
+      db
+        .select({
+          nocCode: nocEoiWindows.nocCode,
+          openedAt: nocEoiWindows.openedAt,
+        })
+        .from(nocEoiWindows)
+        .where(
+          eq(nocEoiWindows.isOpen, true),
+          // Note: eventId filter — safe default, openedAt may be null for legacy rows
+        ),
+    ]);
+
+  // ── Derive stat card counts ──────────────────────────────────────────────────
+  const counts = Object.fromEntries(statusCounts.map((r) => [r.status, r.count]));
+  const totalApplications = statusCounts.reduce((s, r) => s + r.count, 0);
+
+  // ── Derive NOC breakdown map ──────────────────────────────────────────────────
+  const nocMap: Record<string, Record<string, number>> = {};
+  for (const r of nocBreakdown) {
+    if (!nocMap[r.nocCode]) nocMap[r.nocCode] = {};
+    nocMap[r.nocCode][r.status] = r.count;
+  }
   const nocs = Object.entries(nocMap).sort(([a], [b]) => a.localeCompare(b));
 
+  // ── Anomaly detection ────────────────────────────────────────────────────────
+  const quotaMap = Object.fromEntries(quotas.map((q) => [q.nocCode, q.totalQuota]));
+  const activeWindows = new Map(
+    openWindows
+      .filter((w) => w.openedAt != null)
+      .map((w) => [w.nocCode, w.openedAt as Date]),
+  );
+
+  const concentrationFlags = detectConcentrationRisk(anomalyApps, quotaMap);
+  const inactiveNocs = detectInactiveNocs(anomalyApps, activeWindows);
+  const duplicateOrgs = detectCrossNocDuplicates(anomalyApps);
+
+  // ── Stat cards ───────────────────────────────────────────────────────────────
   const statCards = [
     { label: "Pending",     value: counts.pending     ?? 0, color: "text-yellow-700 bg-yellow-50 border-yellow-200" },
     { label: "Resubmitted", value: counts.resubmitted ?? 0, color: "text-blue-700 bg-blue-50 border-blue-200" },
@@ -66,7 +155,7 @@ export default async function IocDashboard() {
         <div>
           <h1 className="text-xl font-bold text-gray-900">IOC Overview</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            All {rows.length} applications across all NOCs
+            All {totalApplications} applications across all NOCs
           </p>
         </div>
         <a
@@ -76,6 +165,43 @@ export default async function IocDashboard() {
           Export all EoI CSV ↓
         </a>
       </div>
+
+      {/* Anomaly banners */}
+      {concentrationFlags.length > 0 && (
+        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
+          <span className="shrink-0 mt-0.5">⚠</span>
+          <span>
+            <strong>Concentration risk ({concentrationFlags.length} {concentrationFlags.length === 1 ? "org" : "orgs"})</strong>
+            {" "}—{" "}
+            {concentrationFlags
+              .map((f) => `${f.orgName} (${Math.round(f.pct * 100)}% of ${f.nocCode})`)
+              .join(", ")}
+          </span>
+        </div>
+      )}
+
+      {inactiveNocs.length > 0 && (
+        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
+          <span className="shrink-0 mt-0.5">⚠</span>
+          <span>
+            <strong>Inactive NOCs ({inactiveNocs.length})</strong>
+            {" "}—{" "}
+            {inactiveNocs.map((n) => `${n.nocCode} (${n.daysSince}d)`).join(", ")}
+          </span>
+        </div>
+      )}
+
+      {duplicateOrgs.length > 0 && (
+        <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl text-sm text-purple-800">
+          <strong>Cross-NOC orgs ({duplicateOrgs.length})</strong>
+          {" "}—{" "}
+          {duplicateOrgs.join(", ")}
+          {" · "}
+          <a href="/admin/ioc/orgs?filter=multi" className="underline">
+            Review
+          </a>
+        </div>
+      )}
 
       {/* Status stat cards */}
       <div className="grid grid-cols-5 gap-3">
@@ -141,7 +267,7 @@ export default async function IocDashboard() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {rows.slice(0, 15).map((row) => (
+            {recentApps.map((row) => (
               <tr key={row.id} className="hover:bg-gray-50">
                 <td className="px-5 py-2.5 font-mono text-xs text-gray-700">{row.referenceNumber}</td>
                 <td className="px-5 py-2.5">

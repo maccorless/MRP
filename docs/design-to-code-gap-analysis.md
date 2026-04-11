@@ -1,12 +1,36 @@
 # MRP Design-to-Code Gap Analysis
-**Date:** 2026-03-30
+**Date:** 2026-03-30 — **Updated:** 2026-04-10 (post Sprint 1)
 **Scope:** All updated design docs vs. codebase as of commit de0b950
 
 ---
 
-## Summary
+## Sprint 1 Status (as of 2026-04-10)
 
-The codebase is a complete and correct v0.1 EoI prototype. The gaps below are not bugs in what was built — they're places where the design evolved (especially from the IOC stakeholder interview 2026-03-30) and the code predates those decisions, plus the full v1 build (PbN, ENR, OCOG, quota management) that hasn't started yet.
+**All CRITICAL items resolved. All in-scope MISSING items built.**
+
+| Item | Status |
+|------|--------|
+| CRIT-01: ENR removed from EoI | ✓ Resolved |
+| CRIT-02: Press/Photo/Both category flags | ✓ Resolved |
+| CRIT-03: OCOG + IF roles | ✓ Resolved |
+| CRIT-04: Multi-territory flag hidden from UI | ✓ Resolved |
+| MISS-01: PbN workflow | ✓ Built |
+| MISS-02: ENR workflow | ✓ Built |
+| MISS-03: IOC Quota management screen | ✓ Built |
+| MISS-04: event_id + org status in schema | ✓ Built |
+| MISS-05: Invited-org flow | Deferred → v1.1 |
+| MISS-06: Applicant status page | ✓ Built (`/apply/status`) |
+| MISS-07: Anomaly detection | Deferred → v1.1 |
+
+Additional features shipped beyond original plan: IOC-Direct org management, application reversals (unapprove/unreturn/OCOG reversal), EoI window toggle, security + WCAG hardening, audit trail upgrade.
+
+Feature flags admin UI (`/admin/ioc/flags`) is documented in `docs/feature-flags.md` but not yet built — deferred to v1.1.
+
+---
+
+## Summary (original — 2026-03-30)
+
+The codebase at commit de0b950 was a complete and correct v0.1 EoI prototype. The gaps below were not bugs in what was built — they were places where the design evolved (especially from the IOC stakeholder interview 2026-03-30) and the code predated those decisions, plus the full v1 build (PbN, ENR, OCOG, quota management) that hadn't started yet.
 
 Three categories:
 - **CRITICAL** — Code does something the design explicitly prohibits. Needs a fix before building on top.
@@ -15,9 +39,9 @@ Three categories:
 
 ---
 
-## CRITICAL — Fix before building further
+## CRITICAL — All resolved in Sprint 1
 
-### CRIT-01: ENR is an EoI application category in the code
+### CRIT-01: ENR is an EoI application category in the code ✓ RESOLVED
 
 **Where:** `src/db/schema.ts` lines 20–23, `src/app/apply/form/page.tsx` lines 230 and 269
 
@@ -38,7 +62,7 @@ Three categories:
 
 ---
 
-### CRIT-02: No "Both" category — schema only supports press OR photographer
+### CRIT-02: No "Both" category — schema only supports press OR photographer ✓ RESOLVED
 
 **Where:** `src/db/schema.ts` lines 20–23
 
@@ -63,7 +87,7 @@ Three categories:
 
 ---
 
-### CRIT-03: OCOG role is completely absent
+### CRIT-03: OCOG role is completely absent ✓ RESOLVED
 
 **Where:** `src/lib/session.ts` line 13, `src/db/schema.ts` (adminUsers table), all admin routes
 
@@ -85,7 +109,7 @@ Three categories:
 
 ---
 
-### CRIT-04: Cross-NOC dedup (multi-territory flag) conflicts with updated design decision
+### CRIT-04: Cross-NOC dedup (multi-territory flag) conflicts with updated design decision ✓ RESOLVED
 
 **Where:** `src/app/apply/actions.ts` line 163 — `isMultiTerritoryFlag: isMultiTerritory`
 
@@ -106,11 +130,11 @@ Three categories:
 
 ---
 
-## MISSING — v1 features not yet built (expected)
+## MISSING — Sprint 1 results
 
-These are not defects. They are the v1 build plan. Listed here to confirm scope and sequencing.
+Items marked ✓ were built during Sprint 1 (Apr 1–25, 2026). Items marked Deferred remain in backlog.
 
-### MISS-01: No PbN workflow (full sprint needed)
+### MISS-01: No PbN workflow ✓ BUILT
 
 **Missing components:**
 - `/admin/noc/pbn` route + NOC PbN allocation screen (wireframe: `pbn-assignment.html`)
@@ -127,7 +151,7 @@ These are not defects. They are the v1 build plan. Listed here to confirm scope 
 
 ---
 
-### MISS-02: No ENR workflow (full sprint needed)
+### MISS-02: No ENR workflow ✓ BUILT
 
 **Missing components:**
 - `/admin/noc/enr` route + NOC ENR Request Submission screen (wireframe: `enr-request.html`)
@@ -142,7 +166,7 @@ These are not defects. They are the v1 build plan. Listed here to confirm scope 
 
 ---
 
-### MISS-03: No quota management screen (IOC)
+### MISS-03: No quota management screen (IOC) ✓ BUILT
 
 **Missing components:**
 - `/admin/ioc/quotas` route + IOC Quota Import/Edit screen (wireframe: `ioc-quotas.html`)
@@ -155,7 +179,7 @@ These are not defects. They are the v1 build plan. Listed here to confirm scope 
 
 ---
 
-### MISS-04: Games-to-Games org persistence not in schema
+### MISS-04: Games-to-Games org persistence not in schema ✓ BUILT
 
 **What the design doc specifies:**
 ```
@@ -179,7 +203,7 @@ Organization
 
 ---
 
-### MISS-05: No invited-org flow
+### MISS-05: No invited-org flow — DEFERRED to v1.1
 
 **What the design says:** NOCs can invite known organisations. Invited orgs get a pre-addressed link that pre-fills their details. Wireframe: `invited-org-landing.html`.
 
@@ -192,13 +216,13 @@ Organization
 
 ---
 
-### MISS-06: No applicant status check page (TODO-018)
+### MISS-06: No applicant status check page ✓ BUILT
 
 Applicants can't look up their application status by reference number + email. Tracked in TODOS.md as P2. Wireframe: `applicant-resubmit.html` shows the resubmission flow but not a standalone status lookup.
 
 ---
 
-### MISS-07: Anomaly detection not implemented
+### MISS-07: Anomaly detection not implemented — DEFERRED to v1.1
 
 The IOC dashboard wireframe shows anomaly banners (concentration risk, cross-NOC duplicates). No detection logic exists. Related design doc section: "IOC Anomaly Detection — concentration risk, cross-NOC duplication, NOC inactivity."
 

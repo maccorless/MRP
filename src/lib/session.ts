@@ -22,6 +22,7 @@ export type SessionPayload = {
   nocCode: string | null;  // set for noc_admin
   ifCode: string | null;   // set for if_admin
   displayName: string;
+  canaryFlags?: string[];  // feature flags this user is enrolled in for canary testing
   // Sudo fields — present only when an IOC admin is acting as another user
   isSudo?: boolean;
   sudoActorLabel?: string; // display name of the IOC admin who initiated the sudo

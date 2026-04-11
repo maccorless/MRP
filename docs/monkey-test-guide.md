@@ -14,6 +14,23 @@ This guide is for informal exploratory testing ("monkey testing") — click arou
 
 ---
 
+## Applicant Status Page (public, no login required)
+
+After submitting an EoI, applicants can check their status at any time without logging in:
+
+```
+https://mrp-production-8073.up.railway.app/apply/status
+```
+
+Enter the email address used when applying. A magic link is sent with a 1-hour expiry. Click it to see the application status and submission details.
+
+Things to try:
+- Enter an email that has a submitted application — confirm the link arrives and status is shown
+- Enter an email with no application — confirm a graceful "no application found" message
+- Use the same magic link twice — confirm it works for the full hour and then expires
+
+---
+
 ## The EoI Form (public, no login required)
 
 Media organisations use the EoI form to express interest in press accreditation. A journalist or press officer visits the public URL, enters their email, and receives a magic link. They then fill in their organisation's details — publication name, type, circulation, and how many credentials they need across categories (E for written press, EP for photographers, ET for TV technicians, EC for support staff, etc.). The submission goes directly to their country's NOC for review.
