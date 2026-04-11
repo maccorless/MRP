@@ -159,34 +159,35 @@ export function EoiFormTabs({
     if (isResubmission || isFromInvite || !formRef.current) return;
     try {
       const saved = localStorage.getItem(storageKey);
-      if (!saved) return;
-      const data = JSON.parse(saved) as Record<string, string>;
-      const form = formRef.current;
-      for (const [name, value] of Object.entries(data)) {
-        const elements = form.elements.namedItem(name);
-        if (!elements) continue;
-        if (elements instanceof RadioNodeList) {
-          for (const el of elements) {
-            if (el instanceof HTMLInputElement && el.type === "radio") {
-              el.checked = el.value === value;
-            } else if (el instanceof HTMLInputElement && el.type === "checkbox") {
-              el.checked = (data[name + "[]"] ?? "").includes(el.value);
+      if (saved) {
+        const data = JSON.parse(saved) as Record<string, string>;
+        const form = formRef.current;
+        for (const [name, value] of Object.entries(data)) {
+          const elements = form.elements.namedItem(name);
+          if (!elements) continue;
+          if (elements instanceof RadioNodeList) {
+            for (const el of elements) {
+              if (el instanceof HTMLInputElement && el.type === "radio") {
+                el.checked = el.value === value;
+              } else if (el instanceof HTMLInputElement && el.type === "checkbox") {
+                el.checked = (data[name + "[]"] ?? "").includes(el.value);
+              }
             }
-          }
-        } else if (elements instanceof HTMLInputElement) {
-          if (elements.type === "checkbox") {
-            elements.checked = value === "true";
-          } else {
-            // Covers text, url, hidden (prior_olympic_years, prior_paralympic_years, publication_type_other, etc.)
+          } else if (elements instanceof HTMLInputElement) {
+            if (elements.type === "checkbox") {
+              elements.checked = value === "true";
+            } else {
+              // Covers text, url, hidden (prior_olympic_years, prior_paralympic_years, publication_type_other, etc.)
+              elements.value = value;
+            }
+          } else if (elements instanceof HTMLTextAreaElement || elements instanceof HTMLSelectElement) {
             elements.value = value;
           }
-        } else if (elements instanceof HTMLTextAreaElement || elements instanceof HTMLSelectElement) {
-          elements.value = value;
         }
       }
     } catch { /* ignore corrupt localStorage */ }
 
-    // Restore visited tabs
+    // Restore visited tabs — always runs, independent of whether a draft exists
     const savedVisited = localStorage.getItem(visitedKey);
     const restoredVisited = deserializeVisited(savedVisited);
     visitedTabsRef.current = restoredVisited;
