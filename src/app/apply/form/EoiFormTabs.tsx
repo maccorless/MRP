@@ -126,6 +126,7 @@ export function EoiFormTabs({
   const [activeTab, setActiveTab] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const tabListRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [tabStatus, setTabStatus] = useState<("empty" | "complete" | "full")[]>(
     TABS.map(() => "empty")
   );
@@ -255,6 +256,20 @@ export function EoiFormTabs({
 
     updateTabStatus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Focus management and Escape key handler for the confirmation modal
+  useEffect(() => {
+    if (!showConfirmModal || !modalRef.current) return;
+    // Move focus to the first button inside the modal
+    const firstBtn = modalRef.current.querySelector<HTMLElement>("button");
+    firstBtn?.focus();
+    // Handle Escape key
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowConfirmModal(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showConfirmModal]);
 
   // Auto-save to localStorage on input (debounced)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -631,13 +646,14 @@ export function EoiFormTabs({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
+        aria-describedby="confirm-modal-desc"
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
       >
-        <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+        <div ref={modalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
           <h2 id="confirm-modal-title" className="text-lg font-bold text-gray-900 mb-1">
             {isResubmission ? "Confirm resubmission" : "Confirm submission"}
           </h2>
-          <p className="text-sm text-gray-500 mb-5">
+          <p id="confirm-modal-desc" className="text-sm text-gray-500 mb-5">
             {isResubmission
               ? "Your corrected application will be sent back to your NOC for review."
               : "Your application will be sent to your NOC for review. You won't be able to edit it until your NOC returns it."}
