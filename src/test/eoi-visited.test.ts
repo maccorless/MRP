@@ -34,4 +34,13 @@ describe("deserializeVisited", () => {
     expect(result.has(3)).toBe(true);
     expect(result.size).toBe(2);
   });
+
+  it("round-trips a set through serialize and deserialize", () => {
+    const original = new Set([0, 2, 4]);
+    const result = deserializeVisited(serializeVisited(original));
+    expect(result.size).toBe(3);
+    expect(result.has(0)).toBe(true);
+    expect(result.has(2)).toBe(true);
+    expect(result.has(4)).toBe(true);
+  });
 });
