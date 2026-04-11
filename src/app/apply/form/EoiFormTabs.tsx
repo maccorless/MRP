@@ -94,6 +94,16 @@ const REQUIRED_FIELDS: Record<number, string[]> = {
   4: [],
 };
 
+// Fields beyond required that must be filled for a "full" (checkmark) status.
+// Accreditation and History use custom DOM logic in isTabFull — listed here for reference only.
+const CHECKMARK_FIELDS: Record<number, string[]> = {
+  0: ["website"],
+  1: ["contact_title", "contact_phone", "contact_cell"],
+  2: [], // handled in isTabFull (requested_* per checked category)
+  3: ["circulation", "publication_frequency", "sports_to_cover"],
+  4: [], // handled in isTabFull (prior_olympic, prior_paralympic, past_coverage_examples)
+};
+
 export function EoiFormTabs({
   token,
   email,
@@ -116,7 +126,7 @@ export function EoiFormTabs({
   const [activeTab, setActiveTab] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
   const tabListRef = useRef<HTMLDivElement>(null);
-  const [tabStatus, setTabStatus] = useState<("empty" | "partial" | "complete")[]>(
+  const [tabStatus, setTabStatus] = useState<("empty" | "complete" | "full")[]>(
     TABS.map(() => "empty")
   );
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
@@ -137,8 +147,8 @@ export function EoiFormTabs({
 
   const STATUS_LABELS: Record<string, string> = {
     empty: "Not started",
-    partial: "Partially filled",
-    complete: "Complete",
+    complete: "Required fields complete",
+    full: "Fully complete",
   };
 
   // localStorage keys scoped to this email
@@ -153,6 +163,55 @@ export function EoiFormTabs({
       localStorage.setItem(visitedKey, serializeVisited(visitedTabsRef.current));
     } catch { /* storage full */ }
   }, [visitedKey]);
+
+  function isTabFull(tabIndex: number, form: HTMLFormElement): boolean {
+    // Check standard extra fields first
+    const extraFields = CHECKMARK_FIELDS[tabIndex] ?? [];
+    for (const name of extraFields) {
+      const el = form.elements.namedItem(name);
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
+        if (!el.value.trim()) return false;
+      }
+    }
+
+    // Tab-specific custom checks
+    if (tabIndex === 2) {
+      // All checked categories must have a quantity filled
+      const categories = ["E", "Es", "EP", "EPs", "ET", "EC"];
+      for (const cat of categories) {
+        const checkbox = form.elements.namedItem(`category_${cat}`) as HTMLInputElement | null;
+        if (checkbox?.checked) {
+          const qty = form.elements.namedItem(`requested_${cat}`) as HTMLInputElement | null;
+          if (!qty?.value.trim()) return false;
+        }
+      }
+      return true;
+    }
+
+    if (tabIndex === 3) {
+      // At least one publication type must be checked
+      const pubTypes = form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]:checked');
+      if (pubTypes.length === 0) return false;
+    }
+
+    if (tabIndex === 4) {
+      // Both prior accreditation radios must be answered
+      const olympicInputs = form.elements.namedItem("prior_olympic");
+      const paralympicInputs = form.elements.namedItem("prior_paralympic");
+      const olympicAnswered = olympicInputs instanceof RadioNodeList
+        ? Array.from(olympicInputs).some((el) => el instanceof HTMLInputElement && el.checked)
+        : false;
+      const paralympicAnswered = paralympicInputs instanceof RadioNodeList
+        ? Array.from(paralympicInputs).some((el) => el instanceof HTMLInputElement && el.checked)
+        : false;
+      if (!olympicAnswered || !paralympicAnswered) return false;
+      // If the coverage textarea is in the DOM (shown when olympic=yes or both=no), it must be filled
+      const coverage = form.elements.namedItem("past_coverage_examples");
+      if (coverage instanceof HTMLTextAreaElement && !coverage.value.trim()) return false;
+    }
+
+    return true;
+  }
 
   // Restore from localStorage on mount (skip for resubmissions and invite arrivals)
   useEffect(() => {
@@ -227,41 +286,46 @@ export function EoiFormTabs({
   function updateTabStatus() {
     if (!formRef.current) return;
     const form = formRef.current;
-    const newStatus = TABS.map((_, tabIndex) => {
+    const newStatus = TABS.map((_, tabIndex): "empty" | "complete" | "full" => {
+      // Resubmission: org tab is read-only and fully pre-filled
+      if (isResubmission && tabIndex === 0) return "full";
+
+      // Must be visited first
+      if (!visitedTabsRef.current.has(tabIndex)) return "empty";
+
       const required = REQUIRED_FIELDS[tabIndex] ?? [];
-      const tabFields = form.querySelectorAll(`[data-tab="${tabIndex}"]`);
-      let anyFilled = false;
 
-      tabFields.forEach((el) => {
-        if (el instanceof HTMLInputElement) {
-          if (el.type === "radio" && el.checked) anyFilled = true;
-          else if (el.type === "checkbox" && el.checked) anyFilled = true;
-          else if (el.type !== "radio" && el.type !== "checkbox" && el.value.trim()) anyFilled = true;
-        } else if ((el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) && el.value.trim()) {
-          anyFilled = true;
-        }
-      });
-
-      if (!anyFilled) return "empty" as const;
-
-      // Check if all required fields are filled
-      if (isResubmission && tabIndex === 0) return "complete" as const; // org is read-only
+      // Check required fields
       const allRequired = required.every((name) => {
         const el = form.elements.namedItem(name);
-        if (!el) return tabIndex === 0 && isResubmission; // skip org fields on resubmit
+        if (!el) return false;
         if (el instanceof RadioNodeList) {
-          for (const item of el) {
-            if (item instanceof HTMLInputElement && item.checked) return true;
-          }
-          return false;
+          return Array.from(el).some(
+            (item) => item instanceof HTMLInputElement && item.checked
+          );
         }
-        if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) {
+        if (
+          el instanceof HTMLInputElement ||
+          el instanceof HTMLTextAreaElement ||
+          el instanceof HTMLSelectElement
+        ) {
           return el.value.trim() !== "";
         }
         return false;
       });
 
-      return allRequired ? "complete" as const : "partial" as const;
+      // Accreditation tab: at least one category checkbox required
+      if (tabIndex === 2) {
+        const catChecked = Array.from(
+          form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
+        ).some((cb) => cb.checked);
+        if (!catChecked || !allRequired) return "empty";
+      } else if (!allRequired) {
+        return "empty";
+      }
+
+      // All required fields satisfied — check for full completion
+      return isTabFull(tabIndex, form) ? "full" : "complete";
     });
     setTabStatus(newStatus);
   }
@@ -473,10 +537,11 @@ export function EoiFormTabs({
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                {/* Status dot */}
+                {/* Status dot — TODO(Task 4): replace partial branch */}
                 <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
                   status === "complete" ? "bg-green-500" :
-                  status === "partial"  ? "bg-[#0057A8]" :
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (status as any) === "partial"  ? "bg-[#0057A8]" :
                   "bg-gray-300"
                 }`} />
                 {tab.label}
