@@ -537,26 +537,27 @@ export function EoiFormTabs({
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                {/* Status indicator */}
-                {status === "full" ? (
-                  <svg
-                    aria-hidden="true"
-                    className="w-4 h-4 shrink-0 text-green-500"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="8" cy="8" r="7" />
-                    <polyline points="5,8.5 7,10.5 11,6.5" />
-                  </svg>
-                ) : (
-                  <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
-                    status === "complete" ? "bg-green-500" : "bg-gray-300"
-                  }`} />
-                )}
+                {/* Status indicator — fixed 16px slot so tab width never shifts */}
+                <span className="w-4 h-4 flex items-center justify-center shrink-0" aria-hidden="true">
+                  {status === "full" ? (
+                    <svg
+                      className="w-4 h-4 text-green-500"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="8" cy="8" r="7" />
+                      <polyline points="5,8.5 7,10.5 11,6.5" />
+                    </svg>
+                  ) : (
+                    <span className={`w-2 h-2 rounded-full ${
+                      status === "complete" ? "bg-green-500" : "bg-gray-300"
+                    }`} />
+                  )}
+                </span>
                 {tab.label}
                 <span className="sr-only">({STATUS_LABELS[status]})</span>
               </button>
