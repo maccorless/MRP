@@ -60,6 +60,23 @@ export type PrefillData = {
   accessibilityNeeds?: boolean | null;
 };
 
+/** Serialize visited tab indices to a JSON string for localStorage. */
+export function serializeVisited(visited: Set<number>): string {
+  return JSON.stringify([...visited].sort((a, b) => a - b));
+}
+
+/** Deserialize visited tab indices from a localStorage string. Returns empty set on error. */
+export function deserializeVisited(raw: string | null): Set<number> {
+  if (!raw) return new Set();
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set();
+    return new Set(parsed.filter((x): x is number => typeof x === "number"));
+  } catch {
+    return new Set();
+  }
+}
+
 const TABS = [
   { label: "Organisation", icon: "1" },
   { label: "Contacts",     icon: "2" },
@@ -83,6 +100,7 @@ export function EoiFormTabs({
   resubmitId,
   prefill,
   isResubmission,
+  isFromInvite = false,
   countryCodes,
   nocCodes,
 }: {
@@ -91,6 +109,7 @@ export function EoiFormTabs({
   resubmitId: string | null;
   prefill: PrefillData | null;
   isResubmission: boolean;
+  isFromInvite?: boolean;
   countryCodes: { code: string; name: string }[];
   nocCodes: { code: string; name: string }[];
 }) {
@@ -123,9 +142,9 @@ export function EoiFormTabs({
   // localStorage key scoped to this email
   const storageKey = `eoi-draft-${email}`;
 
-  // Restore from localStorage on mount (skip for resubmissions)
+  // Restore from localStorage on mount (skip for resubmissions and invite arrivals)
   useEffect(() => {
-    if (isResubmission || !formRef.current) return;
+    if (isResubmission || isFromInvite || !formRef.current) return;
     try {
       const saved = localStorage.getItem(storageKey);
       if (!saved) return;
