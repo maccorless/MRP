@@ -25,9 +25,8 @@ test.describe('Public EoI — /apply', () => {
     // by navigating directly with an invalid email query (server-side error).
     await page.goto('/apply?error=invalid_email');
 
-    const alert = page.getByRole('alert');
+    const alert = page.getByRole('alert').filter({ hasText: /valid email/i });
     await expect(alert).toBeVisible();
-    await expect(alert).toContainText(/valid email/i);
   });
 
   test('skip-to-main-content link is present in the DOM', async ({ page }) => {
