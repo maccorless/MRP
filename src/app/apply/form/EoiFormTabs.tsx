@@ -97,8 +97,8 @@ const REQUIRED_FIELDS: Record<number, string[]> = {
 // Fields beyond required that must be filled for a "full" (checkmark) status.
 // Accreditation and History use custom DOM logic in isTabFull — listed here for reference only.
 const CHECKMARK_FIELDS: Record<number, string[]> = {
-  0: ["website"],
-  1: ["contact_title", "contact_phone", "contact_cell"],
+  0: ["website", "address", "city", "state_province", "postal_code"],
+  1: ["contact_title"],
   2: [], // handled in isTabFull (requested_* per checked category)
   3: ["circulation", "publication_frequency", "sports_to_cover"],
   4: [], // handled in isTabFull (prior_olympic, prior_paralympic, past_coverage_examples)
@@ -177,6 +177,13 @@ export function EoiFormTabs({
     }
 
     // Tab-specific custom checks
+    if (tabIndex === 1) {
+      // At least one of office phone or cell phone must be filled
+      const phone = form.elements.namedItem("contact_phone") as HTMLInputElement | null;
+      const cell  = form.elements.namedItem("contact_cell")  as HTMLInputElement | null;
+      if (!phone?.value.trim() && !cell?.value.trim()) return false;
+    }
+
     if (tabIndex === 2) {
       // All checked categories must have a quantity filled
       const categories = ["E", "Es", "EP", "EPs", "ET", "EC"];
