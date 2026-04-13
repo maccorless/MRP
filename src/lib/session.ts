@@ -163,6 +163,12 @@ export async function requireSession(): Promise<SessionPayload> {
 /** Use in NOC-only pages. */
 export async function requireNocSession(): Promise<SessionPayload & { nocCode: string }> {
   const session = await requireSession();
+  console.log("[AUTH] requireNocSession check", {
+    role: session.role,
+    nocCode: session.nocCode,
+    email: session.email,
+    pass: session.role === "noc_admin" && !!session.nocCode,
+  });
   if (session.role !== "noc_admin" || !session.nocCode) redirect("/admin/login");
   return session as SessionPayload & { nocCode: string };
 }
