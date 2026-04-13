@@ -1,4 +1,5 @@
-import { login } from "./actions";
+import { login, logout } from "./actions";
+import { ClearSessionButton } from "./ClearSessionButton";
 
 const ROLE_LABELS: Record<string, string> = {
   noc_admin:  "NOC Admin",
@@ -104,6 +105,8 @@ export default async function LoginPage({
             </a>
           )}
         </div>
+        {/* Hidden reset — clears session cookie for a fresh login */}
+        <ClearSessionButton action={logout} />
       </div>
     </div>
   );

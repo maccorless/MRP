@@ -24,16 +24,8 @@ export async function login(formData: FormData) {
 
   // Hardcoded prototype check: any seeded admin with passwordHash set can log in with PROTO_PASSWORD
   if (!user || !user.passwordHash || password !== PROTO_PASSWORD) {
-    console.log("[LOGIN] credentials rejected", { email, userFound: !!user, hasHash: !!user?.passwordHash });
     redirect("/admin/login?error=invalid_credentials");
   }
-
-  console.log("[LOGIN] credentials OK, setting session", {
-    email: user.email,
-    role: user.role,
-    nocCode: user.nocCode,
-    ifCode: user.ifCode,
-  });
 
   await setSession({
     userId: user.id,
@@ -57,8 +49,6 @@ export async function login(formData: FormData) {
     actorLabel: user.displayName,
     action: "admin_login",
   });
-
-  console.log("[LOGIN] session set, redirecting to dashboard", { role: user.role });
 
   // Route to the right dashboard
   if (user.role === "noc_admin" || user.role === "if_admin") {

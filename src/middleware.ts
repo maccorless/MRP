@@ -13,17 +13,14 @@ export async function middleware(req: NextRequest) {
 
   const cookie = req.cookies.get(COOKIE_NAME);
   if (!cookie) {
-    console.log("[MW] no session cookie, redirecting to login", { pathname });
     return NextResponse.redirect(new URL("/admin/login", req.url));
   }
 
   const session = await decodeSession(cookie.value);
   if (!session) {
-    console.log("[MW] session decode failed, redirecting to login", { pathname, cookieLength: cookie.value.length });
     return NextResponse.redirect(new URL("/admin/login", req.url));
   }
 
-  console.log("[MW] session valid, proceeding", { pathname, email: session.email, role: session.role });
   return NextResponse.next();
 }
 
