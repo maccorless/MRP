@@ -1,8 +1,10 @@
+**Last updated: 11-Apr-2026 17:13**
+
 # MRP Manual Test Walkthrough
 
 **Version**: v0.1  
-**Last updated**: 2026-04-03  
-**Production URL**: https://mrp-production-8073.up.railway.app/
+**Last updated**: 2026-04-11  
+**Production URL**: https://mrp.dgpbeta.com/
 
 ---
 
@@ -46,6 +48,15 @@ All seeded admin accounts share the password: **`Password1!`**
 | `ocog.admin@la28.org` | OCOG Admin | — | LA28 OCOG Admin |
 | `if.admin@worldathletics.org` | IF Admin | **ATH** (Athletics) | World Athletics IF Admin |
 
+### Session duration and switching accounts
+
+Admin sessions last **8 hours**. During this time your login persists across page refreshes and browser restarts. To sign in as a different admin user, either:
+
+- Click **Sign out** in the top-right header (available on any admin page), or
+- On the login page, click the small **"clear session"** link in the bottom-left corner — this clears the session cookie and gives you a fresh login form.
+
+The same applies to EoI applicant sessions — if you want to start a fresh application flow, clear your cookies for `mrp.dgpbeta.com` or use an incognito window.
+
 ### Magic link tokens (pre-seeded for applicant testing)
 
 These let you skip the email step and go straight to the form:
@@ -57,10 +68,10 @@ These let you skip the email step and go straight to the form:
 
 To use a token directly:
 ```
-https://mrp-production-8073.up.railway.app/apply/verify?token=K7M2&email=demo@test.com
+https://mrp.dgpbeta.com/apply/verify?token=K7M2&email=demo@test.com
 ```
 
-> **Testing with your own email**: Go to `https://mrp-production-8073.up.railway.app/apply`, enter your real work email, and follow the magic link. This works any time without resetting seed data.
+> **Testing with your own email**: Go to `https://mrp.dgpbeta.com/apply`, enter your real work email, and follow the magic link. This works any time without resetting seed data.
 
 ---
 
@@ -128,7 +139,7 @@ Quotas are tracked **per accreditation sub-category** — E, Es, EP, EPs, ET, EC
 
 **Who**: A journalist, photographer, broadcaster, or agency representative applying for media accreditation at LA 2028.
 
-**Portal entry**: https://mrp-production-8073.up.railway.app/apply
+**Portal entry**: https://mrp.dgpbeta.com/apply
 
 **What they do**: Submit an Expression of Interest (EoI) form covering their organisation, contact details, accreditation categories requested, and publication history. The NOC reviews their submission and allocates slots.
 
@@ -165,7 +176,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 
 **Steps**:
 
-1. Navigate to `https://mrp-production-8073.up.railway.app/apply`
+1. Navigate to `https://mrp.dgpbeta.com/apply`
 2. Enter a valid work email (e.g. `tester@apnews.com`)
 3. Click **Send access code**
 
@@ -200,7 +211,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 3. Click **Continue to application**
 
 **Option B — pre-seeded token** (skips email):
-1. Navigate directly to `https://mrp-production-8073.up.railway.app/apply/verify?token=K7M2&email=demo@test.com`
+1. Navigate directly to `https://mrp.dgpbeta.com/apply/verify?token=K7M2&email=demo@test.com`
 2. Click **Continue to application**
 
 **Expected**: Redirected to the multi-tab EoI form.
@@ -251,7 +262,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 
 **Expected**: Confirmation page with your reference number (e.g. `APP-2028-USA-00042`). Form data is cleared from localStorage.
 
-**Auto-save test**: On any tab, fill a field, close the browser tab, reopen `https://mrp-production-8073.up.railway.app/apply`, re-verify with the same token. The form should reload with your previously entered data.
+**Auto-save test**: On any tab, fill a field, close the browser tab, reopen `https://mrp.dgpbeta.com/apply`, re-verify with the same token. The form should reload with your previously entered data.
 
 ---
 
@@ -277,7 +288,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 **Pre-condition**: Application `APP-2028-USA-00004` (Reuters, Returned status) is in the seed data. Log in as the applicant for that application, or create a new application and have a NOC admin return it.
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/apply` with the original email
+1. Navigate to `https://mrp.dgpbeta.com/apply` with the original email
 2. Request a new access code and verify
 3. The form should load pre-populated with the previous submission
 4. The NOC's return note should be visible at the top of the form
@@ -311,7 +322,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 ```
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/apply/status`
+1. Navigate to `https://mrp.dgpbeta.com/apply/status`
 2. Enter the email address used for a seeded application (e.g. `demo@test.com`)
 3. Click **View My Status**
 4. Follow the magic link sent to that email (or use the pre-seeded token path if testing in isolation)
@@ -332,7 +343,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 
 **Who**: The accreditation coordinator at a National Olympic Committee (e.g. USOPC for USA, British Olympic Association for GBR).
 
-**Portal entry**: https://mrp-production-8073.up.railway.app/admin  
+**Portal entry**: https://mrp.dgpbeta.com/admin  
 (Login with `noc.admin@usopc.org` / `Password1!` for USA; `noc.admin@teamgb.org` for GBR)
 
 **What they do**: Review EoI submissions from media organisations in their country, decide how many accreditation slots to allocate per organisation, and submit the allocation plan (PbN) to the IOC. They also nominate organisations for Extra National Representatives (ENR).
@@ -368,7 +379,7 @@ The NOC admin reviews incoming EoI applications and approves, returns (with feed
 ```
 
 **Steps**:
-1. Log in as `noc.admin@usopc.org` at `https://mrp-production-8073.up.railway.app/admin`
+1. Log in as `noc.admin@usopc.org` at `https://mrp.dgpbeta.com/admin`
 2. Navigate to **Applications** (or the EoI review section)
 
 **Expected**: List shows all USA applications across all statuses. Counts match seed data.
@@ -445,7 +456,7 @@ After approving applications, the NOC admin decides how many accreditation slots
 ```
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/pbn`
+1. Navigate to `https://mrp.dgpbeta.com/admin/noc/pbn`
 2. Confirm only **Approved** applications appear in the table
 
 **Expected**:
@@ -526,7 +537,7 @@ After PbN submission, the NOC can nominate specific media organisations for Extr
 **Goal**: Confirm the ENR section is independent of EoI and accessible after seeding.
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/enr`
+1. Navigate to `https://mrp.dgpbeta.com/admin/noc/enr`
 
 **Expected**: ENR list page loads. If no nominations exist yet, a prompt to add the first nomination is shown.
 
@@ -601,7 +612,7 @@ After PbN submission, the NOC can nominate specific media organisations for Extr
 
 **Who**: The LA28 Organising Committee accreditation officer responsible for final approval of all NOC slot allocations before they are transmitted to the ACR (Accreditation) system.
 
-**Portal entry**: https://mrp-production-8073.up.railway.app/admin/ocog  
+**Portal entry**: https://mrp.dgpbeta.com/admin/ocog  
 (Login with `ocog.admin@la28.org` / `Password1!`)
 
 **What they do**: Monitor PbN submission status across all NOCs, review each NOC's proposed per-category slot allocations, adjust individual org slot counts if needed, formally approve the allocation, and push the final data to ACR.
@@ -640,8 +651,8 @@ The OCOG admin monitors which NOCs have submitted their allocations and reviews 
 ```
 
 **Steps**:
-1. Log in as `ocog.admin@la28.org` at `https://mrp-production-8073.up.railway.app/admin`
-2. Navigate to **PbN Approvals** (or go directly to `https://mrp-production-8073.up.railway.app/admin/ocog/pbn`)
+1. Log in as `ocog.admin@la28.org` at `https://mrp.dgpbeta.com/admin`
+2. Navigate to **PbN Approvals** (or go directly to `https://mrp.dgpbeta.com/admin/ocog/pbn`)
 
 **Expected**:
 - Cross-NOC list with one row per NOC
@@ -698,7 +709,7 @@ The OCOG can accept the NOC's allocation as-is, or adjust individual org slot co
 **Goal**: Confirm approval with no adjustments works and advances the state.
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ocog/pbn/USA`
+1. Navigate to `https://mrp.dgpbeta.com/admin/ocog/pbn/USA`
 2. Review the allocation — do not change any slot values
 3. Click **Approve allocation**
 
@@ -715,7 +726,7 @@ The OCOG can accept the NOC's allocation as-is, or adjust individual org slot co
 **Goal**: Confirm the OCOG can override individual org slot counts before approving.
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ocog/pbn/USA`
+1. Navigate to `https://mrp.dgpbeta.com/admin/ocog/pbn/USA`
 2. Change one org's E slot count (e.g. reduce Reuters from 8 to 6)
 3. Click **Approve allocation**
 
@@ -757,7 +768,7 @@ After approving, the OCOG transmits the final allocation to the ACR system.
 
 **Who**: An International Federation representative (e.g. World Athletics) who reviews media applications for organisations covering their sport.
 
-**Portal entry**: https://mrp-production-8073.up.railway.app/admin  
+**Portal entry**: https://mrp.dgpbeta.com/admin  
 (Login with `if.admin@worldathletics.org` / `Password1!`)
 
 **What they do**: The IF Admin role currently shares the NOC Admin UI. Sport-specific filtering is not yet implemented — the IF admin sees all applications for their associated NOC, not just their sport. ENR scenarios are not applicable to IF Admins.
@@ -788,7 +799,7 @@ Same as NOC Admin — see Tests 2.5 through 2.7. The IF admin can view the PbN a
 
 **Who**: An IOC accreditation officer overseeing the full media registration process across all NOCs.
 
-**Portal entry**: https://mrp-production-8073.up.railway.app/admin  
+**Portal entry**: https://mrp.dgpbeta.com/admin  
 (Login with `ioc.admin@olympics.org` / `Password1!`)
 
 **What they do**: Monitor the status of EoI applications across all NOCs, make grant/partial/denied decisions on ENR nominations, and (when built) impersonate other users for support purposes.
@@ -824,7 +835,7 @@ The IOC admin gets a cross-NOC overview of EoI application status, PbN submissio
 ```
 
 **Steps**:
-1. Log in as `ioc.admin@olympics.org` at `https://mrp-production-8073.up.railway.app/admin`
+1. Log in as `ioc.admin@olympics.org` at `https://mrp.dgpbeta.com/admin`
 
 **Expected**:
 - Dashboard shows totals across ALL NOCs (USA + GBR + FRA)
@@ -873,7 +884,7 @@ After NOCs submit their ENR nominations, the IOC reviews each org and makes a de
 **Pre-condition**: At least one NOC has submitted ENR nominations (run Tests 2.9–2.11 first, or use seeded ENR data if present).
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ioc/enr`
+1. Navigate to `https://mrp.dgpbeta.com/admin/ioc/enr`
 
 **Expected**: All submitted ENR nominations from all NOCs are visible with their priority rankings.
 
@@ -918,7 +929,7 @@ After NOCs submit their ENR nominations, the IOC reviews each org and makes a de
 
 **Steps**:
 1. Log out, log back in as `noc.admin@usopc.org`
-2. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/enr`
+2. Navigate to `https://mrp.dgpbeta.com/admin/noc/enr`
 
 **Expected**: Decisions (Grant / Partial / Denied) and granted slot counts are visible for each nomination.
 
@@ -991,13 +1002,13 @@ The IOC admin can open a read-only window impersonating any admin user for suppo
 **Goal**: Confirm all write actions are blocked in the sudo window.
 
 **Steps** (in the sudo window from Test 6.3):
-1. Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/queue`
+1. Navigate to `https://mrp.dgpbeta.com/admin/noc/queue`
 2. Click on a pending application
 3. Try to click **Approve**
 
 **Expected**: The approve button is disabled (greyed out). Attempting to submit any form should have no effect.
 
-**Also test**: Navigate to `https://mrp-production-8073.up.railway.app/admin/noc/pbn` — slot input fields should be disabled.
+**Also test**: Navigate to `https://mrp.dgpbeta.com/admin/noc/pbn` — slot input fields should be disabled.
 
 ---
 
@@ -1017,7 +1028,7 @@ The IOC admin can open a read-only window impersonating any admin user for suppo
 **Goal**: Confirm the `sudo_initiated` action appears in the audit log.
 
 **Steps**:
-1. Navigate to `https://mrp-production-8073.up.railway.app/admin/ioc/audit`
+1. Navigate to `https://mrp.dgpbeta.com/admin/ioc/audit`
 2. Look for the most recent `sudo_initiated` entry
 
 **Expected**: Audit entry shows: actor = IOC Admin, action = `sudo_initiated`, detail = "Sudo initiated as S. Kim (noc_admin · USA)".
@@ -1076,7 +1087,7 @@ Run this after any significant code change to catch regressions across the full 
 | 13 | View dashboard totals | IOC Admin | Cross-NOC counts match |
 | 14 | Grant ENR nomination | IOC Admin | Decision visible to NOC |
 | 15 | Download PbN CSV export | IOC Admin | CSV with all 6 category columns |
-| 16 | OCOG reviews submitted PbN | OCOG Admin | `https://mrp-production-8073.up.railway.app/admin/ocog/pbn` — NOC's submission visible |
+| 16 | OCOG reviews submitted PbN | OCOG Admin | `https://mrp.dgpbeta.com/admin/ocog/pbn` — NOC's submission visible |
 | 17 | OCOG approves PbN with adjustments | OCOG Admin | State → ocog_approved |
 | 18 | OCOG sends to ACR | OCOG Admin | ACR stub logs all 6 category fields |
 | 19 | Open sudo window as NOC admin | IOC Admin | New window shows SUDO MODE banner, NOC UI |

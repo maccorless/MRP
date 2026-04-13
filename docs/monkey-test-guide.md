@@ -1,8 +1,10 @@
+**Last updated: 11-Apr-2026 17:13**
+
 # MRP Monkey Test Guide
 
-**Production URL**: https://mrp-production-8073.up.railway.app/
-**Admin URL**: https://mrp-production-8073.up.railway.app/admin
-**EoI form**: https://mrp-production-8073.up.railway.app/apply
+**Production URL**: https://mrp.dgpbeta.com/
+**Admin URL**: https://mrp.dgpbeta.com/admin
+**EoI form**: https://mrp.dgpbeta.com/apply
 
 ---
 
@@ -19,7 +21,7 @@ This guide is for informal exploratory testing ("monkey testing") — click arou
 After submitting an EoI, applicants can check their status at any time without logging in:
 
 ```
-https://mrp-production-8073.up.railway.app/apply/status
+https://mrp.dgpbeta.com/apply/status
 ```
 
 Enter the email address used when applying. A magic link is sent with a 1-hour expiry. Click it to see the application status and submission details.
@@ -38,7 +40,7 @@ Media organisations use the EoI form to express interest in press accreditation.
 You can jump straight to the form using a pre-seeded magic link — no email required:
 
 ```
-https://mrp-production-8073.up.railway.app/apply/verify?token=K7M2&email=demo@test.com
+https://mrp.dgpbeta.com/apply/verify?token=K7M2&email=demo@test.com
 ```
 
 Things to try on the form:
@@ -53,6 +55,8 @@ Things to try on the form:
 ## Admin accounts
 
 All accounts share the password: **`Password1!`**
+
+Admin sessions last **8 hours**. To switch accounts, click **Sign out** in the top-right header, or use the small **"clear session"** link in the bottom-left corner of the login page to clear the cookie and start fresh.
 
 ### IOC Admin
 
