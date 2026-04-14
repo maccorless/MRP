@@ -1,3 +1,5 @@
+**Last updated: 10-Apr-2026 10:24**
+
 # MRP v1 Implementation Plan — Sprint 1 (Apr 1–25, 2026)
 
 **Status:** COMPLETE

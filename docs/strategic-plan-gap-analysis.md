@@ -1,4 +1,5 @@
 **Created: 13-Apr-2026 21:30 CEST**
+**Last updated: 14-Apr-2026 17:00 CEST**
 
 # Strategic Plan Gap Analysis
 
@@ -28,7 +29,7 @@ Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditat
 3. **3.2 — Quota entry ownership.** Plan: "Press by Number form is a **pre-populated** form… allocated by the IOC and distributed to NOCs." LA28 will handle distribution via the system. Model A (IOC types into portal) is defensible, but the plan's mental model is clearly IOC → LA28 → pre-populated form. Emma's Model B aligns with the plan.
 4. **R-3 — ENR as "completely separate track."** Plan is explicit: ENR "**submissions must be sent to the IOC via the Press by Number form**." ENR is not a separate track — it's a **section of the PbN submission**. Our separate-track architecture diverges.
 5. **2.2 — Rejections are permanent / reversals.** Plan: "Any additions or amendments requested by an NOC or individual must be referred by the OCOG to the IOC Media Operations Department." All changes route through IOC, not terminally locked in MRP.
-6. **4.3 — After ACR export, is MRP done?** Plan: "The accreditation process will continue up to and during the Games"; extra accreditation requests go OCOG→IOC. MRP cannot be terminal at ACR export if it's the source of truth for the ongoing cycle.
+6. **4.3 — After the MRP → ACR handoff, which system is authoritative?** Plan: "The accreditation process will continue up to and during the Games"; extra accreditation requests go OCOG→IOC; weekly IOC status reports run through PbN; inter-category reallocation requires IOC written approval. Our current Model A (ACR terminal; MRP frozen at `sent_to_acr`) contradicts all of this. §4.3 has been rewritten (2026-04-14) as a Thursday P0 with three explicit models (A — ACR takes over; B — MRP stays authoritative and pushes to ACR; C — bidirectional sync) and four decision points. Must be discussed jointly with §4.5 (Excel source of truth) — they are the same underlying question. See `TODOS.md` [TODO-P0-E].
 7. **R-4 — IFs have NO ENR.** Plan confirms this, but also says IFs are **Responsible Organisations** for sport-specialist Es/EPs — a concept our docs barely use.
 
 ---

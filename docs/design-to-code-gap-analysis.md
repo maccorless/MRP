@@ -1,3 +1,5 @@
+**Last updated: 10-Apr-2026 10:25**
+
 # MRP Design-to-Code Gap Analysis
 **Date:** 2026-03-30 — **Updated:** 2026-04-10 (post Sprint 1)
 **Scope:** All updated design docs vs. codebase as of commit de0b950

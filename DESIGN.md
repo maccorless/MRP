@@ -1,3 +1,5 @@
+**Last updated: 07-Apr-2026 21:42**
+
 # MRP Design System
 
 Design decisions for the LA 2028 Media Registration Portal admin UI.

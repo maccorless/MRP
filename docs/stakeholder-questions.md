@@ -1,4 +1,4 @@
-**Last updated: 11-Apr-2026 20:30**
+**Last updated: 14-Apr-2026 17:00 CEST**
 
 # LA28 Media Registration Portal — Open Questions for Stakeholders
 
@@ -341,23 +341,54 @@ We would like to understand the reason for keeping this offline. The portal can 
 
 ---
 
-### 4.3 After ACR Export — Is MRP Done?
+### 4.3 After the MRP → ACR Handoff — Where Do Edits Live? (Source of Truth)
 
-**Status:** PROVISIONAL — Option A (terminal after ACR export) is the current implementation. Changing to Option B requires rework of existing terminal-state logic — see the current-state note below.
+**Status:** OPEN-BLOCKING — **P0 for Thursday 2026-04-16.** Promoted from PROVISIONAL on 2026-04-14 because the Strategic Plan evidence below strongly implies our current implementation (Model A) is wrong, and because this question gates the §4.5 Excel source-of-truth decision, the R-10 ACR adapter contract, and the §2.2 post-export reversal rules. Must be resolved as a single joint discussion with §4.5.
 
-**Scenario:** A NOC completes their PbN slot allocations in MRP. The OCOG approves them. The approved allocations are exported to ACR. At this point, the question is: **what happens in MRP after the data flows to ACR?**
+**The question in one sentence.** After a NOC's PbN allocations have been handed off from MRP to ACR, **where are subsequent changes made** — in MRP (and re-sent to ACR), directly in ACR, or in both systems kept in sync?
 
-Two possible models:
+**Why this is one question, not several.** "What happens to the MRP record after export," "can a NOC still adjust allocations once ACR has them," "where does the IOC weekly status report get its data," and §4.5's Excel-versus-portal question all collapse into a single decision: **which system is authoritative after handoff?** Answering that once settles the rest.
 
-**Option A — MRP is finished after export.** Once allocations are sent to ACR, all subsequent changes (quota adjustments, slot reallocations, new organisations) happen directly in ACR. MRP is not updated and becomes a historical record of the original allocation process. NOCs and the OCOG log into ACR from this point forward.
+**Concrete examples of changes at stake.** These are the real-world events that will happen after the PbN → ACR handoff and that need a home:
 
-**Option B — MRP stays active.** MRP continues to be the source of truth for quotas and allocations even after ACR export. If the OCOG needs to adjust a NOC's allocation, they do it in MRP and re-export to ACR. MRP and ACR stay in sync.
+- **IOC-approved quota bump for a NOC** three weeks after handoff (Strategic Plan §2.2: "Any additions or amendments requested by an NOC or individual must be referred by the OCOG to the IOC Media Operations Department").
+- **NOC substitutes one organisation for another** after PbN acceptance ("Org X is no longer attending — put Org Y in its 2 slots").
+- **NOC moves slots between categories** with IOC written approval (Strategic Plan: inter-category reallocations require "written approval from IOC Media Operations"; illegal substitutions like ET→EP may trigger withdrawal of accreditation).
+- **Weekly IOC status report** during the PbN period (Strategic Plan §4.1: "LA28 must send weekly status reports to IOC in an IOC-specified format").
+- **Late additions close to the Games** (Plan: "The accreditation process will continue up to and during the Games").
 
-**Our current state:** Once PbN reaches "sent to ACR" status, it's a terminal state in MRP — there is no mechanism to make further changes. This is closer to Option A.
+**Three possible models.**
 
-**What we need:** Clarity on whether MRP shuts down after the ACR handoff, or whether it needs to remain the active system for quota/allocation changes throughout the Games cycle.
+| Model | Where edits happen | Where ACR gets its data | MRP role after handoff |
+|---|---|---|---|
+| **A — ACR takes over** | Directly in ACR | From ACR itself | Frozen historical record |
+| **B — MRP stays authoritative, pushes to ACR** | In MRP | Re-sent from MRP to ACR on each change | Source of truth through the Games |
+| **C — Bidirectional sync** | Either system | Kept in sync by a sync layer | Shared authority with conflict-resolution rules |
 
-**Roles impacted:** NOC Admin (where they go for changes), OCOG Admin (where they manage allocations), IOC Admin (where they adjust quotas)
+**Our current implementation.** Model A. Once PbN reaches the `sent_to_acr` state (`src/db/schema.ts` PbN state machine; see MRP-FR-FR-016 in `docs/MRP-rq.md`), MRP locks the record — there is no in-app mechanism to amend. Any downstream adjustment would happen in ACR, outside MRP's view.
+
+**What the Strategic Plan suggests.** Model A is almost certainly wrong:
+
+- "**The accreditation process will continue up to and during the Games.**" → continuous change is expected.
+- Weekly IOC status reports during PbN → MRP needs live working data past "sent to ACR."
+- Inter-category reallocation and amendment flows are described as MRP-adjacent (OCOG → IOC), not ACR-only.
+
+**Relationship to §4.5 (Excel source of truth).** §4.5 asks the same question from the NOC side — if USOPC works in Excel, what wins when Excel and MRP disagree? Whatever is decided in 4.3 must be consistent with whatever is decided in 4.5. These should be a single Thursday discussion, not two.
+
+**What we need from Emma and Martyn on Thursday:**
+
+1. **Pick a model (A, B, or C)** — or describe the model IOC actually uses today, if different.
+2. **Draw the authoritative-system boundary.** For the chosen model, specify which data classes are MRP-authoritative, which are ACR-authoritative, and which are shared.
+3. **Amendment routing.** For changes that require IOC written approval (reallocations, amendments, late adds), does that approval flow through MRP, through ACR, or out-of-band (email)?
+4. **Weekly IOC status report.** Is the report generated from MRP, from ACR, or from the IOC Master DB? If MRP, confirm MRP must remain live through the Games.
+
+**Impact of each answer on our code.**
+
+- **Model A chosen:** Current implementation stands. We produce a "what happens next" document for NOCs and OCOG explaining when to log into ACR vs MRP. Low additional effort.
+- **Model B chosen:** We must rework the `sent_to_acr` terminal state into an ongoing-sync state, reopen MRP-FR-FR-016 and MRP-FR-FR-017, revisit §2.2 reversal rules, and tighten the R-10 adapter contract for incremental push. Estimated 2–3 weeks.
+- **Model C chosen:** Largest change — needs conflict-resolution rules, bidirectional change feeds, and a per-field ownership matrix. Should not be attempted without a clear spec from IOC/ACR.
+
+**Roles impacted:** NOC Admin (where they go to change allocations after handoff), OCOG Admin (where they adjust allocations and generate reports), IOC Admin (where they approve amendments), ACR team (API contract shape depends on the answer).
 
 ---
 
@@ -423,6 +454,8 @@ Ken's initial response (2026-04-13): "I don't want to rebuild Excel in a web pag
 **Why this matters:**
 
 The Strategic Plan explicitly states (§1.6): "LA28 ACR will start discussions with Deloitte to streamline the Press by Number process via the accreditation system rather than sending out Excel templates to NOCs." So the **stated direction** is MRP replaces the Excel template. But if USOPC is going to edit in Excel anyway, we need to decide whether we accommodate that reality or push them onto the portal.
+
+**Relationship to §4.3 (post-handoff source of truth).** §4.3 asks "after the MRP → ACR handoff, where do edits live?" §4.5 asks "during the NOC's PbN workflow, where do edits live — portal or Excel?" Both questions collapse to the same underlying decision: which system is authoritative? The answers must be consistent — Thursday should cover §4.3 and §4.5 together, not separately.
 
 **Reference materials:** `docs/paris-quota-reference.md` summarises the IOC's Paris 2024 working file and should be read before this question is discussed.
 

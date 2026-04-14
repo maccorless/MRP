@@ -1,3 +1,5 @@
+**Last updated: 10-Apr-2026 10:26**
+
 # Feature Flags — Developer Guide
 
 Feature flags let D.TEC deploy new features to a controlled subset of NOC admin users before releasing to everyone. No extra deployment is required to graduate a feature once canary testing passes — it's a single DB update.
