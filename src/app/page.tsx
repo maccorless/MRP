@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -5,12 +7,26 @@ export default function Home() {
         <div className="w-12 h-12 bg-[#0057A8] rounded-lg flex items-center justify-center mx-auto mb-4">
           <span className="text-white text-xl font-bold">M</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
           Media Registration Portal
         </h1>
-        <p className="text-gray-500 text-sm">
-          LA 2028 Olympic Games — scaffold running
+        <p className="text-gray-500 text-sm mb-8">
+          LA 2028 Olympic Games
         </p>
+        <div className="flex flex-col items-center gap-3">
+          <Link
+            href="/apply"
+            className="text-[#0057A8] hover:underline text-base font-medium"
+          >
+            Apply as a media member
+          </Link>
+          <Link
+            href="/admin/login"
+            className="text-[#0057A8] hover:underline text-base font-medium"
+          >
+            Login as an administrator
+          </Link>
+        </div>
       </div>
     </main>
   );
