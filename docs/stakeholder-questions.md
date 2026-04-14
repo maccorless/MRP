@@ -1,6 +1,8 @@
+**Last updated: 11-Apr-2026 20:30**
+
 # LA28 Media Registration Portal — Open Questions for Stakeholders
 
-**Date:** 2026-04-02
+**Date:** 2026-04-11
 
 **From:** D.TEC (Ken / DTEC)
 
@@ -177,7 +179,7 @@ There is no time limit on any reversal. All reversals are visible in the audit t
 
 1. Is it acceptable that rejection is permanent? Or should there be a path to reverse a rejection (perhaps requiring OCOG approval)?
 2. Should the OCOG see a visual flag on EoI applications that have been reversed (beyond the audit log)?
-3. Once PbN allocations have been sent to ACR ("sent to ACR" is currently a terminal state), should reversals be blocked in MRP? Or should MRP allow changes that would then need to be re-synced to ACR?
+3. Once PbN allocations have been sent to ACR ("sent to ACR" is currently a terminal state), should reversals be blocked in MRP? Or should MRP allow changes that would then need to be re-synced to ACR? *(Related: section 4.3 addresses the post-export MRP lifecycle.)*
 
 **Roles impacted:** NOC Admin (EoI reversals), OCOG Admin (PbN reversals, visibility), IOC Admin (audit visibility)
 
@@ -249,7 +251,12 @@ These questions relate to how the IOC assigns per-category quotas to each NOC an
 
 ### 3.2 Quota Ownership — IOC Enters Direct vs. OCOG Re-keys from Spreadsheet [EM 2026-04-02]
 
-**Status:** PROVISIONAL — Model A (IOC enters quotas directly) is our recommendation; challenging Emma's preference for OCOG re-keying
+**Status:** RESOLVED — 2026-04-11
+
+**Resolution:**
+- **Model A confirmed.** IOC enters per-category quota totals directly into the portal. OCOG does not re-key from a spreadsheet. The quota-entry screen built for IOC Admin stands; no rework required.
+- **OCOG approves PbN. IOC watches.** The OCOG is the single formal approval gate for PbN slot allocations. The IOC has read-only visibility on PbN; there is no IOC approval step in the PbN state machine. This matches what is built.
+- **Open wrinkle (holdback caveat):** IOC may retain some quota quantities outside the system — what IOC enters in the portal may not equal their total allocation across all channels. Whether MRP needs to surface this gap (e.g. a "portal quota vs. total quota" field or informational note) or simply show what IOC entered is a remaining question to clarify with Emma. Not blocking — treat as a display/UX detail to confirm before July quota-entry phase.
 
 **Scenario:** The IOC determines per-category quota totals for each of the 206 NOCs. The question is how those numbers get into the portal.
 
@@ -271,12 +278,7 @@ Model A is already built. We are not asking for confirmation of Model B — we a
 
 If Model B is the confirmed answer, this will require significant rework: the quota-entry screen currently built for IOC Admin would need to be moved to OCOG Admin, and a separate IOC PbN-approval step would need to be added.
 
-**Questions for the April 15/16 meeting:**
-1. Is there a process or policy reason the IOC cannot enter quotas directly into the portal?
-2. If Model B is required: who formally approves each NOC's final PbN allocation — IOC, OCOG, or both in sequence?
-3. If both need to sign off at different stages, what is the approval sequence?
-
-**Roles impacted:** IOC Admin, OCOG Admin (quota-entry and approval authority are the core dispute)
+**Roles impacted:** IOC Admin (enters quotas, read-only on PbN), OCOG Admin (approves PbN)
 
 ---
 
@@ -341,7 +343,7 @@ We would like to understand the reason for keeping this offline. The portal can 
 
 ### 4.3 After ACR Export — Is MRP Done?
 
-**Status:** OPEN — we need to discuss
+**Status:** PROVISIONAL — Option A (terminal after ACR export) is the current implementation. Changing to Option B requires rework of existing terminal-state logic — see the current-state note below.
 
 **Scenario:** A NOC completes their PbN slot allocations in MRP. The OCOG approves them. The approved allocations are exported to ACR. At this point, the question is: **what happens in MRP after the data flows to ACR?**
 
@@ -384,6 +386,51 @@ The quota cap still applies: NOCs cannot add direct-entry orgs past their per-ca
 
 ---
 
+### 4.5 PbN Excel Import/Sync — Reconciling Offline Excel Workflow with the Portal [EM 2026-04-13]
+
+**Status:** OPEN — Emma's 2026-04-13 email raised this; needs discovery on the business flow before design.
+
+**Scenario:** Emma's 2026-04-13 feedback notes that "working out these quotas may take some time for the big NOCs such as the USOPC. They will have around 500 accreditations to grant in E, Es, EP, Eps etc categories and need to look at all the applications once the EoI is over. I know that the USOPC does this allocation offline via an Excel spreadsheet as he said that it was easier for him to manage."
+
+The IOC's own working document for Paris 2024 (`46_IOC Master Allocation Table Paris 10.6.24.xlsb`) is a sophisticated multi-tab spreadsheet that appears to be the structural backbone of the accreditation process — the Strategic Plan (§4.1) refers to it as the "IOC Master E Accreditation tracking database." It has per-NOC rows × 9 categories × 5 revision snapshots with per-revision comments. This is almost certainly the same shape USOPC uses offline for their ~500-row allocation.
+
+Ken's initial response (2026-04-13): "I don't want to rebuild Excel in a web page (that's a losing battle), but do think we want to balance that with having a single source of truth. I can look into having the excel file be hosted on Microsoft and having it continually update the app database (and maybe meet both objectives — flexibility of excel but one source of truth)."
+
+**This question is about understanding the business flow, not locking down the technical implementation.** The answers to the questions below shape whether we build an import feature, an export feature, both, or something more integrated (Microsoft-hosted Excel ↔ DB sync).
+
+**Questions we need answered:**
+
+1. **What does "manage PbN in Excel" actually mean for the USOPC (and similar large NOCs)?**
+   - Do they receive a pre-populated template from the IOC/LA28 (mirroring the Paris Tab 1 shape) and fill it in?
+   - Do they build their own spreadsheet from scratch using their own format?
+   - Do multiple USOPC staff edit the same sheet simultaneously (SharePoint/OneDrive) or is it email-based?
+   - How often do they revise an allocation before submitting it? (The Paris workbook has 5 revision snapshots — is that typical?)
+
+2. **Does the IOC Master DB serve as a shared working document or a reporting artifact?**
+   - Strategic Plan §4.1 mentions "weekly status reports" during PbN that LA28 sends IOC in an IOC-specified format. Is the Master DB that report, or something upstream?
+   - Is the Master DB itself the canonical allocation record, or a read-only snapshot of something upstream?
+
+3. **What does an acceptable "single source of truth" look like from the IOC side?**
+   - Option A (thin): MRP exports a spreadsheet in the IOC Master DB shape; NOCs can optionally import a completed one.
+   - Option B (medium): MRP hosts the edit surface; an Excel-style grid UI in the portal with better ergonomics than our current screens.
+   - Option C (deep): Microsoft-hosted Excel ↔ MRP DB bidirectional sync (Ken's proposal). Excel edits flow to DB; DB changes flow back to Excel.
+   - Option D (thin+): MRP is the source of truth; NOCs who prefer Excel export-edit-import round-trips; conflicts are resolved server-side with "last import wins."
+
+4. **Is the "5 allocation revisions" pattern in the Paris workbook a workflow we should model in MRP?** Our current audit log captures individual changes; the Paris sheet freezes whole snapshots. These are different mental models for revision history.
+
+5. **Who owns the transition from "per-NOC allocation spreadsheet" → "IOC Master DB"?** LA28? IOC Media Ops directly? Does MRP need to produce output suitable for either?
+
+**Why this matters:**
+
+The Strategic Plan explicitly states (§1.6): "LA28 ACR will start discussions with Deloitte to streamline the Press by Number process via the accreditation system rather than sending out Excel templates to NOCs." So the **stated direction** is MRP replaces the Excel template. But if USOPC is going to edit in Excel anyway, we need to decide whether we accommodate that reality or push them onto the portal.
+
+**Reference materials:** `docs/paris-quota-reference.md` summarises the IOC's Paris 2024 working file and should be read before this question is discussed.
+
+**Roles impacted:** NOC Admin (especially large NOCs), IOC Admin (Master DB owner), OCOG Admin (reporting recipient)
+**NOC input strongly recommended** — a 15-minute conversation with the USOPC press officer about their actual Excel workflow would resolve most of the above questions.
+
+---
+
 ## 5. ENR — Extended Non-Rights Broadcasters
 
 These questions relate to the separate ENR track, where NOCs nominate broadcasters without Olympic media rights and the IOC grants allocations from a holdback pool. ENR is one of the carved-out areas where the IOC is the direct decision-maker (not the OCOG).
@@ -392,7 +439,7 @@ These questions relate to the separate ENR track, where NOCs nominate broadcaste
 
 ### 5.1 ENR Process — Remaining Open Questions
 
-**Status:** MOSTLY RESOLVED — additional sub-questions added from IOC review
+**Status:** OPEN-BLOCKING — ENR self-application (question 5 below) is the remaining unresolved architectural question for this track. Core process is built and tested; IOC ENR screen redesign to combined multi-NOC view is scoped but not yet started. ENR front door (self-apply vs. NOC-nominates-only) must be confirmed by Emma (IOC) and Martyn (OCOG) before ENR screen work proceeds. No further ENR intake/routing work should be built until this is resolved.
 
 **Scenario:** A NOC submits a prioritised list of five ENR organisations to the IOC. The IOC reviews the list and grants allocations from the holdback pool — Organisation A gets the full 20 slots requested, Organisation B gets a partial grant of 10 (out of 22 requested), and Organisation C is denied. The NOC sees the IOC's per-org decisions. The core process is built and tested.
 
@@ -496,21 +543,43 @@ This is primarily a D.TEC internal question, but the OCOG may have operational i
 
 **Please confirm** this approach is acceptable — accept all submissions, catch duplicates before they reach ACR.
 
+> **Dependency note:** This policy relies on Cross-NOC Duplicate Detection (section 2.4) being active. If 2.4 remains disabled, the "catch before ACR" step falls entirely to manual OCOG review across 206 NOCs at peak submission volume. Confirm whether 2.4 should be enabled before the EoI window opens.
+
 **Roles impacted:** Applicant (always gets through), NOC Admin (reviews flagged duplicates), OCOG Admin (final authority on dedup resolution)
 
 ---
 
 ### 6.4 NOC Onboarding and System Manual [EM 2026-04-02]
 
-**Status:** OPEN — governance question
+**Status:** OPEN — three separate governance questions with different owners and lead times (split below)
 
 **Scenario:** Emma asks (Comment 185): "As the NOCs will need to be onboarded on to the ACR system, will LA28ACR onboard them? A manual will need to be planned to help the NOCs. Will the system be set up in French too." These are governance questions that need answers before launch.
 
-**Questions we need answered:**
+#### 6.4a — Account Provisioning (technical/ops decision)
 
-1. **Onboarding responsibility:** Who is responsible for onboarding NOC administrators to the portal — provisioning accounts, communicating login details, and providing initial guidance? Is this D.TEC, OCOG, or IOC? Given OCOG's role as operational coordinator of the PbN process, this feels like an OCOG responsibility, but we need confirmation.
-2. **User manual:** Will a user manual or guide be produced for NOC administrators? If so, who writes it — D.TEC (technical), OCOG (process), or a joint effort? Emma notes that the OCOG has been working on a Press by Number template, which may inform or align with any portal guide.
-3. **French localisation:** French is planned for v1.1 of the portal. Emma's question implies there may be an expectation of French availability at launch. Is French required at launch (blocking), or is English-first acceptable for the initial prototype and v1.0 rollout, with French following in v1.1?
+**Status:** OPEN — needs OCOG confirmation
+
+Who is responsible for provisioning NOC admin accounts — provisioning credentials, communicating login details, and providing initial guidance? Is this D.TEC, OCOG, or IOC? This must be resolved before pilot testing (6.5) can begin, and has a direct lead time: 206 NOC accounts must exist before August 24.
+
+**Answer needed from:** Martyn (OCOG)
+
+#### 6.4b — User Manual (content owner decision)
+
+**Status:** OPEN — needs joint D.TEC + OCOG discussion
+
+Will a user manual or guide be produced for NOC administrators? If so, who writes it — D.TEC (technical content), OCOG (process content), or a joint effort? Emma notes that the OCOG has been working on a Press by Number template that may inform the portal guide.
+
+**Answer needed from:** Martyn (OCOG), to confirm whether OCOG will contribute process content
+
+#### 6.4c — French Localisation Scope (build scope decision — potentially blocking)
+
+**Status:** OPEN — may be a launch gate
+
+French is planned for v1.1. Emma's question implies there may be an expectation of French availability at launch. Is French required at launch (blocking), or is English-first acceptable for v1.0 with French following in v1.1?
+
+**Why this matters:** If French is required at launch, it must be added to the v1.0 build scope now — it is not a small change. Confirming English-first is acceptable removes it from the critical path.
+
+**Answer needed from:** Emma (IOC), Martyn (OCOG)
 
 **Roles impacted:** NOC Admin (receives onboarding), OCOG Admin (may deliver onboarding), D.TEC (may produce manual), IOC (may set language requirements)
 
@@ -537,6 +606,8 @@ This is primarily a D.TEC internal question, but the OCOG may have operational i
 
 The following decisions have been made and implemented. We're listing them here so you can confirm they match your understanding. If anything needs revisiting, we can — these are not locked.
 
+> **Note on disputed resolutions:** R-2, R-3, and R-7 below are listed as resolved but are actively disputed by open questions in the body of this document. They are flagged clearly. Do not treat them as settled until the April 15/16 meeting produces written agreement.
+
 ---
 
 ### R-1. EoI Owned by NOC; OCOG Has Cross-NOC Review Authority
@@ -554,6 +625,8 @@ This distinction is currently implicit in the portal but not made explicit to us
 
 ### R-2. PbN Approval — OCOG Approves, with IOC Exceptions
 
+> ✅ **RESOLVED 2026-04-11** — OCOG approves PbN confirmed. IOC has read-only visibility; no formal IOC step in the PbN state machine. Model A (section 3.2) adopted. The additional conflict with section 4.2 (IOC-Direct approval direction) remains open — see section 4.2.
+
 **Decision:** After a NOC submits their PbN slot allocations, the OCOG formally reviews and approves (or adjusts) them. The IOC has read-only visibility on PbN allocations but does not approve them. PbN state machine: Draft → NOC Submitted → OCOG Approved → Sent to ACR.
 
 **Named exceptions where the IOC has direct approval authority:**
@@ -570,10 +643,12 @@ This distinction is currently implicit in the portal but not made explicit to us
 
 ### R-3. ENR Process — NOC Nominates, IOC Grants from Holdback
 
+> ⚠ **OPEN-BLOCKING** — ENR self-application (section 5.1) remains unresolved and contradicts the "NOC nominates only" model here. If self-application is adopted, the EoI form, NOC queue action set, and ENR state machine all change. Awaiting Emma (IOC) and Martyn (OCOG) to confirm the ENR front door model before any further ENR intake work proceeds.
+
 **Decision:** ENR is a completely separate track from EoI/PbN. Media organisations do not self-apply for ENR — the NOC nominates them. The NOC submits a prioritised list to the IOC. The IOC reviews each org and grants full, partial, or zero slots from a separate holdback pool. ENR quota is completely separate from E-category quotas.
 
 **Roles impacted:** NOC Admin, IOC Admin
-**Please confirm** this matches your understanding of the ENR process.
+**Please confirm** this matches your understanding of the ENR process — and whether ENR self-application (section 5.1) should replace or supplement this model.
 
 ---
 
@@ -617,10 +692,12 @@ Note: The largest international wire services (AFP, AP, Reuters, Xinhua) are han
 
 ### R-7. IOC Can Edit Quotas After Import
 
+> ✅ **RESOLVED 2026-04-11** — Model A confirmed (section 3.2). IOC enters and edits quotas directly in the portal. The quota-entry screen and edit capability built for IOC Admin stand.
+
 **Decision:** The IOC imports per-category quota totals from a CSV file. After import, the IOC can also edit individual NOC quotas directly in the portal (toggle an edit mode on the quota table). All changes — whether from import or manual edit — are logged in an audit trail (previous value → new value, who changed it, when).
 
 **Roles impacted:** IOC Admin
-**Please confirm** both import and in-app editing should be supported.
+**Please confirm** both import and in-app editing should be supported — noting this depends on section 3.2 resolution.
 
 ---
 
@@ -649,6 +726,41 @@ Note: The largest international wire services (AFP, AP, Reuters, Xinhua) are han
 
 **Roles impacted:** OCOG Admin (triggers export), IOC Admin (visibility)
 **Please confirm** this approach is acceptable.
+
+---
+
+---
+
+## Appendix A — Questions Specifically for Martyn (OCOG)
+
+The following items require Martyn's operational input specifically, beyond Emma's IOC perspective already received.
+
+| # | Section | Question |
+|---|---------|----------|
+| 1 | **3.2** | ~~Does LA28/OCOG want to own quota entry (Model B), or is Model A (IOC enters directly) acceptable?~~ **RESOLVED 2026-04-11** — Model A confirmed. IOC enters directly; OCOG approves PbN. Holdback caveat: confirm whether MRP needs to surface the gap between portal quota and IOC total allocation (not blocking). |
+| 2 | **4.2** | Does OCOG enroll IOC-Direct orgs through MRP, or directly in ACR? The enrollment path shapes the ACR export schema. |
+| 3 | **6.4a** | Who provisions NOC admin accounts — OCOG, D.TEC, or IOC? 206 accounts must exist before August 24. |
+| 4 | **6.4b** | Will OCOG contribute process content to the NOC user manual, or is D.TEC writing it alone? |
+| 5 | **6.4c** | Is French localisation required at launch, or is English-first for v1.0 acceptable? |
+| 6 | **6.1** | Is OCOG willing to own the RACI for operational decisions (EoI window authority, PbN escalations, NOC onboarding)? |
+| 7 | **6.5** | Will OCOG coordinate pilot NOC selection and feedback collection, and by when? |
+
+---
+
+## Appendix B — NOC Representative Engagement Plan
+
+The following items have open questions that cannot be answered from the IOC or OCOG perspective — they require direct input from NOC press accreditation staff. We recommend engaging **two NOC representatives**: one large territory (e.g. GBR, GER, or FRA — high application volume) and one smaller territory (e.g. ISL, CYP — simpler workflow, likely to use the streamlined path).
+
+**Suggested format:** 30-minute walkthrough of the current portal UI with the questions below. NOC contact identification: ask Martyn (OCOG) to facilitate introductions.
+
+| # | Section | What to validate with NOC reps |
+|---|---------|-------------------------------|
+| 1 | **2.1** | Does the two-mode model (queue sessions vs. allocation sessions) match how NOC press officers actually work? Do they need a combined view? |
+| 2 | **2.3** | What signals would a large-territory NOC actually use to triage 400+ applications against an 80-slot quota? |
+| 3 | **1.5** | Is unlimited fast-track with audit-only governance how NOC press officers would actually want to operate, or would they want a simple OCOG-notification mechanism? |
+| 4 | **4.4** | Is the inline PbN direct-entry form (name, type, country, category in one step) simple enough for a busy NOC press officer to use without guidance? |
+| 5 | **R-8** | Does the two-step EoI → PbN process feel burdensome to a small-territory NOC with only 5–10 applicants? |
+| 6 | **4.1** | How do NOCs currently handle press attaché nominations? Does the single-org fast-track model fit their process? |
 
 ---
 

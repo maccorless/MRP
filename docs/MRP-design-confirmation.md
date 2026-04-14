@@ -1,7 +1,9 @@
+**Last updated: 11-Apr-2026 17:13**
+
 # LA28 Media Registration Portal — Design Confirmation
 
 **Status:** ACTIVE
-**Last updated:** 2026-04-02 (full doc/code audit — 5 stale items corrected, Critical Risks #9/#10 resolved, session timeout updated to 8h, 24 audit actions documented, Stakeholder Confirmation Register added with 24 items)
+**Last updated:** 2026-04-11 (added top-level timestamp standard; prior update 2026-04-02: full doc/code audit — 5 stale items corrected, Critical Risks #9/#10 resolved, session timeout updated to 8h, 24 audit actions documented, Stakeholder Confirmation Register added with 24 items)
 **Covers:** v0.1 prototype through v1 launch (August 2026) and v1.1 (October 2026)
 
 ---
@@ -1514,14 +1516,25 @@ SCR-05, SCR-07, SCR-08, SCR-14, SCR-19, SCR-21
 
 ## Key Dates
 
+These are the authoritative IOC dates from the **Press Accreditation Strategic Plan for LA28 (Feb 2026 FINAL)**, shared with the MRP team by Emma Morris (IOC) on 2026-04-13.
+
 | Date | Milestone |
 |------|-----------|
-| April 2026 | Systems ready and tested |
-| July 2026 | IOC imports per-category quota totals per NOC |
-| August 24, 2026 | Portal goes live — EoI window opens |
-| October 5, 2026 | Press by Number process launches for NOCs |
-| October 23, 2026 | Portal closes for new EoI applications |
-| December 18, 2026 | Press by Number closes |
-| October 14, 2027 | Press by Name launches (via ACR system) |
-| February 14, 2028 | Press by Name closes |
-| Summer 2028 | LA28 Olympic Games |
+| 12 May 2026 | IOC Press Accreditation Allocation Working Group meets (Lausanne) to establish per-NOC E quotas |
+| July 2026 | IOC notifies each NOC of its press accreditation allocation |
+| April 2026 | MRP systems ready and tested (internal milestone) |
+| TBC August 2026 | Portal goes live — EoI (Media Registration Page) window opens |
+| **30 October 2026** | **Hard IOC-owned deadline — platform closes for new EoI applications** |
+| Week of 5 October 2026 | Press by Number (PbN) process starts — LA28 distributes PbN forms to NOCs; Non-MRH application process also starts |
+| **18 December 2026** | **PbN ends** — NOCs submit completed PbN forms (including Non-MRH long list) to LA28 |
+| Week of 18 January 2027 | PbN starts for selected IFs (sport specialists) |
+| Week of 25 January 2027 | IOC notifies NOCs of approved Non-MRH applications |
+| 12 February 2027 | PbN for IFs ends |
+| Week of 18 October 2027 | Press by Name starts (materials distributed) |
+| **TBC** | Press by Name on-line system opens for submissions |
+| 18 February 2028 | Press by Name ends |
+| February–April 2028 | LA28 reviews and confirms Press by Name data |
+| No later than April 2028 | LA28 distributes pre-valid Olympic Identity and Accreditation Cards (OIAC) to NOCs/IFs/IOC-Direct orgs |
+| 14–30 July 2028 | LA28 Olympic Games |
+
+**Note on the "three-week" IOC approval lead time**: the Strategic Plan requires all press forms and documents to be sent to the IOC for review **at least three weeks before publication**. This affects EoI form release cadence and any NOC-facing instructional content.

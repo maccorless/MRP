@@ -32,12 +32,12 @@ export default function HowItWorksPage() {
             {
               n: "3",
               title: "Your NOC reviews your application",
-              body: "The National Olympic Committee (NOC) for your country reviews all applications from their territory. They may approve your application, return it for corrections, or reject it.",
+              body: "The National Olympic Committee (NOC) for your country reviews all applications from their territory. They may accept your organisation as a candidate for accreditation, return it for corrections, or reject it. Being accepted at this stage means you're in the running — it does not yet mean you have been allocated accreditation slots.",
             },
             {
               n: "4",
               title: "Press by Number (PbN)",
-              body: "If your application is approved, your NOC formally allocates accreditation slots from their IOC-assigned quota. Final credential confirmation comes from the IOC before the Games.",
+              body: "For accepted candidates, the NOC then enters the Press by Number phase — they allocate specific accreditation slots across categories (E, EP, ET, etc.) from their IOC-assigned quota. Quotas are limited, so not every accepted candidate will receive slots. The IOC reviews all NOC allocations before final confirmation.",
             },
           ].map(({ n, title, body }) => (
             <li key={n} className="flex gap-4">

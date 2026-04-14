@@ -497,8 +497,8 @@ export function EoiFormTabs({
             Submitting does not guarantee press credentials for LA 2028.
           </p>
           <ul className="list-disc pl-5 space-y-1 text-gray-600">
-            <li>Your <strong>National Olympic Committee (NOC)</strong> reviews your organisation&apos;s eligibility and approves or declines your EoI.</li>
-            <li>If approved, your NOC enters a <strong>Press by Numbers (PbN)</strong> phase where slot quantities are negotiated with the IOC.</li>
+            <li>Your <strong>National Olympic Committee (NOC)</strong> reviews your organisation&apos;s eligibility and either accepts you as a candidate, returns for corrections, or declines.</li>
+            <li>Being accepted as a candidate does not guarantee accreditation. Slot allocations are decided in the <strong>Press by Number (PbN)</strong> phase, within the IOC-assigned quota for your NOC. Some candidates may ultimately receive no slots.</li>
             <li>Final accreditation decisions are made by the IOC and communicated via your NOC.</li>
             <li>You will be <strong>notified by email</strong> at each stage of the process.</li>
           </ul>

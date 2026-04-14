@@ -10,7 +10,7 @@ import { STATUS_BADGE } from "@/components/StatusBadge";
 const STATUS_LABEL: Record<string, string> = {
   pending:     "Pending Review",
   resubmitted: "Resubmitted",
-  approved:    "Approved",
+  approved:    "Accepted as Candidate",
   returned:    "Returned for Corrections",
   rejected:    "Rejected",
 };
@@ -18,7 +18,7 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_DESC: Record<string, string> = {
   pending:     "Your application is awaiting review by your NOC.",
   resubmitted: "Your corrected application is under review.",
-  approved:    "Your application has been approved by your NOC.",
+  approved:    "Your NOC has accepted your application as a candidate for press accreditation. Accreditation slot allocation happens in the next phase (Press by Number) and is not guaranteed — some accepted candidates may ultimately receive no slots. You will be notified once the NOC's allocation is finalised.",
   returned:    "Your NOC has requested corrections. Please review the note below and resubmit.",
   rejected:    "Your application has not been accepted.",
 };
