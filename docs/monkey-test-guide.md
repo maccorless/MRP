@@ -1,6 +1,6 @@
-**Last updated: 11-Apr-2026 17:13**
+**Last updated: 16-Apr-2026 14:00 CEST**
 
-# MRP Monkey Test Guide
+# PRP Monkey Test Guide
 
 **Production URL (primary)**: https://mrp.dgpbeta.com/
 **Production URL (fallback)**: https://mrp-production-8073.up.railway.app/
@@ -14,7 +14,7 @@
 
 ## What is this?
 
-The **Media Registration Portal (MRP)** is the digital platform for managing press accreditation for the Olympic Games. It handles two sequential workflows — Expression of Interest (EoI) then Press by Number (PbN) — for the roughly 206 NOCs that manage media access to the Games.
+The **Press Registration Portal (PRP)** is the digital platform for managing press accreditation for the Olympic Games. It handles two sequential workflows — Expression of Interest (EoI) then Press by Number (PbN) — for the roughly 206 NOCs that manage media access to the Games.
 
 This guide is for informal exploratory testing ("monkey testing") — click around, try unexpected inputs, and see if anything breaks. No scripted steps required.
 

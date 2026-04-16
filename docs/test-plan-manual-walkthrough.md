@@ -1,6 +1,6 @@
-**Last updated: 11-Apr-2026 17:13**
+**Last updated: 16-Apr-2026 14:00 CEST**
 
-# MRP Manual Test Walkthrough
+# PRP Manual Test Walkthrough
 
 **Version**: v0.1  
 **Last updated**: 2026-04-11  
@@ -165,7 +165,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  LA 2028  Media Registration Portal                             │
+│  LA 2028  Press Registration Portal                              │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   Apply for media accreditation                                 │
