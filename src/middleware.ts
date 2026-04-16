@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decodeSession } from "@/lib/session";
 
-const COOKIE_NAME = "mrp_session";
+const COOKIE_NAME = "prp_session";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

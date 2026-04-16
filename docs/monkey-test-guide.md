@@ -2,9 +2,13 @@
 
 # MRP Monkey Test Guide
 
-**Production URL**: https://mrp.dgpbeta.com/
-**Admin URL**: https://mrp.dgpbeta.com/admin
-**EoI form**: https://mrp.dgpbeta.com/apply
+**Production URL (primary)**: https://mrp.dgpbeta.com/
+**Production URL (fallback)**: https://mrp-production-8073.up.railway.app/
+
+> **If the primary URL is blocked on your network**, use the Railway fallback URL — both point to the same live environment. Anywhere below you see `mrp.dgpbeta.com`, you can swap in `mrp-production-8073.up.railway.app` and the link will work identically (e.g. `/admin`, `/apply`, `/apply/verify?token=…`).
+
+**Admin URL**: https://mrp.dgpbeta.com/admin  *(or https://mrp-production-8073.up.railway.app/admin)*
+**EoI form**: https://mrp.dgpbeta.com/apply  *(or https://mrp-production-8073.up.railway.app/apply)*
 
 ---
 
@@ -56,7 +60,15 @@ Things to try on the form:
 
 All accounts share the password: **`Password1!`**
 
-Admin sessions last **8 hours**. To switch accounts, click **Sign out** in the top-right header, or use the small **"clear session"** link in the bottom-left corner of the login page to clear the cookie and start fresh.
+Admin sessions last **8 hours**.
+
+> ⚠️ **Switching between user accounts — read this first.** Admin sessions are sticky. If you go straight to the login page while a session is still active, the app will take you back into the previous user's dashboard. To test as a different user, you **must fully log out first** using one of these methods:
+>
+> 1. **Sign out from the app** — click **Sign out** in the top-right header of any admin page. This is the cleanest way.
+> 2. **Clear the session from the login page** — click the small **"clear session"** link in the bottom-left corner of the login form. Use this if you've navigated to the login page and realise you're still signed in.
+> 3. **Open an incognito / private window** — the simplest option if you want to test multiple roles side by side. Each incognito window has its own isolated session, so you can be logged in as (say) a NOC admin in one window and an IOC admin in another without them stepping on each other.
+>
+> If you swap accounts without doing one of the above, you'll either stay logged in as the old user or see stale data in the header.
 
 ### IOC Admin
 

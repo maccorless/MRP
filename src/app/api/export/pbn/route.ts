@@ -71,7 +71,7 @@ export async function GET() {
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="mrp-pbn-${date}.csv"`,
+      "Content-Disposition": `attachment; filename="prp-pbn-${date}.csv"`,
     },
   });
 }

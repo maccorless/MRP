@@ -28,8 +28,8 @@ export type SessionPayload = {
   sudoActorLabel?: string; // display name of the IOC admin who initiated the sudo
 };
 
-const COOKIE_NAME = "mrp_session";
-const SUDO_COOKIE_NAME = "mrp_sudo_session";
+const COOKIE_NAME = "prp_session";
+const SUDO_COOKIE_NAME = "prp_sudo_session";
 const SESSION_MAX_AGE = 60 * 60 * 8; // 8 hours
 const SUDO_MAX_AGE = 60 * 60; // 1 hour
 

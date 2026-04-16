@@ -106,7 +106,7 @@ export async function GET(request: Request) {
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="mrp-audit${scope}-${date}.csv"`,
+      "Content-Disposition": `attachment; filename="prp-audit${scope}-${date}.csv"`,
     },
   });
 }

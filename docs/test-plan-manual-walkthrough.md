@@ -4,7 +4,10 @@
 
 **Version**: v0.1  
 **Last updated**: 2026-04-11  
-**Production URL**: https://mrp.dgpbeta.com/
+**Production URL (primary)**: https://mrp.dgpbeta.com/  
+**Production URL (fallback)**: https://mrp-production-8073.up.railway.app/
+
+> **If the primary URL is blocked on your network**, use the Railway fallback URL — both point to the same live environment. Anywhere below you see `mrp.dgpbeta.com`, you can swap in `mrp-production-8073.up.railway.app` and the link will work identically (e.g. `/admin`, `/apply`, `/apply/verify?token=…`).
 
 ---
 
@@ -50,12 +53,17 @@ All seeded admin accounts share the password: **`Password1!`**
 
 ### Session duration and switching accounts
 
-Admin sessions last **8 hours**. During this time your login persists across page refreshes and browser restarts. To sign in as a different admin user, either:
+Admin sessions last **8 hours**. During this time your login persists across page refreshes and browser restarts.
 
-- Click **Sign out** in the top-right header (available on any admin page), or
-- On the login page, click the small **"clear session"** link in the bottom-left corner — this clears the session cookie and gives you a fresh login form.
+> ⚠️ **Switching between user accounts — read this first.** Admin sessions are sticky. If you go straight to the login page while a session is still active, the app will take you back into the previous user's dashboard. To test as a different user, you **must fully log out first** using one of these methods:
+>
+> 1. **Sign out from the app** — click **Sign out** in the top-right header (available on any admin page). This is the cleanest way.
+> 2. **Clear the session from the login page** — click the small **"clear session"** link in the bottom-left corner of the login form. Use this if you've navigated to the login page and realise you're still signed in.
+> 3. **Open an incognito / private window** — the simplest option if you want to test multiple roles side by side. Each incognito window has its own isolated session, so you can be logged in as (for example) a NOC admin in one window and an IOC admin in another without them stepping on each other.
+>
+> If you swap accounts without doing one of the above, you'll either stay logged in as the old user or see stale data in the header.
 
-The same applies to EoI applicant sessions — if you want to start a fresh application flow, clear your cookies for `mrp.dgpbeta.com` or use an incognito window.
+The same applies to EoI applicant sessions — to start a fresh application flow, sign out, clear your cookies for the host you're using (`mrp.dgpbeta.com` or `mrp-production-8073.up.railway.app`), or open an incognito window.
 
 ### Magic link tokens (pre-seeded for applicant testing)
 
