@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Media Registration Portal",
-  description: "LA 2028 Olympic Games — Expression of Interest",
+  title: "Press Registration Portal",
+  description: "LA 2028 Olympic Games — Press Accreditation",
 };
 
 export default function RootLayout({

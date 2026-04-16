@@ -47,11 +47,11 @@ export default async function AdminLayout({
       <header className="bg-[#0057A8] text-white px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 bg-white/20 rounded flex items-center justify-center shrink-0">
-            <span className="font-bold text-xs">M</span>
+            <span className="font-bold text-xs">P</span>
           </div>
           <div>
             <span className="font-semibold text-sm">
-              Media Registration Portal
+              Press Registration Portal
             </span>
             <span className="text-blue-200 text-xs ml-2">Admin</span>
           </div>

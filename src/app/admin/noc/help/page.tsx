@@ -9,7 +9,7 @@ export default async function NocHelpPage() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">Help &amp; Guide</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          How the LA 2028 Media Registration Portal works for NOC admins.
+          How the LA 2028 Press Registration Portal works for NOC admins.
         </p>
       </div>
 

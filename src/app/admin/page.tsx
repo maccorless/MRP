@@ -120,7 +120,7 @@ export default async function AdminPortalPage() {
               </svg>
             </div>
             <div>
-              <div className="text-sm font-semibold text-white leading-tight">Media Registration Portal</div>
+              <div className="text-sm font-semibold text-white leading-tight">Press Registration Portal</div>
               <div className="text-xs text-white/60 leading-tight">LA 2028</div>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default async function AdminPortalPage() {
         </div>
 
         <p className="mt-8 text-xs text-gray-400 text-center">
-          MRP v0.1 · Credentials are managed by your IOC liaison.
+          PRP v0.1 · Credentials are managed by your IOC liaison.
         </p>
       </main>
     </div>

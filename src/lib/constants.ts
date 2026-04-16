@@ -1,6 +1,6 @@
 /**
  * Current event identifier. Used across schema defaults, queries, and reference numbers.
- * When MRP is reused for a future event, change this value and run migrations.
+ * When PRP is reused for a future event, change this value and run migrations.
  */
 export const CURRENT_EVENT_ID = "LA28";
 

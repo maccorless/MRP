@@ -28,7 +28,7 @@ export default async function LoginPage({
             </svg>
           </div>
           <h1 className="text-xl font-bold text-gray-900">
-            Media Registration Portal
+            Press Registration Portal
           </h1>
           {roleLabel ? (
             <p className="text-sm text-gray-500 mt-1">
@@ -98,7 +98,7 @@ export default async function LoginPage({
         </div>
 
         <div className="mt-4 text-center space-y-1">
-          <p className="text-xs text-gray-400">LA 2028 · IOC Media Registration Portal</p>
+          <p className="text-xs text-gray-400">LA 2028 · IOC Press Registration Portal</p>
           {roleLabel && (
             <a href="/admin" className="text-xs text-gray-400 hover:text-gray-600 underline">
               ← Choose a different role

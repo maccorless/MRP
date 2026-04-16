@@ -11,11 +11,11 @@ export default function ApplyLayout({
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center shrink-0">
-              <span className="font-bold text-sm">M</span>
+              <span className="font-bold text-sm">P</span>
             </div>
             <div>
               <div className="font-semibold text-sm leading-tight">
-                Media Registration Portal
+                Press Registration Portal
               </div>
               <div className="text-xs text-blue-200 leading-tight">
                 LA 2028 Olympic Games

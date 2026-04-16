@@ -19,7 +19,7 @@ export default function AppHeader({
             </svg>
           </div>
           <div>
-            <div className="text-sm font-semibold text-white leading-tight">Media Registration Portal</div>
+            <div className="text-sm font-semibold text-white leading-tight">Press Registration Portal</div>
             <div className="text-xs text-white/60 leading-tight">LA 2028</div>
           </div>
         </div>
