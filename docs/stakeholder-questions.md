@@ -1,6 +1,6 @@
-**Last updated: 14-Apr-2026 17:00 CEST**
+**Last updated: 16-Apr-2026 14:00 CEST**
 
-# LA28 Media Registration Portal — Open Questions for Stakeholders
+# LA28 Press Registration Portal — Open Questions for Stakeholders
 
 **Date:** 2026-04-11
 
@@ -68,6 +68,8 @@ A related question: different NOCs may want to ask applicants slightly different
 ### 1.3 EoI Window — Who Controls When Applications Open and Close?
 
 **Status:** OPEN — we need your input
+
+> ✅ **RESOLVED 2026-04-16** — Hard global platform close enforced automatically on deadline date. NOCs can invite/fast-track organisations after the global deadline closes. OCOG can reopen a specific NOC's window if needed.
 
 **Scenario:** The global EoI window is scheduled to open August 24, 2026 and close October 23, 2026. In the portal, each NOC can independently open or close their own EoI acceptance window. For example, the USA NOC might close their window a week early because they've received enough applications.
 
@@ -157,6 +159,8 @@ These questions relate to how OCOG and NOC administrators evaluate applications 
 
 **Status:** PROVISIONAL — built and working
 
+> ✅ **RESOLVED 2026-04-16** — Rejections are permanent. Rejected applications are retained in the audit trail permanently — no deletions permitted (IOC requirement). No reversal path to be built.
+
 **Scenario:** There are two distinct decision points in the process, and it's important to understand what a "reversal" means at each stage:
 
 **Stage 1 — EoI approval (NOC decision):** When a NOC approves an EoI application, they are saying "this organisation is a legitimate media entity eligible to be considered for press credentials." This does not guarantee the org will receive any slots — it places them in the candidate pool for PbN. A NOC might approve 200 organisations but only have quota for 80.
@@ -179,7 +183,7 @@ There is no time limit on any reversal. All reversals are visible in the audit t
 
 1. Is it acceptable that rejection is permanent? Or should there be a path to reverse a rejection (perhaps requiring OCOG approval)?
 2. Should the OCOG see a visual flag on EoI applications that have been reversed (beyond the audit log)?
-3. Once PbN allocations have been sent to ACR ("sent to ACR" is currently a terminal state), should reversals be blocked in MRP? Or should MRP allow changes that would then need to be re-synced to ACR? *(Related: section 4.3 addresses the post-export MRP lifecycle.)*
+3. Once PbN allocations have been sent to ACR ("sent to ACR" is currently a terminal state), should reversals be blocked in PRP? Or should PRP allow changes that would then need to be re-synced to ACR? *(Related: section 4.3 addresses the post-export PRP lifecycle.)*
 
 **Roles impacted:** NOC Admin (EoI reversals), OCOG Admin (PbN reversals, visibility), IOC Admin (audit visibility)
 
@@ -256,7 +260,7 @@ These questions relate to how the IOC assigns per-category quotas to each NOC an
 **Resolution:**
 - **Model A confirmed.** IOC enters per-category quota totals directly into the portal. OCOG does not re-key from a spreadsheet. The quota-entry screen built for IOC Admin stands; no rework required.
 - **OCOG approves PbN. IOC watches.** The OCOG is the single formal approval gate for PbN slot allocations. The IOC has read-only visibility on PbN; there is no IOC approval step in the PbN state machine. This matches what is built.
-- **Open wrinkle (holdback caveat):** IOC may retain some quota quantities outside the system — what IOC enters in the portal may not equal their total allocation across all channels. Whether MRP needs to surface this gap (e.g. a "portal quota vs. total quota" field or informational note) or simply show what IOC entered is a remaining question to clarify with Emma. Not blocking — treat as a display/UX detail to confirm before July quota-entry phase.
+- **Open wrinkle (holdback caveat):** IOC may retain some quota quantities outside the system — what IOC enters in the portal may not equal their total allocation across all channels. Whether PRP needs to surface this gap (e.g. a "portal quota vs. total quota" field or informational note) or simply show what IOC entered is a remaining question to clarify with Emma. Not blocking — treat as a display/UX detail to confirm before July quota-entry phase.
 
 **Scenario:** The IOC determines per-category quota totals for each of the 206 NOCs. The question is how those numbers get into the portal.
 
@@ -296,13 +300,13 @@ These questions relate to the process where NOCs assign their IOC-given quotas t
 
 These people do not apply through the public EoI form. The NOC nominates them directly.
 
-**Our provisional decision:** The NOC creates a single organisation record representing their own communications team (e.g., "USA NOC Communications Staff") using the fast-track entry route. During PbN, the NOC allocates NOC E slots to this org, and the OCOG approves the allocation as part of the standard PbN approval process. Individual press attaché names are not collected in MRP — that happens later in ACR (Press by Name, 2027).
+**Our provisional decision:** The NOC creates a single organisation record representing their own communications team (e.g., "USA NOC Communications Staff") using the fast-track entry route. During PbN, the NOC allocates NOC E slots to this org, and the OCOG approves the allocation as part of the standard PbN approval process. Individual press attaché names are not collected in PRP — that happens later in ACR (Press by Name, 2027).
 
 **Questions we need answered:**
 
 1. Is the NOC E quota formula-based (e.g., based on delegation size), or does the IOC set it manually per NOC like other categories?
 2. Are there cases where a NOC needs multiple entries (e.g., "NOC comms team" + "NOC broadcast team"), or is a single "NOC communications staff" org sufficient?
-3. Does the OCOG or IOC need to see the individual names of press attachés at this stage, or is a slot count sufficient for MRP?
+3. Does the OCOG or IOC need to see the individual names of press attachés at this stage, or is a slot count sufficient for PRP?
 
 **Roles impacted:** NOC Admin (nominates their staff), OCOG Admin (approves PbN allocation), IOC Admin (sets NOC E quota)
 **NOC input recommended** — ask NOC representatives how they currently handle press attaché nominations.
@@ -335,19 +339,19 @@ We would like to understand the reason for keeping this offline. The portal can 
 
 **Terminology [EM 2026-04-02]:** Per the terminology note above, "Responsible Organisation" (not "sponsoring organisation") should be used in UI copy relating to IOC-Direct orgs where one organisation acts as the owning body for another.
 
-**Open question for April 15/16 meeting:** Does the OCOG enroll IOC-Direct orgs through MRP or directly in ACR? This needs Martyn's input regardless of which model is chosen.
+**Open question for April 15/16 meeting:** Does the OCOG enroll IOC-Direct orgs through PRP or directly in ACR? This needs Martyn's input regardless of which model is chosen.
 
 **Roles impacted:** IOC (holds the list, approves), OCOG Admin (enrolls/imports, has OCOG visibility), Martyn/OCOG (defines import mechanism)
 
 ---
 
-### 4.3 After the MRP → ACR Handoff — Where Do Edits Live? (Source of Truth)
+### 4.3 After the PRP → ACR Handoff — Where Do Edits Live? (Source of Truth)
 
 **Status:** OPEN-BLOCKING — **P0 for Thursday 2026-04-16.** Promoted from PROVISIONAL on 2026-04-14 because the Strategic Plan evidence below strongly implies our current implementation (Model A) is wrong, and because this question gates the §4.5 Excel source-of-truth decision, the R-10 ACR adapter contract, and the §2.2 post-export reversal rules. Must be resolved as a single joint discussion with §4.5.
 
-**The question in one sentence.** After a NOC's PbN allocations have been handed off from MRP to ACR, **where are subsequent changes made** — in MRP (and re-sent to ACR), directly in ACR, or in both systems kept in sync?
+**The question in one sentence.** After a NOC's PbN allocations have been handed off from PRP to ACR, **where are subsequent changes made** — in PRP (and re-sent to ACR), directly in ACR, or in both systems kept in sync?
 
-**Why this is one question, not several.** "What happens to the MRP record after export," "can a NOC still adjust allocations once ACR has them," "where does the IOC weekly status report get its data," and §4.5's Excel-versus-portal question all collapse into a single decision: **which system is authoritative after handoff?** Answering that once settles the rest.
+**Why this is one question, not several.** "What happens to the PRP record after export," "can a NOC still adjust allocations once ACR has them," "where does the IOC weekly status report get its data," and §4.5's Excel-versus-portal question all collapse into a single decision: **which system is authoritative after handoff?** Answering that once settles the rest.
 
 **Concrete examples of changes at stake.** These are the real-world events that will happen after the PbN → ACR handoff and that need a home:
 
@@ -359,34 +363,36 @@ We would like to understand the reason for keeping this offline. The portal can 
 
 **Three possible models.**
 
-| Model | Where edits happen | Where ACR gets its data | MRP role after handoff |
+| Model | Where edits happen | Where ACR gets its data | PRP role after handoff |
 |---|---|---|---|
 | **A — ACR takes over** | Directly in ACR | From ACR itself | Frozen historical record |
-| **B — MRP stays authoritative, pushes to ACR** | In MRP | Re-sent from MRP to ACR on each change | Source of truth through the Games |
+| **B — PRP stays authoritative, pushes to ACR** | In PRP | Re-sent from PRP to ACR on each change | Source of truth through the Games |
 | **C — Bidirectional sync** | Either system | Kept in sync by a sync layer | Shared authority with conflict-resolution rules |
 
-**Our current implementation.** Model A. Once PbN reaches the `sent_to_acr` state (`src/db/schema.ts` PbN state machine; see MRP-FR-FR-016 in `docs/MRP-rq.md`), MRP locks the record — there is no in-app mechanism to amend. Any downstream adjustment would happen in ACR, outside MRP's view.
+**Our current implementation.** Model A. Once PbN reaches the `sent_to_acr` state (`src/db/schema.ts` PbN state machine; see PRP-FR-FR-016 in `docs/PRP-rq.md`), PRP locks the record — there is no in-app mechanism to amend. Any downstream adjustment would happen in ACR, outside PRP's view.
 
 **What the Strategic Plan suggests.** Model A is almost certainly wrong:
 
 - "**The accreditation process will continue up to and during the Games.**" → continuous change is expected.
-- Weekly IOC status reports during PbN → MRP needs live working data past "sent to ACR."
-- Inter-category reallocation and amendment flows are described as MRP-adjacent (OCOG → IOC), not ACR-only.
+- Weekly IOC status reports during PbN → PRP needs live working data past "sent to ACR."
+- Inter-category reallocation and amendment flows are described as PRP-adjacent (OCOG → IOC), not ACR-only.
 
-**Relationship to §4.5 (Excel source of truth).** §4.5 asks the same question from the NOC side — if USOPC works in Excel, what wins when Excel and MRP disagree? Whatever is decided in 4.3 must be consistent with whatever is decided in 4.5. These should be a single Thursday discussion, not two.
+**Relationship to §4.5 (Excel source of truth).** §4.5 asks the same question from the NOC side — if USOPC works in Excel, what wins when Excel and PRP disagree? Whatever is decided in 4.3 must be consistent with whatever is decided in 4.5. These should be a single Thursday discussion, not two.
 
 **What we need from Emma and Martyn on Thursday:**
 
 1. **Pick a model (A, B, or C)** — or describe the model IOC actually uses today, if different.
-2. **Draw the authoritative-system boundary.** For the chosen model, specify which data classes are MRP-authoritative, which are ACR-authoritative, and which are shared.
-3. **Amendment routing.** For changes that require IOC written approval (reallocations, amendments, late adds), does that approval flow through MRP, through ACR, or out-of-band (email)?
-4. **Weekly IOC status report.** Is the report generated from MRP, from ACR, or from the IOC Master DB? If MRP, confirm MRP must remain live through the Games.
+2. **Draw the authoritative-system boundary.** For the chosen model, specify which data classes are PRP-authoritative, which are ACR-authoritative, and which are shared.
+3. **Amendment routing.** For changes that require IOC written approval (reallocations, amendments, late adds), does that approval flow through PRP, through ACR, or out-of-band (email)?
+4. **Weekly IOC status report.** Is the report generated from PRP, from ACR, or from the IOC Master DB? If PRP, confirm PRP must remain live through the Games.
 
 **Impact of each answer on our code.**
 
-- **Model A chosen:** Current implementation stands. We produce a "what happens next" document for NOCs and OCOG explaining when to log into ACR vs MRP. Low additional effort.
-- **Model B chosen:** We must rework the `sent_to_acr` terminal state into an ongoing-sync state, reopen MRP-FR-FR-016 and MRP-FR-FR-017, revisit §2.2 reversal rules, and tighten the R-10 adapter contract for incremental push. Estimated 2–3 weeks.
+- **Model A chosen:** Current implementation stands. We produce a "what happens next" document for NOCs and OCOG explaining when to log into ACR vs PRP. Low additional effort.
+- **Model B chosen:** We must rework the `sent_to_acr` terminal state into an ongoing-sync state, reopen PRP-FR-FR-016 and PRP-FR-FR-017, revisit §2.2 reversal rules, and tighten the R-10 adapter contract for incremental push. Estimated 2–3 weeks.
 - **Model C chosen:** Largest change — needs conflict-resolution rules, bidirectional change feeds, and a per-field ownership matrix. Should not be attempted without a clear spec from IOC/ACR.
+
+> **Next discussion:** Week of 2026-04-28 (placeholder to be sent by Randi/IOC)
 
 **Roles impacted:** NOC Admin (where they go to change allocations after handoff), OCOG Admin (where they adjust allocations and generate reports), IOC Admin (where they approve amendments), ACR team (API contract shape depends on the answer).
 
@@ -442,20 +448,20 @@ Ken's initial response (2026-04-13): "I don't want to rebuild Excel in a web pag
    - Is the Master DB itself the canonical allocation record, or a read-only snapshot of something upstream?
 
 3. **What does an acceptable "single source of truth" look like from the IOC side?**
-   - Option A (thin): MRP exports a spreadsheet in the IOC Master DB shape; NOCs can optionally import a completed one.
-   - Option B (medium): MRP hosts the edit surface; an Excel-style grid UI in the portal with better ergonomics than our current screens.
-   - Option C (deep): Microsoft-hosted Excel ↔ MRP DB bidirectional sync (Ken's proposal). Excel edits flow to DB; DB changes flow back to Excel.
-   - Option D (thin+): MRP is the source of truth; NOCs who prefer Excel export-edit-import round-trips; conflicts are resolved server-side with "last import wins."
+   - Option A (thin): PRP exports a spreadsheet in the IOC Master DB shape; NOCs can optionally import a completed one.
+   - Option B (medium): PRP hosts the edit surface; an Excel-style grid UI in the portal with better ergonomics than our current screens.
+   - Option C (deep): Microsoft-hosted Excel ↔ PRP DB bidirectional sync (Ken's proposal). Excel edits flow to DB; DB changes flow back to Excel.
+   - Option D (thin+): PRP is the source of truth; NOCs who prefer Excel export-edit-import round-trips; conflicts are resolved server-side with "last import wins."
 
-4. **Is the "5 allocation revisions" pattern in the Paris workbook a workflow we should model in MRP?** Our current audit log captures individual changes; the Paris sheet freezes whole snapshots. These are different mental models for revision history.
+4. **Is the "5 allocation revisions" pattern in the Paris workbook a workflow we should model in PRP?** Our current audit log captures individual changes; the Paris sheet freezes whole snapshots. These are different mental models for revision history.
 
-5. **Who owns the transition from "per-NOC allocation spreadsheet" → "IOC Master DB"?** LA28? IOC Media Ops directly? Does MRP need to produce output suitable for either?
+5. **Who owns the transition from "per-NOC allocation spreadsheet" → "IOC Master DB"?** LA28? IOC Media Ops directly? Does PRP need to produce output suitable for either?
 
 **Why this matters:**
 
-The Strategic Plan explicitly states (§1.6): "LA28 ACR will start discussions with Deloitte to streamline the Press by Number process via the accreditation system rather than sending out Excel templates to NOCs." So the **stated direction** is MRP replaces the Excel template. But if USOPC is going to edit in Excel anyway, we need to decide whether we accommodate that reality or push them onto the portal.
+The Strategic Plan explicitly states (§1.6): "LA28 ACR will start discussions with Deloitte to streamline the Press by Number process via the accreditation system rather than sending out Excel templates to NOCs." So the **stated direction** is PRP replaces the Excel template. But if USOPC is going to edit in Excel anyway, we need to decide whether we accommodate that reality or push them onto the portal.
 
-**Relationship to §4.3 (post-handoff source of truth).** §4.3 asks "after the MRP → ACR handoff, where do edits live?" §4.5 asks "during the NOC's PbN workflow, where do edits live — portal or Excel?" Both questions collapse to the same underlying decision: which system is authoritative? The answers must be consistent — Thursday should cover §4.3 and §4.5 together, not separately.
+**Relationship to §4.3 (post-handoff source of truth).** §4.3 asks "after the PRP → ACR handoff, where do edits live?" §4.5 asks "during the NOC's PbN workflow, where do edits live — portal or Excel?" Both questions collapse to the same underlying decision: which system is authoritative? The answers must be consistent — Thursday should cover §4.3 and §4.5 together, not separately.
 
 **Reference materials:** `docs/paris-quota-reference.md` summarises the IOC's Paris 2024 working file and should be read before this question is discussed.
 
@@ -497,6 +503,8 @@ These questions relate to the separate ENR track, where NOCs nominate broadcaste
    **IOC ENR allocation screen (confirmed requirement):** The IOC ENR allocation screen should mirror the OCOG PbN screen — a cross-NOC table of ENR candidates, showing which NOC nominated/ranked each org, with a running total against the 350-slot cap, and editable allocation per org that the IOC fills in. This is a confirmed design requirement. The current IOC ENR screen shows one NOC's list at a time and needs to be redesigned to this combined multi-NOC view.
 
    **Open questions:** Should ENR applicants share the public EoI form (with ENR as a selectable org type) or have a separate intake flow? Is the proposed prioritise-and-rank model (no NOC approve/reject) acceptable to both IOC and OCOG?
+
+> **Next discussion:** Week of 2026-04-28 (placeholder to be sent by Randi/IOC)
 
 **Roles impacted:** NOC Admin (submits ENR list, may see ENR self-applications), IOC Admin (makes grant decisions, needs multi-NOC combined view), ENR organisations (potential self-applicants)
 
@@ -549,11 +557,11 @@ No RACI document exists. This creates risk around: who signs off on form field c
 
 **Status:** OPEN — needs D.TEC internal alignment + OCOG input
 
-**Scenario:** When a media organisation is approved in MRP, it eventually needs an entry in Common Codes — the shared organisation registry used across all accreditation systems. Common Codes assigns each org an official code used by downstream applications (AMS, ADS, Rate Card, ACR).
+**Scenario:** When a media organisation is approved in PRP, it eventually needs an entry in Common Codes — the shared organisation registry used across all accreditation systems. Common Codes assigns each org an official code used by downstream applications (AMS, ADS, Rate Card, ACR).
 
-MRP does not assign Common Codes. The question is how the two systems connect:
-- **At submission time:** Should MRP look up existing Common Codes entries when an org submits their EoI (to pre-fill data and link to an existing record)?
-- **At approval time:** When a NOC approves an application, should MRP trigger the Common Codes coding workflow via an API call? Or does OCOG ACR staff manually initiate the coding in a separate system?
+PRP does not assign Common Codes. The question is how the two systems connect:
+- **At submission time:** Should PRP look up existing Common Codes entries when an org submits their EoI (to pre-fill data and link to an existing record)?
+- **At approval time:** When a NOC approves an application, should PRP trigger the Common Codes coding workflow via an API call? Or does OCOG ACR staff manually initiate the coding in a separate system?
 
 This is primarily a D.TEC internal question, but the OCOG may have operational input on whether the coding workflow should be triggered automatically or manually.
 
@@ -592,6 +600,8 @@ This is primarily a D.TEC internal question, but the OCOG may have operational i
 
 **Status:** OPEN — needs OCOG confirmation
 
+> ✅ **RESOLVED 2026-04-16** — NOC onboarding follows same process as ACR onboarding. LA28 ACR team to coordinate account provisioning.
+
 Who is responsible for provisioning NOC admin accounts — provisioning credentials, communicating login details, and providing initial guidance? Is this D.TEC, OCOG, or IOC? This must be resolved before pilot testing (6.5) can begin, and has a direct lead time: 206 NOC accounts must exist before August 24.
 
 **Answer needed from:** Martyn (OCOG)
@@ -606,7 +616,9 @@ Will a user manual or guide be produced for NOC administrators? If so, who write
 
 #### 6.4c — French Localisation Scope (build scope decision — potentially blocking)
 
-**Status:** OPEN — may be a launch gate
+**Status:** RESOLVED 2026-04-16
+
+> ✅ **RESOLVED 2026-04-16** — English + French + Spanish required at launch (not v1.1). Promoted to P0. Translator procurement to begin (see TODO-009).
 
 French is planned for v1.1. Emma's question implies there may be an expectation of French availability at launch. Is French required at launch (blocking), or is English-first acceptable for v1.0 with French following in v1.1?
 
@@ -669,6 +681,8 @@ This distinction is currently implicit in the portal but not made explicit to us
 
 **Important caveat [EM 2026-04-02]:** Emma's feedback suggests the approval authority described above may be reversed from the actual process — specifically that the IOC approves the PbN (not just reads it) and the OCOG's role is quota entry and coordination rather than final PbN approval. See section 3.2 for full detail. This resolved decision should be treated as provisional until the April 15/16 meeting with Emma and Martyn confirms which model is correct.
 
+> **Next discussion:** Week of 2026-04-28 (placeholder to be sent by Randi/IOC)
+
 **Roles impacted:** NOC Admin, OCOG Admin, IOC Admin
 **Please confirm** the OCOG owns PbN approval and the IOC exceptions are correctly scoped — noting that IOC feedback indicates this may need to be reversed (see 3.2).
 
@@ -694,12 +708,12 @@ This distinction is currently implicit in the portal but not made explicit to us
 
 **Confirmed — IFs have NO ENR accreditations [EM 2026-04-02]:** Emma confirms (Comments 100, 112) that IFs do not participate in the ENR track at all. ENR accreditations do not exist for IFs. Any ENR-related screens or logic for IF admin roles should be removed or hidden.
 
-**IF scope significantly narrowed [EM 2026-04-02]:** Emma clarifies (Comments 100, 112) that only approximately 6 IFs need to submit PbN for sport specialist media. All other IFs get quotas for their own staff, and the process for them starts directly at Press by Name (the individual name submission stage, handled in ACR in 2027) — not at the EoI or PbN stage in MRP. This means the IF use-case in MRP is much narrower than previously scoped: only ~6 IFs will actively use the portal for PbN submissions.
+**IF scope significantly narrowed [EM 2026-04-02]:** Emma clarifies (Comments 100, 112) that only approximately 6 IFs need to submit PbN for sport specialist media. All other IFs get quotas for their own staff, and the process for them starts directly at Press by Name (the individual name submission stage, handled in ACR in 2027) — not at the EoI or PbN stage in PRP. This means the IF use-case in PRP is much narrower than previously scoped: only ~6 IFs will actively use the portal for PbN submissions.
 
 **Roles impacted:** IF Admin (only ~6 IFs in scope), OCOG Admin (approves those ~6 IFs' PbN), IOC Admin (sets quotas for all IFs)
-**Please confirm** IFs should not have a public EoI queue and should use fast-track entry only. (Note: we may need to adjust the current code to align with this — the IF admin screen currently mirrors the full NOC experience including an EoI queue.) Also confirm: should the ~200 IFs that go straight to Press by Name have any presence in MRP at all, or only in ACR?
+**Please confirm** IFs should not have a public EoI queue and should use fast-track entry only. (Note: we may need to adjust the current code to align with this — the IF admin screen currently mirrors the full NOC experience including an EoI queue.) Also confirm: should the ~200 IFs that go straight to Press by Name have any presence in PRP at all, or only in ACR?
 
-**Note on small IFs — proposed model [Ken 2026-04-02]:** Emma notes that only ~6 IFs use MRP for sport-specialist PbN. All other IFs go straight to Press by Name in ACR. Ken's challenge: if IOC still sets the quota for small IFs, why not also manage them in MRP and avoid manual ACR entry? The proposed model is: all IFs are in MRP. Large IFs (~6) use the full PbN flow as currently designed. Small IFs skip EoI entirely and use the direct PbN entry feature (see 4.4) — the IF admin adds their orgs directly to the PbN table, which flows to OCOG approval and then ACR export. Nothing needs to be manually keyed into ACR. Please confirm whether this is feasible or whether there is a reason small IFs should remain outside MRP.
+**Note on small IFs — proposed model [Ken 2026-04-02]:** Emma notes that only ~6 IFs use PRP for sport-specialist PbN. All other IFs go straight to Press by Name in ACR. Ken's challenge: if IOC still sets the quota for small IFs, why not also manage them in PRP and avoid manual ACR entry? The proposed model is: all IFs are in PRP. Large IFs (~6) use the full PbN flow as currently designed. Small IFs skip EoI entirely and use the direct PbN entry feature (see 4.4) — the IF admin adds their orgs directly to the PbN table, which flows to OCOG approval and then ACR export. Nothing needs to be manually keyed into ACR. Please confirm whether this is feasible or whether there is a reason small IFs should remain outside PRP.
 
 ---
 
@@ -770,8 +784,8 @@ The following items require Martyn's operational input specifically, beyond Emma
 
 | # | Section | Question |
 |---|---------|----------|
-| 1 | **3.2** | ~~Does LA28/OCOG want to own quota entry (Model B), or is Model A (IOC enters directly) acceptable?~~ **RESOLVED 2026-04-11** — Model A confirmed. IOC enters directly; OCOG approves PbN. Holdback caveat: confirm whether MRP needs to surface the gap between portal quota and IOC total allocation (not blocking). |
-| 2 | **4.2** | Does OCOG enroll IOC-Direct orgs through MRP, or directly in ACR? The enrollment path shapes the ACR export schema. |
+| 1 | **3.2** | ~~Does LA28/OCOG want to own quota entry (Model B), or is Model A (IOC enters directly) acceptable?~~ **RESOLVED 2026-04-11** — Model A confirmed. IOC enters directly; OCOG approves PbN. Holdback caveat: confirm whether PRP needs to surface the gap between portal quota and IOC total allocation (not blocking). |
+| 2 | **4.2** | Does OCOG enroll IOC-Direct orgs through PRP, or directly in ACR? The enrollment path shapes the ACR export schema. |
 | 3 | **6.4a** | Who provisions NOC admin accounts — OCOG, D.TEC, or IOC? 206 accounts must exist before August 24. |
 | 4 | **6.4b** | Will OCOG contribute process content to the NOC user manual, or is D.TEC writing it alone? |
 | 5 | **6.4c** | Is French localisation required at launch, or is English-first for v1.0 acceptable? |
@@ -797,4 +811,4 @@ The following items have open questions that cannot be answered from the IOC or 
 
 ---
 
-*End of document. For the full design specification, see `docs/MRP-design-confirmation.md`. For questions or feedback, contact Ken (D.TEC).*
+*End of document. For the full design specification, see `docs/PRP-design-confirmation.md`. For questions or feedback, contact Ken (D.TEC).*

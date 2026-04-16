@@ -1,5 +1,5 @@
 **Created: 13-Apr-2026 21:30 CEST**
-**Last updated: 14-Apr-2026 17:00 CEST**
+**Last updated: 16-Apr-2026 14:00 CEST**
 
 # Strategic Plan Gap Analysis
 
@@ -28,8 +28,8 @@ Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditat
 2. **1.5 / 4.4 — NOC "approve as candidate" at EoI.** Plan treats EoI strictly as application collection. There is no EoI-level approval step; candidacy selection happens inside PbN. Our "approve as candidate" UI and the fast-track "pre-approved" concept both misframe the process.
 3. **3.2 — Quota entry ownership.** Plan: "Press by Number form is a **pre-populated** form… allocated by the IOC and distributed to NOCs." LA28 will handle distribution via the system. Model A (IOC types into portal) is defensible, but the plan's mental model is clearly IOC → LA28 → pre-populated form. Emma's Model B aligns with the plan.
 4. **R-3 — ENR as "completely separate track."** Plan is explicit: ENR "**submissions must be sent to the IOC via the Press by Number form**." ENR is not a separate track — it's a **section of the PbN submission**. Our separate-track architecture diverges.
-5. **2.2 — Rejections are permanent / reversals.** Plan: "Any additions or amendments requested by an NOC or individual must be referred by the OCOG to the IOC Media Operations Department." All changes route through IOC, not terminally locked in MRP.
-6. **4.3 — After the MRP → ACR handoff, which system is authoritative?** Plan: "The accreditation process will continue up to and during the Games"; extra accreditation requests go OCOG→IOC; weekly IOC status reports run through PbN; inter-category reallocation requires IOC written approval. Our current Model A (ACR terminal; MRP frozen at `sent_to_acr`) contradicts all of this. §4.3 has been rewritten (2026-04-14) as a Thursday P0 with three explicit models (A — ACR takes over; B — MRP stays authoritative and pushes to ACR; C — bidirectional sync) and four decision points. Must be discussed jointly with §4.5 (Excel source of truth) — they are the same underlying question. See `TODOS.md` [TODO-P0-E].
+5. **2.2 — Rejections are permanent / reversals.** Plan: "Any additions or amendments requested by an NOC or individual must be referred by the OCOG to the IOC Media Operations Department." All changes route through IOC, not terminally locked in PRP.
+6. **4.3 — After the PRP → ACR handoff, which system is authoritative?** Plan: "The accreditation process will continue up to and during the Games"; extra accreditation requests go OCOG→IOC; weekly IOC status reports run through PbN; inter-category reallocation requires IOC written approval. Our current Model A (ACR terminal; PRP frozen at `sent_to_acr`) contradicts all of this. §4.3 has been rewritten (2026-04-14) as a Thursday P0 with three explicit models (A — ACR takes over; B — PRP stays authoritative and pushes to ACR; C — bidirectional sync) and four decision points. Must be discussed jointly with §4.5 (Excel source of truth) — they are the same underlying question. See `TODOS.md` [TODO-P0-E].
 7. **R-4 — IFs have NO ENR.** Plan confirms this, but also says IFs are **Responsible Organisations** for sport-specialist Es/EPs — a concept our docs barely use.
 
 ---
@@ -43,10 +43,10 @@ Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditat
 5. **Gender equality quota set-aside.** "IOC sets aside press accreditation quotas specifically for female journalists who are not selected by their respective NOCs." A hidden pool our design doesn't accommodate.
 6. **"Responsible Organisation" as a structural role.** The plan uses RO as a role attached to each tab/record (IOC, NOC, or IF). Our data model just has owner NOCs; RO is a richer concept.
 7. **Ineligible entity list.** Publishers, marketing, athlete managers, agencies, commercial partners, **government officials/ministries** — "automatically rejected if an NOC attempts to allocate to them." We ask about triage signals but don't hardcode an ineligibility rule.
-8. **IOC Master E database + weekly status reports during PbN.** LA28 must send weekly status reports to IOC in an IOC-specified format, and an Excel Master DB persists outside MRP. Our "ACR export + done" model ignores these ongoing reporting obligations. **This is where USOPC's Excel reality lives.**
+8. **IOC Master E database + weekly status reports during PbN.** LA28 must send weekly status reports to IOC in an IOC-specified format, and an Excel Master DB persists outside PRP. Our "ACR export + done" model ignores these ongoing reporting obligations. **This is where USOPC's Excel reality lives.**
 9. **Three-week IOC document approval lead time.** Every form and press doc must be sent to IOC ≥3 weeks before publication. Affects our EoI form release cadence.
 10. **"No show policy" + press conditions undertaking.** NOC E must sign Conditions of Participation. Our design doesn't track undertakings except for ENR.
-11. **Accommodation/bed matching.** "Number of beds should always match the number of press accreditations granted." MRP→accommodation system linkage absent.
+11. **Accommodation/bed matching.** "Number of beds should always match the number of press accreditations granted." PRP→accommodation system linkage absent.
 12. **Working languages.** IOC→NOC correspondence must be **English + French + Spanish**. Our 6.4c asks only about French; Spanish is a miss.
 13. **Photographer Code of Conduct / pool access.** Plan references a photographer undertaking and code of conduct — not captured.
 14. **Visa/OIAC entry privilege.** The OIAC doubles as a 2-month work/entry permit; implications for data capture (passport, travel docs) likely matter at PbName but worth flagging now.
@@ -59,7 +59,7 @@ Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditat
 1. **1.1 — Extra EoI fields beyond USOPC pattern.** Plan lists no mandatory EoI field set.
 2. **1.2 — Sports dropdown vs free text for Es/EPs.** Plan doesn't specify.
 3. **1.4 — Freelancer grouping.** Plan treats freelancers as eligible individuals but doesn't address grouping/reporting.
-4. **1.5 Q2/Q3 — Fast-track governance (OCOG notification, OCOG visibility distinction).** Plan doesn't address the portal's fast-track mechanism at all (it predates MRP).
+4. **1.5 Q2/Q3 — Fast-track governance (OCOG notification, OCOG visibility distinction).** Plan doesn't address the portal's fast-track mechanism at all (it predates PRP).
 5. **2.3 — Triage signals beyond ineligibility list.**
 6. **2.4 — Cross-NOC duplicate detection.** Plan silent; the Master DB implicitly catches it but portal behaviour isn't specified.
 7. **4.2 — IOC-Direct management online vs. offline.** Plan has IOC managing these lists externally (Master DB tabs 3–4), which supports Emma's offline preference but doesn't forbid in-portal management.
@@ -70,7 +70,7 @@ Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditat
 12. **6.2 — Common Codes integration.** Plan silent on downstream system wiring.
 13. **6.4a/b — NOC account provisioning and manuals.** Plan silent.
 14. **6.5 — Pilot NOC strategy.** Plan silent.
-15. **Holdback caveat — whether IOC retains quota outside the portal.** Plan confirms IOC Miscellaneous contingency (Master DB tab 7) exists. Worth asking how this surfaces in MRP.
+15. **Holdback caveat — whether IOC retains quota outside the portal.** Plan confirms IOC Miscellaneous contingency (Master DB tab 7) exists. Worth asking how this surfaces in PRP.
 
 ---
 
