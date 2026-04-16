@@ -1,6 +1,6 @@
-**Last updated: 11-Apr-2026 17:13**
+**Last updated: 16-Apr-2026 14:00 CEST**
 
-# LA28 Media Registration Portal — Design Confirmation
+# LA28 Press Registration Portal — Design Confirmation
 
 **Status:** ACTIVE
 **Last updated:** 2026-04-11 (added top-level timestamp standard; prior update 2026-04-02: full doc/code audit — 5 stale items corrected, Critical Risks #9/#10 resolved, session timeout updated to 8h, 24 audit actions documented, Stakeholder Confirmation Register added with 24 items)
@@ -23,7 +23,7 @@
 | **IOC** | International Olympic Committee; sets total per-category quota allocations per NOC (E, Es, EP, EPs, ET, EC, NOC E). Has visibility only on EoI and PbN. Owns the ENR process (reviews NOC requests, grants from holdback pool). Also acts as the "NOC" for IOC-Direct organisations (see IOC-Direct Organizations section). |
 | **IOC-Direct** | A reserved list of media organisations (e.g. AFP, AP, Reuters, Xinhua) for which the IOC acts as the sponsoring body, bypassing the normal NOC quota process. Managed under a special pseudo-NOC code `IOC_DIRECT`. |
 | **D.TEC** | Deloitte Olympic Technology; builds and operates the portal. Common Codes is also maintained by D.TEC (Ken's team). |
-| **MRP** | Media Registration Portal — this system |
+| **PRP** | Press Registration Portal — this system |
 
 ---
 
@@ -47,13 +47,13 @@ The IOC's press accreditation process for the Olympic Games is managed through E
 
 3. **OCOG ACR staff (LA28)** — they receive submissions from 206 NOCs, manually reconcile them, check for duplicates, coordinate corrections. Entirely manual, no tooling.
 
-For LA28 2028, the IOC has committed to launching a dedicated Media Registration Portal. This has been announced to all NOCs. There is no backup plan. The portal must be live by August 24, 2026.
+For LA28 2028, the IOC has committed to launching a dedicated Press Registration Portal. This has been announced to all NOCs. There is no backup plan. The portal must be live by August 24, 2026.
 
 ---
 
 ## Two Processes + One Separate Track
 
-**This is the structural backbone of the MRP.** The portal serves two sequential processes (EoI then PbN) plus one completely separate track (ENR). These are distinct workflows with different users, different screens, and different data flows.
+**This is the structural backbone of the PRP.** The portal serves two sequential processes (EoI then PbN) plus one completely separate track (ENR). These are distinct workflows with different users, different screens, and different data flows.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -144,7 +144,7 @@ Note: IOC and OCOG are **distinct roles** — different logins, different permis
 ### Two-System Boundary
 
 ```
-SYSTEM 1: Media Registration Portal (MRP — this system)
+SYSTEM 1: Press Registration Portal (PRP — this system)
   - Public EoI form (media orgs apply to NOC)
   - NOC dashboards (EoI review + PbN allocation + ENR request)
   - OCOG dashboard (PbN approval, cross-NOC)
@@ -167,7 +167,7 @@ SYSTEM 2: ACR / ACR system (LA28's existing accreditation platform)
 ### Adapter Pattern
 
 ```
-MRP App
+PRP App
   └── AcrAdapter (interface)
         ├── AcrStubClient (dev/test — returns realistic fixture data)
         └── AcrApiClient (prod — real ACR API, swapped in when ready)
@@ -682,8 +682,8 @@ When setting quotas in July 2026, the IOC should be able to compare against prio
 | 13 | ENR process model | ENR is EoI inverted: NOC submits a prioritised ENR request list to IOC. IOC reviews and grants from a separate holdback pool. Media orgs do not self-apply as ENR. | 2026-03-30 |
 | 14 | EoI ownership | EoI is owned and driven by the NOC. OCOG and IOC have visibility only during EoI phase — no approve/return/reject actions. | 2026-03-30 |
 | 15 | PbN approval states | NOC submitted → OCOG approved. OCOG can adjust allocations. IOC visibility only. | 2026-03-30 |
-| 16 | PBN system boundary | PbN module lives in MRP (System 1). Data handoff to ACR via adapter. June 1, 2026 gate determines live API vs. CSV fallback. | 2026-03-28 |
-| 17 | Common Codes ownership | Common Codes is D.TEC (Ken's team). Both MRP and ACR are peer consumers. MRP exports org data; Common Codes assigns codes through a separate workflow. | 2026-03-29 |
+| 16 | PBN system boundary | PbN module lives in PRP (System 1). Data handoff to ACR via adapter. June 1, 2026 gate determines live API vs. CSV fallback. | 2026-03-28 |
+| 17 | Common Codes ownership | Common Codes is D.TEC (Ken's team). Both PRP and ACR are peer consumers. PRP exports org data; Common Codes assigns codes through a separate workflow. | 2026-03-29 |
 | 18 | Anomaly detection thresholds | NOC inactivity: 7-day default (configurable). Concentration risk: >30% of quota to one org (configurable). | 2026-03-28 |
 | 19 | IF role vs. NOC role | IFs use the same admin role and screens as NOC admins. Key difference: IFs have no public EoI queue. IF orgs enter via invited-org flow only. Otherwise PbN allocation and ENR submission are identical. | 2026-03-30 |
 | 20 | IOC quota editing post-import | IOC can edit quota totals after import (v0.1). The quota table supports both import and in-app edit mode. All changes audit-logged in `quota_changes` table. | 2026-03-30 / updated 2026-03-30 |
@@ -871,7 +871,7 @@ sudo_tokens
 If ACR is not ready: fallback to structured CSV export (per-category slots + ENR per org per NOC, including IOC-Direct orgs), one-cycle deferral.
 
 **Failure modes:**
-- `fetchQuota()` unavailable → cache last-known quota in MRP DB, surface staleness warning
+- `fetchQuota()` unavailable → cache last-known quota in PRP DB, surface staleness warning
 - `pushOrgData()` fails → retry queue (exponential backoff, max 5 attempts, 24h window)
 
 **Final PbN output to ACR — actual `OrgExportRecord` interface (built):**
@@ -1221,14 +1221,14 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 1. The NOC creates a single organisation record representing their own communications team (e.g., "USA NOC Communications Staff") — this can be done via the fast-track entry route
 2. During PbN, the NOC allocates `nocESlots` to this org like any other allocation
 3. The IOC sets `nocETotal` per NOC as part of the quota import (already built — the 7th column in the CSV)
-4. Individual press attaché names are not collected in MRP — that's Press by Name (ACR system, 2027)
+4. Individual press attaché names are not collected in PRP — that's Press by Name (ACR system, 2027)
 
 **Rationale:** Press attachés are NOC internal staff, not independent applicants. Treating "NOC comms staff" as an org-of-N is consistent with the existing data model and avoids building a separate nomination UI.
 
 **What we need confirmed:**
 - Is the NOC E quota formula-based (e.g., based on delegation size), or does the IOC set it manually per NOC like other categories?
 - Are there cases where multiple distinct NOC entities (e.g., NOC comms team + NOC broadcast team) need separate org records?
-- Does the IOC or OCOG need to see the individual names of press attachés at any stage, or is a slot count sufficient for MRP?
+- Does the IOC or OCOG need to see the individual names of press attachés at any stage, or is a slot count sufficient for PRP?
 
 **Confirm with:** IOC OIS
 **Also consider getting input from:** 2-3 large NOCs (USA, GBR, FRA) to validate the workflow makes sense from their perspective
@@ -1343,11 +1343,11 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 
 ---
 
-### SCR-12: ACR integration scope boundary — where does MRP end?
+### SCR-12: ACR integration scope boundary — where does PRP end?
 
 **Status:** OPEN (maps to TODO-016)
-**Provisional decision:** MRP handles EoI + PbN + ENR. Approved org list + per-category slot allocations flow to ACR via structured export. Press by Name (individual journalist accreditation) is entirely in ACR (2027). MRP never handles individual PII (passports, photos).
-**What we need confirmed:** When the NOC finishes PbN in MRP and data is sent to ACR, does the NOC then log into ACR to do Press by Name? Or does MRP collect any person-level data for ACR?
+**Provisional decision:** PRP handles EoI + PbN + ENR. Approved org list + per-category slot allocations flow to ACR via structured export. Press by Name (individual journalist accreditation) is entirely in ACR (2027). PRP never handles individual PII (passports, photos).
+**What we need confirmed:** When the NOC finishes PbN in PRP and data is sent to ACR, does the NOC then log into ACR to do Press by Name? Or does PRP collect any person-level data for ACR?
 **Confirm with:** IOC OIS, OCOG ACR team, D.TEC
 **Implementation status:** Export built; ACR adapter stubbed
 
@@ -1356,10 +1356,10 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 ### SCR-13: Common Codes integration — lookup and coding trigger
 
 **Status:** OPEN (maps to Open Question #13, TODO-017)
-**Provisional decision:** MRP does not assign Common Codes. When an org is approved in MRP, a downstream process (manual or API-triggered) initiates the Common Codes coding workflow. MRP stores `commonCodesId` once assigned.
+**Provisional decision:** PRP does not assign Common Codes. When an org is approved in PRP, a downstream process (manual or API-triggered) initiates the Common Codes coding workflow. PRP stores `commonCodesId` once assigned.
 **What we need decided:**
-- Should MRP look up existing Common Codes at EoI submission time (to pre-fill org data)?
-- Should MRP trigger the coding workflow via API on approval, or does OCOG ACR staff initiate it manually?
+- Should PRP look up existing Common Codes at EoI submission time (to pre-fill org data)?
+- Should PRP trigger the coding workflow via API on approval, or does OCOG ACR staff initiate it manually?
 - What is the lookup API? (Field: org name? Domain? Country?)
 
 **Confirm with:** D.TEC Common Codes team (internal), OCOG ACR staff
@@ -1479,7 +1479,7 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 **What we need decided:**
 - What email provider will v1.0 use? (SendGrid, SES, D.TEC internal?)
 - Which emails are mandatory for August launch vs. nice-to-have?
-- Does the IOC or D.TEC provide email sending infrastructure, or does MRP self-host?
+- Does the IOC or D.TEC provide email sending infrastructure, or does PRP self-host?
 
 **Confirm with:** D.TEC infrastructure team, IOC IT
 **Implementation status:** Not built; deferred to v1.0
@@ -1516,13 +1516,13 @@ SCR-05, SCR-07, SCR-08, SCR-14, SCR-19, SCR-21
 
 ## Key Dates
 
-These are the authoritative IOC dates from the **Press Accreditation Strategic Plan for LA28 (Feb 2026 FINAL)**, shared with the MRP team by Emma Morris (IOC) on 2026-04-13.
+These are the authoritative IOC dates from the **Press Accreditation Strategic Plan for LA28 (Feb 2026 FINAL)**, shared with the PRP team by Emma Morris (IOC) on 2026-04-13.
 
 | Date | Milestone |
 |------|-----------|
 | 12 May 2026 | IOC Press Accreditation Allocation Working Group meets (Lausanne) to establish per-NOC E quotas |
 | July 2026 | IOC notifies each NOC of its press accreditation allocation |
-| April 2026 | MRP systems ready and tested (internal milestone) |
+| April 2026 | PRP systems ready and tested (internal milestone) |
 | TBC August 2026 | Portal goes live — EoI (Media Registration Page) window opens |
 | **30 October 2026** | **Hard IOC-owned deadline — platform closes for new EoI applications** |
 | Week of 5 October 2026 | Press by Number (PbN) process starts — LA28 distributes PbN forms to NOCs; Non-MRH application process also starts |

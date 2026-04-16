@@ -1,4 +1,4 @@
-**Last updated: 11-Apr-2026 20:30**
+**Last updated: 16-Apr-2026 14:00 CEST**
 
 **Version:** 1.1 (draft) \| **Date:** 2026-04-11 \| **Status:** DRAFT --- pending IOC/OCOG confirmation at April 15/16 stakeholder meeting
 
@@ -6,9 +6,9 @@
 
 ## Purpose
 
-This document describes the baseline and planned functional, non-functional, and operational requirements for the LA28 Media Registration Portal (MRP). The MRP is the digital platform through which media organisations express interest in press accreditation for the LA28 Olympic Games, National Olympic Committees (NOCs) manage and allocate their assigned quotas, and the Organising Committee (OCOG) formally approves those allocations for transfer to the ACR accreditation system.
+This document describes the baseline and planned functional, non-functional, and operational requirements for the LA28 Press Registration Portal (PRP). The PRP is the digital platform through which media organisations express interest in press accreditation for the LA28 Olympic Games, National Olympic Committees (NOCs) manage and allocate their assigned quotas, and the Organising Committee (OCOG) formally approves those allocations for transfer to the ACR accreditation system.
 
-This document covers v0.1 prototype capabilities (delivered April 2026) and the full v1 launch scope (August 24, 2026). It serves as the primary requirements reference for D.TEC product delivery, IOC Media Operations review, and OCOG/LA28 stakeholder sign-off. The design confirmation document (MRP-design-confirmation.md) remains the living working document; this document provides a structured, signable extract.
+This document covers v0.1 prototype capabilities (delivered April 2026) and the full v1 launch scope (August 24, 2026). It serves as the primary requirements reference for D.TEC product delivery, IOC Media Operations review, and OCOG/LA28 stakeholder sign-off. The design confirmation document (PRP-design-confirmation.md) remains the living working document; this document provides a structured, signable extract.
 
 ## Document Ownership
 
@@ -32,9 +32,9 @@ Items marked OPEN in this document require IOC/OCOG confirmation at the April 15
 
 **Two architectural disputes were open at document creation; one is now resolved:**
 
-- **PbN approval authority + quota entry ownership (MRP-FR-019, MRP-FR-020 and related): RESOLVED 2026-04-11.** Model A confirmed: IOC enters per-category quota totals directly in the portal; OCOG is the single PbN approval gate; IOC has read-only visibility on PbN. No rework required — this matches what is built. Open wrinkle: whether MRP should surface the gap between portal-entered quota and IOC total allocation (holdback caveat) — not blocking, to be confirmed before July quota-entry phase. See stakeholder-questions.md section 3.2.
+- **PbN approval authority + quota entry ownership (PRP-FR-019, PRP-FR-020 and related): RESOLVED 2026-04-11.** Model A confirmed: IOC enters per-category quota totals directly in the portal; OCOG is the single PbN approval gate; IOC has read-only visibility on PbN. No rework required — this matches what is built. Open wrinkle: whether PRP should surface the gap between portal-entered quota and IOC total allocation (holdback caveat) — not blocking, to be confirmed before July quota-entry phase. See stakeholder-questions.md section 3.2.
 
-- **ENR nomination model (MRP-FR-030 and related): OPEN-BLOCKING.** The current design has NOCs nominating ENR organisations only; media organisations cannot self-apply. IOC feedback proposes allowing ENR self-application via the EoI portal. If adopted, the EoI form, NOC queue action set, and ENR state machine all change. No ENR intake or routing work should proceed until Emma (IOC) and Martyn (OCOG) confirm the front door model — see stakeholder-questions.md section 5.1.
+- **ENR nomination model (PRP-FR-030 and related): OPEN-BLOCKING.** The current design has NOCs nominating ENR organisations only; media organisations cannot self-apply. IOC feedback proposes allowing ENR self-application via the EoI portal. If adopted, the EoI form, NOC queue action set, and ENR state machine all change. No ENR intake or routing work should proceed until Emma (IOC) and Martyn (OCOG) confirm the front door model — see stakeholder-questions.md section 5.1.
 
 ## Target Audience
 
@@ -52,9 +52,9 @@ NOC representatives should review Sections 4 and 5 to validate that the NOC dash
 
 ## Overview
 
-The LA28 Media Registration Portal (MRP) is a dedicated web application built by Deloitte Olympic Technology (D.TEC). It manages the end-to-end process of media press accreditation requests for the 2028 Olympic Games in Los Angeles, replacing the current Excel-based workflow.
+The LA28 Press Registration Portal (PRP) is a dedicated web application built by Deloitte Olympic Technology (D.TEC). It manages the end-to-end process of media press accreditation requests for the 2028 Olympic Games in Los Angeles, replacing the current Excel-based workflow.
 
-The MRP is the single point of entry for all media accreditation expressions of interest. It serves three distinct workflows:
+The PRP is the single point of entry for all media accreditation expressions of interest. It serves three distinct workflows:
 
 - Expression of Interest (EoI) --- public-facing form for media organisations to apply for press accreditation through their NOC (August--October 2026).
 
@@ -72,11 +72,11 @@ The current press accreditation process is managed through Excel spreadsheets em
 
 - OCOG ACR staff (LA28): submissions from 206 NOCs reconciled manually. Entirely manual, no tooling.
 
-For LA28 2028, the IOC has committed to launching a dedicated Media Registration Portal. This has been announced to all NOCs. The portal must be live by August 24, 2026.
+For LA28 2028, the IOC has committed to launching a dedicated Press Registration Portal. This has been announced to all NOCs. The portal must be live by August 24, 2026.
 
 ## Vision
 
-The 10x version of the MRP is an IOC-owned media credentialing platform that persists across every Olympic and Paralympic Games edition. By 2032 Brisbane, an accredited organisation from LA28 carries its record forward. The IOC has a global directory of legitimate press organisations with track records. The platform becomes the single source of truth for Olympic press identity worldwide.
+The 10x version of the PRP is an IOC-owned media credentialing platform that persists across every Olympic and Paralympic Games edition. By 2032 Brisbane, an accredited organisation from LA28 carries its record forward. The IOC has a global directory of legitimate press organisations with track records. The platform becomes the single source of truth for Olympic press identity worldwide.
 
 ## Process Overview
 
@@ -98,7 +98,7 @@ Parallel to EoI/PbN window. In the current design, media organisations do NOT se
 
 Two-system boundary:
 
-- System 1 --- MRP (this system): public EoI form, NOC/OCOG/IOC dashboards, PbN allocation and approval, ENR request and grant, quota management, audit trail.
+- System 1 --- PRP (this system): public EoI form, NOC/OCOG/IOC dashboards, PbN allocation and approval, ENR request and grant, quota management, audit trail.
 
 - System 2 --- ACR / ACR system (LA28\'s existing accreditation platform): Common Codes org registry, Press by Name individual accreditation (Phase 2, 2027).
 
@@ -125,9 +125,9 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 # Functional Requirements --- Expression of Interest (EoI)
 
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-001**                      **Summary:** Public EoI form for media organisation self-nomination
+  **PRP-FR-001**                      **Summary:** Public EoI form for media organisation self-nomination
   ----------------------------------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **Description**                     The MRP must provide a public-facing, multi-tab application form allowing media organisations worldwide to express interest in press accreditation for LA28. No account is required. Email verification via magic link is required before submission. The form must auto-save via browser local storage to prevent data loss.
+  **Description**                     The PRP must provide a public-facing, multi-tab application form allowing media organisations worldwide to express interest in press accreditation for LA28. No account is required. Email verification via magic link is required before submission. The form must auto-save via browser local storage to prevent data loss.
 
   **Acceptance Criteria**             \- Form accessible at a public URL without login.\
                                       - Applicant receives email verification link before submission.\
@@ -137,7 +137,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-002**                      **Summary:** EoI form fields --- 5-tab structure
+  **PRP-FR-002**                      **Summary:** EoI form fields --- 5-tab structure
   ----------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     The EoI form must capture data across five tabs: (1) Organisation --- org name, type, country, NOC code, website, address (street/city/state/postal), freelancer flag; (2) Contacts --- primary contact (first name, last name, title/position, email, phone, cell) and optional secondary contact (all fields); (3) Accreditation --- E-category multi-select with requested quantity per selected category, coverage description (required), accessibility needs flag; (4) Publication --- publication type checkboxes (13 types), circulation, frequency, sports to cover; (5) History --- prior Olympic/Paralympic accreditation by edition (checkboxes), past coverage examples, additional comments.
 
@@ -151,7 +151,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-003**                      **Summary:** E-category accreditation selection
+  **PRP-FR-003**                      **Summary:** E-category accreditation selection
   ----------------------------------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     Applicants must be able to select one or more of six accreditation categories: E (Journalist), Es (Sport-specific journalist), EP (Photographer), EPs (Sport-specific photographer), ET (Technician), EC (Support staff). Each category includes inline eligibility help text. Es and EPs applicants must declare the sport they specialise in. Applicants enter a requested quantity per selected category. ENR and NOC E (Press Attaché) are not available on the public form.
 
@@ -163,7 +163,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-004**                      **Summary:** Email verification and security controls
+  **PRP-FR-004**                      **Summary:** Email verification and security controls
   ----------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     Email verification (magic link) is required before application submission. Rate limiting: max 5 token requests per email per hour; max 15 per IP per hour. CAPTCHA (hCaptcha) on the public form. Email domain blocklist rejects known disposable email providers. Atomic token consumption prevents concurrent double-submission.
 
@@ -175,7 +175,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-005**                      **Summary:** EoI window management per NOC
+  **PRP-FR-005**                      **Summary:** EoI window management per NOC
   ----------------------------------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     Each NOC must be able to independently open or close their EoI acceptance window. When closed, applicants see a clear message. The OCOG must have visibility of which NOC windows are open/closed. OPEN: OCOG override authority and global deadline enforcement mechanism pending IOC/OCOG confirmation.
 
@@ -186,7 +186,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-006**                      **Summary:** NOC EoI review queue
+  **PRP-FR-006**                      **Summary:** NOC EoI review queue
   ----------------------------------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     NOC admins must have a dashboard showing all EoI applications from their territory. Per application, the NOC can: approve (mark eligible for PbN); return with a review note (applicant may resubmit); reject with a reason. Approval does not set slot quantities --- it is an eligibility decision only. A QuotaBar component shows per-category impact if the application is approved.
 
@@ -198,7 +198,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-007**                      **Summary:** NOC fast-track entry
+  **PRP-FR-007**                      **Summary:** NOC fast-track entry
   ----------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     NOC admins must be able to add a known organisation directly to their approved list without the org submitting a public form. Fast-track collects: org name, type, country, category selection, primary contact details. Fast-track entries are logged as noc_direct_entry in the audit trail and are immediately eligible for PbN allocation.
 
@@ -210,7 +210,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-008**                      **Summary:** Application resubmission
+  **PRP-FR-008**                      **Summary:** Application resubmission
   ----------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     When a NOC returns an application with a review note, the applicant must be able to resubmit using a new magic link. The resubmission updates the application record and transitions status to resubmitted. Resubmission count is tracked. The NOC review note is cleared on resubmission; the NOC internal note is preserved.
 
@@ -221,7 +221,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-009**                      **Summary:** Applicant status tracking
+  **PRP-FR-009**                      **Summary:** Applicant status tracking
   ----------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     After submitting, applicants must be able to check their application status using their reference number and email address, without an account. Status visible: pending, returned (with NOC review note), approved, rejected (with reason). Internal NOC notes are never shown to the applicant.
 
@@ -232,7 +232,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-010**                      **Summary:** OCOG and IOC read-only EoI visibility
+  **PRP-FR-010**                      **Summary:** OCOG and IOC read-only EoI visibility
   ----------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     During EoI, the OCOG must have cross-NOC visibility of all applications. The IOC must have the same read-only visibility. Neither OCOG nor IOC can approve, return, or reject applications during EoI --- these actions are reserved for the NOC.
 
@@ -242,7 +242,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-011**                      **Summary:** Decision reversals
+  **PRP-FR-011**                      **Summary:** Decision reversals
   ----------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     NOC admins must be able to reverse an approve or return decision. Unapprove (approved → pending): org removed from PbN candidate pool; draft PbN allocations for the org reset. Unreturn (returned → pending): NOC can re-evaluate without waiting for resubmission. Rejections are permanent.
 
@@ -255,7 +255,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 # Functional Requirements --- Press by Number (PbN)
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-012**                      **Summary:** IOC quota import and in-app editing
+  **PRP-FR-012**                      **Summary:** IOC quota import and in-app editing
   ----------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     The IOC must be able to import per-category quota totals for each of the 206 NOCs from a CSV file. Format: NOC, E, Es, EP, EPs, ET, EC, NocE (eight columns, one row per NOC). The IOC must also be able to edit individual NOC quota totals directly in the portal after import. All quota changes (import and manual edits) are logged in an append-only audit table with prior value, new value, actor, and timestamp.
 
@@ -267,7 +267,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-013**                      **Summary:** NOC PbN slot allocation
+  **PRP-FR-013**                      **Summary:** NOC PbN slot allocation
   ----------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     NOC admins must be able to assign per-category slot quantities to each approved organisation in their territory, constrained by their IOC-assigned per-category totals. All seven categories (E, Es, EP, EPs, ET, EC, NOC E) are tracked independently. The system enforces a hard quota cap: the NOC cannot allocate more slots in any category than their IOC-assigned total for that category.
 
@@ -279,7 +279,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-014**                      **Summary:** Direct PbN entry without EoI record
+  **PRP-FR-014**                      **Summary:** Direct PbN entry without EoI record
   ----------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     NOC admins must be able to add an organisation directly to their PbN allocation table without a prior EoI record. A simple inline form captures: org name, type, country, category. The OCOG can see which PbN entries had a prior EoI record and which were added directly. The hard quota cap applies equally to direct-entry orgs.
 
@@ -291,9 +291,9 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-015**                      **Summary:** PbN state machine and submission flow
+  **PRP-FR-015**                      **Summary:** PbN state machine and submission flow
   ----------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **Description**                     PbN allocations must track four states: draft (NOC editing), noc_submitted (ready for OCOG review), ocog_approved (OCOG accepted), sent_to_acr (data pushed to ACR). NOC submits when their allocation is ready. State is visible to NOC at all times. sent_to_acr is a terminal state in MRP.
+  **Description**                     PbN allocations must track four states: draft (NOC editing), noc_submitted (ready for OCOG review), ocog_approved (OCOG accepted), sent_to_acr (data pushed to ACR). NOC submits when their allocation is ready. State is visible to NOC at all times. sent_to_acr is a terminal state in PRP.
 
   **Acceptance Criteria**             \- State displayed prominently on NOC PbN screen.\
                                       - NOC receives in-app notification and email when OCOG approves or adjusts.\
@@ -302,7 +302,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-016**                      **Summary:** OCOG PbN approval
+  **PRP-FR-016**                      **Summary:** OCOG PbN approval
   ----------------------------------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     The OCOG must be able to review and formally approve PbN submissions from all 206 NOC territories. The OCOG can approve as submitted or adjust individual per-org per-category slot allocations before approving. OCOG can reverse an approval (ocog_approved → noc_submitted) to return the allocation to the NOC for revision.
 
@@ -314,7 +314,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-017**                      **Summary:** ACR data export (sendToAcr)
+  **PRP-FR-017**                      **Summary:** ACR data export (sendToAcr)
   ----------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     Once the OCOG approves a PbN submission, the OCOG must be able to push the approved allocation to ACR. Output per organisation includes: NOC code, org name, country, org type, contact details, per-category EoI flags, per-category allocated slot counts (E, Es, EP, EPs, ET, EC, NOC E), ENR slots granted, Common Codes ID. ENR organisations appended as separate records. Fallback: structured CSV export if ACR API unavailable at June 1, 2026 go/no-go gate.
 
@@ -327,7 +327,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-018**                      **Summary:** NOC quota dashboard
+  **PRP-FR-018**                      **Summary:** NOC quota dashboard
   ----------------------------------- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     The NOC must have a real-time per-category quota summary on their dashboard. Before IOC sets totals, each category shows \"not yet assigned\". After IOC sets totals, each category shows X allocated / Y total. On the application detail page, a QuotaBar shows the per-category impact of approving an application.
 
@@ -340,7 +340,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 # Functional Requirements --- Extended Non-Rights Broadcasters (ENR)
 
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-019**                      **Summary:** NOC ENR request submission
+  **PRP-FR-019**                      **Summary:** NOC ENR request submission
   ----------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     NOC admins must be able to submit a prioritised list of ENR organisations to the IOC. The list is ordered by priority rank (rank 1 = highest priority). For each nominated org, the NOC provides: org name, website, description, justification, must-have slots, nice-to-have slots. ENR orgs never appear in EoI queues or PbN allocation tables. After submission, the NOC cannot modify the list (OPEN: amendment policy).
 
@@ -353,7 +353,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-020**                      **Summary:** IOC ENR grant decisions --- combined multi-NOC view
+  **PRP-FR-020**                      **Summary:** IOC ENR grant decisions --- combined multi-NOC view
   ----------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     The IOC must be able to review all NOC ENR submissions and make grant decisions per organisation. CONFIRMED REQUIREMENT: the IOC must see all NOC ENR submissions combined in one view before allocating. Three outcomes per org: Granted (full slot count), Partial grant (fewer slots than requested), Denied (0 slots). The IOC works against a total holdback pool of 350 slots. Running pool balance always visible.
 
@@ -365,7 +365,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-021**                      **Summary:** ENR quota pool management
+  **PRP-FR-021**                      **Summary:** ENR quota pool management
   ----------------------------------- -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     The ENR holdback pool (350 slots total) is completely separate from E-category totals. It is managed entirely by the IOC. Per-NOC E-category quotas are unaffected by ENR grants.
 
@@ -375,7 +375,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-022**                      **Summary:** ENR undertaking (v1.1, deferred)
+  **PRP-FR-022**                      **Summary:** ENR undertaking (v1.1, deferred)
   ----------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     Before an ENR organisation can receive accreditation, they must sign an undertaking. This feature is deferred to v1.1 pending IOC News Access Rules finalisation. In v1, the undertaking continues via the existing external Adobe Acrobat process. When in scope: Path A (typed name + checkbox + timestamp + PDF receipt) or Path B (DocuSign-grade), subject to IOC Legal determination.
 
@@ -387,7 +387,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 # Functional Requirements --- Platform
 
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-023**                      **Summary:** IOC-Direct organisation management
+  **PRP-FR-023**                      **Summary:** IOC-Direct organisation management
   ----------------------------------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     A reserved list of major international media organisations (AFP, AP, Reuters, Xinhua, etc.) bypass the normal NOC quota process. The IOC acts as their Responsible Organisation under a special pseudo-NOC code IOC_DIRECT. The IOC manages this list via a dedicated admin screen. When a regular NOC attempts to submit an EoI for a reserved-list org, the form blocks submission with a clear message. OPEN: whether IOC manages this in-portal (built design) or offline with OCOG import.
 
@@ -399,7 +399,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-024**                      **Summary:** IOC sudo (impersonation) mode
+  **PRP-FR-024**                      **Summary:** IOC sudo (impersonation) mode
   ----------------------------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     IOC admins must be able to open a read-only impersonation session as any non-IOC admin user. This allows IOC Operations to see exactly what another admin sees without sharing credentials. All write actions are blocked server-side during sudo sessions. An amber SUDO MODE banner is shown on all admin pages.
 
@@ -413,7 +413,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-025**                      **Summary:** Audit trail
+  **PRP-FR-025**                      **Summary:** Audit trail
   ----------------------------------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     All significant actions across all three processes must be recorded in an immutable audit log with actor identity (type, ID, display label), action type, timestamp, and relevant entity IDs (application, organisation). The audit log is append-only. It is visible to IOC and OCOG admins.
 
@@ -423,7 +423,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-026**                      **Summary:** Games-to-Games organisation persistence
+  **PRP-FR-026**                      **Summary:** Games-to-Games organisation persistence
   ----------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     Organisations must be first-class entities that persist across Games editions. All tables are scoped to event_id. Adding a future Games edition is a data operation, not a code change. An organisation record from LA28 carries forward as a contextual signal for subsequent Games.
 
@@ -433,7 +433,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  **MRP-FR-027**                      **Summary:** Deduplication and reserved-list block
+  **PRP-FR-027**                      **Summary:** Deduplication and reserved-list block
   ----------------------------------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Description**                     Within a NOC territory, the system blocks duplicate submissions (same email domain + same NOC = hard block). The IOC-Direct reserved-list check blocks any NOC submission for a reserved organisation (by email domain or name + country). Cross-NOC deduplication is out of scope for v1 --- the isMultiTerritoryFlag is stored but not surfaced to users.
 
@@ -501,7 +501,7 @@ Access control is role-based and enforced server-side on all data reads and writ
 
 - ACR adapter retry on push failure: exponential backoff, max 5 attempts, 24-hour window.
 
-- ACR fetchQuota() unavailable: cache last-known quota in MRP DB, surface staleness warning.
+- ACR fetchQuota() unavailable: cache last-known quota in PRP DB, surface staleness warning.
 
 - Portal must support 206 NOC concurrent sessions during EoI and PbN windows.
 
@@ -546,7 +546,7 @@ Access control is role-based and enforced server-side on all data reads and writ
 
   8                 ENR self-application: should ENR orgs be able to apply via the EoI form, with NOC role being prioritisation rather than approve/reject?               IOC + OCOG                OPEN-BLOCKING — awaiting Emma (IOC) and Martyn (OCOG). No ENR intake/routing work until resolved.
 
-  9                 After the MRP → ACR handoff: where do edits live? Model A (edits in ACR only — current implementation), Model B (edits in MRP, re-sent to ACR), or Model C (bidirectional sync)? See stakeholder-questions.md §4.3.   IOC / OCOG                OPEN-BLOCKING — P0 Thursday 2026-04-16. Joint discussion with §4.5.
+  9                 After the PRP → ACR handoff: where do edits live? Model A (edits in ACR only — current implementation), Model B (edits in PRP, re-sent to ACR), or Model C (bidirectional sync)? See stakeholder-questions.md §4.3.   IOC / OCOG                OPEN-BLOCKING — P0 Thursday 2026-04-16. Joint discussion with §4.5.
 
   10                Rejection permanence: should NOCs be able to un-reject an application (e.g. requiring OCOG sign-off)?                                                 IOC / OCOG                OPEN
 
@@ -554,7 +554,7 @@ Access control is role-based and enforced server-side on all data reads and writ
 
   12                Quota recipients: are NOCs, IFs, and IOC-Direct the complete list? Do INOs receive media quotas?                                                      IOC                       PARTIALLY RESOLVED --- INOs open
 
-  13                Common Codes lookup at submission: should MRP look up existing Common Codes entries when an org submits EoI?                                          D.TEC Common Codes team   OPEN
+  13                Common Codes lookup at submission: should PRP look up existing Common Codes entries when an org submits EoI?                                          D.TEC Common Codes team   OPEN
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Delivery Roadmap
@@ -631,7 +631,7 @@ NOTE: This RACI reflects D.TEC\'s current understanding and has not been confirm
 
 # Data Model Summary
 
-The following are the core data entities in the MRP. Full schema maintained in src/db/schema.ts.
+The following are the core data entities in the PRP. Full schema maintained in src/db/schema.ts.
 
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **Table**                           **Purpose**
@@ -670,7 +670,7 @@ The following are the core data entities in the MRP. Full schema maintained in s
 
   PbN                                 Press by Number --- the phase where NOCs formally allocate their IOC-assigned per-category quotas to specific media organisations, subject to OCOG approval.
 
-  ACR                                 Accreditation system (LA28\'s platform). Receives the final approved press allocation data from MRP.
+  ACR                                 Accreditation system (LA28\'s platform). Receives the final approved press allocation data from PRP.
 
   Common Codes                        Shared organisation registry within the ACR system, maintained by D.TEC. Used across all accreditation categories.
 
@@ -686,9 +686,9 @@ The following are the core data entities in the MRP. Full schema maintained in s
 
   Responsible Organisation            The body that acts as the owning entity for a media organisation in the accreditation system. IOC for IOC-Direct orgs; NOC for regular orgs. (Term per IOC Media Operations feedback --- replaces \"sponsoring organisation\".)
 
-  D.TEC                               Deloitte Olympic Technology. Builds and operates the MRP portal. Also maintains Common Codes.
+  D.TEC                               Deloitte Olympic Technology. Builds and operates the PRP portal. Also maintains Common Codes.
 
-  MRP                                 Media Registration Portal --- this system.
+  PRP                                 Press Registration Portal --- this system.
 
   NOC E                               Press Attaché category. NOC communications staff / press officers. Nominated directly by the NOC during PbN --- not available on the public EoI form.
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

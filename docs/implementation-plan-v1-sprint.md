@@ -5,7 +5,7 @@
 **Status:** COMPLETE
 **Last updated:** 2026-04-10
 **Basis:** Design-to-code gap analysis + all resolved CONFIRM items as of 2026-03-30
-**Source of truth:** `docs/MRP-design-confirmation.md`
+**Source of truth:** `docs/PRP-design-confirmation.md`
 
 > **Sprint 1 complete as of 2026-04-10.** All four critical fixes (CRIT-01–04) and all in-scope missing features (MISS-01–04, MISS-06) are shipped. See `docs/design-to-code-gap-analysis.md` for the full resolved-item list.
 >

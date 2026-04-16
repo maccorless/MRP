@@ -163,4 +163,4 @@ Follow the established patterns:
 - Yellow banner pattern: `src/app/admin/noc/home/page.tsx:75`
 - Purple banner pattern: `src/app/admin/ioc/orgs/page.tsx:32`
 - quota-calc.ts for anomaly logic placement: `src/lib/quota-calc.ts`
-- Decision #18 (thresholds): `docs/MRP-design-confirmation.md`
+- Decision #18 (thresholds): `docs/PRP-design-confirmation.md`
