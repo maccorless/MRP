@@ -50,7 +50,7 @@ import {
 async function setSession(payload: typeof SESSIONS.nocUSA) {
   const { encodeSession } = await import("@/lib/session");
   const encoded = await encodeSession(payload);
-  mockCookieStore.set("mrp_session", encoded);
+  mockCookieStore.set("prp_session", encoded);
 }
 
 async function getAppStatus(id: string) {
@@ -200,8 +200,8 @@ describe("approveApplication — sudo read-only guard", () => {
     // Sudo session: IOC admin acting as USA NOC — should be read-only
     const { encodeSession } = await import("@/lib/session");
     const sudoPayload = { ...SESSIONS.nocUSA, isSudo: true, sudoActorLabel: "IOC Admin" };
-    mockCookieStore.set("mrp_sudo_session", await encodeSession(sudoPayload));
-    mockCookieStore.set("mrp_session", await encodeSession(SESSIONS.ioc));
+    mockCookieStore.set("prp_sudo_session", await encodeSession(sudoPayload));
+    mockCookieStore.set("prp_session", await encodeSession(SESSIONS.ioc));
 
     const { redirect, error } = await callAction(() =>
       approveApplication(makeFormData({ id: appId }))

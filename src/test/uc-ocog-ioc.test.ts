@@ -68,7 +68,7 @@ import { acrClient } from "@/lib/acr/stub-client";
 async function setSession(payload: (typeof SESSIONS)[keyof typeof SESSIONS]) {
   const { encodeSession } = await import("@/lib/session");
   const encoded = await encodeSession(payload);
-  mockCookieStore.set("mrp_session", encoded);
+  mockCookieStore.set("prp_session", encoded);
 }
 
 function clearSession() {

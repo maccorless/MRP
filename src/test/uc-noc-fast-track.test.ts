@@ -30,7 +30,7 @@ import { callAction, makeFormData, cleanupTestData, SESSIONS } from "./helpers";
 async function setSession(payload: (typeof SESSIONS)[keyof typeof SESSIONS]) {
   const { encodeSession } = await import("@/lib/session");
   const val = await encodeSession(payload);
-  mockCookieStore.set("mrp_session", val);
+  mockCookieStore.set("prp_session", val);
 }
 function clearSession() { mockCookieStore.clear(); }
 

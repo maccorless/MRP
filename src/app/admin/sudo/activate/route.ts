@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
 
   // Set the sudo cookie on the redirect response
   const encoded = await encodeSudoSession(sudoPayload);
-  response.cookies.set("mrp_sudo_session", encoded, {
+  response.cookies.set("prp_sudo_session", encoded, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

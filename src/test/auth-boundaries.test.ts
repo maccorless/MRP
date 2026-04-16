@@ -60,13 +60,13 @@ const IOC_READONLY: SessionPayload = {
 async function setSession(payload: SessionPayload) {
   const { encodeSession } = await import("@/lib/session");
   const encoded = await encodeSession(payload);
-  mockCookieStore.set("mrp_session", encoded);
+  mockCookieStore.set("prp_session", encoded);
 }
 
 async function setSudoSession(payload: SessionPayload) {
   const { encodeSession } = await import("@/lib/session");
   const encoded = await encodeSession(payload);
-  mockCookieStore.set("mrp_sudo_session", encoded);
+  mockCookieStore.set("prp_sudo_session", encoded);
 }
 
 function expectLoginRedirect(out: { redirect?: { url: string }; error?: Error }) {
