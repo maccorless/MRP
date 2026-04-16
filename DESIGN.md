@@ -1,8 +1,8 @@
 **Last updated: 07-Apr-2026 21:42**
 
-# MRP Design System
+# PRP Design System
 
-Design decisions for the LA 2028 Media Registration Portal admin UI.
+Design decisions for the LA 2028 Press Registration Portal admin UI.
 Update this file when a new pattern is introduced or an existing one changes.
 
 ---
@@ -63,7 +63,7 @@ Status color conventions (consistent across all admin roles):
 
 ### AppHeader (shared)
 Blue `#0057A8` header bar, full width. Contains:
-- Left: rings logo mark + "Media Registration Portal" + "LA 2028"
+- Left: rings logo mark + "Press Registration Portal" + "LA 2028"
 - Right: display name (hidden on mobile), role badge (rounded pill), sign-out button
 
 File: `src/components/AppHeader.tsx`

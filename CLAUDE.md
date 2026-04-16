@@ -1,8 +1,8 @@
-# MRP — Claude Instructions
+# PRP — Claude Instructions
 
 ## Project
 
-LA 2028 Media Registration Portal. A Next.js 16 app managing media organisation Expressions of Interest (EoI) for the Olympics. Four admin roles (NOC, OCOG, IOC, IF) each with distinct permissions and dashboards. Public-facing application form at `/apply`.
+LA 2028 Press Registration Portal. A Next.js 16 app managing media organisation Expressions of Interest (EoI) for the Olympics. Four admin roles (NOC, OCOG, IOC, IF) each with distinct permissions and dashboards. Public-facing application form at `/apply`.
 
 **Stack**: Next.js 16 (App Router) · React 19 · TypeScript · Drizzle ORM · PostgreSQL · Tailwind CSS 4 · Vitest · Bun
 
