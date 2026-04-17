@@ -3,9 +3,8 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
-import { categoryDisplayLabel } from "@/lib/category";
-import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
 import { Paginator } from "@/components/Paginator";
+import { QueueClient } from "./QueueClient";
 
 type StatusFilter = "all" | "pending" | "resubmitted" | "approved" | "returned" | "rejected";
 type ApplicationStatus = "pending" | "resubmitted" | "approved" | "returned" | "rejected";
@@ -187,60 +186,7 @@ export default async function NocQueuePage({
             No applications in this category.
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">Reference</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">Organization</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">Category</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">Submitted</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {rows.map((row) => (
-                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-700">
-                    {row.referenceNumber}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{row.orgName}</span>
-                      {row.entrySource === "noc_direct" && (
-                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">Direct Entry</span>
-                      )}
-                      {row.entrySource === "invited" && (
-                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">Invited</span>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-400">{row.contactName}</div>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {categoryDisplayLabel(row.categoryE, row.categoryEs, row.categoryEp, row.categoryEps, row.categoryEt, row.categoryEc)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={row.status} />
-                  </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
-                    {new Date(row.submittedAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/noc/${row.id}`}
-                      className="text-[#0057A8] text-xs font-medium hover:underline"
-                    >
-                      Review →
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <QueueClient rows={rows} allIds={rows.map((r) => r.id)} />
         )}
       </div>
 

@@ -1,0 +1,138 @@
+"use client";
+
+import { useState } from "react";
+import { categoryDisplayLabel } from "@/lib/category";
+import { StatusBadge } from "@/components/StatusBadge";
+import { ApplicationDrawer } from "./ApplicationDrawer";
+
+type Row = {
+  id: string;
+  referenceNumber: string;
+  status: "pending" | "resubmitted" | "approved" | "returned" | "rejected";
+  entrySource: string | null;
+  categoryE: boolean;
+  categoryEs: boolean;
+  categoryEp: boolean;
+  categoryEps: boolean;
+  categoryEt: boolean;
+  categoryEc: boolean;
+  contactName: string | null;
+  submittedAt: Date | string;
+  orgName: string;
+};
+
+export function QueueClient({
+  rows,
+  allIds,
+}: {
+  rows: Row[];
+  allIds: string[];
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  return (
+    <>
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
+              Reference
+            </th>
+            <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
+              Organization
+            </th>
+            <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
+              Category
+            </th>
+            <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
+              Status
+            </th>
+            <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
+              Submitted
+            </th>
+            <th className="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {rows.map((row) => (
+            <tr
+              key={row.id}
+              className="hover:bg-gray-50 transition-colors cursor-pointer"
+              onClick={() => setSelectedId(row.id)}
+            >
+              <td className="px-4 py-3 font-mono text-xs text-gray-700">
+                {row.referenceNumber}
+              </td>
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="font-medium text-gray-900 hover:text-[#0057A8] hover:underline text-left"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedId(row.id);
+                    }}
+                  >
+                    {row.orgName}
+                  </button>
+                  {row.entrySource === "noc_direct" && (
+                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                      Direct Entry
+                    </span>
+                  )}
+                  {row.entrySource === "invited" && (
+                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                      Invited
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-400">{row.contactName}</div>
+              </td>
+              <td className="px-4 py-3 text-gray-600">
+                {categoryDisplayLabel(
+                  row.categoryE,
+                  row.categoryEs,
+                  row.categoryEp,
+                  row.categoryEps,
+                  row.categoryEt,
+                  row.categoryEc,
+                )}
+              </td>
+              <td className="px-4 py-3">
+                <StatusBadge status={row.status} />
+              </td>
+              <td className="px-4 py-3 text-gray-500 text-xs">
+                {new Date(row.submittedAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <button
+                  type="button"
+                  className="text-[#0057A8] text-xs font-medium hover:underline cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedId(row.id);
+                  }}
+                >
+                  Review →
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {selectedId && (
+        <ApplicationDrawer
+          appId={selectedId}
+          allIds={allIds}
+          onClose={() => setSelectedId(null)}
+          onNavigate={(newId) => setSelectedId(newId)}
+        />
+      )}
+    </>
+  );
+}
