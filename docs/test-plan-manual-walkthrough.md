@@ -503,7 +503,7 @@ After approving applications, the NOC admin decides how many accreditation slots
 
 ---
 
-## Use Case 2b: Fast-Track and Direct PbN Entry
+## Use Case 2b: Direct Entry and Direct PbN Entry
 
 Direct entry lets a NOC submit a pre-approved org (skipping the public EoI queue). Direct PbN entry lets a NOC add an org straight to the allocation table with no EoI record at all.
 

@@ -98,5 +98,5 @@ export async function submitDirectEntryApplication(formData: FormData) {
     });
   });
 
-  redirect("/admin/noc/queue?success=fast_track_submitted");
+  redirect("/admin/noc/queue?success=direct_entry_submitted");
 }

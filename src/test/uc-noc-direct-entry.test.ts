@@ -72,7 +72,7 @@ describe("NOC Direct Entry EoI", () => {
     });
 
     const { redirect } = await callAction(() => submitDirectEntryApplication(fd));
-    expect(redirect?.url).toBe("/admin/noc/queue?success=fast_track_submitted");
+    expect(redirect?.url).toBe("/admin/noc/queue?success=direct_entry_submitted");
 
     const [org] = await db
       .select()

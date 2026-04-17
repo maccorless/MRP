@@ -120,7 +120,7 @@ export default async function NocHelpPage() {
         </dl>
       </div>
 
-      {/* Fast-track explained */}
+      {/* Direct Entry explained */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-5">
         <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide mb-3">Direct Entry explained</h2>
         <p className="text-sm text-blue-800 mb-3">
