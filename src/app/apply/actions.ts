@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and, gte, count, isNull, gt, sql } from "drizzle-orm";
+import { eq, and, gte, count, isNull, gt, sql, or } from "drizzle-orm";
 import { db } from "@/db";
 import {
   magicLinkTokens,
@@ -186,7 +186,7 @@ export async function submitApplication(formData: FormData) {
         and(
           eq(applications.id, resubmitId),
           eq(applications.contactEmail, email),
-          eq(applications.status, "returned")
+          or(eq(applications.status, "returned"), eq(applications.status, "pending"))
         )
       );
 
@@ -212,6 +212,7 @@ export async function submitApplication(formData: FormData) {
         redirect("/apply?error=invalid_token");
       }
 
+      const wasReturned = returnedApp.status === "returned";
       await tx
         .update(applications)
         .set({
@@ -220,8 +221,8 @@ export async function submitApplication(formData: FormData) {
           categoryPhoto,
           about,
           ...expandedFields,
-          status: "resubmitted",
-          resubmissionCount: returnedApp.resubmissionCount + 1,
+          status: wasReturned ? "resubmitted" : "pending",
+          resubmissionCount: wasReturned ? returnedApp.resubmissionCount + 1 : returnedApp.resubmissionCount,
           reviewNote: null,
           updatedAt: new Date(),
         })

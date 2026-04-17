@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { db } from "@/db";
 import { magicLinkTokens, applications, organizations } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
@@ -14,6 +14,7 @@ export default async function FormPage({
     token?: string;
     email?: string;
     from?: string;
+    resubmit?: string;
     org_name?: string;
     org_type?: string;
     country?: string;
@@ -21,7 +22,7 @@ export default async function FormPage({
     website?: string;
   }>;
 }) {
-  const { token, email, from, org_name, org_type, country, noc_code, website } = await searchParams;
+  const { token, email, from, resubmit, org_name, org_type, country, noc_code, website } = await searchParams;
 
   if (!token || !email) redirect("/apply");
 
@@ -44,19 +45,34 @@ export default async function FormPage({
     redirect("/apply?error=invalid_token");
   }
 
-  // Check for a returned application to resubmit
-  const [returnedRow] = await db
-    .select({ app: applications, org: organizations })
-    .from(applications)
-    .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-    .where(
-      and(
-        eq(applications.contactEmail, email),
-        eq(applications.status, "returned")
-      )
-    );
+  // Look up an editable application — prefer explicit resubmit param (pending or returned),
+  // fall back to auto-detecting a returned app by email.
+  let editRow: { app: typeof applications.$inferSelect; org: typeof organizations.$inferSelect } | null = null;
 
-  const isResubmission = !!returnedRow;
+  if (resubmit) {
+    const [row] = await db
+      .select({ app: applications, org: organizations })
+      .from(applications)
+      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+      .where(
+        and(
+          eq(applications.id, resubmit),
+          eq(applications.contactEmail, email),
+          or(eq(applications.status, "pending"), eq(applications.status, "returned"))
+        )
+      );
+    if (row) editRow = row;
+  } else {
+    const [row] = await db
+      .select({ app: applications, org: organizations })
+      .from(applications)
+      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+      .where(and(eq(applications.contactEmail, email), eq(applications.status, "returned")));
+    if (row) editRow = row;
+  }
+
+  const returnedRow = editRow;
+  const isResubmission = !!editRow;
 
   // Build prefill data
   let prefill: PrefillData | null = null;

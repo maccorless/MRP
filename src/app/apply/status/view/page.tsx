@@ -6,9 +6,8 @@ import { magicLinkTokens, applications, orgSlotAllocations, organizations } from
 import { hashToken } from "@/lib/tokens";
 import { STATUS_BADGE } from "@/components/StatusBadge";
 
-// Applicant-facing labels differ slightly from admin labels
 const STATUS_LABEL: Record<string, string> = {
-  pending:     "Pending Review",
+  pending:     "Application Received",
   resubmitted: "Resubmitted",
   approved:    "Accepted as Candidate",
   returned:    "Returned for Corrections",
@@ -16,12 +15,43 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_DESC: Record<string, string> = {
-  pending:     "Your application is awaiting review by your NOC.",
+  pending:     "Your application has been received and is awaiting review by your NOC.",
   resubmitted: "Your corrected application is under review.",
   approved:    "Your NOC has accepted your application as a candidate for press accreditation. Accreditation slot allocation happens in the next phase (Press by Number) and is not guaranteed — some accepted candidates may ultimately receive no slots. You will be notified once the NOC's allocation is finalised.",
   returned:    "Your NOC has requested corrections. Please review the note below and resubmit.",
   rejected:    "Your application has not been accepted.",
 };
+
+const ORG_TYPE_LABEL: Record<string, string> = {
+  media_print_online: "Print / Online Media",
+  media_broadcast:    "Broadcast",
+  news_agency:        "News Agency",
+};
+
+const CATEGORY_LABEL: Record<string, string> = {
+  E: "E — Journalist", Es: "Es — Sport Journalist",
+  EP: "EP — Photographer", EPs: "EPs — Sport Photographer",
+  ET: "ET — Technical", EC: "EC — Support",
+};
+
+function Row({ label, value }: { label: string; value: string | null | undefined }) {
+  if (!value) return null;
+  return (
+    <div className="grid grid-cols-[140px_1fr] gap-x-3 text-sm py-1">
+      <span className="text-gray-500 shrink-0">{label}</span>
+      <span className="text-gray-900 break-words">{value}</span>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-5">
+      <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{title}</div>
+      {children}
+    </div>
+  );
+}
 
 export default async function StatusViewPage({
   searchParams,
@@ -42,11 +72,10 @@ export default async function StatusViewPage({
     redirect("/apply?error=invalid_token");
   }
 
-  // Look up applications for this email
   const rows = await db
     .select({
       app: applications,
-      orgName: organizations.name,
+      org: organizations,
       allocation: orgSlotAllocations,
     })
     .from(applications)
@@ -73,67 +102,175 @@ export default async function StatusViewPage({
         </div>
       ) : (
         <div className="space-y-4">
-          {rows.map(({ app, orgName, allocation }) => (
-            <div key={app.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="font-mono text-xs text-gray-400 mb-1">{app.referenceNumber}</div>
-                  <div className="font-semibold text-gray-900">{orgName}</div>
-                </div>
-                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[app.status]}`}>
-                  {STATUS_LABEL[app.status] ?? app.status}
-                </span>
-              </div>
+          {rows.map(({ app, org, allocation }) => {
+            const categories = (
+              [
+                ["E",   app.categoryE,   app.requestedE],
+                ["Es",  app.categoryEs,  app.requestedEs],
+                ["EP",  app.categoryEp,  app.requestedEp],
+                ["EPs", app.categoryEps, app.requestedEps],
+                ["ET",  app.categoryEt,  app.requestedEt],
+                ["EC",  app.categoryEc,  app.requestedEc],
+              ] as [string, boolean | null, number | null][]
+            ).filter(([, checked]) => checked);
 
-              <p className="text-sm text-gray-600 mb-3">{STATUS_DESC[app.status]}</p>
+            const orgAddress = [org.address, org.address2, org.city, org.stateProvince, org.postalCode]
+              .filter(Boolean).join(", ");
 
-              {app.status === "returned" && app.reviewNote && (
-                <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
-                  <div className="font-medium mb-1">NOC note:</div>
-                  {app.reviewNote}
-                </div>
-              )}
-
-              {app.status === "approved" && !allocation && (
-                <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
-                  <div className="font-medium text-gray-700 mb-1">Slot allocation in progress</div>
-                  Your accreditation numbers are being finalised. You will be contacted once slot allocation is confirmed.
-                </div>
-              )}
-
-              {app.status === "approved" && allocation && (
-                <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded">
-                  <div className="text-xs font-medium text-green-800 mb-2">Allocated slots</div>
-                  <div className="grid grid-cols-3 gap-2 text-xs text-green-900">
-                    {[
-                      { label: "E (Journalist)", val: allocation.eSlots },
-                      { label: "Es (Sport Journalist)", val: allocation.esSlots },
-                      { label: "EP (Photographer)", val: allocation.epSlots },
-                      { label: "EPs (Sport Photo)", val: allocation.epsSlots },
-                      { label: "ET (Technician)", val: allocation.etSlots },
-                      { label: "EC (Support)", val: allocation.ecSlots },
-                    ]
-                      .filter(({ val }) => (val ?? 0) > 0)
-                      .map(({ label, val }) => (
-                        <div key={label}>
-                          <div className="text-green-600">{label}</div>
-                          <div className="font-semibold text-lg">{val}</div>
-                        </div>
-                      ))}
+            return (
+              <div key={app.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                {/* Header row */}
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <div className="font-mono text-xs text-gray-400 mb-1">{app.referenceNumber}</div>
+                    <div className="font-semibold text-gray-900">{org.name}</div>
                   </div>
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[app.status]}`}>
+                    {STATUS_LABEL[app.status] ?? app.status}
+                  </span>
                 </div>
-              )}
 
-              {app.status === "returned" && (
-                <Link
-                  href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
-                  className="inline-block mt-1 px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
-                >
-                  Correct &amp; Resubmit
-                </Link>
-              )}
-            </div>
-          ))}
+                <p className="text-sm text-gray-600 mb-4">{STATUS_DESC[app.status]}</p>
+
+                {app.status === "returned" && app.reviewNote && (
+                  <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
+                    <div className="font-medium mb-1">NOC note:</div>
+                    {app.reviewNote}
+                  </div>
+                )}
+
+                {app.status === "approved" && !allocation && (
+                  <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
+                    <div className="font-medium text-gray-700 mb-1">Slot allocation in progress</div>
+                    Your accreditation numbers are being finalised. You will be contacted once slot allocation is confirmed.
+                  </div>
+                )}
+
+                {app.status === "approved" && allocation && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded">
+                    <div className="text-xs font-medium text-green-800 mb-2">Allocated slots</div>
+                    <div className="grid grid-cols-3 gap-2 text-xs text-green-900">
+                      {[
+                        { label: "E (Journalist)", val: allocation.eSlots },
+                        { label: "Es (Sport Journalist)", val: allocation.esSlots },
+                        { label: "EP (Photographer)", val: allocation.epSlots },
+                        { label: "EPs (Sport Photo)", val: allocation.epsSlots },
+                        { label: "ET (Technician)", val: allocation.etSlots },
+                        { label: "EC (Support)", val: allocation.ecSlots },
+                      ]
+                        .filter(({ val }) => (val ?? 0) > 0)
+                        .map(({ label, val }) => (
+                          <div key={label}>
+                            <div className="text-green-600">{label}</div>
+                            <div className="font-semibold text-lg">{val}</div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-3 mb-4">
+                  {app.status === "pending" && (
+                    <Link
+                      href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
+                      className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
+                    >
+                      Edit application
+                    </Link>
+                  )}
+                  {app.status === "returned" && (
+                    <Link
+                      href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
+                      className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
+                    >
+                      Correct &amp; Resubmit
+                    </Link>
+                  )}
+                </div>
+
+                {/* Collapsible read-only application view */}
+                <details className="border border-gray-200 rounded-lg overflow-hidden">
+                  <summary className="px-4 py-3 text-sm font-medium text-gray-700 cursor-pointer select-none hover:bg-gray-50 bg-gray-50">
+                    View submitted application
+                  </summary>
+                  <div className="px-4 py-4 border-t border-gray-100 divide-y divide-gray-100">
+
+                    <Section title="Organisation">
+                      <Row label="Name" value={org.name} />
+                      <Row label="Type" value={ORG_TYPE_LABEL[org.orgType] ?? org.orgType} />
+                      <Row label="Country" value={org.country} />
+                      <Row label="NOC" value={app.nocCode} />
+                      <Row label="Website" value={org.website} />
+                      <Row label="Address" value={orgAddress || null} />
+                    </Section>
+
+                    <div className="pt-4">
+                      <Section title="Primary Contact">
+                        <Row label="Name" value={[app.contactFirstName, app.contactLastName].filter(Boolean).join(" ")} />
+                        <Row label="Title" value={app.contactTitle} />
+                        <Row label="Email" value={app.contactEmail} />
+                        <Row label="Phone" value={app.contactPhone} />
+                        <Row label="Mobile" value={app.contactCell} />
+                      </Section>
+                    </div>
+
+                    {(app.secondaryFirstName || app.secondaryLastName) && (
+                      <div className="pt-4">
+                        <Section title="Secondary Contact">
+                          <Row label="Name" value={[app.secondaryFirstName, app.secondaryLastName].filter(Boolean).join(" ")} />
+                          <Row label="Title" value={app.secondaryTitle} />
+                          <Row label="Email" value={app.secondaryEmail} />
+                          <Row label="Phone" value={app.secondaryPhone} />
+                          <Row label="Mobile" value={app.secondaryCell} />
+                        </Section>
+                      </div>
+                    )}
+
+                    <div className="pt-4">
+                      <Section title="Accreditation">
+                        {categories.length > 0 && (
+                          <div className="grid grid-cols-[140px_1fr] gap-x-3 text-sm py-1">
+                            <span className="text-gray-500 shrink-0">Categories</span>
+                            <div className="space-y-0.5">
+                              {categories.map(([cat, , qty]) => (
+                                <div key={cat} className="text-gray-900">
+                                  {CATEGORY_LABEL[cat] ?? cat}{qty != null ? ` — ${qty} requested` : ""}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <Row label="About" value={app.about} />
+                      </Section>
+                    </div>
+
+                    <div className="pt-4">
+                      <Section title="Publication">
+                        <Row label="Types" value={Array.isArray(app.publicationTypes) ? (app.publicationTypes as string[]).join(", ") : null} />
+                        <Row label="Circulation" value={app.circulation} />
+                        <Row label="Frequency" value={app.publicationFrequency} />
+                        <Row label="Sports covered" value={app.sportsToCover} />
+                      </Section>
+                    </div>
+
+                    <div className="pt-4">
+                      <Section title="History">
+                        <Row label="Prior Olympic" value={app.priorOlympic === true ? "Yes" : app.priorOlympic === false ? "No" : null} />
+                        {app.priorOlympic && <Row label="Olympic years" value={app.priorOlympicYears} />}
+                        <Row label="Prior Paralympic" value={app.priorParalympic === true ? "Yes" : app.priorParalympic === false ? "No" : null} />
+                        {app.priorParalympic && <Row label="Paralympic years" value={app.priorParalympicYears} />}
+                        <Row label="Past coverage" value={app.pastCoverageExamples} />
+                        <Row label="Comments" value={app.additionalComments} />
+                      </Section>
+                    </div>
+
+                  </div>
+                </details>
+
+              </div>
+            );
+          })}
         </div>
       )}
 

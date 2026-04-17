@@ -91,7 +91,7 @@ const REQUIRED_FIELDS: Record<number, string[]> = {
   1: ["contact_first_name", "contact_last_name"],
   2: ["about"],
   3: [],
-  4: ["prior_olympic", "prior_paralympic"],
+  4: [],
 };
 
 // Fields beyond required that must be filled for a "full" (checkmark) status.
