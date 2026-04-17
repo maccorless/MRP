@@ -137,7 +137,7 @@ export default async function NocQueuePage({
         <h1 className="text-xl font-bold text-gray-900">
           NOC Review Queue — {session.nocCode}
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <p className="text-sm text-gray-600 mt-0.5">
           {actionableCount > 0
             ? `${actionableCount} application${actionableCount !== 1 ? "s" : ""} awaiting review`
             : "No applications awaiting review"}
@@ -194,7 +194,7 @@ export default async function NocQueuePage({
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {rows.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">
+          <div className="p-8 text-center text-sm text-gray-500">
             No applications in this category.
           </div>
         ) : (

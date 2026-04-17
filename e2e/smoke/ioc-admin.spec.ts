@@ -38,8 +38,8 @@ test.describe('IOC Admin', () => {
 
   test('audit trail search input is present', async ({ page }) => {
     await page.goto('/admin/ioc/audit');
-    // The AuditTrailView component renders a search/filter input
-    const searchInput = page.getByRole('textbox');
+    // The AuditTrailView component renders a search input (type="search" → role searchbox)
+    const searchInput = page.getByRole('searchbox');
     await expect(searchInput).toBeVisible();
   });
 

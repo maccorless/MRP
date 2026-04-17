@@ -79,7 +79,7 @@ export function AuditTrailView({
             </a>
           )}
         </div>
-        <p className="mt-1.5 text-xs text-gray-400">
+        <p className="mt-1.5 text-xs text-gray-600">
           Tokens: <span className="font-mono">actor:</span> <span className="font-mono">action:</span> <span className="font-mono">type:</span> <span className="font-mono">date:</span> <span className="font-mono">from:</span> <span className="font-mono">to:</span> — or type freely to search actor name &amp; detail
         </p>
       </form>
@@ -87,7 +87,7 @@ export function AuditTrailView({
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {logs.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">No entries match your search.</div>
+          <div className="p-8 text-center text-sm text-gray-500">No entries match your search.</div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -115,7 +115,7 @@ export function AuditTrailView({
                   </td>
                   <td className="px-5 py-2.5">
                     <div className="text-gray-900">{log.actorLabel ?? log.actorId ?? "—"}</div>
-                    <div className="text-xs text-gray-400 capitalize">{log.actorType.replace(/_/g, " ")}</div>
+                    <div className="text-xs text-gray-500 capitalize">{log.actorType.replace(/_/g, " ")}</div>
                   </td>
                   <td className="px-5 py-2.5 font-mono text-xs text-gray-500">
                     {log.applicationId?.slice(0, 8) ?? "—"}

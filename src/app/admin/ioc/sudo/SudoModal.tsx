@@ -67,7 +67,7 @@ export default function SudoModal() {
     <>
       <button
         onClick={handleOpen}
-        className="text-xs text-blue-200 hover:text-white transition-colors bg-white/10 hover:bg-white/20 px-3 py-1 rounded border border-white/20 cursor-pointer"
+        className="text-xs text-white hover:text-white/90 transition-colors bg-white/10 hover:bg-white/20 px-3 py-1 rounded border border-white/20 cursor-pointer"
       >
         Act as user
       </button>

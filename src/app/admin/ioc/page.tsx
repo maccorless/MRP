@@ -154,7 +154,7 @@ export default async function IocDashboard() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">IOC Overview</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-600 mt-0.5">
             All {totalApplications} applications across all NOCs
           </p>
         </div>
@@ -253,7 +253,7 @@ export default async function IocDashboard() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-700">Recent Applications</h2>
-          <span className="text-xs text-gray-400">Showing latest 15</span>
+          <span className="text-xs text-gray-500">Showing latest 15</span>
         </div>
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
@@ -272,7 +272,7 @@ export default async function IocDashboard() {
                 <td className="px-5 py-2.5 font-mono text-xs text-gray-700">{row.referenceNumber}</td>
                 <td className="px-5 py-2.5">
                   <div className="font-medium text-gray-900">{row.orgName}</div>
-                  <div className="text-xs text-gray-400">{row.contactName}</div>
+                  <div className="text-xs text-gray-500">{row.contactName}</div>
                 </td>
                 <td className="px-5 py-2.5 font-mono text-xs text-gray-600">{row.nocCode}</td>
                 <td className="px-5 py-2.5 text-gray-600">{categoryDisplayLabel(row.categoryE, row.categoryEs, row.categoryEp, row.categoryEps, row.categoryEt, row.categoryEc)}</td>

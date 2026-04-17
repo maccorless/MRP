@@ -112,7 +112,7 @@ export function QueueClient({
                     );
                   })()}
                 </div>
-                <div className="text-xs text-gray-400">{row.contactName}</div>
+                <div className="text-xs text-gray-500">{row.contactName}</div>
               </td>
               <td className="px-4 py-3 text-gray-600">
                 {categoryDisplayLabel(
