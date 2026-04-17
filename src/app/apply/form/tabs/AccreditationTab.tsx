@@ -41,7 +41,7 @@ function InfoTooltip({ text }: { text: string }) {
   );
 }
 
-export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | null; errors?: FormErrors }) {
+export function AccreditationTab({ prefill, errors, orgType }: { prefill: PrefillData | null; errors?: FormErrors; orgType?: string }) {
   // Initialise selected state from prefill
   const initSelected = (): Record<AccredCategory, boolean> => {
     if (!prefill) return { E: false, Es: false, EP: false, EPs: false, ET: false, EC: false };
@@ -55,7 +55,18 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
     };
   };
 
+  const initQuantities = (): Record<string, number> => ({
+    E:   Number(prefill?.requestedE   ?? 0),
+    Es:  Number(prefill?.requestedEs  ?? 0),
+    EP:  Number(prefill?.requestedEp  ?? 0),
+    EPs: Number(prefill?.requestedEps ?? 0),
+    ET:  Number(prefill?.requestedEt  ?? 0),
+    EC:  Number(prefill?.requestedEc  ?? 0),
+  });
+
   const [selected, setSelected] = useState<Record<AccredCategory, boolean>>(initSelected);
+  const [quantities, setQuantities] = useState<Record<string, number>>(initQuantities);
+  const [aboutLength, setAboutLength] = useState<number>(prefill?.about?.length ?? 0);
   const [sportsSpecificSport, setSportsSpecificSport] = useState<string>(
     prefill?.sportsSpecificSport ?? ""
   );
@@ -130,6 +141,7 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
                       name={`requested_${cat.value}`}
                       type="number"
                       min={1}
+                      max={100}
                       required
                       data-tab="2"
                       defaultValue={
@@ -140,9 +152,15 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
                         cat.value === "ET"  ? (prefill?.requestedEt  ?? "") :
                         cat.value === "EC"  ? (prefill?.requestedEc  ?? "") : ""
                       }
+                      onChange={(e) =>
+                        setQuantities((prev) => ({ ...prev, [cat.value]: Number(e.target.value) }))
+                      }
                       placeholder="e.g. 3"
                       className="w-32 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
                     />
+                    {quantities[cat.value] > 100 && (
+                      <p className="text-xs text-red-600 mt-0.5">Maximum 100 accreditations per category</p>
+                    )}
                   </div>
                 )}
               </label>
@@ -195,26 +213,46 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
       {/* About coverage */}
       <div>
         <label htmlFor="about" className={LABEL}>
-          About your coverage <span className="text-red-500">*</span>
+          Brief description of your coverage plans for Los Angeles 2028 <span className="text-red-500">*</span>
         </label>
         <textarea
           id="about"
           name="about"
           required
           rows={5}
+          maxLength={500}
           data-tab="2"
           defaultValue={prefill?.about ?? ""}
+          onChange={(e) => setAboutLength(e.target.value.length)}
           placeholder="Describe your organisation's editorial focus, the events and sports you plan to cover, the size of your on-site team, and any specific venue access requirements."
           className={`${errors?.about ? BASE_INPUT + " border-red-500" : INPUT} resize-none`}
           aria-invalid={!!errors?.about}
           aria-describedby={errors?.about ? "err-about" : undefined}
         />
+        <p className="text-right text-xs text-gray-400 mt-1">{aboutLength} / 500</p>
         {errors?.about && <p id="err-about" className="text-xs text-red-500 mt-1" role="alert">{errors.about}</p>}
         <p className={HELP}>
           Be specific. Your NOC uses this to evaluate and prioritise your request. Include
           details about your audience reach and how you plan to cover LA 2028.
         </p>
       </div>
+
+      {/* ENR programming type — shown only for ENR organisations */}
+      {orgType === "enr" && (
+        <div className="mt-4">
+          <label htmlFor="enr-programming-type" className="block text-xs font-medium text-gray-700 mb-1">
+            Type of programming <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            id="enr-programming-type"
+            name="enr_programming_type"
+            rows={2}
+            placeholder="e.g. news programme, sports programme, regional sports coverage"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+          />
+          <p className="text-xs text-gray-500 mt-1">Required for ENR (Non-Media Rights Holder) applications.</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -81,10 +81,55 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
           <p className={HELP}>Print circulation or website unique visitors</p>
         </div>
         <div>
-          <label htmlFor="publication_frequency" className={LABEL}>Frequency of publication</label>
-          <input id="publication_frequency" name="publication_frequency" type="text" data-tab="3"
-            defaultValue={prefill?.publicationFrequency ?? ""} placeholder="e.g. Daily, Weekly, Monthly" className={INPUT} />
+          <label htmlFor="pub-online-visitors" className="block text-xs font-medium text-gray-700 mb-1">
+            Online unique visitors per month <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <input
+            id="pub-online-visitors"
+            name="online_unique_visitors"
+            type="text"
+            placeholder="e.g. 500,000"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
         </div>
+      </div>
+
+      {/* Geographical coverage */}
+      <div>
+        <label htmlFor="pub-geo-coverage" className="block text-xs font-medium text-gray-700 mb-1">
+          Geographical coverage of publication <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <select
+          id="pub-geo-coverage"
+          name="geographical_coverage"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          <option value="">Select…</option>
+          <option value="international">International</option>
+          <option value="national">National</option>
+          <option value="local">Local / Regional</option>
+        </select>
+      </div>
+
+      {/* Frequency */}
+      <div>
+        <label htmlFor="publication_frequency" className={LABEL}>Frequency of publication</label>
+        <input id="publication_frequency" name="publication_frequency" type="text" data-tab="3"
+          defaultValue={prefill?.publicationFrequency ?? ""} placeholder="e.g. Daily, Weekly, Monthly" className={INPUT} />
+      </div>
+
+      {/* Social media accounts */}
+      <div>
+        <label htmlFor="pub-social-media" className="block text-xs font-medium text-gray-700 mb-1">
+          Social media accounts <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <textarea
+          id="pub-social-media"
+          name="social_media_accounts"
+          rows={2}
+          placeholder="e.g. @org_name on X/Twitter, Instagram: @org_name"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+        />
       </div>
 
       {/* Sports */}
