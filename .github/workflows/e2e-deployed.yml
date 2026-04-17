@@ -22,12 +22,18 @@ jobs:
         run: bunx playwright install --with-deps chromium
 
       - name: Wait for Railway deployment
+        env:
+          RAILWAY_URL: ${{ vars.RAILWAY_PRODUCTION_URL }}
         run: |
+          if [ -z "$RAILWAY_URL" ]; then
+            echo "Error: RAILWAY_PRODUCTION_URL is not set in repository variables (Settings → Secrets and variables → Actions → Variables)"
+            exit 1
+          fi
           echo "Waiting 3 minutes for Railway build to complete..."
           sleep 180
           echo "Waiting for Railway to become healthy..."
           for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ vars.RAILWAY_PRODUCTION_URL }}/)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${RAILWAY_URL}/")
             if [ "$STATUS" = "200" ]; then
               echo "Railway is up (attempt $i)"
               exit 0
