@@ -8,6 +8,7 @@ const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 const HELP = "text-xs text-gray-400 mt-1";
 
 const SUMMER_EDITIONS = ["Sydney 2000", "Athens 2004", "Beijing 2008", "London 2012", "Rio 2016", "Tokyo 2020", "Paris 2024"];
+const WINTER_EDITIONS = ["Salt Lake City 2002", "Turin 2006", "Vancouver 2010", "Sochi 2014", "PyeongChang 2018", "Beijing 2022"];
 
 function editionVal(edition: string) {
   return edition.toLowerCase().replace(/\s+/g, "_");
@@ -106,9 +107,15 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
         <div className="pl-6 border-l-2 border-blue-200 space-y-4">
           <div>
             <label className={LABEL}>Which years?</label>
-            <p className="text-xs text-gray-500 mb-2">Select all that apply:</p>
+            <p className="text-xs text-gray-500 mb-2">Summer Games:</p>
             <EditionCheckboxes
               editions={SUMMER_EDITIONS}
+              checked={olympicEditions}
+              onChange={toggleOlympic}
+            />
+            <p className="text-xs text-gray-500 mt-3 mb-2">Winter Games:</p>
+            <EditionCheckboxes
+              editions={WINTER_EDITIONS}
               checked={olympicEditions}
               onChange={toggleOlympic}
             />
@@ -144,9 +151,15 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
         <div className="pl-6 border-l-2 border-blue-200 space-y-4">
           <div>
             <label className={LABEL}>Which years?</label>
-            <p className="text-xs text-gray-500 mb-2">Select all that apply:</p>
+            <p className="text-xs text-gray-500 mb-2">Summer Games:</p>
             <EditionCheckboxes
               editions={SUMMER_EDITIONS}
+              checked={paralympicEditions}
+              onChange={toggleParalympic}
+            />
+            <p className="text-xs text-gray-500 mt-3 mb-2">Winter Games:</p>
+            <EditionCheckboxes
+              editions={WINTER_EDITIONS}
               checked={paralympicEditions}
               onChange={toggleParalympic}
             />

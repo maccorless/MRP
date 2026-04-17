@@ -91,14 +91,14 @@ const REQUIRED_FIELDS: Record<number, string[]> = {
   1: ["contact_first_name", "contact_last_name"],
   2: ["about"],
   3: [],
-  4: [],
+  4: ["prior_olympic", "prior_paralympic"],
 };
 
 // Fields beyond required that must be filled for a "full" (checkmark) status.
 // Accreditation and History use custom DOM logic in isTabFull — listed here for reference only.
 const CHECKMARK_FIELDS: Record<number, string[]> = {
   0: ["website", "address", "city", "state_province", "postal_code"],
-  1: ["contact_title"],
+  1: [],
   2: [], // handled in isTabFull (requested_* per checked category)
   3: ["circulation", "publication_frequency", "sports_to_cover"],
   4: [], // handled in isTabFull (prior_olympic, prior_paralympic, past_coverage_examples)
@@ -729,9 +729,9 @@ export function EoiFormTabs({
                     const firstIncomplete = tabStatus.findIndex((s) => s !== "full");
                     if (firstIncomplete !== -1) setActiveTab(firstIncomplete);
                   }}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  Complete my application
+                  Add/Edit my application
                 </button>
                 <button
                   type="button"
@@ -740,9 +740,9 @@ export function EoiFormTabs({
                     setShowConfirmModal(false);
                     formRef.current?.requestSubmit();
                   }}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
                 >
-                  Submit as-is
+                  Submit application
                 </button>
               </>
             )}
