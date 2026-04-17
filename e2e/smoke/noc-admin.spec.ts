@@ -12,8 +12,7 @@ test.describe('NOC Admin', () => {
     // dashboard directly should succeed without a login redirect.
     await page.goto('/admin/noc');
     await expect(page).toHaveURL(/\/admin\/noc/);
-    // The NOC heading contains the NOC code
-    await expect(page.getByRole('heading', { name: /NOC/i }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Welcome/i })).toBeVisible();
   });
 
   test('queue table at /admin/noc/queue has at least one row', async ({ page }) => {
@@ -22,25 +21,23 @@ test.describe('NOC Admin', () => {
 
     // Table body rows — seed data contains at least 3 USA applications
     const rows = page.locator('tbody tr');
-    await expect(rows).toHaveCount({ min: 1 } as never);
-    // More explicit: just confirm at least one tr is visible
     await expect(rows.first()).toBeVisible();
   });
 
-  test('clicking a row Review link navigates to application detail', async ({ page }) => {
+  test('clicking a row Review button opens the application drawer', async ({ page }) => {
     await page.goto('/admin/noc/queue');
 
-    // Click the first "Review →" link in the table
-    const reviewLink = page.locator('tbody tr').first().getByRole('link', { name: /Review/i });
-    await reviewLink.click();
+    // Click the first "Review →" button in the table
+    const reviewBtn = page.locator('tbody tr').first().getByRole('button', { name: /Review/i });
+    await reviewBtn.click();
 
-    // Should navigate to /admin/noc/{uuid}
-    await expect(page).toHaveURL(/\/admin\/noc\/[a-f0-9-]+/);
+    // A drawer dialog should appear (no page navigation)
+    await expect(page.getByRole('dialog')).toBeVisible();
   });
 
   test('unauthenticated access redirects to /admin/login', async ({ browser }) => {
     // Create a fresh context with no stored credentials
-    const context = await browser.newContext();
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
     await page.goto('/admin/noc/queue');
     await expect(page).toHaveURL(/\/admin\/login/);

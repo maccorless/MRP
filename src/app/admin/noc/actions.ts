@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, auditLog, orgSlotAllocations } from "@/db/schema";
+import { applications, auditLog, orgSlotAllocations, dismissedDuplicatePairs } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
 
 async function getApplicationForNoc(id: string, nocCode: string) {
@@ -253,4 +253,34 @@ export async function reverseRejection(formData: FormData) {
   });
 
   redirect(`/admin/noc/${id}?success=rejection_reversed`);
+}
+
+export async function dismissDuplicatePair(orgId1: string, orgId2: string) {
+  await requireWritable();
+  const session = await requireNocSession();
+
+  // Canonical order: smaller UUID string first (ensures uniqueness regardless of call order)
+  const [orgIdA, orgIdB] = orgId1 < orgId2 ? [orgId1, orgId2] : [orgId2, orgId1];
+
+  await db.transaction(async (tx) => {
+    // Upsert: if already dismissed, this is a no-op
+    await tx
+      .insert(dismissedDuplicatePairs)
+      .values({
+        nocCode: session.nocCode,
+        eventId: "LA28",
+        orgIdA,
+        orgIdB,
+        dismissedBy: session.userId,
+      })
+      .onConflictDoNothing();
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "duplicate_resolved",
+      detail: `Dismissed duplicate flag for orgs ${orgIdA} / ${orgIdB}`,
+    });
+  });
 }

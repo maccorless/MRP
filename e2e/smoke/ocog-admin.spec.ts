@@ -22,7 +22,7 @@ test.describe('OCOG Admin', () => {
 
   test('unauthenticated access to /admin/ocog/pbn redirects to /admin/login', async ({ browser }) => {
     // New context has no session cookies — middleware should redirect
-    const context = await browser.newContext();
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
     await page.goto('/admin/ocog/pbn');
     await expect(page).toHaveURL(/\/admin\/login/);

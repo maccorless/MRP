@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { categoryDisplayLabel } from "@/lib/category";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ApplicationDrawer } from "./ApplicationDrawer";
@@ -37,8 +38,9 @@ export function QueueClient({
   orgIdToAppId?: Record<string, string>;
 }) {
   const duplicateSet = new Set(duplicateOrgIds);
+  const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [compareAppIds, setCompareAppIds] = useState<[string, string] | null>(null);
+  const [compareTarget, setCompareTarget] = useState<{ appId1: string; appId2: string; orgId1: string; orgId2: string } | null>(null);
 
   return (
     <>
@@ -93,12 +95,13 @@ export function QueueClient({
                   )}
                   {duplicateSet.has(row.organizationId) && (() => {
                     const peerOrgIds = duplicatePairs[row.organizationId] ?? [];
-                    const peerAppId = peerOrgIds.length > 0 ? orgIdToAppId[peerOrgIds[0]] : undefined;
-                    return peerAppId ? (
+                    const peerOrgId = peerOrgIds[0];
+                    const peerAppId = peerOrgId ? orgIdToAppId[peerOrgId] : undefined;
+                    return peerAppId && peerOrgId ? (
                       <button
                         type="button"
                         className="px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 cursor-pointer hover:bg-yellow-200 underline decoration-dotted transition-colors"
-                        onClick={() => setCompareAppIds([row.id, peerAppId])}
+                        onClick={() => setCompareTarget({ appId1: row.id, appId2: peerAppId, orgId1: row.organizationId, orgId2: peerOrgId })}
                       >
                         ⚠ Possible duplicate
                       </button>
@@ -154,13 +157,16 @@ export function QueueClient({
         />
       )}
 
-      {compareAppIds && (
+      {compareTarget && (
         <DuplicateCompareModal
-          appId1={compareAppIds[0]}
-          appId2={compareAppIds[1]}
-          onClose={() => setCompareAppIds(null)}
-          onReviewApp1={() => setSelectedId(compareAppIds[0])}
-          onReviewApp2={() => setSelectedId(compareAppIds[1])}
+          appId1={compareTarget.appId1}
+          appId2={compareTarget.appId2}
+          orgId1={compareTarget.orgId1}
+          orgId2={compareTarget.orgId2}
+          onClose={() => setCompareTarget(null)}
+          onReviewApp1={() => setSelectedId(compareTarget.appId1)}
+          onReviewApp2={() => setSelectedId(compareTarget.appId2)}
+          onResolved={() => router.refresh()}
         />
       )}
     </>

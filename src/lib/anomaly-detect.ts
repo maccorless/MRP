@@ -6,7 +6,7 @@
 
 import { and, eq, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, organizations } from "@/db/schema";
+import { applications, dismissedDuplicatePairs, organizations } from "@/db/schema";
 
 export interface ConcentrationFlag {
   nocCode: string;
@@ -164,26 +164,44 @@ export function detectCrossNocDuplicates(appRows: AppRowForDuplicates[]): string
  * @param nocCode  The NOC code to scope the check to
  * @param eventId  The event identifier, defaults to "LA28"
  */
+async function getDismissedPairs(nocCode: string, eventId: string): Promise<Set<string>> {
+  const rows = await db
+    .select({ orgIdA: dismissedDuplicatePairs.orgIdA, orgIdB: dismissedDuplicatePairs.orgIdB })
+    .from(dismissedDuplicatePairs)
+    .where(
+      and(
+        eq(dismissedDuplicatePairs.nocCode, nocCode),
+        eq(dismissedDuplicatePairs.eventId, eventId),
+      ),
+    );
+  // Encode each dismissed pair as a canonical key for fast lookup
+  return new Set(rows.map((r) => `${r.orgIdA}:${r.orgIdB}`));
+}
+
+function isDismissed(dismissedSet: Set<string>, a: string, b: string): boolean {
+  const [lo, hi] = a < b ? [a, b] : [b, a];
+  return dismissedSet.has(`${lo}:${hi}`);
+}
+
 export async function detectWithinNocDuplicates(
   nocCode: string,
   eventId: string = "LA28",
 ): Promise<Set<string>> {
-  const rows = await db
-    .select({
-      orgId: organizations.id,
-      emailDomain: organizations.emailDomain,
-    })
-    .from(applications)
-    .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-    .where(
-      and(
-        eq(applications.nocCode, nocCode),
-        eq(applications.eventId, eventId),
-        isNotNull(organizations.emailDomain),
+  const [rows, dismissed] = await Promise.all([
+    db
+      .select({ orgId: organizations.id, emailDomain: organizations.emailDomain })
+      .from(applications)
+      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+      .where(
+        and(
+          eq(applications.nocCode, nocCode),
+          eq(applications.eventId, eventId),
+          isNotNull(organizations.emailDomain),
+        ),
       ),
-    );
+    getDismissedPairs(nocCode, eventId),
+  ]);
 
-  // Group by email domain
   const domainToOrgs = new Map<string, string[]>();
   for (const row of rows) {
     if (!row.emailDomain) continue;
@@ -192,11 +210,15 @@ export async function detectWithinNocDuplicates(
     domainToOrgs.set(row.emailDomain, existing);
   }
 
-  // Return org IDs where the domain appears more than once
   const duplicateOrgIds = new Set<string>();
   for (const [, orgIds] of domainToOrgs) {
-    if (orgIds.length > 1) {
-      orgIds.forEach((id) => duplicateOrgIds.add(id));
+    if (orgIds.length < 2) continue;
+    // Only flag an org if at least one of its peers is NOT dismissed
+    for (const orgId of orgIds) {
+      const peers = orgIds.filter((id) => id !== orgId);
+      if (peers.some((peerId) => !isDismissed(dismissed, orgId, peerId))) {
+        duplicateOrgIds.add(orgId);
+      }
     }
   }
   return duplicateOrgIds;
@@ -213,20 +235,20 @@ export async function detectWithinNocDuplicatePairs(
   nocCode: string,
   eventId: string = "LA28",
 ): Promise<Map<string, string[]>> {
-  const rows = await db
-    .select({
-      orgId: organizations.id,
-      emailDomain: organizations.emailDomain,
-    })
-    .from(applications)
-    .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-    .where(
-      and(
-        eq(applications.nocCode, nocCode),
-        eq(applications.eventId, eventId),
-        isNotNull(organizations.emailDomain),
+  const [rows, dismissed] = await Promise.all([
+    db
+      .select({ orgId: organizations.id, emailDomain: organizations.emailDomain })
+      .from(applications)
+      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+      .where(
+        and(
+          eq(applications.nocCode, nocCode),
+          eq(applications.eventId, eventId),
+          isNotNull(organizations.emailDomain),
+        ),
       ),
-    );
+    getDismissedPairs(nocCode, eventId),
+  ]);
 
   const domainToOrgs = new Map<string, string[]>();
   for (const row of rows) {
@@ -238,9 +260,13 @@ export async function detectWithinNocDuplicatePairs(
 
   const pairs = new Map<string, string[]>();
   for (const [, orgIds] of domainToOrgs) {
-    if (orgIds.length > 1) {
-      for (const orgId of orgIds) {
-        pairs.set(orgId, orgIds.filter((id) => id !== orgId));
+    if (orgIds.length < 2) continue;
+    for (const orgId of orgIds) {
+      const activePeers = orgIds.filter(
+        (id) => id !== orgId && !isDismissed(dismissed, orgId, id),
+      );
+      if (activePeers.length > 0) {
+        pairs.set(orgId, activePeers);
       }
     }
   }

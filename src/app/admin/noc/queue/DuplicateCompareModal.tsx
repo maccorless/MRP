@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { categoryDisplayLabel } from "@/lib/category";
+import { dismissDuplicatePair } from "@/app/admin/noc/actions";
 
 const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online Media",
@@ -55,20 +56,27 @@ function CompareField({
 export function DuplicateCompareModal({
   appId1,
   appId2,
+  orgId1,
+  orgId2,
   onClose,
   onReviewApp1,
   onReviewApp2,
+  onResolved,
 }: {
   appId1: string;
   appId2: string;
+  orgId1: string;
+  orgId2: string;
   onClose: () => void;
   onReviewApp1: () => void;
   onReviewApp2: () => void;
+  onResolved: () => void;
 }) {
   const [data1, setData1] = useState<AppData | null>(null);
   const [data2, setData2] = useState<AppData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     let cancelled = false;
@@ -274,6 +282,22 @@ export function DuplicateCompareModal({
                     }}
                   >
                     Review {app2.referenceNumber as string} →
+                  </button>
+                </div>
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    className="w-full px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => {
+                      startTransition(async () => {
+                        await dismissDuplicatePair(orgId1, orgId2);
+                        onClose();
+                        onResolved();
+                      });
+                    }}
+                  >
+                    {isPending ? "Resolving…" : "Resolve as not duplicate"}
                   </button>
                 </div>
               </>

@@ -15,10 +15,10 @@ test.describe('IOC Admin', () => {
   test('stat cards render on dashboard', async ({ page }) => {
     await page.goto('/admin/ioc');
 
-    // The dashboard renders 5 status cards: Pending, Resubmitted, Approved,
-    // Returned, Rejected. Verify at least the Pending and Approved cards appear.
-    await expect(page.getByText('Pending')).toBeVisible();
-    await expect(page.getByText('Approved')).toBeVisible();
+    // The dashboard renders 5 status cards: Pending, Resubmitted, Candidate,
+    // Returned, Rejected. Verify at least the Pending and Candidate cards appear.
+    await expect(page.getByText('Pending').first()).toBeVisible();
+    await expect(page.getByText('Candidate').first()).toBeVisible();
   });
 
   test('NOC breakdown table has header row', async ({ page }) => {
@@ -44,7 +44,7 @@ test.describe('IOC Admin', () => {
   });
 
   test('unauthenticated access to /admin/ioc redirects to /admin/login', async ({ browser }) => {
-    const context = await browser.newContext();
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
     await page.goto('/admin/ioc');
     await expect(page).toHaveURL(/\/admin\/login/);

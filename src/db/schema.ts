@@ -46,6 +46,7 @@ export const auditActionEnum = pgEnum("audit_action", [
   "email_verified",
   "admin_login",
   "duplicate_flag_raised",
+  "duplicate_resolved",
   "export_generated",
   "pbn_submitted",
   "pbn_approved",
@@ -440,6 +441,21 @@ export const eventSettings = pgTable("event_settings", {
 // ─── Invitations (MISS-05 — NOC/IF invited-org flow) ─────────────────────────
 // NOC and IF admins create invite links that pre-fill the EoI form for known orgs.
 // Token is stored hashed; raw token is only in the shareable URL.
+
+// ─── Dismissed Duplicate Pairs ───────────────────────────────────────────────
+// When a NOC admin confirms two flagged applications are not duplicates,
+// a record is stored here so they no longer appear as warnings in the queue.
+// Pairs are stored with orgIdA < orgIdB (UUID string order) for uniqueness.
+
+export const dismissedDuplicatePairs = pgTable("dismissed_duplicate_pairs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  nocCode: text("noc_code").notNull(),
+  eventId: text("event_id").notNull().default("LA28"),
+  orgIdA: uuid("org_id_a").references(() => organizations.id).notNull(),
+  orgIdB: uuid("org_id_b").references(() => organizations.id).notNull(),
+  dismissedAt: timestamp("dismissed_at", { withTimezone: true }).defaultNow().notNull(),
+  dismissedBy: text("dismissed_by").notNull(),
+});
 
 export const invitations = pgTable("invitations", {
   id:             uuid("id").defaultRandom().primaryKey(),

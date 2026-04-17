@@ -1,6 +1,7 @@
 import AppHeader from "@/components/AppHeader";
 import { requireIocSession } from "@/lib/session";
 import { IocNav } from "./nav";
+import SudoModal from "./sudo/SudoModal";
 
 const HELP_ANCHORS: Record<string, string> = {
   "/admin/ioc": "overview",
@@ -24,6 +25,7 @@ export default async function IocLayout({
         roleLabel="IOC Admin"
         helpPath="/admin/ioc/help"
         helpAnchors={HELP_ANCHORS}
+        actions={<SudoModal />}
       />
       <IocNav />
       <div className="max-w-6xl mx-auto p-6">{children}</div>

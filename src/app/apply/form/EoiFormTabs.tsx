@@ -231,12 +231,6 @@ export function EoiFormTabs({
       return true;
     }
 
-    if (tabIndex === 3) {
-      // At least one publication type must be checked
-      const pubTypes = form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]:checked');
-      if (pubTypes.length === 0) return false;
-    }
-
     if (tabIndex === 4) {
       // Both prior accreditation radios must be answered
       const olympicInputs = form.elements.namedItem("prior_olympic");
@@ -407,12 +401,6 @@ export function EoiFormTabs({
         return "empty";
       }
 
-      // Tab 3 (Publication): require at least one publication type checked for green dot
-      if (tabIndex === 3) {
-        const pubTypes = form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]:checked');
-        if (pubTypes.length === 0) return "empty";
-      }
-
       // All required fields satisfied — check for full completion
       return isTabFull(tabIndex, form) ? "full" : "complete";
     });
@@ -473,6 +461,22 @@ export function EoiFormTabs({
     // If triggered from any earlier tab (e.g. Enter key in a field), just advance.
     if (activeTab < TABS.length - 1) {
       setActiveTab(activeTab + 1);
+      return;
+    }
+
+    // Gate: every tab must have at least a green dot before we accept submission.
+    const incompleteTabs = TABS.reduce<{ tab: string; field: string }[]>((acc, tab, i) => {
+      if (tabStatus[i] === "empty") acc.push({ tab: tab.label, field: "Tab not yet completed" });
+      return acc;
+    }, []);
+    if (incompleteTabs.length > 0) {
+      setValidationErrors(incompleteTabs);
+      const firstIncompleteTab = TABS.findIndex((_, i) => tabStatus[i] === "empty");
+      firstErrTabRef.current = firstIncompleteTab >= 0 ? firstIncompleteTab : 0;
+      firstErrElRef.current = null;
+      const errCount = incompleteTabs.length;
+      setErrorAnnouncement(`${errCount} tab${errCount > 1 ? "s are" : " is"} incomplete.`);
+      setShowValidationModal(true);
       return;
     }
 

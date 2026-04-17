@@ -11,7 +11,6 @@ const NAV = [
   { href: "/admin/noc/pbn",         label: "PbN Allocations" },
   { href: "/admin/noc/enr",         label: "ENR Requests" },
   { href: "/admin/noc/audit",       label: "Audit Trail" },
-  { href: "/admin/noc/help",        label: "Help & Guide" },
 ];
 
 export function NocNavTabs() {

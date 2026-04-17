@@ -9,11 +9,13 @@ export default function AppHeader({
   roleLabel,
   helpPath,
   helpAnchors,
+  actions,
 }: {
   displayName: string;
   roleLabel: string;
   helpPath?: string;
   helpAnchors?: Record<string, string>;
+  actions?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const anchor = helpAnchors?.[pathname] ?? "";
@@ -30,11 +32,12 @@ export default function AppHeader({
           </div>
           <div>
             <div className="text-sm font-semibold text-white leading-tight">Press Registration Portal</div>
-            <div className="text-xs text-white/60 leading-tight">LA 2028</div>
+            <div className="text-xs text-white/90 leading-tight">LA 2028</div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          {actions}
           {helpPath && (
             <Link
               href={helpPath + (anchor ? "#" + anchor : "")}

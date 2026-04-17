@@ -85,7 +85,7 @@ export default async function ApplyPage({
         </form>
       </div>
 
-      <p className="mt-4 text-xs text-gray-400 text-center">
+      <p className="mt-4 text-xs text-gray-500 text-center">
         Already have a reference number? Contact your NOC directly.
       </p>
     </div>
