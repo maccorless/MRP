@@ -50,7 +50,7 @@ jobs:
         run: bun test:e2e
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/prp_test
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           CI: true
 
       - name: Upload Playwright report
