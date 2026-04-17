@@ -270,7 +270,8 @@ export async function submitApplication(formData: FormData) {
   const orgType = formData.get("org_type") as
     | "media_print_online"
     | "media_broadcast"
-    | "news_agency";
+    | "news_agency"
+    | "freelancer";
   const websiteRaw = (formData.get("website") as string)?.trim();
   const website = websiteRaw || null;
 
@@ -306,7 +307,6 @@ export async function submitApplication(formData: FormData) {
   const orgCity = (formData.get("city") as string)?.trim() || null;
   const orgStateProvince = (formData.get("state_province") as string)?.trim() || null;
   const orgPostalCode = (formData.get("postal_code") as string)?.trim() || null;
-  const isFreelancer = formData.get("is_freelancer") === "yes" ? true : null;
 
   const referenceNumber = await nextApplicationRef(nocCode);
 
@@ -357,7 +357,6 @@ export async function submitApplication(formData: FormData) {
           city: orgCity,
           stateProvince: orgStateProvince,
           postalCode: orgPostalCode,
-          isFreelancer,
         })
         .returning();
     }

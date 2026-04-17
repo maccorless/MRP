@@ -80,6 +80,7 @@ export function OrganisationTab({
           <option value="media_print_online">Print / Online Media</option>
           <option value="media_broadcast">Broadcast</option>
           <option value="news_agency">News Agency</option>
+          <option value="freelancer">Freelancer / Independent</option>
         </select>
         <Err name="org_type" errors={errors} />
       </div>
@@ -156,13 +157,6 @@ export function OrganisationTab({
 
       {/* Flags */}
       <div className="border-t border-gray-100 pt-6 space-y-4">
-        <fieldset>
-          <legend className={LABEL}>Are you a freelancer?</legend>
-          <div className="flex gap-4 mt-1">
-            <label className="flex items-center gap-2 text-sm"><input type="radio" name="is_freelancer" value="yes" data-tab="0" className="accent-[#0057A8]" /> Yes</label>
-            <label className="flex items-center gap-2 text-sm"><input type="radio" name="is_freelancer" value="no" data-tab="0" className="accent-[#0057A8]" defaultChecked /> No</label>
-          </div>
-        </fieldset>
         <fieldset>
           <legend className={LABEL}>Will any attending media member require wheelchair accessibility?</legend>
           <div className="flex gap-4 mt-1">
