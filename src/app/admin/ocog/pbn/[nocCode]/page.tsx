@@ -25,6 +25,9 @@ export default async function OcogPbnNocPage({
 
   if (!quota) notFound();
 
+  const nocEQuota     = quota.nocETotal ?? 0;
+  const nocERequested = quota.nocERequested ?? nocEQuota;
+
   const rows = await db
     .select({
       alloc: orgSlotAllocations,
@@ -74,7 +77,7 @@ export default async function OcogPbnNocPage({
     })
   ) as Record<string, number>;
 
-  const grandTotal = Object.values(catTotals).reduce((s, v) => s + v, 0);
+  const grandTotal = Object.values(catTotals).reduce((s, v) => s + v, 0) + nocERequested;
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -89,7 +92,7 @@ export default async function OcogPbnNocPage({
           <div>
             <h1 className="text-xl font-bold text-gray-900 font-mono">{nocCode}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              {rows.length} org{rows.length !== 1 ? "s" : ""} · {grandTotal} total slots across {activeCategories.length} categor{activeCategories.length !== 1 ? "ies" : "y"}
+              {rows.length} RO{rows.length !== 1 ? "s" : ""} · {grandTotal} total slots across {activeCategories.length} categor{activeCategories.length !== 1 ? "ies" : "y"}{nocEQuota > 0 ? ` + ${nocERequested} NocE` : ""}
             </p>
           </div>
           <span className={`shrink-0 inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -160,7 +163,7 @@ export default async function OcogPbnNocPage({
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">Organisation</th>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">Responsible Organisation</th>
                     <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Categories</th>
                     {activeCategories.map((cat) => (
                       <th
@@ -210,6 +213,35 @@ export default async function OcogPbnNocPage({
                     );
                   })}
                 </tbody>
+                {/* NocE row — NOC itself as Responsible Organisation */}
+                {nocEQuota > 0 && (
+                  <tbody className="border-t-2 border-gray-300">
+                    <tr className="bg-teal-50">
+                      <td className="px-5 py-3 font-medium text-gray-900 whitespace-nowrap">
+                        <span className="font-mono font-semibold">{nocCode}</span>
+                        <span className="ml-2 text-xs text-gray-500">Press Attaché (NocE)</span>
+                      </td>
+                      <td className="px-5 py-3 text-xs text-gray-500">NOC Staff</td>
+                      {activeCategories.map((cat) => (
+                        <td key={cat.value} className="px-4 py-3 text-right text-gray-300">—</td>
+                      ))}
+                      <td className="px-5 py-3 text-right">
+                        {isSubmitted ? (
+                          <input
+                            type="number"
+                            name="noce_slots"
+                            defaultValue={nocERequested}
+                            min={0}
+                            max={nocEQuota}
+                            className="w-16 border border-gray-300 rounded px-1.5 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          />
+                        ) : (
+                          <span className="font-semibold text-gray-900">{nocERequested}</span>
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                )}
                 <tfoot className="bg-gray-50 border-t border-gray-200">
                   <tr>
                     <td colSpan={2} className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
@@ -245,7 +277,7 @@ export default async function OcogPbnNocPage({
             <h2 className="text-sm font-semibold text-gray-900 mb-1">Send to ACR</h2>
             <p className="text-xs text-gray-500 mb-4">
               Push the approved allocation for {nocCode} to the Accreditation system.
-              {rows.length} org{rows.length !== 1 ? "s" : ""} · {grandTotal} total slots.
+              {rows.length} RO{rows.length !== 1 ? "s" : ""} · {grandTotal} total slots{nocEQuota > 0 ? ` (incl. ${nocERequested} NocE)` : ""}.
             </p>
             <form action={sendToAcr}>
               <input type="hidden" name="noc_code" value={nocCode} />

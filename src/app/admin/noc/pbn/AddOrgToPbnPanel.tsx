@@ -21,7 +21,7 @@ export function AddOrgToPbnPanel() {
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:text-gray-800 transition-colors"
       >
         <span className="text-lg leading-none">+</span>
-        Add organisation directly to PbN
+        Add responsible organisation directly to PbN
       </button>
     );
   }
@@ -30,9 +30,9 @@ export function AddOrgToPbnPanel() {
     <div className="bg-white rounded-lg border border-gray-200 p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">Add Organisation Directly</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Add Responsible Organisation Directly</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            For organisations entering PbN without an EoI application — e.g. your national broadcaster or a known returning org.
+            For ROs entering PbN without an EoI application — e.g. your national broadcaster or a known returning organisation.
           </p>
         </div>
         <button
@@ -48,7 +48,7 @@ export function AddOrgToPbnPanel() {
       <form action={addOrgDirectlyToPbn} className="flex flex-wrap items-end gap-3">
         <div className="flex-1 min-w-48">
           <label htmlFor="direct-name" className="block text-xs font-medium text-gray-700 mb-1">
-            Organisation name <span aria-hidden="true" className="text-red-500">*</span>
+            Responsible Organisation name <span aria-hidden="true" className="text-red-500">*</span>
           </label>
           <input
             id="direct-name"
@@ -110,7 +110,7 @@ export function AddOrgToPbnPanel() {
 
       <p className="mt-3 text-xs text-gray-400">
         All categories are available for allocation. Slot totals still count against your quota.
-        This entry is logged in the audit trail as a NOC direct entry.
+        This RO is logged in the audit trail as a NOC direct entry.
       </p>
     </div>
   );

@@ -64,6 +64,9 @@ type Props = {
   saveAction?: ServerAction;
   submitAction?: ServerAction;
   submitLabel?: string;
+  nocCode?: string;
+  nocEQuota?: number;
+  nocERequested?: number;
 };
 
 const CAT_FIELDS: Record<AccredCategory, { requested: keyof PbnRow; slots: keyof PbnRow; quotaKey: keyof Quota }> = {
@@ -128,7 +131,7 @@ function OrgDetailModal({ row, onClose }: { row: PbnRow; onClose: () => void }) 
           {/* Organisation */}
           {(row.orgWebsite || row.orgCountry || row.orgAddress) && (
             <section>
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Organisation</div>
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Responsible Organisation</div>
               <div className="space-y-1 text-sm">
                 {row.orgWebsite && (
                   <div><span className="text-gray-500 w-20 inline-block">Website</span>
@@ -216,9 +219,10 @@ function OrgDetailModal({ row, onClose }: { row: PbnRow; onClose: () => void }) 
   );
 }
 
-export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, saveAction, submitAction, submitLabel }: Props) {
+export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, saveAction, submitAction, submitLabel, nocCode, nocEQuota = 0, nocERequested = 0 }: Props) {
   const effectiveSave   = saveAction   ?? saveSlotAllocations;
   const effectiveSubmit = submitAction ?? submitPbnToOcog;
+  const [nocEValue, setNocEValue] = useState(nocERequested);
   const [values, setValues] = useState<Record<string, SlotValues>>(
     () => Object.fromEntries(
       rows.map((r) => [
@@ -311,7 +315,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
 
   return (
     <div className="space-y-4">
-      {/* Per-category quota progress bars — always show all 6 */}
+      {/* Per-category quota progress bars — always show all 6 (+ NocE if quota set) */}
       <div className="grid grid-cols-3 gap-3">
         {ACCRED_CATEGORIES.map((cat) => {
           const used  = totals[cat.value];
@@ -339,6 +343,24 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
             </div>
           );
         })}
+        {nocEQuota > 0 && (() => {
+          const over = nocEValue > nocEQuota;
+          const pct  = Math.min(100, Math.round((nocEValue / nocEQuota) * 100));
+          return (
+            <div key="noce" className="bg-white rounded-lg border border-gray-200 p-3">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="font-semibold text-gray-800">NocE</span>
+                <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
+                  {nocEValue} / {nocEQuota}
+                </span>
+              </div>
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full transition-all ${over ? "bg-red-500" : "bg-teal-500"}`} style={{ width: `${pct}%` }} />
+              </div>
+              <div className="text-xs text-gray-400 mt-1 truncate">{nocEQuota - nocEValue} remaining</div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Search */}
@@ -347,8 +369,8 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search organisations..."
-          aria-label="Search organisations"
+          placeholder="Search responsible organisations..."
+          aria-label="Search responsible organisations"
           className="w-full max-w-xs border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
@@ -368,7 +390,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                     onClick={() => setSortAsc((v) => !v)}
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSortAsc((v) => !v); } }}
                   >
-                    Organisation {sortAsc ? "↑" : "↓"}
+                    Responsible Organisation {sortAsc ? "↑" : "↓"}
                   </th>
                   {activeCategories.map((cat) => (
                     <th
@@ -485,6 +507,44 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
             </table>
           </div>
         </div>
+
+        {/* NocE — Press Attaché slots for the NOC itself as Responsible Organisation */}
+        {nocEQuota > 0 && nocCode && (
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <span className="text-sm font-semibold text-gray-900">NocE — Press Attaché</span>
+                <span className="text-xs text-gray-500 ml-2">
+                  Responsible Organisation: <span className="font-mono font-semibold text-gray-700">{nocCode}</span>
+                </span>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                {isEditable ? (
+                  <input
+                    type="number"
+                    name="noce_slots"
+                    value={nocEValue}
+                    onChange={(e) => {
+                      const n = parseInt(e.target.value, 10);
+                      setNocEValue(isNaN(n) ? 0 : Math.max(0, n));
+                    }}
+                    onFocus={(e) => e.target.select()}
+                    min={0}
+                    max={nocEQuota}
+                    aria-label="NocE Press Attaché slots"
+                    className="w-20 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                ) : (
+                  <>
+                    <input type="hidden" name="noce_slots" value={nocEValue} />
+                    <span className="text-sm font-semibold text-gray-900">{nocEValue}</span>
+                  </>
+                )}
+                <span className="text-xs text-gray-400">/ {nocEQuota} quota</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {isEditable && (
           <div className="flex items-center gap-3">

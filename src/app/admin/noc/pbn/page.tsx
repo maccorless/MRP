@@ -269,6 +269,9 @@ export default async function NocPbnPage({
             quota={quotaProps}
             activeCategories={activeCategories}
             isEditable={isEditable}
+            nocCode={nocCode}
+            nocEQuota={quota?.nocETotal ?? 0}
+            nocERequested={quota?.nocERequested ?? quota?.nocETotal ?? 0}
           />
 
           {hasSubmitted && !hasApproved && (

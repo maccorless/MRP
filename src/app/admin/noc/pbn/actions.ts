@@ -70,6 +70,13 @@ function parseCategorySlots(formData: FormData, orgId: string): CategorySlots {
   return out;
 }
 
+function parseNocERequested(formData: FormData): number | null {
+  const raw = formData.get("noce_slots") as string | null;
+  if (raw === null) return null;
+  const n = parseInt(raw, 10);
+  return isNaN(n) ? 0 : Math.max(0, n);
+}
+
 /** Shared save logic. Returns per-category totals. */
 async function persistDraftAllocations(
   formData: FormData,
@@ -155,6 +162,15 @@ async function persistDraftAllocations(
     }
   }
 
+  // Save NocE requested count if present in form
+  const nocERequested = parseNocERequested(formData);
+  if (nocERequested !== null) {
+    await db
+      .update(nocQuotas)
+      .set({ nocERequested })
+      .where(and(eq(nocQuotas.nocCode, nocCode), eq(nocQuotas.eventId, "LA28")));
+  }
+
   return totals;
 }
 
@@ -214,10 +230,11 @@ export async function submitPbnToOcog(formData: FormData) {
   if (draftAllocs.length === 0) redirect("/admin/noc/pbn?error=no_allocations");
 
   const draftAllocIds = draftAllocs.map((a) => a.id);
-  const summary = ACCRED_CATEGORIES
-    .filter((c) => totals[c.value] > 0)
-    .map((c) => `${c.value}:${totals[c.value]}`)
-    .join(" · ");
+  const nocERequested = parseNocERequested(formData) ?? quota.nocERequested ?? quota.nocETotal;
+  const summary = [
+    ...ACCRED_CATEGORIES.filter((c) => totals[c.value] > 0).map((c) => `${c.value}:${totals[c.value]}`),
+    ...(nocERequested > 0 ? [`NocE:${nocERequested}`] : []),
+  ].join(" · ");
 
   await db.transaction(async (tx) => {
     await tx

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { orgSlotAllocations, organizations, applications, auditLog, enrRequests } from "@/db/schema";
+import { orgSlotAllocations, organizations, applications, auditLog, enrRequests, nocQuotas } from "@/db/schema";
 import { requireOcogSession, requireWritable } from "@/lib/session";
 import { acrClient } from "@/lib/acr/stub-client";
 import type { OrgExportRecord } from "@/lib/acr/adapter";
@@ -68,6 +68,16 @@ export async function approvePbn(formData: FormData) {
           ocogReviewedAt: new Date(),
         })
         .where(eq(orgSlotAllocations.id, alloc.id));
+    }
+
+    // Save OCOG-adjusted NocE count back to quota record
+    const nocERaw = formData.get("noce_slots") as string | null;
+    if (nocERaw !== null) {
+      const nocEApproved = Math.max(0, parseInt(nocERaw, 10) || 0);
+      await tx.update(nocQuotas)
+        .set({ nocERequested: nocEApproved })
+        .where(and(eq(nocQuotas.nocCode, nocCode), eq(nocQuotas.eventId, "LA28")));
+      if (nocEApproved > 0) catSummaryParts.push(`${nocEApproved} NocE`);
     }
 
     if (totalPress > 0) catSummaryParts.push(`${totalPress} press`);

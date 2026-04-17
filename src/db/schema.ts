@@ -258,7 +258,8 @@ export const nocQuotas = pgTable("noc_quotas", {
   epsTotal: integer("eps_total").notNull().default(0), // Sport-specific photographer
   etTotal:  integer("et_total").notNull().default(0),  // Technician
   ecTotal:  integer("ec_total").notNull().default(0),  // Support staff
-  nocETotal: integer("noc_e_total").notNull().default(0), // Press attachés (separate formula-based pool)
+  nocETotal: integer("noc_e_total").notNull().default(0), // Press attachés quota (IOC-assigned)
+  nocERequested: integer("noc_e_requested"),              // NOC's requested NocE count (null = not yet set; defaults to nocETotal on display)
   setBy: text("set_by"),                       // IOC admin user id
   setAt: timestamp("set_at", { withTimezone: true }).defaultNow(),
   notes: text("notes"),
