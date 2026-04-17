@@ -48,6 +48,11 @@ export default async function ApplyPage({
           Too many requests. Please wait before trying again.
         </div>
       )}
+      {error === "application_limit" && (
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+          You have reached the maximum of 10 applications for this email address. Contact your NOC for assistance.
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <form action={requestToken}>

@@ -245,6 +245,16 @@ export async function submitApplication(formData: FormData) {
   }
 
   // ── NEW APPLICATION PATH ───────────────────────────────────────────────────
+
+  // Limit: max 10 applications per email address
+  const [{ appCount }] = await db
+    .select({ appCount: count() })
+    .from(applications)
+    .where(eq(applications.contactEmail, email));
+  if (appCount >= 10) {
+    redirect("/apply?error=application_limit");
+  }
+
   const orgName = (formData.get("org_name") as string).trim();
   // Accept either "US — United States" (datalist selection) or bare "US"
   const countryRaw = (formData.get("country") as string).trim();
