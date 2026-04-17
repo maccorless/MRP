@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const NAV = [
   { href: "/admin/ioc", label: "Dashboard" },
+  { href: "/admin/ioc/master", label: "Master Allocations" },
   { href: "/admin/ioc/quotas", label: "Quotas" },
   { href: "/admin/ioc/direct", label: "IOC Direct" },
   { href: "/admin/ioc/enr", label: "ENR Review" },

@@ -9,6 +9,7 @@ const NAV = [
   { href: "/admin/ocog/eoi",           label: "EoI Summary" },
   { href: "/admin/ocog/duplicates",    label: "Duplicates" },
   { href: "/admin/ocog/audit",         label: "Audit Trail" },
+  { href: "/admin/ocog/master",        label: "Master Allocations" },
 ];
 
 export function OcogNavTabs() {
