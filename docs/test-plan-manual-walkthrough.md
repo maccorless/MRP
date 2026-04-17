@@ -1,4 +1,4 @@
-**Last updated: 16-Apr-2026 14:00 CEST**
+**Last updated: 17-Apr-2026 16:00 CEST**
 
 # PRP Manual Test Walkthrough
 
@@ -24,7 +24,7 @@ Work through roles in order — **Applicant → NOC Admin → IOC Admin** — be
 > - **IOC sudo / impersonation** — IOC admin can open a read-only session as any NOC or OCOG admin at `/admin/ioc/sudo`
 > - **NOC direct entry** — NOC admin can submit a pre-approved org directly at `/admin/noc/direct-entry`
 > - **NOC PbN direct entry** — NOC admin can add an org directly to the PbN table without an EoI at `/admin/noc/pbn` (click "+ Add organisation directly to PbN")
-> - **EoI window toggle** — NOC admin can open/close their territory's EoI window at `/admin/noc/settings`
+> - **OCOG EoI Windows** — OCOG admin can open/close per-NOC EoI windows at `/admin/ocog/windows` (Settings tab removed from NOC nav; window control is OCOG-only)
 > - **Application reversals** — NOC admin can unapprove or unreturn an application from the application detail page; OCOG admin can reverse a PbN approval
 > - **IOC-Direct org management** — IOC admin can add and manage IOC-Direct organisations and allocate their PbN slots at `/admin/ioc/direct`
 >
@@ -1044,19 +1044,23 @@ The IOC admin can open a read-only window impersonating any admin user for suppo
 
 ---
 
-## Use Case: EoI Window Management (NOC Admin)
+## Use Case: EoI Window Management (OCOG Admin)
 
-### Test 5.1 — Close and reopen the EoI window
+> **Note:** Window control was moved from NOC Admin Settings to OCOG Admin in April 2026. The NOC admin no longer has a Settings page — `/admin/noc/settings` has been removed. Window management is now OCOG-only at `/admin/ocog/windows`.
 
-**Who:** NOC Admin
-**Route:** `/admin/noc/settings`
+### Test 5.1 — Close and reopen a NOC's EoI window
+
+**Who:** OCOG Admin
+**Route:** `/admin/ocog/windows`
 
 | # | Action | Expected |
 |---|--------|----------|
-| 1 | Navigate to Settings | EoI window toggle is visible showing "Open" state |
-| 2 | Click "Close Window" | Window shows as "Closed"; confirmation banner appears |
+| 1 | Log in as `ocog.admin@la28.org` and navigate to `/admin/ocog/windows` | EoI Windows page shows a table of all NOCs with Open/Close toggle per row, plus Open All / Close All bulk actions and a summary count |
+| 2 | Find the USA row and click "Close" | USA window shows as "Closed"; last-changed timestamp updates; audit trail records the change |
 | 3 | In a separate browser/incognito, navigate to the EoI form and select USA as country | Applicant sees "This NOC has closed its Expression of Interest window" message |
-| 4 | Return to settings and click "Open Window" | Window returns to "Open"; applicant flow works again |
+| 4 | Return to `/admin/ocog/windows` and click "Open" for USA | Window returns to "Open"; applicant flow works again |
+| 5 | Click "Close All" | All NOC windows close; summary shows 0 open |
+| 6 | Click "Open All" | All NOC windows open; summary shows full count open |
 
 ## Use Case: Application Reversals (NOC Admin)
 

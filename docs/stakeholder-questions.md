@@ -1,4 +1,4 @@
-**Last updated: 16-Apr-2026 14:00 CEST**
+**Last updated: 17-Apr-2026 16:00 CEST**
 
 # LA28 Press Registration Portal — Open Questions for Stakeholders
 
@@ -51,15 +51,11 @@ A related question: different NOCs may want to ask applicants slightly different
 
 ### 1.2 Sport-Specific Categories (Es / EPs) — Free Text vs. Dropdown
 
-**Status:** PROVISIONAL — free text is built
+**Status:** ✅ RESOLVED 2026-04-17 — Sport dropdown built for Es/EPs in both the EoI form and Direct Entry. Applicants selecting Es or EPs must choose from the full LA28 sports list (single selection required).
 
-**Scenario:** A photographer who specialises in swimming selects the "EPs — Sport-specific photographer" category on the EoI form. The form currently asks them to describe the sports they plan to cover in a free-text field ("Which sports do you plan to cover at LA 2028?"). There is no dropdown list of IOC-recognised sports.
+**Scenario:** A photographer who specialises in swimming selects the "EPs — Sport-specific photographer" category on the EoI form. The form now requires them to select the specific Olympic sport from a dropdown of all LA28 sports. The same sport picker appears in the NOC Direct Entry form when Es or EPs is selected.
 
-**Our provisional decision:** Free text. It's simpler and flexible — applicants can describe niche coverage (e.g., "artistic swimming and water polo") without being constrained to a single-sport selection.
-
-**Alternative:** A structured dropdown of the 32 LA28 sports. This would make it easier for NOCs and the OCOG to filter and report by sport, but forces applicants into a single-sport selection that may not reflect their actual coverage.
-
-**Please confirm:** Is free text acceptable, or do you need a structured sport dropdown for reporting purposes?
+**Resolution:** The structured sport dropdown was built. Reporting by sport is now possible for Es/EPs applications. Free text was replaced with a required sport selection for these two categories only; other categories (E, EP, ET, EC) are unaffected.
 
 **Roles impacted:** Applicant, NOC Admin (filters applications by sport), OCOG Admin (reporting)
 
@@ -103,23 +99,23 @@ Today, only the NOC admin for that territory can toggle their own window. When a
 
 ---
 
-### 1.5 NOC Fast-Track Entry — Governance
+### 1.5 NOC Direct Entry — Governance
 
-**Status:** PROVISIONAL — built and working
+**Status:** PROVISIONAL — built and working (renamed from "Fast Track" to "Direct Entry" 2026-04-17; route: `/admin/noc/direct-entry`)
 
-**Scenario:** The press officer at the German NOC knows that Deutsche Presse-Agentur (DPA) will apply — they've been accredited at every Games for 30 years. Rather than waiting for DPA to discover the portal, fill out the form, and go through email verification, the NOC admin enters DPA's details directly through a "fast-track" route. The application is created pre-approved and immediately eligible for PbN slot allocation.
+**Scenario:** The press officer at the German NOC knows that Deutsche Presse-Agentur (DPA) will apply — they've been accredited at every Games for 30 years. Rather than waiting for DPA to discover the portal, fill out the form, and go through email verification, the NOC admin enters DPA's details directly through the "Direct Entry" route. The application is created pre-approved and immediately eligible for PbN slot allocation.
 
-Fast-track entry collects a subset of the full EoI form — only the essential fields (org name, type, country, category selection, contact details). Fields like publication history, circulation, and prior accreditation details are not required, since the NOC already knows this organisation. The full EoI form remains available if the NOC wants the org to submit a complete application through the public route instead.
+Direct Entry collects a subset of the full EoI form — only the essential fields (org name, type, country, category selection, contact details, and optionally an Editor-in-Chief / Media Manager). Fields like publication history, circulation, and prior accreditation details are not required, since the NOC already knows this organisation. The full EoI form remains available if the NOC wants the org to submit a complete application through the public route instead.
 
-**Our provisional decision:** Any NOC admin can fast-track any organisation. The system logs this as a `noc_direct_entry` in the audit trail (distinct from public form submissions). There is no limit on the number of fast-track entries, and no approval gate beyond the NOC admin's own authority.
+**Our provisional decision:** Any NOC admin can use Direct Entry for any organisation. The system logs this as a `noc_direct_entry` in the audit trail (distinct from public form submissions). There is no limit on the number of Direct Entries, and no approval gate beyond the NOC admin's own authority.
 
 **Questions we need answered:**
 
-1. Is this acceptable, or should fast-track entries require a second approval (e.g., from the OCOG or a senior NOC official)?
-2. Should the OCOG be notified when a NOC uses fast-track, or is the audit log sufficient?
-3. Should fast-tracked orgs appear in the OCOG's cross-NOC EoI visibility view alongside public applicants, or be distinguished somehow?
+1. Is this acceptable, or should Direct Entry require a second approval (e.g., from the OCOG or a senior NOC official)?
+2. Should the OCOG be notified when a NOC uses Direct Entry, or is the audit log sufficient?
+3. Should Direct Entry orgs appear in the OCOG's cross-NOC EoI visibility view alongside public applicants, or be distinguished somehow?
 
-**Roles impacted:** NOC Admin (uses fast-track), OCOG Admin (cross-NOC visibility), IOC Admin (audit visibility)
+**Roles impacted:** NOC Admin (uses Direct Entry), OCOG Admin (cross-NOC visibility), IOC Admin (audit visibility)
 **NOC input recommended** — does this match how NOCs would actually want to work?
 
 ---
@@ -400,7 +396,7 @@ We would like to understand the reason for keeping this offline. The portal can 
 
 ### 4.4 NOC Direct-Entry into PbN — No EoI Required [EM 2026-04-02]
 
-**Status:** CONFIRMED FEATURE — being built
+**Status:** ✅ RESOLVED 2026-04-17 — Built and working. Secondary contact (Editor-in-Chief / Media Manager) section also included in Direct Entry.
 
 **Scenario:** Emma's comments (96, 98) and her email describe a pattern that will be supported: some NOCs will not use the EoI form at all and will want to enter organisations directly into their PbN allocation table without any prior EoI record. Emma notes (Comment 98): "There will be press orgs who will not have submitted an EoI that will need to be entered in the PbN stage directly by the NOC." Her email adds: "some might not use the EoI form, some might enter information directly in the Press by Number form."
 
@@ -608,11 +604,11 @@ Who is responsible for provisioning NOC admin accounts — provisioning credenti
 
 #### 6.4b — User Manual (content owner decision)
 
-**Status:** OPEN — needs joint D.TEC + OCOG discussion
+**Status:** PARTIALLY RESOLVED 2026-04-17 — In-portal Help & Guide pages built for all three admin roles: NOC (`/admin/noc/help`), OCOG (`/admin/ocog/help`), and IOC (`/admin/ioc/help`). Each has a sticky TOC sidebar covering key workflows. The help link in the top-right header opens at the section matching the user's active tab. Joint D.TEC + OCOG ownership of process content still needed.
 
 Will a user manual or guide be produced for NOC administrators? If so, who writes it — D.TEC (technical content), OCOG (process content), or a joint effort? Emma notes that the OCOG has been working on a Press by Number template that may inform the portal guide.
 
-**Answer needed from:** Martyn (OCOG), to confirm whether OCOG will contribute process content
+**Answer needed from:** Martyn (OCOG), to confirm whether OCOG will contribute process content beyond what the in-portal Help pages already cover
 
 #### 6.4c — French Localisation Scope (build scope decision — potentially blocking)
 

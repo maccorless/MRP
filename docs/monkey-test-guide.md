@@ -1,4 +1,4 @@
-**Last updated: 16-Apr-2026 14:00 CEST**
+**Last updated: 17-Apr-2026 16:00 CEST**
 
 # PRP Monkey Test Guide
 
@@ -106,7 +106,25 @@ Log in as one of the three NOC users above. You'll land on the EoI review queue 
 
 **ENR nominations** (`/admin/noc/enr`): Nominate Extended Non-Rights Broadcasters directly. This is NOC-driven — media orgs don't apply themselves. The IOC reviews nominations and grants from a separate holdback pool of 350 slots.
 
-**Settings** (`/admin/noc/settings`): Open or close your territory's EoI submission window. While the window is closed, the public apply form shows a "window closed" banner to applicants from your territory.
+**Help & Guide** (`/admin/noc/help`): In-portal guide covering the NOC workflow, key screens, Direct Entry, and FAQ. Accessible via the `? Help` link in the top-right of every admin page.
+
+---
+
+## What to do as an OCOG Admin
+
+Log in as `ocog.admin@la28.org`. The OCOG admin is the formal approval authority for NOC PbN submissions and has cross-NOC visibility on EoI.
+
+**PbN Approval** (`/admin/ocog/pbn`): Formally approve or adjust NOC PbN quota submissions before they flow to the ACR system.
+
+**EoI Windows** (`/admin/ocog/windows`): Open or close EoI submission windows per NOC. Shows Open/Close toggle for each of the 206 NOCs, plus Open All / Close All bulk actions and a summary count of open vs. closed. All changes logged to the audit trail.
+
+**EoI Summary** (`/admin/ocog/eoi`): Application counts by NOC and status (pending, approved, returned, rejected) in a pivot table. All 206 NOCs listed.
+
+**Duplicate Detection** (`/admin/ocog/duplicates`): Surfaces cross-NOC duplicates (same email domain across multiple NOCs) and within-NOC duplicates.
+
+**Master Allocation** (`/admin/ocog/master`): Same live view as IOC — quota and allocated slots adjacent per category for all NOCs and IFs, continent column, expandable org rows, capacity tracker, and grand totals banner.
+
+**Help & Guide** (`/admin/ocog/help`): In-portal guide covering the OCOG workflow. Accessible via `? Help` in the top-right header.
 
 ---
 
@@ -116,11 +134,13 @@ Log in as `ioc.admin@olympics.org`. The IOC admin has visibility across all NOCs
 
 **Dashboard** (`/admin/ioc`): Cross-NOC overview of EoI and PbN status.
 
-**Quotas** (`/admin/ioc/quotas`): Set per-NOC, per-category quotas. Enter values inline or import via CSV.
+**Quotas** (`/admin/ioc/quotas`): Set per-NOC, per-category quotas. Enter values inline or import via CSV. Also set Event Capacity and IOC Holdback from this page.
 
 **IOC Direct** (`/admin/ioc/direct`): Add major international wire services and agencies (AFP, AP, Reuters, Xinhua, etc.) that are accredited directly by the IOC, bypassing the NOC EoI process. Adding an org here also reserves it — NOCs will be blocked from submitting a duplicate EoI for any org in this list. Slot allocations for IOC-Direct orgs are managed and submitted to the OCOG through the same PbN state machine as NOC submissions.
 
 **ENR Review** (`/admin/ioc/enr`): Review and grant ENR nominations from all NOCs. Manage the 350-slot combined holdback pool.
+
+**Master Allocation** (`/admin/ioc/master`): Quota and allocated slots adjacent per category for all NOCs, IFs, and IOC Direct. Continent column (hideable), expandable org-level rows, capacity tracker, and grand totals banner.
 
 **Org Directory** (`/admin/ioc/orgs`): Browse all organisations across all NOCs.
 
@@ -128,7 +148,7 @@ Log in as `ioc.admin@olympics.org`. The IOC admin has visibility across all NOCs
 
 **PBN Export** (`/admin/ioc/export`): Download CSV exports of PbN allocations and ENR nominations.
 
-**OCOG PbN review** (`/admin/ocog/pbn`): The OCOG admin (`ocog.admin@la28.org`) formally approves or rejects NOC quota submissions before they flow to the ACR system. Log in as OCOG to see this queue.
+**Help & Guide** (`/admin/ioc/help`): In-portal guide covering the IOC workflow. Accessible via `? Help` in the top-right header.
 
 ### Sudo / Act as user
 
@@ -142,7 +162,7 @@ The USA queue has the most variety: two pending applications, one approved, one 
 
 **Suggested order:**
 1. Start as USA NOC admin — review the queue, approve and return some applications, allocate PbN slots
-2. Move to OCOG admin — approve the USA PbN submission
+2. Move to OCOG admin — approve the USA PbN submission, try the EoI Windows page
 3. Move to IOC admin — see the cross-NOC view, check the audit trail, try sudo into a NOC
 
 ---
@@ -155,6 +175,16 @@ The USA queue has the most variety: two pending applications, one approved, one 
 - Set a quota of 0 for one category and try to allocate to it in PbN
 - Submit PbN with over-quota allocations (the form should block this)
 - Add an IOC-Direct org, then check that a NOC can't submit a duplicate EoI for that org
-- Try the direct entry form with only required fields; then with all fields
-- Open the EoI window, submit a form from a matching country, then close the window
+- Try the Direct Entry form with only required fields; then with all optional fields (Editor-in-Chief, website)
+- On the EoI form, select Es or EPs — confirm the sport picker appears and is required
+- On the Direct Entry form, select Es or EPs — confirm the sport picker appears
+- On the EoI form, select "Freelancer / Independent" as org type — confirm the press card question reveals
+- On the EoI form, select "Other" as org type — confirm the free-text field reveals
+- Use OCOG admin to close a NOC's EoI window, then try submitting an EoI as an applicant from that territory
+- Use OCOG admin to close all windows, then open all windows
+- On the Master Allocation page (IOC or OCOG), toggle the Continent column on and off
+- On the Master Allocation page, expand a NOC row to see org-level allocations
+- Check the capacity tracker turns amber/red as NOC quotas are set near or over 6,000
+- Click a "Possible Duplicate" badge in the NOC queue — confirm the side-by-side comparison modal opens with differences highlighted
 - Use sudo to view a NOC's queue, then verify the action appears in the audit trail
+- Visit the Help & Guide links for each admin role — confirm context-sensitive section opens

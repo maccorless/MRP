@@ -1,9 +1,9 @@
-**Last updated: 16-Apr-2026 14:00 CEST**
+**Last updated: 17-Apr-2026 16:00 CEST**
 
 # LA28 Press Registration Portal — Design Confirmation
 
 **Status:** ACTIVE
-**Last updated:** 2026-04-11 (added top-level timestamp standard; prior update 2026-04-02: full doc/code audit — 5 stale items corrected, Critical Risks #9/#10 resolved, session timeout updated to 8h, 24 audit actions documented, Stakeholder Confirmation Register added with 24 items)
+**Last updated:** 2026-04-17 (build status table updated to reflect April 2026 sprint: EoI form new fields, Direct Entry rename + sport picker, OCOG EoI Windows, NOC Settings removed, Master Allocation redesign, Help & Guide pages, duplicate comparison modal, application drawer; prior update 2026-04-11)
 **Covers:** v0.1 prototype through v1 launch (August 2026) and v1.1 (October 2026)
 
 ---
@@ -179,7 +179,7 @@ Key adapter methods: `fetchQuota(noc_id, event_id)`, `pushOrgData(org[], event_i
 
 ## Scope
 
-### Build status summary (as of 2026-04-03)
+### Build status summary (as of 2026-04-17)
 
 The following features are built and working in the v0.1 codebase. Items marked "not yet built" are in scope but not yet implemented.
 
@@ -208,13 +208,37 @@ The following features are built and working in the v0.1 codebase. Items marked 
 | IOC anomaly detection / concentration risk | Not yet built |
 | Games-to-Games org persistence UI | Schema ready; UI not yet built |
 | Public org directory | Not yet built |
-| NOC fast-track application form (`/admin/noc/fast-track`) — NOC submits on behalf of org without public EoI form | Built |
+| NOC Direct Entry (`/admin/noc/direct-entry`) — NOC submits pre-approved org, includes sport picker (Es/EPs), secondary contact (Editor-in-Chief / Media Manager) | Built |
 | NOC direct PbN entry (add org to PbN without EoI) | Built — inline form on PbN page |
 | IOC-Direct org management (add/manage reserved orgs + PbN allocation) | Built — full management UI at /admin/ioc/direct |
-| NOC EoI window toggle — NOC can open/close their own EoI acceptance window (`/admin/noc/settings`) | Built |
+| OCOG EoI Windows (`/admin/ocog/windows`) — OCOG opens/closes per-NOC EoI windows with bulk Open All / Close All; NOC Settings tab removed | Built |
 | NOC quota dashboard — live per-category quota summary visible to NOC admin | Built |
 | Applicant status tracking — applicant can check status of their submitted application | Built |
-| Application reversals — NOC can reverse an approve/reject decision within an allowed window | Built |
+| Application reversals — NOC can reverse an approve/reject decision; NOC can reverse rejected → pending | Built |
+| EoI form new fields (org email, other org type, freelancer press card, Es/EPs sport picker, secondary contact rename, online unique visitors, geographical coverage, social media accounts, ENR programming type) | Built |
+| Per-category quantity max enforcement (100 for E categories; 3 for ENR orgs) | Built |
+| Coverage description 500-char limit with live counter | Built |
+| Accreditation tab green dot shows immediately on field completion | Built |
+| Enter key no longer submits from non-last tabs | Built |
+| Publication tab requires at least one type selected for green completion dot | Built |
+| All URL inputs pre-populated with `https://`; bare `https://` treated as empty | Built |
+| Confirm Submission modal lists actual requested categories | Built |
+| Possible Duplicate comparison modal — side-by-side diff with yellow highlights | Built |
+| Application drawer in NOC queue — slide-over with Prev/Next navigation, keyboard shortcuts, inline actions | Built |
+| Application status renamed "Approved" → "Candidate" | Built |
+| NOC invite flow security — invite_id looked up server-side by email | Built |
+| 10-application limit per email address enforced at submission | Built |
+| OCOG EoI Summary (`/admin/ocog/eoi`) — pivot table by NOC × status | Built |
+| OCOG Duplicate Detection (`/admin/ocog/duplicates`) — cross-NOC and within-NOC panels | Built |
+| Master Allocation redesign — Q·A adjacent columns, continent column (hideable), expandable org rows, capacity tracker, IF section, IOC Holdback row, grand totals banner | Built |
+| `event_settings` table — per-event capacity and IOC holdback configurable by IOC admin | Built |
+| `noc_quotas.entity_type` — distinguishes 'noc' vs 'if' rows | Built |
+| NOC Direct Entry sport picker for Es/EPs | Built |
+| Help & Guide pages for NOC (`/admin/noc/help`), OCOG (`/admin/ocog/help`), IOC (`/admin/ioc/help`) — sticky TOC, context-sensitive from header link | Built |
+| EoI CSV export with 8 new columns | Built |
+| PbN improvements — NocE row in OCOG PbN, totals column, all 6 bars always shown | Built |
+| Applicant status masked until OCOG publishes PbN results | Built |
+| Read-only application view for applicants with pending applications | Built |
 | NOC/IF invited-org flow | Not yet built |
 | CAPTCHA on public EoI form | Not yet built |
 | Cross-NOC dedup (provisionally eliminated) | Not in scope for v1 |
