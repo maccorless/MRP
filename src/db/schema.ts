@@ -68,6 +68,8 @@ export const auditActionEnum = pgEnum("audit_action", [
   // MISS-05 — invited-org flow
   "invitation_created",
   "invitation_accepted",
+  // B1 — rejection reversal
+  "rejection_reversed",
 ]);
 
 export const flagStateEnum = pgEnum("flag_state", ["off", "canary", "on"]);

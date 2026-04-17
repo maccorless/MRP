@@ -13,6 +13,7 @@ import {
   rejectApplication,
   unApproveApplication,
   unReturnApplication,
+  reverseRejection,
 } from "../actions";
 
 const ORG_TYPE_LABEL: Record<string, string> = {
@@ -42,6 +43,9 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
   application_approved:    "Accepted as Candidate",
   application_returned:    "Returned for corrections",
   application_rejected:    "Rejected",
+  application_unapproved:  "Approval reversed",
+  application_unreturned:  "Return cancelled",
+  rejection_reversed:      "Rejection reversed",
   email_verified:          "Email verified",
   admin_login:             "Admin signed in",
 };
@@ -84,11 +88,11 @@ export default async function ApplicationDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const session = await requireNocSession();
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, success } = await searchParams;
 
   const [row] = await db
     .select({ app: applications, org: organizations })
@@ -162,6 +166,13 @@ export default async function ApplicationDetailPage({
           </span>
         </div>
       </div>
+
+      {/* Success banners */}
+      {success === "rejection_reversed" && (
+        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+          Rejection reversed — application moved back to Pending.
+        </div>
+      )}
 
       <div className="space-y-5">
         {/* Return/rejection note */}
@@ -529,6 +540,20 @@ export default async function ApplicationDetailPage({
               <button type="submit"
                 className="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer">
                 Cancel Return
+              </button>
+            </form>
+          </div>
+        ) : app.status === "rejected" ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Reverse Rejection</h3>
+            <p className="text-xs text-gray-500 mb-3">
+              Move this application back to Pending if the rejection was made in error. The rejection note will be cleared.
+            </p>
+            <form action={reverseRejection}>
+              <input type="hidden" name="id" value={app.id} />
+              <button type="submit"
+                className="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer">
+                Reverse Rejection
               </button>
             </form>
           </div>
