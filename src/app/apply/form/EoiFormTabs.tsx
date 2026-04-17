@@ -109,7 +109,6 @@ export function EoiFormTabs({
   token,
   email,
   resubmitId,
-  inviteId = null,
   prefill,
   isResubmission,
   isPendingEdit = false,
@@ -120,7 +119,6 @@ export function EoiFormTabs({
   token: string;
   email: string;
   resubmitId: string | null;
-  inviteId?: string | null;
   prefill: PrefillData | null;
   isResubmission: boolean;
   isPendingEdit?: boolean;
@@ -530,7 +528,6 @@ export function EoiFormTabs({
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
-      {inviteId && <input type="hidden" name="invite_id" value={inviteId} />}
 
       {/* Error summary live region */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">{errorAnnouncement}</div>

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and, gte, count, isNull, gt, sql, or } from "drizzle-orm";
+import { eq, and, gte, count, isNull, isNotNull, gt, or } from "drizzle-orm";
 import { db } from "@/db";
 import {
   magicLinkTokens,
@@ -71,7 +71,6 @@ export async function submitApplication(formData: FormData) {
   const token = (formData.get("token") as string)?.toUpperCase().trim();
   const email = (formData.get("email") as string)?.trim().toLowerCase();
   const resubmitId = (formData.get("resubmit_id") as string) || null;
-  const inviteId = (formData.get("invite_id") as string) || null;
 
   if (!token || !email) redirect("/apply");
 
@@ -363,6 +362,21 @@ export async function submitApplication(formData: FormData) {
         .returning();
     }
 
+    // Server-side invite lookup — never trust client-supplied invite_id.
+    // The applicant's email was validated against the magic-link token above.
+    // An invitation is linked when: it belongs to this email, was redeemed
+    // (usedAt IS NOT NULL), and has not yet been linked to an application.
+    const [linkedInvite] = await tx
+      .select({ id: invitations.id })
+      .from(invitations)
+      .where(
+        and(
+          eq(invitations.recipientEmail, email),
+          isNotNull(invitations.usedAt),
+          isNull(invitations.acceptedAppId)
+        )
+      );
+
     const [app] = await tx
       .insert(applications)
       .values({
@@ -376,16 +390,35 @@ export async function submitApplication(formData: FormData) {
         about,
         ...expandedFields,
         status: "pending",
-        entrySource: inviteId ? "invited" : "self_submitted",
+        entrySource: linkedInvite ? "invited" : "self_submitted",
       })
       .returning();
 
-    // Link the invitation record to the newly created application
-    if (inviteId) {
-      await tx
+    // Link the invitation record to the newly created application.
+    // Use .returning() to verify the update actually matched a row.
+    if (linkedInvite) {
+      const updated = await tx
         .update(invitations)
         .set({ acceptedAppId: app.id })
-        .where(eq(invitations.id, inviteId));
+        .where(
+          and(
+            eq(invitations.id, linkedInvite.id),
+            isNull(invitations.acceptedAppId)
+          )
+        )
+        .returning({ id: invitations.id });
+
+      if (updated.length === 0) {
+        // Concurrent submission claimed this invite — degrade gracefully
+        console.warn(
+          `[submitApplication] invite ${linkedInvite.id} already claimed; ` +
+          `app ${app.id} will be recorded as self_submitted`
+        );
+        await tx
+          .update(applications)
+          .set({ entrySource: "self_submitted" })
+          .where(eq(applications.id, app.id));
+      }
     }
 
     await tx.insert(auditLog).values([

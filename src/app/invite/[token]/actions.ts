@@ -113,7 +113,6 @@ export async function redeemInvite(token: string) {
     token: magicToken,
     email,
     from: "invite",
-    invite_id: invite.id,
   });
   if (prefill.orgName)    params.set("org_name", prefill.orgName);
   if (prefill.orgType)    params.set("org_type", prefill.orgType);
