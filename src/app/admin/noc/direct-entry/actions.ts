@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
@@ -52,6 +53,26 @@ export async function submitDirectEntryApplication(formData: FormData) {
   // ── Reference number ───────────────────────────────────────────────────────
   const referenceNumber = await nextApplicationRef(nocCode);
 
+  // ── Soft dedup check — warn in audit log but do not block ─────────────────
+  const emailDomain = contactEmail.split("@")[1] ?? null;
+  let dupWarning: string | null = null;
+  if (emailDomain) {
+    const existing = await db
+      .select({ orgName: organizations.name })
+      .from(organizations)
+      .innerJoin(applications, eq(applications.organizationId, organizations.id))
+      .where(
+        and(
+          eq(applications.nocCode, nocCode),
+          eq(applications.eventId, "LA28"),
+          eq(organizations.emailDomain, emailDomain),
+        ),
+      );
+    if (existing.length > 0) {
+      dupWarning = `⚠ possible duplicate: same domain as ${existing.map((e) => e.orgName).join(", ")}`;
+    }
+  }
+
   // Create org, application, and audit log atomically
   const now = new Date();
   await db.transaction(async (tx) => {
@@ -94,7 +115,9 @@ export async function submitDirectEntryApplication(formData: FormData) {
       action: "noc_direct_entry",
       applicationId: app.id,
       organizationId: org.id,
-      detail: `${orgName} — direct entry by ${session.displayName}`,
+      detail: dupWarning
+        ? `${orgName} — direct entry by ${session.displayName} — ${dupWarning}`
+        : `${orgName} — direct entry by ${session.displayName}`,
     });
   });
 

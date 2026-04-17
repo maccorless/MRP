@@ -1,7 +1,12 @@
 /**
  * Anomaly detection functions for the IOC dashboard.
  * All functions are pure and operate on already-fetched data rows.
+ * detectWithinNocDuplicates queries the DB directly.
  */
+
+import { and, eq, isNotNull } from "drizzle-orm";
+import { db } from "@/db";
+import { applications, organizations } from "@/db/schema";
 
 export interface ConcentrationFlag {
   nocCode: string;
@@ -150,4 +155,49 @@ export function detectCrossNocDuplicates(appRows: AppRowForDuplicates[]): string
     }
   }
   return [...names].sort();
+}
+
+/**
+ * Returns the Set of organization IDs that share an email domain with another
+ * org in the same NOC's applications for the given event.
+ *
+ * @param nocCode  The NOC code to scope the check to
+ * @param eventId  The event identifier, defaults to "LA28"
+ */
+export async function detectWithinNocDuplicates(
+  nocCode: string,
+  eventId: string = "LA28",
+): Promise<Set<string>> {
+  const rows = await db
+    .select({
+      orgId: organizations.id,
+      emailDomain: organizations.emailDomain,
+    })
+    .from(applications)
+    .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+    .where(
+      and(
+        eq(applications.nocCode, nocCode),
+        eq(applications.eventId, eventId),
+        isNotNull(organizations.emailDomain),
+      ),
+    );
+
+  // Group by email domain
+  const domainToOrgs = new Map<string, string[]>();
+  for (const row of rows) {
+    if (!row.emailDomain) continue;
+    const existing = domainToOrgs.get(row.emailDomain) ?? [];
+    existing.push(row.orgId);
+    domainToOrgs.set(row.emailDomain, existing);
+  }
+
+  // Return org IDs where the domain appears more than once
+  const duplicateOrgIds = new Set<string>();
+  for (const [, orgIds] of domainToOrgs) {
+    if (orgIds.length > 1) {
+      orgIds.forEach((id) => duplicateOrgIds.add(id));
+    }
+  }
+  return duplicateOrgIds;
 }

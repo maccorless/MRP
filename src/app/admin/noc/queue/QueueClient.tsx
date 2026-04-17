@@ -7,6 +7,7 @@ import { ApplicationDrawer } from "./ApplicationDrawer";
 
 type Row = {
   id: string;
+  organizationId: string;
   referenceNumber: string;
   status: "pending" | "resubmitted" | "approved" | "returned" | "rejected";
   entrySource: string | null;
@@ -24,10 +25,13 @@ type Row = {
 export function QueueClient({
   rows,
   allIds,
+  duplicateOrgIds = [],
 }: {
   rows: Row[];
   allIds: string[];
+  duplicateOrgIds?: string[];
 }) {
+  const duplicateSet = new Set(duplicateOrgIds);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
@@ -83,6 +87,11 @@ export function QueueClient({
                   {row.entrySource === "invited" && (
                     <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
                       Invited
+                    </span>
+                  )}
+                  {duplicateSet.has(row.organizationId) && (
+                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                      ⚠ Possible duplicate
                     </span>
                   )}
                 </div>
