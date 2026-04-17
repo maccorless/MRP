@@ -1,6 +1,6 @@
 import { eq, count } from "drizzle-orm";
 import { db } from "@/db";
-import { applications } from "@/db/schema";
+import { applications, nocQuotas } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
 
 type ApplicationStatus = "pending" | "approved" | "returned" | "resubmitted" | "rejected";
@@ -17,6 +17,13 @@ interface NocRow {
 export default async function OcogEoiPage() {
   await requireOcogSession();
 
+  // All registered NOCs (so NOCs with zero applications still appear)
+  const allNocs = await db
+    .select({ nocCode: nocQuotas.nocCode })
+    .from(nocQuotas)
+    .where(eq(nocQuotas.eventId, "LA28"))
+    .orderBy(nocQuotas.nocCode);
+
   const statusCounts = await db
     .select({
       nocCode: applications.nocCode,
@@ -27,7 +34,7 @@ export default async function OcogEoiPage() {
     .where(eq(applications.eventId, "LA28"))
     .groupBy(applications.nocCode, applications.status);
 
-  // Pivot: build one row per NOC
+  // Index status counts by NOC code for O(1) lookup
   const nocMap = new Map<string, NocRow>();
 
   for (const row of statusCounts) {
@@ -57,9 +64,17 @@ export default async function OcogEoiPage() {
     }
   }
 
-  // Sort alphabetically by NOC code
-  const rows: NocRow[] = Array.from(nocMap.values()).sort((a, b) =>
-    a.nocCode.localeCompare(b.nocCode),
+  // Pivot: start from allNocs so every registered NOC gets a row (even with 0 applications)
+  // allNocs is already ordered by nocCode — no need to sort
+  const rows: NocRow[] = allNocs.map(({ nocCode }) =>
+    nocMap.get(nocCode) ?? {
+      nocCode,
+      pending: 0,
+      candidate: 0,
+      returned: 0,
+      rejected: 0,
+      total: 0,
+    },
   );
 
   // Totals row
