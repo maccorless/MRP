@@ -141,7 +141,7 @@ export function AccreditationTab({ prefill, errors, orgType }: { prefill: Prefil
                       name={`requested_${cat.value}`}
                       type="number"
                       min={1}
-                      max={100}
+                      max={orgType === "enr" ? 3 : 100}
                       required
                       data-tab="2"
                       defaultValue={
@@ -158,7 +158,10 @@ export function AccreditationTab({ prefill, errors, orgType }: { prefill: Prefil
                       placeholder="e.g. 3"
                       className="w-32 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
                     />
-                    {quantities[cat.value] > 100 && (
+                    {orgType === "enr" && quantities[cat.value] > 3 && (
+                      <p className="text-xs text-red-600 mt-0.5">Maximum 3 for ENR organisations</p>
+                    )}
+                    {orgType !== "enr" && quantities[cat.value] > 100 && (
                       <p className="text-xs text-red-600 mt-0.5">Maximum 100 accreditations per category</p>
                     )}
                   </div>
