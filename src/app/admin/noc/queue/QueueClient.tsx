@@ -6,6 +6,7 @@ import { categoryDisplayLabel } from "@/lib/category";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ApplicationDrawer } from "./ApplicationDrawer";
 import { DuplicateCompareModal } from "./DuplicateCompareModal";
+import type { DuplicatePairInfo, DuplicateSignal } from "@/lib/anomaly-detect";
 
 type Row = {
   id: string;
@@ -24,6 +25,14 @@ type Row = {
   orgName: string;
 };
 
+type CompareTarget = {
+  appId1: string;
+  appId2: string;
+  orgId1: string;
+  orgId2: string;
+  signals: DuplicateSignal[];
+};
+
 export function QueueClient({
   rows,
   allIds,
@@ -34,13 +43,13 @@ export function QueueClient({
   rows: Row[];
   allIds: string[];
   duplicateOrgIds?: string[];
-  duplicatePairs?: Record<string, string[]>;
+  duplicatePairs?: Record<string, DuplicatePairInfo[]>;
   orgIdToAppId?: Record<string, string>;
 }) {
   const duplicateSet = new Set(duplicateOrgIds);
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [compareTarget, setCompareTarget] = useState<{ appId1: string; appId2: string; orgId1: string; orgId2: string } | null>(null);
+  const [compareTarget, setCompareTarget] = useState<CompareTarget | null>(null);
 
   return (
     <>
@@ -94,14 +103,20 @@ export function QueueClient({
                     </span>
                   )}
                   {duplicateSet.has(row.organizationId) && (() => {
-                    const peerOrgIds = duplicatePairs[row.organizationId] ?? [];
-                    const peerOrgId = peerOrgIds[0];
-                    const peerAppId = peerOrgId ? orgIdToAppId[peerOrgId] : undefined;
-                    return peerAppId && peerOrgId ? (
+                    const peerPairs = duplicatePairs[row.organizationId] ?? [];
+                    const firstPeer = peerPairs[0] as DuplicatePairInfo | undefined;
+                    const peerAppId = firstPeer ? orgIdToAppId[firstPeer.peerOrgId] : undefined;
+                    return peerAppId && firstPeer ? (
                       <button
                         type="button"
                         className="px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 cursor-pointer hover:bg-yellow-200 underline decoration-dotted transition-colors"
-                        onClick={() => setCompareTarget({ appId1: row.id, appId2: peerAppId, orgId1: row.organizationId, orgId2: peerOrgId })}
+                        onClick={() => setCompareTarget({
+                          appId1: row.id,
+                          appId2: peerAppId,
+                          orgId1: row.organizationId,
+                          orgId2: firstPeer.peerOrgId,
+                          signals: firstPeer.signals,
+                        })}
                       >
                         ⚠ Possible duplicate
                       </button>
@@ -163,6 +178,7 @@ export function QueueClient({
           appId2={compareTarget.appId2}
           orgId1={compareTarget.orgId1}
           orgId2={compareTarget.orgId2}
+          signals={compareTarget.signals}
           onClose={() => setCompareTarget(null)}
           onReviewApp1={() => setSelectedId(compareTarget.appId1)}
           onReviewApp2={() => setSelectedId(compareTarget.appId2)}

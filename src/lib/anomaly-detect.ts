@@ -4,7 +4,7 @@
  * detectWithinNocDuplicates queries the DB directly.
  */
 
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, dismissedDuplicatePairs, organizations } from "@/db/schema";
 
@@ -22,6 +22,13 @@ export interface InactiveNoc {
   lastApprovalAt: Date | null;
   windowOpenedAt: Date;
   daysSince: number;
+}
+
+export type DuplicateSignal = "email_domain" | "contact_email" | "website_domain" | "org_name";
+
+export interface DuplicatePairInfo {
+  peerOrgId: string;
+  signals: DuplicateSignal[];
 }
 
 // Minimal shape required from application rows for concentration risk
@@ -63,7 +70,6 @@ export function detectConcentrationRisk(
   quotaMap: Record<string, number>,
   threshold = 0.30,
 ): ConcentrationFlag[] {
-  // Sum requested slots per (nocCode, organizationId) pair
   const orgRequests: Record<string, { nocCode: string; orgName: string; orgId: string; slots: number }> = {};
 
   for (const r of appRows) {
@@ -95,10 +101,6 @@ export function detectConcentrationRisk(
 /**
  * Detects NOCs that have an open EoI window but haven't had an approved
  * application in the last `thresholdDays` days (or ever since the window opened).
- *
- * @param appRows        Rows from the applications table
- * @param activeWindows  Map of nocCode → window openedAt date
- * @param thresholdDays  Inactivity threshold in days, defaults to 7
  */
 export function detectInactiveNocs(
   appRows: AppRowForInactivity[],
@@ -110,7 +112,6 @@ export function detectInactiveNocs(
   const thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
   const now = Date.now();
 
-  // Find the most recent approval per NOC
   const lastApprovalByNoc: Record<string, Date> = {};
   for (const r of appRows) {
     if (r.status === "approved" && r.reviewedAt) {
@@ -124,12 +125,8 @@ export function detectInactiveNocs(
   const inactive: InactiveNoc[] = [];
   for (const [nocCode, windowOpenedAt] of activeWindows.entries()) {
     const lastApproval = lastApprovalByNoc[nocCode] ?? null;
-
-    // Not inactive if the window itself was opened less than thresholdDays ago
     if (now - windowOpenedAt.getTime() < thresholdMs) continue;
-
     if (!lastApproval) {
-      // No approvals at all — inactive since window opened
       const daysSince = Math.floor((now - windowOpenedAt.getTime()) / (24 * 60 * 60 * 1000));
       inactive.push({ nocCode, lastApprovalAt: null, windowOpenedAt, daysSince });
     } else if (now - lastApproval.getTime() > thresholdMs) {
@@ -142,28 +139,96 @@ export function detectInactiveNocs(
 }
 
 /**
- * Returns the unique org names of organisations flagged as multi-territory
- * (i.e. the same email domain appears under multiple NOCs).
- *
- * @param appRows  Rows from the applications table joined to organisations
+ * Returns the unique org names of organisations flagged as multi-territory.
  */
 export function detectCrossNocDuplicates(appRows: AppRowForDuplicates[]): string[] {
   const names = new Set<string>();
   for (const r of appRows) {
-    if (r.isMultiTerritoryFlag) {
-      names.add(r.orgName);
-    }
+    if (r.isMultiTerritoryFlag) names.add(r.orgName);
   }
   return [...names].sort();
 }
 
-/**
- * Returns the Set of organization IDs that share an email domain with another
- * org in the same NOC's applications for the given event.
- *
- * @param nocCode  The NOC code to scope the check to
- * @param eventId  The event identifier, defaults to "LA28"
- */
+// ─── Within-NOC duplicate detection ──────────────────────────────────────────
+
+const LEGAL_SUFFIX_RE = /\b(ltd|limited|inc|corp|corporation|llc|gmbh|pty|plc|bv|nv|sa|ag)\b\.?/gi;
+
+function normalizeOrgName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(LEGAL_SUFFIX_RE, "")
+    .replace(/[^\w\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractWebsiteHost(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const full = url.startsWith("http") ? url : `https://${url}`;
+    return new URL(full).hostname.toLowerCase().replace(/^www\./, "") || null;
+  } catch {
+    return null;
+  }
+}
+
+interface OrgRow {
+  orgId: string;
+  emailDomain: string | null;
+  website: string | null;
+  name: string;
+  country: string | null;
+  contactEmail: string;
+}
+
+function buildBucket(rows: OrgRow[], keyFn: (r: OrgRow) => string | null): Map<string, string[]> {
+  const bucket = new Map<string, string[]>();
+  for (const r of rows) {
+    const key = keyFn(r);
+    if (!key) continue;
+    if (!bucket.has(key)) bucket.set(key, []);
+    bucket.get(key)!.push(r.orgId);
+  }
+  return bucket;
+}
+
+function addBucketSignal(
+  pairSignals: Map<string, Set<DuplicateSignal>>,
+  bucket: Map<string, string[]>,
+  signal: DuplicateSignal,
+): void {
+  for (const [, orgIds] of bucket) {
+    if (orgIds.length < 2) continue;
+    for (let i = 0; i < orgIds.length; i++) {
+      for (let j = i + 1; j < orgIds.length; j++) {
+        const [a, b] = orgIds[i] < orgIds[j] ? [orgIds[i], orgIds[j]] : [orgIds[j], orgIds[i]];
+        const key = `${a}:${b}`;
+        if (!pairSignals.has(key)) pairSignals.set(key, new Set());
+        pairSignals.get(key)!.add(signal);
+      }
+    }
+  }
+}
+
+function computeRawPairSignals(rows: OrgRow[]): Map<string, Set<DuplicateSignal>> {
+  const pairSignals = new Map<string, Set<DuplicateSignal>>();
+
+  addBucketSignal(pairSignals, buildBucket(rows, (r) => r.emailDomain), "email_domain");
+  addBucketSignal(pairSignals, buildBucket(rows, (r) => r.contactEmail.toLowerCase()), "contact_email");
+  addBucketSignal(pairSignals, buildBucket(rows, (r) => extractWebsiteHost(r.website)), "website_domain");
+  addBucketSignal(
+    pairSignals,
+    buildBucket(rows, (r) => {
+      if (!r.country) return null;
+      const norm = normalizeOrgName(r.name);
+      return norm ? `${norm}|${r.country}` : null;
+    }),
+    "org_name",
+  );
+
+  return pairSignals;
+}
+
 async function getDismissedPairs(nocCode: string, eventId: string): Promise<Set<string>> {
   const rows = await db
     .select({ orgIdA: dismissedDuplicatePairs.orgIdA, orgIdB: dismissedDuplicatePairs.orgIdB })
@@ -174,101 +239,65 @@ async function getDismissedPairs(nocCode: string, eventId: string): Promise<Set<
         eq(dismissedDuplicatePairs.eventId, eventId),
       ),
     );
-  // Encode each dismissed pair as a canonical key for fast lookup
   return new Set(rows.map((r) => `${r.orgIdA}:${r.orgIdB}`));
 }
 
-function isDismissed(dismissedSet: Set<string>, a: string, b: string): boolean {
-  const [lo, hi] = a < b ? [a, b] : [b, a];
-  return dismissedSet.has(`${lo}:${hi}`);
+async function fetchDuplicatePairMap(
+  nocCode: string,
+  eventId: string,
+): Promise<Map<string, DuplicatePairInfo[]>> {
+  const [rows, dismissed] = await Promise.all([
+    db
+      .select({
+        orgId: organizations.id,
+        emailDomain: organizations.emailDomain,
+        website: organizations.website,
+        name: organizations.name,
+        country: organizations.country,
+        contactEmail: applications.contactEmail,
+      })
+      .from(applications)
+      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+      .where(
+        and(
+          eq(applications.nocCode, nocCode),
+          eq(applications.eventId, eventId),
+        ),
+      ),
+    getDismissedPairs(nocCode, eventId),
+  ]);
+
+  const pairSignals = computeRawPairSignals(rows);
+
+  const result = new Map<string, DuplicatePairInfo[]>();
+  for (const [pairKey, signalSet] of pairSignals) {
+    if (dismissed.has(pairKey)) continue;
+    const colonIdx = pairKey.indexOf(":");
+    const orgIdA = pairKey.slice(0, colonIdx);
+    const orgIdB = pairKey.slice(colonIdx + 1);
+    const signals = [...signalSet];
+
+    if (!result.has(orgIdA)) result.set(orgIdA, []);
+    result.get(orgIdA)!.push({ peerOrgId: orgIdB, signals });
+
+    if (!result.has(orgIdB)) result.set(orgIdB, []);
+    result.get(orgIdB)!.push({ peerOrgId: orgIdA, signals });
+  }
+
+  return result;
 }
 
 export async function detectWithinNocDuplicates(
   nocCode: string,
   eventId: string = "LA28",
 ): Promise<Set<string>> {
-  const [rows, dismissed] = await Promise.all([
-    db
-      .select({ orgId: organizations.id, emailDomain: organizations.emailDomain })
-      .from(applications)
-      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-      .where(
-        and(
-          eq(applications.nocCode, nocCode),
-          eq(applications.eventId, eventId),
-          isNotNull(organizations.emailDomain),
-        ),
-      ),
-    getDismissedPairs(nocCode, eventId),
-  ]);
-
-  const domainToOrgs = new Map<string, string[]>();
-  for (const row of rows) {
-    if (!row.emailDomain) continue;
-    const existing = domainToOrgs.get(row.emailDomain) ?? [];
-    existing.push(row.orgId);
-    domainToOrgs.set(row.emailDomain, existing);
-  }
-
-  const duplicateOrgIds = new Set<string>();
-  for (const [, orgIds] of domainToOrgs) {
-    if (orgIds.length < 2) continue;
-    // Only flag an org if at least one of its peers is NOT dismissed
-    for (const orgId of orgIds) {
-      const peers = orgIds.filter((id) => id !== orgId);
-      if (peers.some((peerId) => !isDismissed(dismissed, orgId, peerId))) {
-        duplicateOrgIds.add(orgId);
-      }
-    }
-  }
-  return duplicateOrgIds;
+  const pairs = await fetchDuplicatePairMap(nocCode, eventId);
+  return new Set(pairs.keys());
 }
 
-/**
- * Returns a Map of orgId → [other orgIds that share the same email domain]
- * within the same NOC's applications for the given event.
- *
- * @param nocCode  The NOC code to scope the check to
- * @param eventId  The event identifier, defaults to "LA28"
- */
 export async function detectWithinNocDuplicatePairs(
   nocCode: string,
   eventId: string = "LA28",
-): Promise<Map<string, string[]>> {
-  const [rows, dismissed] = await Promise.all([
-    db
-      .select({ orgId: organizations.id, emailDomain: organizations.emailDomain })
-      .from(applications)
-      .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-      .where(
-        and(
-          eq(applications.nocCode, nocCode),
-          eq(applications.eventId, eventId),
-          isNotNull(organizations.emailDomain),
-        ),
-      ),
-    getDismissedPairs(nocCode, eventId),
-  ]);
-
-  const domainToOrgs = new Map<string, string[]>();
-  for (const row of rows) {
-    if (!row.emailDomain) continue;
-    const existing = domainToOrgs.get(row.emailDomain) ?? [];
-    existing.push(row.orgId);
-    domainToOrgs.set(row.emailDomain, existing);
-  }
-
-  const pairs = new Map<string, string[]>();
-  for (const [, orgIds] of domainToOrgs) {
-    if (orgIds.length < 2) continue;
-    for (const orgId of orgIds) {
-      const activePeers = orgIds.filter(
-        (id) => id !== orgId && !isDismissed(dismissed, orgId, id),
-      );
-      if (activePeers.length > 0) {
-        pairs.set(orgId, activePeers);
-      }
-    }
-  }
-  return pairs;
+): Promise<Map<string, DuplicatePairInfo[]>> {
+  return fetchDuplicatePairMap(nocCode, eventId);
 }

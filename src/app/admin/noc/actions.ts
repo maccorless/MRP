@@ -255,6 +255,86 @@ export async function reverseRejection(formData: FormData) {
   redirect(`/admin/noc/${id}?success=rejection_reversed`);
 }
 
+export async function rejectApplicationInline(
+  appId: string,
+  note: string,
+): Promise<{ error?: string }> {
+  await requireWritable();
+  const session = await requireNocSession();
+  if (!note.trim()) return { error: "A note is required to reject an application." };
+
+  const app = await getApplicationForNoc(appId, session.nocCode);
+  if (!app) return { error: "Application not found." };
+  if (app.status !== "pending" && app.status !== "resubmitted") {
+    return { error: `Cannot reject an application with status: ${app.status}.` };
+  }
+
+  const now = new Date();
+  const [updated] = await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(applications)
+      .set({ status: "rejected", reviewNote: note.trim(), reviewedAt: now, reviewedBy: session.userId, updatedAt: now })
+      .where(and(eq(applications.id, appId), eq(applications.status, app.status)))
+      .returning({ id: applications.id });
+
+    if (rows[0]) {
+      await tx.insert(auditLog).values({
+        actorType: "noc_admin",
+        actorId: session.userId,
+        actorLabel: session.displayName,
+        action: "application_rejected",
+        applicationId: appId,
+        organizationId: app.organizationId,
+        detail: note.trim(),
+      });
+    }
+    return rows;
+  });
+
+  if (!updated) return { error: "Application status changed before your action could be applied." };
+  return {};
+}
+
+export async function returnApplicationInline(
+  appId: string,
+  note: string,
+): Promise<{ error?: string }> {
+  await requireWritable();
+  const session = await requireNocSession();
+  if (!note.trim()) return { error: "A note is required to return an application." };
+
+  const app = await getApplicationForNoc(appId, session.nocCode);
+  if (!app) return { error: "Application not found." };
+  if (app.status !== "pending" && app.status !== "resubmitted") {
+    return { error: `Cannot return an application with status: ${app.status}.` };
+  }
+
+  const now = new Date();
+  const [updated] = await db.transaction(async (tx) => {
+    const rows = await tx
+      .update(applications)
+      .set({ status: "returned", reviewNote: note.trim(), reviewedAt: now, reviewedBy: session.userId, updatedAt: now })
+      .where(and(eq(applications.id, appId), eq(applications.status, app.status)))
+      .returning({ id: applications.id });
+
+    if (rows[0]) {
+      await tx.insert(auditLog).values({
+        actorType: "noc_admin",
+        actorId: session.userId,
+        actorLabel: session.displayName,
+        action: "application_returned",
+        applicationId: appId,
+        organizationId: app.organizationId,
+        detail: note.trim(),
+      });
+    }
+    return rows;
+  });
+
+  if (!updated) return { error: "Application status changed before your action could be applied." };
+  return {};
+}
+
 export async function dismissDuplicatePair(orgId1: string, orgId2: string) {
   await requireWritable();
   const session = await requireNocSession();
