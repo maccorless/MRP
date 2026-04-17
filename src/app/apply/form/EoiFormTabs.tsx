@@ -349,6 +349,12 @@ export function EoiFormTabs({
         return "empty";
       }
 
+      // Tab 3 (Publication): require at least one publication type checked for green dot
+      if (tabIndex === 3) {
+        const pubTypes = form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]:checked');
+        if (pubTypes.length === 0) return "empty";
+      }
+
       // All required fields satisfied — check for full completion
       return isTabFull(tabIndex, form) ? "full" : "complete";
     });
@@ -517,7 +523,7 @@ export function EoiFormTabs({
       </div>
     )}
 
-    <form ref={formRef} action={submitApplication} onInput={handleInput} onChange={(e) => handleCountryChange(e.nativeEvent)} onBlur={handleFormBlur} onSubmit={handleSubmit} className="space-y-0">
+    <form ref={formRef} action={submitApplication} onInput={handleInput} onChange={(e) => handleCountryChange(e.nativeEvent)} onBlur={handleFormBlur} onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA" && (e.target as HTMLElement).tagName !== "BUTTON") e.preventDefault(); }} className="space-y-0">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
