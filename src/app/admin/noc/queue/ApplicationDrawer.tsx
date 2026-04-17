@@ -18,7 +18,15 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online Media",
   media_broadcast: "Broadcast",
   news_agency: "News Agency",
+  freelancer: "Freelancer / Independent",
   enr: "ENR (Non-Rights Broadcaster)",
+  other: "Other",
+};
+
+const GEO_COVERAGE_LABEL: Record<string, string> = {
+  international: "International",
+  national: "National",
+  local: "Local / Regional",
 };
 
 const PUB_TYPE_LABEL: Record<string, string> = {
@@ -218,7 +226,10 @@ export function ApplicationDrawer({
       (pubTypes.length > 0 ||
         app.circulation ||
         app.publicationFrequency ||
-        app.sportsToCover),
+        app.sportsToCover ||
+        app.onlineUniqueVisitors ||
+        app.geographicalCoverage ||
+        app.socialMediaAccounts),
   );
   const hasHistory = Boolean(
     app &&
@@ -373,8 +384,11 @@ export function ApplicationDrawer({
                         </dd>
                       </div>
                     )}
-                    {Boolean(org.isFreelancer) && (
-                      <Field label="Freelancer" value="Yes" />
+                    {Boolean(org.orgEmail) && (
+                      <Field label="Org email" value={org.orgEmail as string} />
+                    )}
+                    {org.orgType === "other" && Boolean(app.orgTypeOther) && (
+                      <Field label="Org type (specified)" value={app.orgTypeOther as string} />
                     )}
                     {Boolean(app.accessibilityNeeds) && (
                       <Field
@@ -383,6 +397,16 @@ export function ApplicationDrawer({
                       />
                     )}
                   </dl>
+                  {org.orgType === "freelancer" && app.pressCard !== null && app.pressCard !== undefined && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
+                      <dt className="text-gray-500 text-xs mb-1">Press card</dt>
+                      <dd className="text-gray-900">
+                        {app.pressCard
+                          ? `Yes — issued by ${(app.pressCardIssuer as string | null) ?? "unknown"}`
+                          : "No"}
+                      </dd>
+                    </div>
+                  )}
                   {hasAddress && (
                     <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
                       <dt className="text-gray-500 text-xs mb-1">Address</dt>
@@ -436,7 +460,7 @@ export function ApplicationDrawer({
                     {hasSecondary && (
                       <div className="pt-3 border-t border-gray-100">
                         <div className="text-xs font-medium text-gray-500 mb-2">
-                          Secondary contact
+                          Editor-in-Chief / Media Manager
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                           <Field
@@ -577,10 +601,18 @@ export function ApplicationDrawer({
                     {Boolean(app.about) && (
                       <div>
                         <dt className="text-gray-500 text-xs mb-1">
-                          About coverage
+                          Coverage plans
                         </dt>
                         <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">
                           {app.about as string}
+                        </dd>
+                      </div>
+                    )}
+                    {org.orgType === "enr" && Boolean(app.enrProgrammingType) && (
+                      <div>
+                        <dt className="text-gray-500 text-xs mb-1">ENR programming type</dt>
+                        <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">
+                          {app.enrProgrammingType as string}
                         </dd>
                       </div>
                     )}
@@ -623,10 +655,24 @@ export function ApplicationDrawer({
                           value={app.circulation as string | number | null}
                         />
                         <Field
+                          label="Online unique visitors/month"
+                          value={app.onlineUniqueVisitors as string | null}
+                        />
+                        <Field
                           label="Publication frequency"
                           value={app.publicationFrequency as string | null}
                         />
+                        <Field
+                          label="Geographical coverage"
+                          value={GEO_COVERAGE_LABEL[(app.geographicalCoverage as string | null) ?? ""] ?? (app.geographicalCoverage as string | null)}
+                        />
                       </div>
+                      {Boolean(app.socialMediaAccounts) && (
+                        <div>
+                          <dt className="text-gray-500 text-xs mb-1">Social media</dt>
+                          <dd className="text-gray-900">{app.socialMediaAccounts as string}</dd>
+                        </div>
+                      )}
                       {Boolean(app.sportsToCover) && (
                         <div>
                           <dt className="text-gray-500 text-xs mb-1">

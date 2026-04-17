@@ -20,7 +20,15 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online Media",
   media_broadcast:    "Broadcast",
   news_agency:        "News Agency",
+  freelancer:         "Freelancer / Independent",
   enr:                "ENR (Non-Rights Broadcaster)",
+  other:              "Other",
+};
+
+const GEO_COVERAGE_LABEL: Record<string, string> = {
+  international: "International",
+  national: "National",
+  local: "Local / Regional",
 };
 
 const PUB_TYPE_LABEL: Record<string, string> = {
@@ -141,7 +149,8 @@ export default async function ApplicationDetailPage({
   const pubTypes = (app.publicationTypes as string[] | null) ?? [];
   const hasAddress = org.address || org.city || org.stateProvince || org.postalCode;
   const hasSecondary = app.secondaryFirstName || app.secondaryLastName;
-  const hasPublication = pubTypes.length > 0 || app.circulation || app.publicationFrequency || app.sportsToCover;
+  const hasPublication = pubTypes.length > 0 || app.circulation || app.publicationFrequency || app.sportsToCover ||
+    app.onlineUniqueVisitors || app.geographicalCoverage || app.socialMediaAccounts;
   const hasHistory = app.priorOlympic !== null || app.priorParalympic !== null || app.pastCoverageExamples;
 
   return (
@@ -206,9 +215,22 @@ export default async function ApplicationDetailPage({
                 </dd>
               </div>
             )}
-            {org.isFreelancer && <Field label="Freelancer" value="Yes" />}
+            {org.orgEmail && <Field label="Org email" value={org.orgEmail} />}
+            {org.orgType === "other" && app.orgTypeOther && (
+              <Field label="Org type (specified)" value={app.orgTypeOther} />
+            )}
             {app.accessibilityNeeds && <Field label="Accessibility needs" value="Yes — wheelchair access required" />}
           </dl>
+          {org.orgType === "freelancer" && app.pressCard !== null && (
+            <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
+              <dt className="text-gray-500 text-xs mb-1">Press card</dt>
+              <dd className="text-gray-900">
+                {app.pressCard
+                  ? `Yes — issued by ${app.pressCardIssuer ?? "unknown"}`
+                  : "No"}
+              </dd>
+            </div>
+          )}
           {hasAddress && (
             <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
               <dt className="text-gray-500 text-xs mb-1">Address</dt>
@@ -234,7 +256,7 @@ export default async function ApplicationDetailPage({
             </div>
             {hasSecondary && (
               <div className="pt-3 border-t border-gray-100">
-                <div className="text-xs font-medium text-gray-500 mb-2">Secondary contact</div>
+                <div className="text-xs font-medium text-gray-500 mb-2">Editor-in-Chief / Media Manager</div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
                   <Field label="Name" value={[app.secondaryFirstName, app.secondaryLastName].filter(Boolean).join(" ")} />
                   <Field label="Email" value={app.secondaryEmail} />
@@ -300,9 +322,15 @@ export default async function ApplicationDetailPage({
               </div>
             )}
             <div>
-              <dt className="text-gray-500 text-xs mb-1">About coverage</dt>
+              <dt className="text-gray-500 text-xs mb-1">Coverage plans</dt>
               <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">{app.about}</dd>
             </div>
+            {org.orgType === "enr" && app.enrProgrammingType && (
+              <div>
+                <dt className="text-gray-500 text-xs mb-1">ENR programming type</dt>
+                <dd className="text-gray-900 bg-gray-50 rounded p-3 leading-relaxed">{app.enrProgrammingType}</dd>
+              </div>
+            )}
             {app.resubmissionCount > 0 && <Field label="Resubmissions" value={app.resubmissionCount} />}
           </dl>
         </section>
@@ -328,8 +356,16 @@ export default async function ApplicationDetailPage({
               )}
               <div className="grid grid-cols-2 gap-x-6">
                 <Field label="Circulation / visitors" value={app.circulation} />
+                <Field label="Online unique visitors/month" value={app.onlineUniqueVisitors} />
                 <Field label="Publication frequency" value={app.publicationFrequency} />
+                <Field label="Geographical coverage" value={GEO_COVERAGE_LABEL[app.geographicalCoverage ?? ""] ?? app.geographicalCoverage} />
               </div>
+              {app.socialMediaAccounts && (
+                <div>
+                  <dt className="text-gray-500 text-xs mb-1">Social media</dt>
+                  <dd className="text-gray-900">{app.socialMediaAccounts}</dd>
+                </div>
+              )}
               {app.sportsToCover && (
                 <div>
                   <dt className="text-gray-500 text-xs mb-1">Sports to cover</dt>
