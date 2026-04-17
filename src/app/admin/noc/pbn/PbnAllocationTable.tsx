@@ -311,36 +311,35 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
 
   return (
     <div className="space-y-4">
-      {/* Per-category quota progress bars */}
-      {quota && (
-        <div className="grid grid-cols-3 gap-3">
-          {activeCategories.map((cat) => {
-            const catMeta = ACCRED_CATEGORIES.find((c) => c.value === cat)!;
-            const used  = totals[cat];
-            const total = quota[CAT_FIELDS[cat].quotaKey];
-            if (total === 0) return null;
-            const pct  = Math.min(100, Math.round((used / total) * 100));
-            const over = used > total;
-            return (
-              <div key={cat} className="bg-white rounded-lg border border-gray-200 p-3">
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="font-medium text-gray-700">{catMeta.shortLabel} — {catMeta.description}</span>
-                  <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
-                    {used} / {total}
-                  </span>
-                </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${over ? "bg-red-500" : CAT_COLOR[cat]}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                {over && <p className="text-xs text-red-600 mt-1">Over quota</p>}
+      {/* Per-category quota progress bars — always show all 6 */}
+      <div className="grid grid-cols-3 gap-3">
+        {ACCRED_CATEGORIES.map((cat) => {
+          const used  = totals[cat.value];
+          const total = quota ? quota[CAT_FIELDS[cat.value].quotaKey] : 0;
+          const hasQuota = total > 0;
+          const pct  = hasQuota ? Math.min(100, Math.round((used / total) * 100)) : 0;
+          const over = hasQuota && used > total;
+          return (
+            <div key={cat.value} className="bg-white rounded-lg border border-gray-200 p-3">
+              <div className="flex justify-between text-xs mb-1.5">
+                <span className="font-semibold text-gray-800">{cat.shortLabel}</span>
+                <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
+                  {used}{hasQuota ? ` / ${total}` : ""}
+                </span>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${over ? "bg-red-500" : CAT_COLOR[cat.value]}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <div className="text-xs text-gray-400 mt-1 truncate">
+                {hasQuota ? `${total - used} remaining` : "No quota set"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       {/* Search */}
       <div>

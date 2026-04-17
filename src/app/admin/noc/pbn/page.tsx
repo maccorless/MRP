@@ -251,37 +251,7 @@ export default async function NocPbnPage({
         </div>
       )}
 
-      {/* B5 — Quota dashboard: server-rendered committed allocations vs IOC quota */}
-      {quota ? (
-        <div className="mb-6 grid grid-cols-3 gap-3">
-          {ACCRED_CATEGORIES.map((cat) => {
-              const quotaKey = `${cat.value.toLowerCase()}Total` as keyof typeof quota;
-              const allocKey = `${cat.value.toLowerCase()}Slots` as keyof (typeof rows)[0]["alloc"];
-              const total     = (quota[quotaKey] as number) ?? 0;
-              const allocated = rows.reduce((s, r) => s + (((r.alloc ?? {})[allocKey] as number | undefined) ?? 0), 0);
-              if (total === 0) return null;
-              const pct  = Math.min(100, Math.round((allocated / total) * 100));
-              const over = allocated > total;
-              return (
-                <div key={cat.value} className="bg-white rounded-lg border border-gray-200 p-3">
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span className="font-medium text-gray-700">{cat.shortLabel} — {cat.description}</span>
-                    <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
-                      {allocated} / {total}
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${over ? "bg-red-500" : "bg-[#0057A8]"}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-gray-400 mt-1">{total - allocated} remaining</div>
-                </div>
-              );
-            })}
-        </div>
-      ) : (
+      {!quota && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm">
           No quota has been assigned to {nocCode} yet. IOC must set quotas before you can submit.
           You can save draft allocations in the meantime.
