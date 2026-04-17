@@ -35,7 +35,8 @@ export default async function OcogDuplicatesPage() {
   };
   const crossNocByDomain = new Map<string, CrossNocGroup>();
   for (const row of crossNocRows) {
-    const domain = row.emailDomain ?? "(no domain)";
+    if (!row.emailDomain) continue; // skip orgs without a domain
+    const domain = row.emailDomain;
     let group = crossNocByDomain.get(domain);
     if (!group) {
       group = { emailDomain: domain, orgs: [] };
@@ -48,7 +49,8 @@ export default async function OcogDuplicatesPage() {
       status: row.status,
     });
   }
-  const crossNocGroups = [...crossNocByDomain.values()];
+  const crossNocGroups = [...crossNocByDomain.values()]
+    .filter((g) => new Set(g.orgs.map((o) => o.nocCode)).size >= 2);
 
   // ── Type 2: Within-NOC duplicates ─────────────────────────────────────────
   // Same email domain used by 2+ orgs in the same NOC
