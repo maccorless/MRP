@@ -178,6 +178,13 @@ export async function submitApplication(formData: FormData) {
     pastCoverageExamples,
     additionalComments,
     accessibilityNeeds,
+    orgTypeOther: (formData.get("org_type_other") as string | null) || null,
+    pressCard: formData.get("press_card") === "yes" ? true : formData.get("press_card") === "no" ? false : null,
+    pressCardIssuer: (formData.get("press_card_issuer") as string | null) || null,
+    enrProgrammingType: (formData.get("enr_programming_type") as string | null) || null,
+    onlineUniqueVisitors: (formData.get("online_unique_visitors") as string | null) || null,
+    geographicalCoverage: (formData.get("geographical_coverage") as string | null) || null,
+    socialMediaAccounts: (formData.get("social_media_accounts") as string | null) || null,
   };
 
   // ── RESUBMISSION PATH ─────────────────────────────────────────────────────
@@ -282,7 +289,8 @@ export async function submitApplication(formData: FormData) {
     | "media_print_online"
     | "media_broadcast"
     | "news_agency"
-    | "freelancer";
+    | "freelancer"
+    | "other";
   const websiteRaw = (formData.get("website") as string)?.trim();
   const website = websiteRaw || null;
 
@@ -362,6 +370,7 @@ export async function submitApplication(formData: FormData) {
           orgType,
           website,
           emailDomain,
+          orgEmail: (formData.get("org_email") as string | null) || null,
           isMultiTerritoryFlag: isMultiTerritory,
           address: orgAddress,
           address2: orgAddress2,

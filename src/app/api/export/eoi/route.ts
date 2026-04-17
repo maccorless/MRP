@@ -61,6 +61,14 @@ export async function GET(request: Request) {
       submittedAt: applications.submittedAt,
       reviewedAt: applications.reviewedAt,
       internalNote: applications.internalNote,
+      orgEmail: organizations.orgEmail,
+      orgTypeOther: applications.orgTypeOther,
+      onlineUniqueVisitors: applications.onlineUniqueVisitors,
+      geographicalCoverage: applications.geographicalCoverage,
+      socialMediaAccounts: applications.socialMediaAccounts,
+      pressCard: applications.pressCard,
+      pressCardIssuer: applications.pressCardIssuer,
+      enrProgrammingType: applications.enrProgrammingType,
     })
     .from(applications)
     .innerJoin(organizations, eq(applications.organizationId, organizations.id))
@@ -85,6 +93,8 @@ export async function GET(request: Request) {
     "Publication Types", "Circulation", "Pub Frequency", "Sports to Cover", "Sport (Es/EPs)",
     "Prior Olympic", "Olympic Years", "Prior Paralympic", "Paralympic Years",
     "Status", "About", "Resubmissions", "Submitted", "Reviewed",
+    "Org Email", "Org Type Other", "Online Unique Visitors", "Geographical Coverage",
+    "Social Media Accounts", "Press Card", "Press Card Issuer", "ENR Programming Type",
     ...(isNoc ? ["Internal Note"] : []),
   ];
 
@@ -105,6 +115,14 @@ export async function GET(request: Request) {
       r.status, r.about, r.resubmissionCount,
       r.submittedAt.toISOString(),
       r.reviewedAt?.toISOString() ?? "",
+      r.orgEmail ?? "",
+      r.orgTypeOther ?? "",
+      r.onlineUniqueVisitors ?? "",
+      r.geographicalCoverage ?? "",
+      r.socialMediaAccounts ?? "",
+      r.pressCard === true ? "Yes" : r.pressCard === false ? "No" : "",
+      r.pressCardIssuer ?? "",
+      r.enrProgrammingType ?? "",
       ...(isNoc ? [r.internalNote] : []),
     ];
   });
