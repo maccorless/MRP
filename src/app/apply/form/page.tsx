@@ -72,7 +72,9 @@ export default async function FormPage({
   }
 
   const returnedRow = editRow;
-  const isResubmission = !!editRow;
+  const isReturnedApp = editRow?.app.status === "returned";
+  const isResubmission = isReturnedApp;
+  const isPendingEdit  = !!editRow && !isReturnedApp;
 
   // Build prefill data
   let prefill: PrefillData | null = null;
@@ -141,9 +143,9 @@ export default async function FormPage({
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4 mb-1">
           <h1 className="text-2xl font-bold text-gray-900">
-            {isResubmission ? "Resubmit Application" : "LA 2028 Media Accreditation"}
+            {isResubmission ? "Resubmit Application" : isPendingEdit ? "Edit Application" : "LA 2028 Media Accreditation"}
           </h1>
-          {!isResubmission && (
+          {!isResubmission && !isPendingEdit && (
             <Link href="/apply/how-it-works" className="shrink-0 text-sm text-[#0057A8] hover:underline mt-1">
               How does this work?
             </Link>
@@ -152,11 +154,13 @@ export default async function FormPage({
         <p className="text-sm text-gray-500 leading-relaxed">
           {isResubmission
             ? "Review the feedback below, correct the relevant sections, and resubmit."
+            : isPendingEdit
+            ? "Your application is still pending review. You can update it below and save your changes."
             : "Expression of Interest for press and photo accreditation at the Olympic and Paralympic Games Los Angeles 2028. Your application will be reviewed by your National Olympic Committee (NOC) before being forwarded to the IOC."}
         </p>
       </div>
 
-      {/* Resubmission note */}
+      {/* Resubmission note — only shown for returned apps */}
       {isResubmission && returnedRow && (
         <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="text-sm font-semibold text-orange-800 mb-1">
@@ -165,6 +169,20 @@ export default async function FormPage({
           <p className="text-sm text-orange-700">{returnedRow.app.reviewNote}</p>
           <div className="mt-2 text-xs text-orange-600">
             Reference: <span className="font-mono">{returnedRow.app.referenceNumber}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Pending-edit info note */}
+      {isPendingEdit && editRow && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="text-sm font-semibold text-blue-800 mb-1">Application pending review</div>
+          <p className="text-sm text-blue-700">
+            Your application has not yet been reviewed by your NOC. You can update the details below.
+            Once your NOC begins their review you will no longer be able to make changes.
+          </p>
+          <div className="mt-2 text-xs text-blue-600">
+            Reference: <span className="font-mono">{editRow.app.referenceNumber}</span>
           </div>
         </div>
       )}
@@ -190,9 +208,10 @@ export default async function FormPage({
       <EoiFormTabs
         token={token}
         email={email}
-        resubmitId={isResubmission && returnedRow ? returnedRow.app.id : null}
+        resubmitId={editRow ? editRow.app.id : null}
         prefill={prefill}
         isResubmission={isResubmission}
+        isPendingEdit={isPendingEdit}
         isFromInvite={isFromInvite}
         countryCodes={COUNTRY_CODES}
         nocCodes={NOC_CODES}

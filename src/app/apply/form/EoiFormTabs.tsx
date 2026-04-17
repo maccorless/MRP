@@ -110,6 +110,7 @@ export function EoiFormTabs({
   resubmitId,
   prefill,
   isResubmission,
+  isPendingEdit = false,
   isFromInvite = false,
   countryCodes,
   nocCodes,
@@ -119,6 +120,7 @@ export function EoiFormTabs({
   resubmitId: string | null;
   prefill: PrefillData | null;
   isResubmission: boolean;
+  isPendingEdit?: boolean;
   isFromInvite?: boolean;
   countryCodes: { code: string; name: string }[];
   nocCodes: { code: string; name: string }[];
@@ -310,8 +312,8 @@ export function EoiFormTabs({
     if (!formRef.current) return;
     const form = formRef.current;
     const newStatus = TABS.map((_, tabIndex): "empty" | "complete" | "full" => {
-      // Resubmission: org tab is read-only and fully pre-filled
-      if (isResubmission && tabIndex === 0) return "full";
+      // Resubmission / pending-edit: org tab is read-only and fully pre-filled
+      if ((isResubmission || isPendingEdit) && tabIndex === 0) return "full";
 
       // Must be visited first
       if (!visitedTabsRef.current.has(tabIndex)) return "empty";
@@ -636,7 +638,7 @@ export function EoiFormTabs({
               type="submit"
               className="px-6 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-md hover:bg-green-700 transition-colors cursor-pointer"
             >
-              {isResubmission ? "Resubmit Application" : "Submit Application"}
+              {isResubmission ? "Resubmit Application" : isPendingEdit ? "Save Changes" : "Submit Application"}
             </button>
           )}
         </div>
@@ -658,11 +660,13 @@ export function EoiFormTabs({
       >
         <div ref={modalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
           <h2 id="confirm-modal-title" className="text-lg font-bold text-gray-900 mb-1">
-            {isResubmission ? "Confirm resubmission" : "Confirm submission"}
+            {isResubmission ? "Confirm resubmission" : isPendingEdit ? "Confirm changes" : "Confirm submission"}
           </h2>
           <p id="confirm-modal-desc" className="text-sm text-gray-500 mb-5">
             {isResubmission
               ? "Your corrected application will be sent back to your NOC for review."
+              : isPendingEdit
+              ? "Your changes will be saved. Your application will remain pending review by your NOC."
               : "Your application will be sent to your NOC for review. You won't be able to edit it until your NOC returns it."}
           </p>
 
@@ -717,7 +721,7 @@ export function EoiFormTabs({
                   }}
                   className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
                 >
-                  {isResubmission ? "Confirm resubmit" : "Confirm & submit"}
+                  {isResubmission ? "Confirm resubmit" : isPendingEdit ? "Save changes" : "Confirm & submit"}
                 </button>
               </>
             ) : (
