@@ -14,6 +14,7 @@ export default async function FormPage({
     token?: string;
     email?: string;
     from?: string;
+    invite_id?: string;
     resubmit?: string;
     org_name?: string;
     org_type?: string;
@@ -22,7 +23,7 @@ export default async function FormPage({
     website?: string;
   }>;
 }) {
-  const { token, email, from, resubmit, org_name, org_type, country, noc_code, website } = await searchParams;
+  const { token, email, from, invite_id, resubmit, org_name, org_type, country, noc_code, website } = await searchParams;
 
   if (!token || !email) redirect("/apply");
 
@@ -210,6 +211,7 @@ export default async function FormPage({
         token={token}
         email={email}
         resubmitId={editRow ? editRow.app.id : null}
+        inviteId={isFromInvite ? (invite_id ?? null) : null}
         prefill={prefill}
         isResubmission={isResubmission}
         isPendingEdit={isPendingEdit}

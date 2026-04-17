@@ -10,6 +10,7 @@ import {
   auditLog,
   reservedOrganizations,
   nocEoiWindows,
+  invitations,
 } from "@/db/schema";
 
 export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean }> {
@@ -70,6 +71,7 @@ export async function submitApplication(formData: FormData) {
   const token = (formData.get("token") as string)?.toUpperCase().trim();
   const email = (formData.get("email") as string)?.trim().toLowerCase();
   const resubmitId = (formData.get("resubmit_id") as string) || null;
+  const inviteId = (formData.get("invite_id") as string) || null;
 
   if (!token || !email) redirect("/apply");
 
@@ -374,8 +376,17 @@ export async function submitApplication(formData: FormData) {
         about,
         ...expandedFields,
         status: "pending",
+        entrySource: inviteId ? "invited" : "self_submitted",
       })
       .returning();
+
+    // Link the invitation record to the newly created application
+    if (inviteId) {
+      await tx
+        .update(invitations)
+        .set({ acceptedAppId: app.id })
+        .where(eq(invitations.id, inviteId));
+    }
 
     await tx.insert(auditLog).values([
       {

@@ -210,6 +210,9 @@ export default async function NocQueuePage({
                       {row.entrySource === "noc_direct" && (
                         <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">Direct Entry</span>
                       )}
+                      {row.entrySource === "invited" && (
+                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">Invited</span>
+                      )}
                     </div>
                     <div className="text-xs text-gray-400">{row.contactName}</div>
                   </td>
