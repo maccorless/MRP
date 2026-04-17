@@ -1,6 +1,6 @@
 ## Project at a glance
 
-  - **Project:** LA 2028 Media Registration Portal (MRP) — a Next.js app
+  - **Project:** LA 2028 Press Registration Portal (PRP) — a Next.js app
   managing
     Expression of Interest (EoI) and Press-by-Number (PbN) workflows for ~206
     National Olympic Committees during the 2028 Olympics.
@@ -25,7 +25,7 @@
      These are the prior Claude's point-in-time notes — treat them as context,
      not live truth, and verify against the current code before acting on them.
   3. `docs/strategic-plan-gap-analysis.md` — the authoritative reference for
-     where our current MRP design conflicts with the IOC Strategic Plan.
+     where our current PRP design conflicts with the IOC Strategic Plan.
   4. `docs/stakeholder-questions.md` — open design questions with stakeholders
      (Emma Morris at IOC, Martyn at OCOG, Randi, Lucia).
   5. `TODOS.md` — P0 and P1-GAP work items.

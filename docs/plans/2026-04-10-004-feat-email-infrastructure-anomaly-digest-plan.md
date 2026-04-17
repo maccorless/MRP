@@ -11,7 +11,7 @@ date: 2026-04-10
 
 ## Overview
 
-There is currently zero email sending in the MRP codebase — magic links and status tokens are shown in the browser only (prototype mode). This plan introduces a minimal email layer (Resend SDK) and builds the first consumer: a daily anomaly digest sent to IOC Media Ops.
+There is currently zero email sending in the PRP codebase — magic links and status tokens are shown in the browser only (prototype mode). This plan introduces a minimal email layer (Resend SDK) and builds the first consumer: a daily anomaly digest sent to IOC Media Ops.
 
 **Depends on:** `2026-04-10-003-feat-ioc-anomaly-detection-banners-plan.md` — the anomaly detection logic must be built first.
 
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
   await sendEmail({
     to: process.env.IOC_DIGEST_EMAIL!.split(','),
-    subject: `[MRP] ${anomalies.total} anomaly${anomalies.total > 1 ? 'ies' : ''} — ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
+    subject: `[PRP] ${anomalies.total} anomaly${anomalies.total > 1 ? 'ies' : ''} — ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
     html: renderDigestHtml(anomalies),
     text: renderDigestText(anomalies),
   });
@@ -106,9 +106,9 @@ Plain HTML, no React Email for this first template (keep dependencies minimal). 
 
 Structure:
 ```
-Subject: [MRP] 3 anomalies — 10 Apr
+Subject: [PRP] 3 anomalies — 10 Apr
 
-LA28 Media Registration Portal — Daily Anomaly Digest
+LA28 Press Registration Portal — Daily Anomaly Digest
 10 April 2026
 
 CONCENTRATION RISK (1)
@@ -142,7 +142,7 @@ The route is scheduler-agnostic. Recommended callers in priority order:
          - run: |
              curl -X POST \
                -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
-               ${{ secrets.MRP_BASE_URL }}/api/cron/anomaly-digest
+               ${{ secrets.PRP_BASE_URL }}/api/cron/anomaly-digest
    ```
 2. **Railway Cron** — if Railway is the production host, use the Railway Cron service pointing at the same endpoint
 3. **Vercel Cron** — if migrating to Vercel, add `vercel.json` cron config

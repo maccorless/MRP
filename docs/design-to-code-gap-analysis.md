@@ -1,6 +1,6 @@
 **Last updated: 10-Apr-2026 10:25**
 
-# MRP Design-to-Code Gap Analysis
+# PRP Design-to-Code Gap Analysis
 **Date:** 2026-03-30 — **Updated:** 2026-04-10 (post Sprint 1)
 **Scope:** All updated design docs vs. codebase as of commit de0b950
 
@@ -362,5 +362,5 @@ The following TODOS.md items were previously unclear but now have clearer status
 |------|------|
 | TODO-014 (dedup business rules) | Cross-NOC dedup provisionally eliminated (CRIT-04) — update TODO to reflect |
 | TODO-015 (dedup flag resolution) | Deferred pending Open Question #16 resolution |
-| TODO-016 (MRP vs. ACR PbN boundary) | Resolved: PbN lives in MRP; ACR integration via adapter |
+| TODO-016 (PRP vs. ACR PbN boundary) | Resolved: PbN lives in PRP; ACR integration via adapter |
 | TODO-017 (Common Codes trigger) | Still open — no decision on API call vs. manual vs. queue |

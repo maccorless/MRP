@@ -11,7 +11,7 @@ date: 2026-04-10
 
 ## Context
 
-The MRP has 13 Vitest integration test files covering server-side workflow logic against a real PostgreSQL DB. There is no browser automation. This plan adds a Playwright layer that is entirely orthogonal to the Vitest suite — separate config, separate scripts, separate CI job.
+The PRP has 13 Vitest integration test files covering server-side workflow logic against a real PostgreSQL DB. There is no browser automation. This plan adds a Playwright layer that is entirely orthogonal to the Vitest suite — separate config, separate scripts, separate CI job.
 
 Two concerns:
 
@@ -74,7 +74,7 @@ playwright.config.ts    # at project root
 
 ### Auth state: stored session cookies
 
-MRP uses HMAC-SHA256 signed cookies — no OAuth redirects to work around. Standard Playwright `storageState` approach:
+PRP uses HMAC-SHA256 signed cookies — no OAuth redirects to work around. Standard Playwright `storageState` approach:
 
 ```
 playwright.config.ts
