@@ -1,18 +1,6 @@
-# Release Notes — April 16–17, 2026
+# Release Notes — April 17, 2026
 
-Changes shipped since noon Thursday April 16, 2026.
-
----
-
-## App rename: Media Registration Portal → Press Registration Portal (PRP)
-
-The system has been renamed from MRP (Media Registration Portal) to **PRP (Press Registration Portal)** throughout. This affects:
-
-- All user-facing page titles and headings
-- Session cookie names (`prp_session`)
-- CSV export filenames (`prp-eoi-...`)
-- Package name and CI test database
-- Documentation, CLAUDE.md, and DESIGN.md
+Changes shipped April 16–17, 2026.
 
 ---
 
@@ -24,7 +12,7 @@ The Expression of Interest form has been re-engineered to match the IOC's offici
 
 - **Org email address** — new optional field: "Email Address of the Organisation"
 - **Other organisation type** — added "Other (please specify)" as an org type option; selecting it reveals a required free-text field
-- **Freelancer / Independent** — separated from the existing type list (previously handled separately); selecting this reveals:
+- **Freelancer / Independent** — separated from the existing type list; selecting this reveals:
   - **Press card question**: "Do you hold a Press Card?" (Yes/No radio, required)
   - **Issuing organisation** field (shown and required when press card = Yes)
 - **Sport-specific journalism** — Es and EPs categories now require selecting the specific Olympic sport from the full LA28 sports list
@@ -48,11 +36,15 @@ The Expression of Interest form has been re-engineered to match the IOC's offici
 - **Per-category maximums**: all E/Es/EP/EPs/ET/EC quantity inputs now enforce max = 100 with an inline warning; ENR organisations are limited to max = 3
 - **ENR programming type** — new conditional textarea shown when organisation type is ENR, required for submission
 
-### Form UX
+### Form UX fixes
 
+- Accreditation tab completion dot now appears immediately when all required fields are filled — previously it was only visible after leaving and returning to the tab
+- Continue button on the Publication tab no longer triggers form submission — submission is only possible from the final History tab
+- History tab receives a green completion dot as soon as it is visited
+- Confirm Submission modal now lists the actual requested categories (E, Es, EP, EPs, ET, EC) rather than showing a blank "Categories" line
 - Enter key no longer accidentally submits the form from non-last tabs
 - Publication tab requires at least one publication type selected to show green completion dot
-- Prefill on resubmission/edit now restores all new fields
+- All URL/website inputs now show `https://` pre-populated; bare `https://` is treated as empty and not saved
 
 ### Server action + CSV export
 
@@ -61,89 +53,146 @@ The Expression of Interest form has been re-engineered to match the IOC's offici
 
 ---
 
-## IOC Master Allocation Dashboard (new)
+## App Rename: Media Registration Portal → Press Registration Portal (PRP)
 
-A new **Master Allocation Dashboard** is now available to both IOC and OCOG admins.
+The system has been renamed from MRP (Media Registration Portal) to **PRP (Press Registration Portal)** throughout:
 
-- **Location:** `/admin/ioc/master` (IOC) and `/admin/ocog/master` (OCOG)
-- **Purpose:** Replaces the manual Paris-style Excel tracking spreadsheet with a live view
-- **Data shown per NOC:**
-  - IOC quota (per category)
-  - Submitted allocations (NOC-submitted, in-flight)
-  - Approved allocations (OCOG-approved / sent to ACR)
-  - NocE (Press Attaché) slots
-  - Compressed view: Press Total / Photo Total / NocE / Grand Total
-  - Expanded view: all 6 individual categories (E, Es, EP, EPs, ET, EC)
-- **Sections:** NOCs (all 206) · IOC Direct · ENR · IFs (placeholder — IF quota workflow pending)
-- **Filters:** Search by NOC code/name, filter by entity type, filter by PbN status
-- **Grand total row** pinned at top of table
+- All user-facing page titles and headings
+- Session cookie names (`prp_session`)
+- CSV export filenames (`prp-eoi-...`)
+- Package name and CI test database
+- Documentation, CLAUDE.md, and DESIGN.md
 
 ---
 
-## NOC Admin Queue — Application Drawer
+## NOC Admin — Direct Entry
 
-Applications in the NOC review queue now open in a **slide-over drawer** rather than requiring a full page navigation.
+- **Renamed** throughout from "Fast Track" to "Direct Entry"; URL changed to `/admin/noc/direct-entry`
+- **Sport picker** — when Es or EPs is selected, a sport picker appears requiring selection of the specific Olympic sport
+- **Secondary contact** — the Editor-in-Chief / Media Manager section from the public EoI form is now available in Direct Entry
+- Website field pre-populated with `https://`
 
-- Click any row to open the detail drawer
-- All sections visible in the drawer: Organisation, Contacts, Accreditation, Publication, History, Audit trail
+---
+
+## NOC Admin — Queue & Duplicate Detection
+
+### Application drawer
+
+Applications in the review queue now open in a **slide-over drawer** rather than requiring full page navigation:
+
+- All sections visible inline: Organisation, Contacts, Accreditation, Publication, History, Audit trail
 - **Prev / Next** navigation within the queue (keyboard: ← →, Escape to close)
 - All approve / return / reject / un-approve / reverse-rejection actions available inline
 - "Open full page ↗" link for the detailed view
-- **New fields** from the EoI re-engineering are now shown in the drawer and full review page:
-  - Org email, Org type (specified), Press card status
-  - Editor-in-Chief / Media Manager (renamed secondary contact heading)
-  - Online unique visitors, Geographical coverage, Social media accounts
-  - ENR programming type
+- All new EoI fields shown in the drawer and full review page
+
+### Possible Duplicate comparison
+
+- The **Possible Duplicate** badge in the review queue is now a clearly clickable button — clicking it opens a side-by-side comparison modal showing both entries with differences highlighted in yellow
+- Each record has a "Review →" button to navigate directly to that application
+- The queue row itself is no longer fully clickable — only the org name and Possible Duplicate badge trigger actions, reducing accidental navigation
 
 ---
 
 ## NOC Admin — Other Improvements
 
-### Direct Entry (formerly Fast Track)
-
-- **Renamed** throughout from "Fast Track" to "Direct Entry"
-- URL changed to `/admin/noc/direct-entry` (old URL redirects)
-- Query param changed to `direct_entry_submitted`
-- Approved status badge renamed to **"Candidate"** across all admin views
-
-### Application status changes
-
-- **"Approved" → "Candidate"** — the status label for approved applications now reads "Candidate" everywhere in admin and applicant-facing UIs, better reflecting that approval = candidacy, not final accreditation
+- **Invite Org** — country field now defaults to the NOC admin's own country (changeable)
+- **Settings tab removed** — replaced by OCOG-controlled EoI Windows (see below)
+- **Application status: "Approved" → "Candidate"** — better reflects that approval = candidacy, not final accreditation
 - **Reversal of rejections** — NOC admins can now reverse a rejected application, moving it back to Pending
 - **10-application limit** per email address enforced at submission
 - **Invite flow security** — invite_id is now looked up server-side by the applicant's email; client-supplied invite IDs are no longer trusted
 
 ---
 
-## OCOG Admin Improvements
+## OCOG Admin — EoI Windows
+
+A new **EoI Windows** tab (`/admin/ocog/windows`) gives OCOG admins full control over which NOC EoI submission windows are open or closed:
+
+- Per-NOC toggle (Open / Close) with last-changed timestamp
+- **Open All** and **Close All** bulk actions
+- Summary count of open vs. closed windows
+- All changes are logged to the audit trail
+
+---
+
+## OCOG Admin — Other Improvements
 
 ### PbN results publishing toggle
 
-OCOG admins can now publish/unpublish Press by Number results using a toggle on the OCOG dashboard. When results are unpublished, applicants see a neutral "pending" status rather than their actual outcome (except for applications returned for corrections, which remain visible).
+OCOG admins can now publish/unpublish Press by Number results using a toggle on the OCOG dashboard. When unpublished, applicants see a neutral "pending" status rather than their actual outcome.
 
 ### EoI application summary
 
-A new **EoI Summary** view (`/admin/ocog/eoi`) shows application counts by NOC and status (pending, approved, returned, rejected) in a pivot table. All 206 registered NOCs are listed, including those with zero applications.
+A new **EoI Summary** view (`/admin/ocog/eoi`) shows application counts by NOC and status (pending, approved, returned, rejected) in a pivot table. All 206 registered NOCs are listed.
 
-### Duplicate detection
+### Duplicate detection panel
 
-A new **Potential Duplicates** panel (`/admin/ocog/duplicates`) surfaces two types of anomalies:
+A new **Potential Duplicates** panel (`/admin/ocog/duplicates`) surfaces:
 
-- **Cross-NOC duplicates** — organisations with the same email domain accredited under 2+ different NOCs (multi-territory flag)
+- **Cross-NOC duplicates** — organisations with the same email domain accredited under 2+ different NOCs
 - **Within-NOC duplicates** — NOCs with 2+ organisations sharing the same email domain
 
-Duplicate organisations are also flagged with a warning badge in the NOC review queue.
+---
+
+## Master Allocation Dashboard — Redesign
+
+The Master Allocation Dashboard (`/admin/ioc/master` and `/admin/ocog/master`) has been significantly redesigned based on stakeholder feedback. Both IOC and OCOG admins have access to the same live view.
+
+### Table layout
+
+The table now shows **quota and allocated slots adjacent per category** — each of the seven categories (NocE, E, Es, EP, EPs, ET, EC) has a Q column and an A column side-by-side, followed by Total Q, Total A, and Δ Remaining. The Δ column turns red when a NOC is over-quota.
+
+"Allocated" means the sum of all org slot allocations in any state (draft, submitted, or approved) — the allocation state is shown separately via the Status badge on each row.
+
+### Continent column
+
+A **Continent** column (Africa / Americas / Asia / Europe / Oceania) is shown by default and can be hidden via a toggle. Based on the static IOC NOC-to-continent mapping.
+
+### Grand totals banner
+
+The system-wide totals banner now shows each category individually (quota and allocated). Previously it showed only grouped Press/Photo totals.
+
+### Capacity tracker
+
+A new **Capacity Tracker** progress bar shows:
+
+- **Distributed** — sum of all NOC + IF + IOC Direct quotas
+- **IOC Holdback** — slots the IOC keeps in reserve
+- **Total committed** — distributed + holdback
+- **Capacity target** — the IOC's total accreditation goal (default 6,000)
+
+The bar is colour-coded: green below 95%, amber at 95–100%, red over capacity.
+
+### Event settings (IOC admin)
+
+IOC admins can now configure two values on the **Quotas** page:
+
+- **Event Capacity** — total accreditation target (default 6,000)
+- **IOC Holdback** — slots reserved by the IOC (default 0)
+
+### IF section
+
+The International Federations section replaces the previous placeholder. IF entities are stored with `entityType = 'if'` in the quota table and appear in their own section below NOC rows.
+
+### Expandable org-level rows
+
+Every NOC, IF, and IOC Direct row can be **expanded** (▶) to show the individual organisations that the entity has allocated slots to, with per-category counts and allocation state.
+
+### Schema changes
+
+- `noc_quotas.entity_type` column — distinguishes `'noc'` from `'if'` rows
+- New `event_settings` table — stores `capacity` and `ioc_holdback` per event (migration 0020)
 
 ---
 
 ## PbN Improvements
 
-- NocE (Press Attaché) quota is now visible in the OCOG PbN review page, with an editable slot count and teal-highlighted row
+- NocE (Press Attaché) quota now visible in the OCOG PbN review page with an editable slot count and teal-highlighted row
 - Added totals column to the allocation table
 - All 6 category quota bars always shown (no longer hidden when quota = 0)
 - Category labels use correct mixed case: E, Es, EP, EPs, ET, EC
 - Org-detail view available within the PbN allocation table
-- "Responsible Organisation" terminology adopted consistently
 
 ---
 
@@ -152,6 +201,17 @@ Duplicate organisations are also flagged with a warning badge in the NOC review 
 - Status is masked ("pending") for applicants until OCOG publishes PbN results
 - Applications returned for corrections continue to show their actual status regardless of the publish flag
 - Read-only application view added; applicants with a pending application can view (but not re-edit) their submission via their access link
-- Pending-edit flow clearly distinguished from resubmission flow
+
+---
+
+## Help & Guide
+
+Each admin role now has a dedicated **Help & Guide** page, accessible via a `? Help` link in the top-right of every admin page:
+
+- **NOC** (`/admin/noc/help`) — Overview, workflow timeline, key screens, Direct Entry explained, FAQ
+- **OCOG** (`/admin/ocog/help`) — Overview, EoI summary, PbN approvals, EoI windows, duplicates, master allocations, audit
+- **IOC** (`/admin/ioc/help`) — Overview, master allocations, quotas, IOC Direct, ENR review, audit
+
+The help link opens at the section corresponding to the currently active tab. Each page has a sticky table of contents sidebar.
 
 ---
