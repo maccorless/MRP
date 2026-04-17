@@ -6,11 +6,14 @@ const COOKIE_NAME = "prp_session";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Per-request nonce for CSP — replaces static 'unsafe-inline' in script-src
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  // nonce is generated per-request so the x-nonce header is available to the
+  // root layout when nonce propagation to <Script> tags is wired up.
+  // 'unsafe-inline' is retained until that wiring is complete; in browsers that
+  // support nonces, the nonce takes precedence and 'unsafe-inline' is ignored.
+  const nonce = btoa(crypto.randomUUID());
   const cspValue = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    `script-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
