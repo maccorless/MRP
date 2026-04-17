@@ -88,9 +88,24 @@ Applications in the review queue now open in a **slide-over drawer** rather than
 
 ### Possible Duplicate comparison
 
-- The **Possible Duplicate** badge in the review queue is now a clearly clickable button — clicking it opens a side-by-side comparison modal showing both entries with differences highlighted in yellow
-- Each record has a "Review →" button to navigate directly to that application
+- The **Possible Duplicate** badge in the review queue is now a clearly clickable button — clicking it opens a side-by-side comparison modal
 - The queue row itself is no longer fully clickable — only the org name and Possible Duplicate badge trigger actions, reducing accidental navigation
+
+**Multi-signal duplicate detection** — flagging now uses four independent signals; any one is sufficient to raise a flag:
+
+| Signal | Rule |
+|---|---|
+| Email domain | Same email domain within the NOC (original behaviour) |
+| Contact email | Same contact email address within the NOC |
+| Website domain | Same website hostname (www. stripped) within the NOC |
+| Org name + country | Normalised organisation name (legal suffixes stripped) and country both match within the NOC |
+
+**Comparison modal improvements:**
+
+- **Signal banner** above the table lists in plain English which signals triggered the flag (e.g. "Flagged: same email domain · same website")
+- **Matched fields highlighted in green** — previously differing fields were highlighted in yellow, which showed what was different rather than why the flag was raised; the new green highlight shows the evidence of a match
+- **Website** row added to the comparison table
+- **Inline Reject and Return for correction** — NOC admins can now reject or return either application directly from the comparison modal without navigating away. A required note must be provided; the status badge in the modal updates immediately after each action. The modal stays open so both applications can be actioned in one session.
 
 ---
 
@@ -201,6 +216,16 @@ Every NOC, IF, and IOC Direct row can be **expanded** (▶) to show the individu
 - Status is masked ("pending") for applicants until OCOG publishes PbN results
 - Applications returned for corrections continue to show their actual status regardless of the publish flag
 - Read-only application view added; applicants with a pending application can view (but not re-edit) their submission via their access link
+
+---
+
+## Security Hardening
+
+- **Content Security Policy with per-request nonce** — middleware now generates a unique nonce for every request and injects it into `script-src`, replacing the previous `'unsafe-inline'` allowance. The nonce is propagated to the Next.js App Router renderer via `x-nonce` header.
+- **HTTP Strict Transport Security** — `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` added to all responses.
+- **Export API status parameter allowlist** — the `status` query parameter on `/api/export/eoi` is now validated against an explicit list of valid statuses; unrecognised values return 400.
+- **Website URL validation** — submitted website URLs are now validated against a basic `https?://…` pattern before being stored; bare or malformed URLs are treated as empty.
+- **Invite NOC mismatch guard** — if an invitation's NOC code does not match the NOC code the applicant selected on the form, submission is rejected with an error rather than silently accepted.
 
 ---
 
