@@ -114,6 +114,22 @@ const CHECKMARK_FIELDS: Record<number, string[]> = {
   4: [], // handled in isTabFull (prior_olympic, prior_paralympic, past_coverage_examples)
 };
 
+const FIELD_LABELS: Record<string, string> = {
+  org_name: "Organisation name",
+  org_type: "Organisation type",
+  org_type_other: "Organisation type (other)",
+  country: "Country",
+  noc_code: "NOC code",
+  press_card: "Press card held",
+  press_card_issuer: "Press card issuer",
+  contact_first_name: "First name",
+  contact_last_name: "Last name",
+  about: "About your organisation",
+  category: "Accreditation category",
+  sports_specific_sport: "Specific sport",
+  enr_programming_type: "Programming type",
+};
+
 export function EoiFormTabs({
   token,
   email,
@@ -149,7 +165,12 @@ export function EoiFormTabs({
   const [nocAutoSuggestedName, setNocAutoSuggestedName] = useState<string | null>(null);
   const autoSuggestedNocRef = useRef<string | null>(null);
   const confirmedRef = useRef(false);
+  const validationModalRef = useRef<HTMLDivElement>(null);
+  const firstErrElRef = useRef<HTMLElement | null>(null);
+  const firstErrTabRef = useRef<number>(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{ tab: string; field: string }[]>([]);
   const [allTabsFull, setAllTabsFull] = useState(false);
   const [modalSummary, setModalSummary] = useState<{
     orgName: string;
@@ -292,6 +313,18 @@ export function EoiFormTabs({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [showConfirmModal]);
 
+  // Focus management and Escape key handler for the validation errors modal
+  useEffect(() => {
+    if (!showValidationModal || !validationModalRef.current) return;
+    const firstBtn = validationModalRef.current.querySelector<HTMLElement>("button");
+    firstBtn?.focus();
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowValidationModal(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showValidationModal]);
+
   // Auto-save to localStorage on input (debounced)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -359,6 +392,17 @@ export function EoiFormTabs({
           form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
         ).some((cb) => cb.checked);
         if (!catChecked || !allRequired) return "empty";
+      } else if (tabIndex === 0) {
+        const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
+        if (orgTypeEl?.value === "freelancer") {
+          const pressCard = form.elements.namedItem("press_card");
+          const pressCardAnswered = pressCard instanceof RadioNodeList
+            ? Array.from(pressCard).some((el) => el instanceof HTMLInputElement && el.checked)
+            : false;
+          if (!pressCardAnswered || !allRequired) return "empty";
+        } else if (!allRequired) {
+          return "empty";
+        }
       } else if (!allRequired) {
         return "empty";
       }
@@ -424,9 +468,20 @@ export function EoiFormTabs({
         "input[required]:not([type='checkbox']), select[required], textarea[required]"
       )
     );
+    const seenRadioGroups = new Set<string>();
     for (const el of requiredEls) {
-      const empty = el instanceof HTMLSelectElement ? !el.value : !el.value.trim();
-      if (empty) errs[el.name] = "This field is required.";
+      if (el instanceof HTMLInputElement && el.type === "radio") {
+        if (seenRadioGroups.has(el.name)) continue;
+        seenRadioGroups.add(el.name);
+        const group = form.elements.namedItem(el.name) as RadioNodeList | null;
+        const checked = group instanceof RadioNodeList
+          ? Array.from(group).some((r) => r instanceof HTMLInputElement && r.checked)
+          : false;
+        if (!checked) errs[el.name] = "Please select an option.";
+      } else {
+        const empty = el instanceof HTMLSelectElement ? !el.value : !el.value.trim();
+        if (empty) errs[el.name] = "This field is required.";
+      }
     }
 
     // Custom: at least one category checkbox must be checked
@@ -481,24 +536,33 @@ export function EoiFormTabs({
     e.preventDefault();
     setFieldErrors(errs);
 
-    // Navigate to the tab containing the first error
+    // Find first error element and tab — stored in refs for use when modal closes
     const firstErrEl = requiredEls.find((el) => errs[el.name]) ?? null;
     const firstErrTab = firstErrEl
       ? parseInt(firstErrEl.getAttribute("data-tab") ?? "0", 10)
       : errs["category"] ? 2 : 0;
-    setActiveTab(firstErrTab);
+    firstErrElRef.current = firstErrEl;
+    firstErrTabRef.current = firstErrTab;
+
+    // Build missing field list for the validation modal
+    const errList = Object.keys(errs).map((name) => {
+      let tabIndex = 0;
+      if (name === "category") {
+        tabIndex = 2;
+      } else {
+        const el = requiredEls.find((e) => e.name === name);
+        tabIndex = el ? parseInt(el.getAttribute("data-tab") ?? "0", 10) : 0;
+      }
+      return {
+        tab: TABS[tabIndex]?.label ?? "Unknown",
+        field: FIELD_LABELS[name] ?? name.replace(/_/g, " "),
+      };
+    });
+    setValidationErrors(errList);
 
     const errCount = Object.keys(errs).length;
-    setErrorAnnouncement(`${errCount} error${errCount > 1 ? "s" : ""} found. Please review your answers starting on the ${TABS[firstErrTab].label} tab.`);
-
-    // After React re-renders the correct tab, scroll to + focus first invalid field
-    setTimeout(() => {
-      const target: HTMLElement | null =
-        firstErrEl ??
-        form.querySelector<HTMLElement>('[name^="category_"]');
-      target?.scrollIntoView({ behavior: "smooth", block: "center" });
-      target?.focus();
-    }, 60);
+    setErrorAnnouncement(`${errCount} required field${errCount > 1 ? "s are" : " is"} missing.`);
+    setShowValidationModal(true);
   }
 
   return (
@@ -663,6 +727,51 @@ export function EoiFormTabs({
         Your progress is saved automatically. By submitting you confirm this information is accurate.
       </p>
     </form>
+
+    {/* Validation errors modal */}
+    {showValidationModal && (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="validation-modal-title"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      >
+        <div ref={validationModalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+          <h2 id="validation-modal-title" className="text-lg font-bold text-gray-900 mb-1">
+            Missing required fields
+          </h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Please complete the following before submitting:
+          </p>
+          <ul className="mb-5 space-y-1.5">
+            {validationErrors.map((err, i) => (
+              <li key={i} className="text-sm text-gray-800">
+                <span className="font-medium text-gray-500">{err.tab}:</span>{" "}
+                {err.field}
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => {
+              setShowValidationModal(false);
+              const tab = firstErrTabRef.current;
+              const el = firstErrElRef.current;
+              setActiveTab(tab);
+              setTimeout(() => {
+                const target: HTMLElement | null =
+                  el ?? formRef.current?.querySelector<HTMLElement>('[name^="category_"]') ?? null;
+                target?.scrollIntoView({ behavior: "smooth", block: "center" });
+                target?.focus();
+              }, 60);
+            }}
+            className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-[#0057A8] rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
+          >
+            Go to first missing field
+          </button>
+        </div>
+      </div>
+    )}
 
     {/* Pre-submission confirmation modal */}
     {showConfirmModal && modalSummary && (

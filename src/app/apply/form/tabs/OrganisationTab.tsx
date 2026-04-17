@@ -75,21 +75,6 @@ export function OrganisationTab({
         </div>
       </div>
 
-      {/* Org email */}
-      <div>
-        <label htmlFor="org-email" className="block text-xs font-medium text-gray-700 mb-1">
-          Email Address of the Organisation <span className="text-gray-400 font-normal">(optional)</span>
-        </label>
-        <input
-          id="org-email"
-          name="org_email"
-          type="email"
-          placeholder="e.g. press@yourorg.com"
-          defaultValue={prefill?.orgEmail ?? ""}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
-        />
-      </div>
-
       <div>
         <label htmlFor="org_type" className={LABEL}>
           Organisation type <span className="text-red-500">*</span>
@@ -213,11 +198,11 @@ export function OrganisationTab({
           <div className="mt-2">
             <p className="text-xs text-gray-700 mb-2">Do you hold a Press Card? <span className="text-red-500">*</span></p>
             <label className="inline-flex items-center gap-1.5 text-sm mr-4">
-              <input type="radio" name="press_card" value="yes" defaultChecked={prefill?.pressCard === true} onChange={() => setPressCardHeld(true)} required />
+              <input type="radio" name="press_card" value="yes" data-tab="0" defaultChecked={prefill?.pressCard === true} onChange={() => setPressCardHeld(true)} required />
               Yes
             </label>
             <label className="inline-flex items-center gap-1.5 text-sm">
-              <input type="radio" name="press_card" value="no" defaultChecked={prefill?.pressCard === false} onChange={() => setPressCardHeld(false)} />
+              <input type="radio" name="press_card" value="no" data-tab="0" defaultChecked={prefill?.pressCard === false} onChange={() => setPressCardHeld(false)} />
               No
             </label>
           </div>

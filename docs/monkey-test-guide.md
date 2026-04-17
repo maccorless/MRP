@@ -96,13 +96,13 @@ Admin sessions last **8 hours**.
 
 Log in as one of the three NOC users above. You'll land on the EoI review queue — a list of pending applications from media organisations in your territory.
 
-**EoI queue** (`/admin/noc/queue`): Approve, return, or reject applications. Returning sends the application back to the applicant with a note; rejection is permanent. Approved organisations are marked as candidates for quota allocation — note this does not guarantee credentials, which are assigned in PbN.
+**EoI queue** (`/admin/noc/queue`): Approve, return, or reject applications. Returning sends the application back to the applicant with a note; rejection is permanent. Candidate organisations are eligible for quota allocation — note this does not guarantee credentials, which are assigned in PbN.
 
-**Application detail** (`/admin/noc/[id]`): Click any application to see full details. Approve as Candidate, Return, or Reject from here. An approved application can be un-approved (reversed) while PbN is still in draft.
+**Application detail** (`/admin/noc/[id]`): Click any application to see full details. Approve as Candidate, Return, or Reject from here. A candidate application can be un-approved (reversed) while PbN is still in draft.
 
 **Direct entry** (`/admin/noc/direct-entry`): Submit a pre-approved org directly — bypasses the public EoI queue and auto-approves immediately. Useful for well-known domestic media and for nominating your NOC's own communications staff for E (Journalist) slots.
 
-**Press by Number (PbN)** (`/admin/noc/pbn`): Allocate your IOC-assigned quota slots to approved organisations. Each category (E, Es, EP, EPs, ET, EC) has an independent quota. Running totals update live as you type. You can also add an org directly to the PbN table without an EoI record using the "+ Add organisation directly to PbN" button. Submit your allocation to the OCOG for formal approval.
+**Press by Number (PbN)** (`/admin/noc/pbn`): Allocate your IOC-assigned quota slots to candidate organisations. Each category (E, Es, EP, EPs, ET, EC) has an independent quota. Running totals update live as you type. You can also add an org directly to the PbN table without an EoI record using the "+ Add organisation directly to PbN" button. Submit your allocation to the OCOG for formal approval.
 
 **ENR nominations** (`/admin/noc/enr`): Nominate Extended Non-Rights Broadcasters directly. This is NOC-driven — media orgs don't apply themselves. The IOC reviews nominations and grants from a separate holdback pool of 350 slots.
 
@@ -118,7 +118,7 @@ Log in as `ocog.admin@la28.org`. The OCOG admin is the formal approval authority
 
 **EoI Windows** (`/admin/ocog/windows`): Open or close EoI submission windows per NOC. Shows Open/Close toggle for each of the 206 NOCs, plus Open All / Close All bulk actions and a summary count of open vs. closed. All changes logged to the audit trail.
 
-**EoI Summary** (`/admin/ocog/eoi`): Application counts by NOC and status (pending, approved, returned, rejected) in a pivot table. All 206 NOCs listed.
+**EoI Summary** (`/admin/ocog/eoi`): Application counts by NOC and status (pending, candidate, returned, rejected) in a pivot table. All 206 NOCs listed.
 
 **Duplicate Detection** (`/admin/ocog/duplicates`): Surfaces cross-NOC duplicates (same email domain across multiple NOCs) and within-NOC duplicates.
 
@@ -158,7 +158,7 @@ The IOC Admin can impersonate any NOC, OCOG, or IF admin for support and auditin
 
 ## Seeded test data
 
-The USA queue has the most variety: two pending applications, one approved, one returned, and one resubmitted. GBR and FRA have a mix of approved and pending.
+The USA queue has the most variety: two pending applications, one candidate, one returned, and one resubmitted. GBR and FRA have a mix of candidate and pending.
 
 **Suggested order:**
 1. Start as USA NOC admin — review the queue, approve and return some applications, allocate PbN slots

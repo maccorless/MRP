@@ -124,7 +124,7 @@ OCOG admins can now publish/unpublish Press by Number results using a toggle on 
 
 ### EoI application summary
 
-A new **EoI Summary** view (`/admin/ocog/eoi`) shows application counts by NOC and status (pending, approved, returned, rejected) in a pivot table. All 206 registered NOCs are listed.
+A new **EoI Summary** view (`/admin/ocog/eoi`) shows application counts by NOC and status (pending, candidate, returned, rejected) in a pivot table. All 206 registered NOCs are listed.
 
 ### Duplicate detection panel
 

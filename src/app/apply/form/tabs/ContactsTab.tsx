@@ -77,6 +77,11 @@ export function ContactsTab({
                 defaultValue={prefill?.contactCell ?? ""} placeholder="+1 212-555-0101" className={INPUT} />
             </div>
           </div>
+          <div>
+            <label htmlFor="org_email" className={LABEL}>Organisation email address <span className="text-gray-400 font-normal">(optional)</span></label>
+            <input id="org_email" name="org_email" type="email" data-tab="1"
+              defaultValue={prefill?.orgEmail ?? ""} placeholder="e.g. press@yourorg.com" className={INPUT} />
+          </div>
         </div>
       </div>
 

@@ -64,22 +64,6 @@ Admin sessions last **8 hours**. During this time your login persists across pag
 
 The same applies to EoI applicant sessions — to start a fresh application flow, sign out, clear your cookies for the host you're using (`mrp.dgpbeta.com` or `mrp-production-8073.up.railway.app`), or open an incognito window.
 
-### Magic link tokens (pre-seeded for applicant testing)
-
-These let you skip the email step and go straight to the form:
-
-| Token | Email | Status |
-|-------|-------|--------|
-| `K7M2` | `demo@test.com` | **Valid** — expires 24 h after seed |
-| `XXXX` | `expired@test.com` | **Expired** — use to test the expired-link error screen |
-
-To use a token directly:
-```
-https://mrp.dgpbeta.com/apply/verify?token=K7M2&email=demo@test.com
-```
-
-> **Testing with your own email**: Go to `https://mrp.dgpbeta.com/apply`, enter your real work email, and follow the magic link. This works any time without resetting seed data.
-
 ---
 
 ### Seeded organisations
@@ -102,9 +86,9 @@ https://mrp.dgpbeta.com/apply/verify?token=K7M2&email=demo@test.com
 | `APP-2028-USA-00001` | Associated Press (US) | USA | **Pending** | E×8 | Ready to approve, return, or reject |
 | `APP-2028-USA-00002` | The New York Times | USA | **Pending** | E×5, EP×3 | Second pending — test return flow |
 | `APP-2028-GBR-00001` | The Guardian | GBR | **Pending** | E×4, Es×2 | Pending under GBR |
-| `APP-2028-USA-00003` | NBC Sports | USA | **Approved** | EP×6, EPs×2 | Already approved — no action buttons |
-| `APP-2028-GBR-00002` | BBC Sport | GBR | **Approved** | E×6, EP×4, ET×2, EC×2 | Multi-category |
-| `APP-2028-FRA-00001` | L'Équipe | FRA | **Approved** | EP×4, EPs×2 | Approved under FRA |
+| `APP-2028-USA-00003` | NBC Sports | USA | **Candidate** | EP×6, EPs×2 | Already a candidate — no action buttons |
+| `APP-2028-GBR-00002` | BBC Sport | GBR | **Candidate** | E×6, EP×4, ET×2, EC×2 | Multi-category |
+| `APP-2028-FRA-00001` | L'Équipe | FRA | **Candidate** | EP×4, EPs×2 | Candidate under FRA |
 | `APP-2028-USA-00004` | Reuters (North America) | USA | **Returned** | E×3 | Returned — applicant can resubmit |
 | `APP-2028-GBR-00003` | Reuters (UK) | GBR | **Returned** | EP×5 | Returned under GBR with note |
 | `APP-2028-USA-00005` | Associated Press (US) | USA | **Resubmitted** | E×8, EP×4 | AP resubmitted with full venue detail |
@@ -334,7 +318,7 @@ The applicant receives a magic link by email, fills out the multi-tab form, and 
 3. Click **View My Status**
 4. Follow the magic link sent to that email (or use the pre-seeded token path if testing in isolation)
 
-**Expected**: Status page shows the application reference number, current status (e.g. Pending, Returned, Approved), submission date, and organisation name.
+**Expected**: Status page shows the application reference number, current status (e.g. Pending, Returned, Candidate), submission date, and organisation name.
 
 **Negative — unknown email**: Enter `nobody@unknown.com` → page shows "No application found for this email address."
 
@@ -378,7 +362,7 @@ The NOC admin reviews incoming EoI applications and approves, returns (with feed
 │  ─────────────────────────────────────────────────────────────────  │
 │  Associated Press (US)  ● Pending    E×8           APP-2028-USA-00001│
 │  The New York Times     ● Pending    E×5, EP×3     APP-2028-USA-00002│
-│  NBC Sports             ✓ Approved   EP×6, EPs×2   APP-2028-USA-00003│
+│  NBC Sports             ✓ Candidate  EP×6, EPs×2   APP-2028-USA-00003│
 │  Reuters (North Am.)    ↩ Returned   E×3           APP-2028-USA-00004│
 │  Reuters (resubmit)     ↻ Resubmit.  E×8, EP×4     APP-2028-USA-00005│
 │                                                                      │
@@ -404,7 +388,7 @@ The NOC admin reviews incoming EoI applications and approves, returns (with feed
 2. Review the form — E×8, no photo categories
 3. Click **Approve**
 
-**Expected**: Status changes to **Approved**. Application no longer appears in Pending filter. The org now appears in the PbN allocation table (Use Case 2).
+**Expected**: Status changes to **Candidate**. Application no longer appears in Pending filter. The org now appears in the PbN allocation table (Use Case 2).
 
 ---
 
@@ -443,7 +427,7 @@ After approving applications, the NOC admin decides how many accreditation slots
 
 ### Test 2.5 — View the PbN allocation table
 
-**Goal**: Confirm the allocation table shows only approved orgs and the correct per-category quotas.
+**Goal**: Confirm the allocation table shows only candidate orgs and the correct per-category quotas.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -464,7 +448,7 @@ After approving applications, the NOC admin decides how many accreditation slots
 
 **Steps**:
 1. Navigate to `https://mrp.dgpbeta.com/admin/noc/pbn`
-2. Confirm only **Approved** applications appear in the table
+2. Confirm only **Candidate** applications appear in the table
 
 **Expected**:
 - USA shows NBC Sports (EP, EPs) and Reuters resubmit (E, EP)
@@ -516,8 +500,8 @@ Direct entry lets a NOC submit a pre-approved org (skipping the public EoI queue
 |---|--------|----------|
 | 1 | Navigate to Direct Entry | Form appears with Organisation, Primary Contact, Accreditation Categories, and About sections |
 | 2 | Fill in: org name "USA Today Sports", type "Print / Online", country "US", contact name and email, check category E, enter 3 slots | All fields accept input |
-| 3 | Click "Submit & Approve" | Redirected to NOC queue with success banner; "USA Today Sports" appears in the queue with status "Approved" and badge "Direct Entry" |
-| 4 | Open the EoI queue and filter by "Approved" | "USA Today Sports" is visible with source badge "Direct Entry"; it is already in the PbN allocation table |
+| 3 | Click "Submit & Approve" | Redirected to NOC queue with success banner; "USA Today Sports" appears in the queue with status "Candidate" and badge "Direct Entry" |
+| 4 | Open the EoI queue and filter by "Candidate" | "USA Today Sports" is visible with source badge "Direct Entry"; it is already in the PbN allocation table |
 
 ### Test 2.13 — Add an organisation directly to PbN
 
@@ -846,7 +830,7 @@ The IOC admin gets a cross-NOC overview of EoI application status, PbN submissio
 
 **Expected**:
 - Dashboard shows totals across ALL NOCs (USA + GBR + FRA)
-- Application counts match seed data (3 pending, 4 approved, etc.)
+- Application counts match seed data (3 pending, 4 candidate, etc.)
 - PbN status per NOC is visible
 - NOC admin cannot see this view (confirm by logging in as `noc.admin@usopc.org` — should redirect or scope to USA only)
 
@@ -1071,7 +1055,7 @@ The IOC admin can open a read-only window impersonating any admin user for suppo
 
 | # | Action | Expected |
 |---|--------|----------|
-| 1 | Open an approved application | Detail page shows "Un-approve" section below the current status |
+| 1 | Open a candidate application | Detail page shows "Un-approve" section below the current status |
 | 2 | Click "Un-approve" | Status reverts to "Pending"; organisation is removed from PbN candidate pool; any draft PbN slot allocation for this org is reset to 0 |
 | 3 | Check the audit trail (IOC sudo view or IOC audit page) | "application_unapproved" event recorded |
 
@@ -1085,7 +1069,7 @@ Run this after any significant code change to catch regressions across the full 
 |---|--------|-------|---------|
 | 1 | Submit EoI form with all required fields | Applicant | Ref number shown, status = Pending |
 | 2 | View application list | NOC Admin (USA) | Only USA apps visible |
-| 3 | Approve one pending application | NOC Admin | Status → Approved |
+| 3 | Approve one pending application | NOC Admin | Status → Candidate |
 | 4 | Return one pending application with note | NOC Admin | Status → Returned |
 | 5 | Resubmit a returned application | Applicant | Status → Resubmitted |
 | 6 | View PbN table after approval | NOC Admin | Approved org appears in table |
