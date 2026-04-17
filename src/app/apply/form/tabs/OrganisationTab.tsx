@@ -31,7 +31,7 @@ export function OrganisationTab({
   nocAutoSuggestedName?: string | null;
 }) {
   const [orgType, setOrgType] = useState<string>(prefill?.orgType ?? "");
-  const [pressCardHeld, setPressCardHeld] = useState<boolean | null>(null);
+  const [pressCardHeld, setPressCardHeld] = useState<boolean | null>(prefill?.pressCard ?? null);
 
   if (isResubmission && prefill) {
     return (
@@ -85,6 +85,7 @@ export function OrganisationTab({
           name="org_email"
           type="email"
           placeholder="e.g. press@yourorg.com"
+          defaultValue={prefill?.orgEmail ?? ""}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
         />
       </div>
@@ -117,6 +118,7 @@ export function OrganisationTab({
             name="org_type_other"
             placeholder="Please describe your organisation type"
             required
+            defaultValue={prefill?.orgTypeOther ?? ""}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
           />
         </div>
@@ -211,11 +213,11 @@ export function OrganisationTab({
           <div className="mt-2">
             <p className="text-xs text-gray-700 mb-2">Do you hold a Press Card? <span className="text-red-500">*</span></p>
             <label className="inline-flex items-center gap-1.5 text-sm mr-4">
-              <input type="radio" name="press_card" value="yes" onChange={() => setPressCardHeld(true)} required />
+              <input type="radio" name="press_card" value="yes" defaultChecked={prefill?.pressCard === true} onChange={() => setPressCardHeld(true)} required />
               Yes
             </label>
             <label className="inline-flex items-center gap-1.5 text-sm">
-              <input type="radio" name="press_card" value="no" onChange={() => setPressCardHeld(false)} />
+              <input type="radio" name="press_card" value="no" defaultChecked={prefill?.pressCard === false} onChange={() => setPressCardHeld(false)} />
               No
             </label>
           </div>
@@ -229,6 +231,7 @@ export function OrganisationTab({
                 name="press_card_issuer"
                 placeholder="e.g. National Press Association"
                 required
+                defaultValue={prefill?.pressCardIssuer ?? ""}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
             </div>

@@ -89,6 +89,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
             name="online_unique_visitors"
             type="text"
             placeholder="e.g. 500,000"
+            defaultValue={prefill?.onlineUniqueVisitors ?? ""}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
           />
         </div>
@@ -102,6 +103,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
         <select
           id="pub-geo-coverage"
           name="geographical_coverage"
+          defaultValue={prefill?.geographicalCoverage ?? ""}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
         >
           <option value="">Select…</option>
@@ -128,6 +130,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
           name="social_media_accounts"
           rows={2}
           placeholder="e.g. @org_name on X/Twitter, Instagram: @org_name"
+          defaultValue={prefill?.socialMediaAccounts ?? ""}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
         />
       </div>

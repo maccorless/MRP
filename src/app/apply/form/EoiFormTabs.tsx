@@ -45,12 +45,21 @@ export type PrefillData = {
   requestedEc?: number | null;
   sportsSpecificSport?: string | null;
   about?: string;
+  // New EoI re-engineering fields
+  orgEmail?: string | null;
+  orgTypeOther?: string | null;
+  pressCard?: boolean | null;
+  pressCardIssuer?: string | null;
+  enrProgrammingType?: string | null;
   // Publication
   publicationTypes?: string[] | null;
   publicationTypeOther?: string | null;
   circulation?: string | null;
   publicationFrequency?: string | null;
   sportsToCover?: string | null;
+  onlineUniqueVisitors?: string | null;
+  geographicalCoverage?: string | null;
+  socialMediaAccounts?: string | null;
   // History
   priorOlympic?: boolean | null;
   priorOlympicYears?: string | null;
@@ -127,6 +136,7 @@ export function EoiFormTabs({
   nocCodes: { code: string; name: string }[];
 }) {
   const [activeTab, setActiveTab] = useState(0);
+  const [currentOrgType, setCurrentOrgType] = useState<string>(prefill?.orgType ?? "");
   const formRef = useRef<HTMLFormElement>(null);
   const tabListRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -306,6 +316,8 @@ export function EoiFormTabs({
       }
       try { localStorage.setItem(storageKey, JSON.stringify(data)); } catch { /* full */ }
       updateTabStatus();
+      const orgTypeEl = formRef.current?.elements.namedItem("org_type") as HTMLSelectElement | null;
+      if (orgTypeEl) setCurrentOrgType(orgTypeEl.value);
     }, 500);
   }, [storageKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -609,7 +621,7 @@ export function EoiFormTabs({
           <ContactsTab prefill={prefill} email={email} errors={fieldErrors} />
         </div>
         <div id="eoi-panel-2" role="tabpanel" aria-labelledby="eoi-tab-2" hidden={activeTab !== 2}>
-          <AccreditationTab prefill={prefill} errors={fieldErrors} />
+          <AccreditationTab prefill={prefill} errors={fieldErrors} orgType={currentOrgType} />
         </div>
         <div id="eoi-panel-3" role="tabpanel" aria-labelledby="eoi-tab-3" hidden={activeTab !== 3}>
           <PublicationTab prefill={prefill} />
