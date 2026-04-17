@@ -17,6 +17,7 @@ export const orgTypeEnum = pgEnum("org_type", [
   "news_agency",
   "enr", // Non-Rights Broadcaster — set by ENR workflow, not EoI self-nomination
   "freelancer",
+  "other",
 ]);
 
 export const applicationStatusEnum = pgEnum("application_status", [
@@ -129,6 +130,8 @@ export const organizations = pgTable("organizations", {
   postalCode: text("postal_code"),
   isFreelancer: boolean("is_freelancer"),
 
+  orgEmail: text("org_email"),
+
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -196,6 +199,13 @@ export const applications = pgTable("applications", {
   pastCoverageExamples: text("past_coverage_examples"),
   sportsToCover: text("sports_to_cover"),
   sportsSpecificSport: text("sports_specific_sport"),
+  orgTypeOther: text("org_type_other"),
+  pressCard: boolean("press_card"),
+  pressCardIssuer: text("press_card_issuer"),
+  enrProgrammingType: text("enr_programming_type"),
+  onlineUniqueVisitors: text("online_unique_visitors"),
+  geographicalCoverage: text("geographical_coverage"),
+  socialMediaAccounts: text("social_media_accounts"),
   additionalComments: text("additional_comments"),
   accessibilityNeeds: boolean("accessibility_needs"),
 
