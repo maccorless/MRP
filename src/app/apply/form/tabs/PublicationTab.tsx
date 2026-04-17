@@ -89,7 +89,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
             name="online_unique_visitors"
             type="text"
             placeholder="e.g. 500,000"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
           />
         </div>
       </div>
@@ -102,7 +102,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
         <select
           id="pub-geo-coverage"
           name="geographical_coverage"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
         >
           <option value="">Select…</option>
           <option value="international">International</option>
@@ -128,7 +128,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
           name="social_media_accounts"
           rows={2}
           placeholder="e.g. @org_name on X/Twitter, Instagram: @org_name"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
         />
       </div>
 

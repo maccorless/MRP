@@ -85,7 +85,7 @@ export function OrganisationTab({
           name="org_email"
           type="email"
           placeholder="e.g. press@yourorg.com"
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
         />
       </div>
 
@@ -117,7 +117,7 @@ export function OrganisationTab({
             name="org_type_other"
             placeholder="Please describe your organisation type"
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
           />
         </div>
       )}
@@ -229,7 +229,7 @@ export function OrganisationTab({
                 name="press_card_issuer"
                 placeholder="e.g. National Press Association"
                 required
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
               />
             </div>
           )}
