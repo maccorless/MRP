@@ -460,6 +460,22 @@ export function EoiFormTabs({
     const form = formRef.current;
     if (!form) return;
 
+    // Confirmed path: the user approved the confirmation modal — let the server action run.
+    if (confirmedRef.current) {
+      confirmedRef.current = false;
+      return;
+    }
+
+    // All other paths: we own the outcome, so always prevent native submission.
+    e.preventDefault();
+
+    // Only validate and potentially submit from the last tab.
+    // If triggered from any earlier tab (e.g. Enter key in a field), just advance.
+    if (activeTab < TABS.length - 1) {
+      setActiveTab(activeTab + 1);
+      return;
+    }
+
     const errs: FormErrors = {};
 
     // Validate all required non-checkbox fields in DOM order (which == tab order)
@@ -490,7 +506,7 @@ export function EoiFormTabs({
     ).some((cb) => cb.checked);
     if (!catChecked) errs["category"] = "Please select at least one accreditation category.";
 
-    // Validate URL fields (type="url" browser validation is bypassed by preventDefault)
+    // Validate URL fields (type="url" browser validation is bypassed by noValidate)
     const urlInputs = form.querySelectorAll<HTMLInputElement>('input[type="url"]');
     for (const input of urlInputs) {
       if (input.value && input.value !== "https://" && !input.value.match(/^https?:\/\/.+\..+/)) {
@@ -501,19 +517,6 @@ export function EoiFormTabs({
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
       setErrorAnnouncement("");
-      // If triggered from a non-last tab (e.g. Enter key), advance one tab instead of submitting
-      if (activeTab < TABS.length - 1) {
-        e.preventDefault();
-        setActiveTab(activeTab + 1);
-        return;
-      }
-      // If already confirmed by the modal, let the form action proceed
-      if (confirmedRef.current) {
-        confirmedRef.current = false;
-        return;
-      }
-      // Otherwise show the confirmation modal first
-      e.preventDefault();
       const categories = ["E", "Es", "EP", "EPs", "ET", "EC"].filter((cat) => {
         const cb = form.elements.namedItem(`category_${cat}`) as HTMLInputElement | null;
         return cb?.checked;
@@ -533,7 +536,6 @@ export function EoiFormTabs({
       return;
     }
 
-    e.preventDefault();
     setFieldErrors(errs);
 
     // Find first error element and tab — stored in refs for use when modal closes
@@ -550,7 +552,7 @@ export function EoiFormTabs({
       if (name === "category") {
         tabIndex = 2;
       } else {
-        const el = requiredEls.find((e) => e.name === name);
+        const el = requiredEls.find((r) => r.name === name);
         tabIndex = el ? parseInt(el.getAttribute("data-tab") ?? "0", 10) : 0;
       }
       return {
