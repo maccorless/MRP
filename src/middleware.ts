@@ -6,26 +6,41 @@ const COOKIE_NAME = "prp_session";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Only guard /admin routes (not /admin/login itself)
-  if (!pathname.startsWith("/admin") || pathname.startsWith("/admin/login")) {
-    return NextResponse.next();
+  // Per-request nonce for CSP — replaces static 'unsafe-inline' in script-src
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const cspValue = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+
+  // Auth guard — only admin routes (not login itself)
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+    const cookie = req.cookies.get(COOKIE_NAME);
+    if (!cookie) return NextResponse.redirect(new URL("/admin/login", req.url));
+    const session = await decodeSession(cookie.value);
+    if (!session) return NextResponse.redirect(new URL("/admin/login", req.url));
   }
 
-  const cookie = req.cookies.get(COOKIE_NAME);
-  if (!cookie) {
-    return NextResponse.redirect(new URL("/admin/login", req.url));
-  }
+  // Propagate nonce to App Router RSC renderer (x-nonce) and browser (CSP header)
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("Content-Security-Policy", cspValue);
 
-  const session = await decodeSession(cookie.value);
-  if (!session) {
-    return NextResponse.redirect(new URL("/admin/login", req.url));
-  }
-
-  return NextResponse.next();
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("Content-Security-Policy", cspValue);
+  return response;
 }
 
 export const runtime = "nodejs";
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon\\.ico).*)"],
 };

@@ -14,9 +14,14 @@ export async function GET(request: Request) {
   const isNoc = session.role === "noc_admin" && session.nocCode;
   const nocFilter = isNoc ? session.nocCode : null;
 
-  // Optional status filter from query params
+  // Optional status filter from query params — allowlist to prevent log injection
   const { searchParams } = new URL(request.url);
-  const statusFilter = searchParams.get("status");
+  const VALID_STATUSES = ["pending", "approved", "returned", "resubmitted", "rejected"] as const;
+  const rawStatus = searchParams.get("status");
+  if (rawStatus && !(VALID_STATUSES as readonly string[]).includes(rawStatus)) {
+    return NextResponse.json({ error: "Invalid status filter" }, { status: 400 });
+  }
+  const statusFilter = rawStatus as typeof VALID_STATUSES[number] | null;
 
   let query = db
     .select({
@@ -77,7 +82,7 @@ export async function GET(request: Request) {
 
   const conditions = [];
   if (nocFilter) conditions.push(eq(applications.nocCode, nocFilter));
-  if (statusFilter) conditions.push(eq(applications.status, statusFilter as typeof applications.status.enumValues[number]));
+  if (statusFilter) conditions.push(eq(applications.status, statusFilter));
   if (conditions.length > 0) {
     query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
   }

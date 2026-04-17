@@ -193,6 +193,7 @@ export function AccreditationTab({ prefill, errors, orgType }: { prefill: Prefil
             name="sports_specific_sport"
             value={sportsSpecificSport}
             onChange={(e) => setSportsSpecificSport(e.target.value)}
+            required
             data-tab="2"
             className={INPUT}
           >

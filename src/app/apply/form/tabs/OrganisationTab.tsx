@@ -101,6 +101,7 @@ export function OrganisationTab({
             id="org-type-other"
             type="text"
             name="org_type_other"
+            data-tab="0"
             placeholder="Please describe your organisation type"
             required
             defaultValue={prefill?.orgTypeOther ?? ""}
@@ -208,12 +209,14 @@ export function OrganisationTab({
           </div>
           {pressCardHeld && (
             <div className="mt-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="press-card-issuer" className="block text-xs font-medium text-gray-700 mb-1">
                 Issuing organisation <span className="text-red-500">*</span>
               </label>
               <input
+                id="press-card-issuer"
                 type="text"
                 name="press_card_issuer"
+                data-tab="0"
                 placeholder="e.g. National Press Association"
                 required
                 defaultValue={prefill?.pressCardIssuer ?? ""}

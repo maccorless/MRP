@@ -238,6 +238,10 @@ export async function submitApplication(formData: FormData) {
         })
         .where(eq(applications.id, resubmitId));
 
+      await tx.update(organizations)
+        .set({ orgEmail: (formData.get("org_email") as string | null) || null })
+        .where(eq(organizations.id, returnedApp.organizationId));
+
       await tx.insert(auditLog).values({
         actorType: "applicant",
         actorId: email,
@@ -292,7 +296,7 @@ export async function submitApplication(formData: FormData) {
     | "freelancer"
     | "other";
   const websiteRaw = (formData.get("website") as string)?.trim();
-  const website = websiteRaw || null;
+  const website = websiteRaw && /^https?:\/\/.+\..+/.test(websiteRaw) ? websiteRaw : null;
 
   const emailDomain = email.split("@")[1];
 
@@ -386,7 +390,7 @@ export async function submitApplication(formData: FormData) {
     // An invitation is linked when: it belongs to this email, was redeemed
     // (usedAt IS NOT NULL), and has not yet been linked to an application.
     const [linkedInvite] = await tx
-      .select({ id: invitations.id })
+      .select({ id: invitations.id, nocCode: invitations.nocCode })
       .from(invitations)
       .where(
         and(
@@ -395,6 +399,10 @@ export async function submitApplication(formData: FormData) {
           isNull(invitations.acceptedAppId)
         )
       );
+
+    if (linkedInvite?.nocCode && linkedInvite.nocCode !== nocCode) {
+      redirect("/apply?error=invite_noc_mismatch");
+    }
 
     const [app] = await tx
       .insert(applications)

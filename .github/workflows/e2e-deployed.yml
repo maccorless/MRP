@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "Waiting for Railway to become healthy..."
           for i in $(seq 1 20); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://mrp-production-1a18.up.railway.app/)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" ${{ vars.RAILWAY_PRODUCTION_URL }}/)
             if [ "$STATUS" = "200" ]; then
               echo "Railway is up (attempt $i)"
               exit 0
@@ -37,7 +37,8 @@ jobs:
       - name: Run Playwright tests against Railway
         run: bun test:e2e
         env:
-          E2E_BASE_URL: https://mrp-production-1a18.up.railway.app
+          E2E_BASE_URL: ${{ vars.RAILWAY_PRODUCTION_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           CI: true
 
       - name: Upload Playwright report

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { submitApplication, checkNocWindow } from "../actions";
 import { OrganisationTab } from "./tabs/OrganisationTab";
 import { ContactsTab } from "./tabs/ContactsTab";
@@ -114,21 +115,29 @@ const CHECKMARK_FIELDS: Record<number, string[]> = {
   4: [], // handled in isTabFull (prior_olympic, prior_paralympic, past_coverage_examples)
 };
 
-const FIELD_LABELS: Record<string, string> = {
-  org_name: "Organisation name",
-  org_type: "Organisation type",
-  org_type_other: "Organisation type (other)",
-  country: "Country",
-  noc_code: "NOC code",
-  press_card: "Press card held",
-  press_card_issuer: "Press card issuer",
-  contact_first_name: "First name",
-  contact_last_name: "Last name",
-  about: "About your organisation",
-  category: "Accreditation category",
-  sports_specific_sport: "Specific sport",
-  enr_programming_type: "Programming type",
+const STATUS_LABELS: Record<string, string> = {
+  empty: "Not started",
+  complete: "Required fields complete",
+  full: "Fully complete",
 };
+
+const MULTI_VALUE_KEYS = new Set(["publication_types"]);
+
+function useModalEsc(
+  isOpen: boolean,
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  onClose: () => void
+) {
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+    containerRef.current.querySelector<HTMLElement>("button")?.focus();
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+}
 
 export function EoiFormTabs({
   token,
@@ -166,7 +175,7 @@ export function EoiFormTabs({
   const autoSuggestedNocRef = useRef<string | null>(null);
   const confirmedRef = useRef(false);
   const validationModalRef = useRef<HTMLDivElement>(null);
-  const firstErrElRef = useRef<HTMLElement | null>(null);
+  const firstErrNameRef = useRef<string>("");
   const firstErrTabRef = useRef<number>(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
@@ -180,12 +189,6 @@ export function EoiFormTabs({
   } | null>(null);
   const visitedTabsRef = useRef<Set<number>>(new Set());
   const [visitedTabs, setVisitedTabs] = useState<Set<number>>(new Set());
-
-  const STATUS_LABELS: Record<string, string> = {
-    empty: "Not started",
-    complete: "Required fields complete",
-    full: "Fully complete",
-  };
 
   // localStorage keys scoped to this email
   const storageKey = `eoi-draft-${email}`;
@@ -293,37 +296,11 @@ export function EoiFormTabs({
     updateTabStatus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Focus management and Escape key handler for the confirmation modal
-  useEffect(() => {
-    if (!showConfirmModal || !modalRef.current) return;
-    // Move focus to the first button inside the modal
-    const firstBtn = modalRef.current.querySelector<HTMLElement>("button");
-    firstBtn?.focus();
-    // Handle Escape key
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setShowConfirmModal(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [showConfirmModal]);
-
-  // Focus management and Escape key handler for the validation errors modal
-  useEffect(() => {
-    if (!showValidationModal || !validationModalRef.current) return;
-    const firstBtn = validationModalRef.current.querySelector<HTMLElement>("button");
-    firstBtn?.focus();
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setShowValidationModal(false);
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [showValidationModal]);
+  useModalEsc(showConfirmModal, modalRef, () => setShowConfirmModal(false));
+  useModalEsc(showValidationModal, validationModalRef, () => setShowValidationModal(false));
 
   // Auto-save to localStorage on input (debounced)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  // Keys that may appear multiple times in FormData and should be joined with commas
-  const MULTI_VALUE_KEYS = new Set(["publication_types"]);
 
   const handleInput = useCallback(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -473,7 +450,7 @@ export function EoiFormTabs({
       setValidationErrors(incompleteTabs);
       const firstIncompleteTab = TABS.findIndex((_, i) => tabStatus[i] === "empty");
       firstErrTabRef.current = firstIncompleteTab >= 0 ? firstIncompleteTab : 0;
-      firstErrElRef.current = null;
+      firstErrNameRef.current = "";
       const errCount = incompleteTabs.length;
       setErrorAnnouncement(`${errCount} tab${errCount > 1 ? "s are" : " is"} incomplete.`);
       setShowValidationModal(true);
@@ -547,28 +524,46 @@ export function EoiFormTabs({
     const firstErrTab = firstErrEl
       ? parseInt(firstErrEl.getAttribute("data-tab") ?? "0", 10)
       : errs["category"] ? 2 : 0;
-    firstErrElRef.current = firstErrEl;
+    firstErrNameRef.current = firstErrEl?.name ?? "";
     firstErrTabRef.current = firstErrTab;
 
-    // Build missing field list for the validation modal
+    // Build missing field list for the validation modal — read label text from DOM
     const errList = Object.keys(errs).map((name) => {
-      let tabIndex = 0;
-      if (name === "category") {
-        tabIndex = 2;
-      } else {
-        const el = requiredEls.find((r) => r.name === name);
-        tabIndex = el ? parseInt(el.getAttribute("data-tab") ?? "0", 10) : 0;
-      }
-      return {
-        tab: TABS[tabIndex]?.label ?? "Unknown",
-        field: FIELD_LABELS[name] ?? name.replace(/_/g, " "),
-      };
+      const el = requiredEls.find((r) => r.name === name);
+      const tabIndex = name === "category" ? 2
+        : el ? parseInt(el.getAttribute("data-tab") ?? "0", 10) : 0;
+      const labelEl = el?.id
+        ? document.querySelector<HTMLLabelElement>(`label[for="${el.id}"]`)
+        : null;
+      const fieldLabel = labelEl?.textContent?.replace(/\s*\*|\(optional\)/g, "").trim()
+        ?? name.replace(/_/g, " ");
+      return { tab: TABS[tabIndex]?.label ?? "Unknown", field: fieldLabel };
     });
     setValidationErrors(errList);
 
     const errCount = Object.keys(errs).length;
     setErrorAnnouncement(`${errCount} required field${errCount > 1 ? "s are" : " is"} missing.`);
     setShowValidationModal(true);
+  }
+
+  function handleGoToFirstError() {
+    setShowValidationModal(false);
+    const tabIndex = firstErrTabRef.current;
+    const errName = firstErrNameRef.current;
+    flushSync(() => setActiveTab(tabIndex));
+    const target = errName
+      ? formRef.current?.querySelector<HTMLElement>(`[name="${errName}"]`)
+      : formRef.current?.querySelector<HTMLElement>('[name^="category_"]');
+    target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    target?.focus();
+  }
+
+  function handleConfirmedSubmit() {
+    confirmedRef.current = true;
+    setShowConfirmModal(false);
+    localStorage.removeItem(storageKey);
+    localStorage.removeItem(visitedKey);
+    formRef.current?.requestSubmit();
   }
 
   return (
@@ -749,9 +744,9 @@ export function EoiFormTabs({
           <p className="text-sm text-gray-500 mb-4">
             Please complete the following before submitting:
           </p>
-          <ul className="mb-5 space-y-1.5">
-            {validationErrors.map((err, i) => (
-              <li key={i} className="text-sm text-gray-800">
+          <ul role="list" aria-label="Missing fields" className="mb-5 space-y-1.5">
+            {validationErrors.map((err) => (
+              <li key={`${err.tab}:${err.field}`} className="text-sm text-gray-800">
                 <span className="font-medium text-gray-500">{err.tab}:</span>{" "}
                 {err.field}
               </li>
@@ -759,18 +754,7 @@ export function EoiFormTabs({
           </ul>
           <button
             type="button"
-            onClick={() => {
-              setShowValidationModal(false);
-              const tab = firstErrTabRef.current;
-              const el = firstErrElRef.current;
-              setActiveTab(tab);
-              setTimeout(() => {
-                const target: HTMLElement | null =
-                  el ?? formRef.current?.querySelector<HTMLElement>('[name^="category_"]') ?? null;
-                target?.scrollIntoView({ behavior: "smooth", block: "center" });
-                target?.focus();
-              }, 60);
-            }}
+            onClick={handleGoToFirstError}
             className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-[#0057A8] rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
           >
             Go to first missing field
@@ -844,11 +828,7 @@ export function EoiFormTabs({
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    confirmedRef.current = true;
-                    setShowConfirmModal(false);
-                    formRef.current?.requestSubmit();
-                  }}
+                  onClick={handleConfirmedSubmit}
                   className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
                 >
                   {isResubmission ? "Confirm resubmit" : isPendingEdit ? "Save changes" : "Confirm & submit"}
@@ -869,11 +849,7 @@ export function EoiFormTabs({
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    confirmedRef.current = true;
-                    setShowConfirmModal(false);
-                    formRef.current?.requestSubmit();
-                  }}
+                  onClick={handleConfirmedSubmit}
                   className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
                 >
                   Submit application
