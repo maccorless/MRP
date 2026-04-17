@@ -271,6 +271,7 @@ export function EoiFormTabs({
     // Restore visited tabs — always runs, independent of whether a draft exists
     const savedVisited = localStorage.getItem(visitedKey);
     const restoredVisited = deserializeVisited(savedVisited);
+    restoredVisited.add(0); // Tab 0 is the initial active tab — always visited
     visitedTabsRef.current = restoredVisited;
     setVisitedTabs(restoredVisited);
 
@@ -576,7 +577,7 @@ export function EoiFormTabs({
                 aria-selected={active}
                 aria-controls={`eoi-panel-${i}`}
                 tabIndex={active ? 0 : -1}
-                onClick={() => { markVisited(i); setActiveTab(i); }}
+                onClick={() => { markVisited(i); updateTabStatus(); setActiveTab(i); }}
                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                   active
                     ? "border-[#0057A8] text-[#0057A8] bg-white"
@@ -635,7 +636,7 @@ export function EoiFormTabs({
           {activeTab > 0 ? (
             <button
               type="button"
-              onClick={() => { markVisited(activeTab); setActiveTab(activeTab - 1); }}
+              onClick={() => { markVisited(activeTab); updateTabStatus(); setActiveTab(activeTab - 1); }}
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 cursor-pointer"
             >
               ← Back
@@ -647,7 +648,7 @@ export function EoiFormTabs({
           {activeTab < TABS.length - 1 ? (
             <button
               type="button"
-              onClick={() => { markVisited(activeTab); setActiveTab(activeTab + 1); }}
+              onClick={() => { markVisited(activeTab); updateTabStatus(); setActiveTab(activeTab + 1); }}
               className="px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
             >
               Continue →
