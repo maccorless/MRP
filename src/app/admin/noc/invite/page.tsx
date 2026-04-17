@@ -2,8 +2,12 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { invitations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
-import { COUNTRY_CODES } from "@/lib/codes";
+import { COUNTRY_CODES, COUNTRY_TO_NOC } from "@/lib/codes";
 import { InviteForm } from "./InviteForm";
+
+const NOC_TO_COUNTRY: Record<string, string> = Object.fromEntries(
+  Object.entries(COUNTRY_TO_NOC).map(([country, noc]) => [noc, country])
+);
 
 function inviteStatus(invite: {
   usedAt: Date | null;
@@ -43,7 +47,7 @@ export default async function InvitePage() {
       </div>
 
       <div className="mb-8">
-        <InviteForm countryCodes={COUNTRY_CODES} />
+        <InviteForm countryCodes={COUNTRY_CODES} defaultCountry={NOC_TO_COUNTRY[session.nocCode] ?? ""} />
       </div>
 
       {/* Sent invitations list */}

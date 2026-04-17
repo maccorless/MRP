@@ -31,7 +31,8 @@ export async function createInvitation(
   const orgName        = (formData.get("org_name") as string)?.trim() || null;
   const orgType        = (formData.get("org_type") as string)?.trim() || null;
   const country        = (formData.get("country") as string)?.trim() || null;
-  const website        = (formData.get("website") as string)?.trim() || null;
+  const rawWebsite     = (formData.get("website") as string)?.trim() || null;
+  const website        = rawWebsite === "https://" ? null : rawWebsite;
   const recipientEmail = (formData.get("recipient_email") as string)?.trim().toLowerCase() || null;
 
   if (recipientEmail && (!recipientEmail.includes("@") || !recipientEmail.includes("."))) {

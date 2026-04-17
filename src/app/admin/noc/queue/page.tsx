@@ -5,7 +5,7 @@ import { applications, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 import { Paginator } from "@/components/Paginator";
 import { QueueClient } from "./QueueClient";
-import { detectWithinNocDuplicates } from "@/lib/anomaly-detect";
+import { detectWithinNocDuplicates, detectWithinNocDuplicatePairs } from "@/lib/anomaly-detect";
 
 type StatusFilter = "all" | "pending" | "resubmitted" | "approved" | "returned" | "rejected";
 type ApplicationStatus = "pending" | "resubmitted" | "approved" | "returned" | "rejected";
@@ -97,8 +97,15 @@ export default async function NocQueuePage({
       ),
   ]);
 
-  const duplicateOrgIdsSet = await detectWithinNocDuplicates(session.nocCode);
+  const [duplicateOrgIdsSet, duplicatePairsMap] = await Promise.all([
+    detectWithinNocDuplicates(session.nocCode),
+    detectWithinNocDuplicatePairs(session.nocCode),
+  ]);
   const duplicateOrgIds = Array.from(duplicateOrgIdsSet);
+  const duplicatePairs: Record<string, string[]> = Object.fromEntries(duplicatePairsMap);
+  const orgIdToAppId: Record<string, string> = Object.fromEntries(
+    rows.map((r) => [r.organizationId, r.id]),
+  );
 
   const counts = Object.fromEntries(allCounts.map((r) => [r.status, r.count]));
   const totalAll = allCounts.reduce((s, r) => s + r.count, 0);
@@ -191,7 +198,13 @@ export default async function NocQueuePage({
             No applications in this category.
           </div>
         ) : (
-          <QueueClient rows={rows} allIds={rows.map((r) => r.id)} duplicateOrgIds={duplicateOrgIds} />
+          <QueueClient
+            rows={rows}
+            allIds={rows.map((r) => r.id)}
+            duplicateOrgIds={duplicateOrgIds}
+            duplicatePairs={duplicatePairs}
+            orgIdToAppId={orgIdToAppId}
+          />
         )}
       </div>
 

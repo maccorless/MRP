@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { nocQuotas, quotaChanges, auditLog } from "@/db/schema";
+import { nocQuotas, quotaChanges, auditLog, eventSettings } from "@/db/schema";
 import { requireIocAdminSession, requireWritable } from "@/lib/session";
 
 const CAT_LABEL: Record<string, string> = {
@@ -228,4 +228,27 @@ export async function saveQuotaEdits(formData: FormData) {
   }
 
   redirect("/admin/ioc/quotas?success=saved");
+}
+
+export async function saveEventSettings(formData: FormData) {
+  await requireWritable();
+  const session = await requireIocAdminSession();
+
+  const capacity = Math.max(0, parseInt(formData.get("capacity") as string ?? "6000", 10) || 6000);
+  const iocHoldback = Math.max(0, parseInt(formData.get("ioc_holdback") as string ?? "0", 10) || 0);
+  const now = new Date();
+
+  const [existing] = await db
+    .select()
+    .from(eventSettings)
+    .where(eq(eventSettings.eventId, "LA28"));
+
+  if (existing) {
+    await db.update(eventSettings).set({ capacity, iocHoldback, updatedBy: session.userId, updatedAt: now })
+      .where(eq(eventSettings.eventId, "LA28"));
+  } else {
+    await db.insert(eventSettings).values({ eventId: "LA28", capacity, iocHoldback, updatedBy: session.userId, updatedAt: now });
+  }
+
+  redirect("/admin/ioc/quotas?success=settings_saved");
 }

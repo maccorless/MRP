@@ -262,6 +262,7 @@ export const nocQuotas = pgTable("noc_quotas", {
   id: uuid("id").primaryKey().defaultRandom(),
   nocCode: text("noc_code").notNull(),
   eventId: text("event_id").notNull().default("LA28"),
+  entityType: text("entity_type").notNull().default("noc"), // 'noc' | 'if'
   // Legacy totals (kept for compat; = eTotal + esTotal + etTotal + ecTotal and epTotal + epsTotal respectively)
   pressTotal: integer("press_total").notNull().default(0),
   photoTotal: integer("photo_total").notNull().default(0),
@@ -423,6 +424,17 @@ export const reservedOrganizations = pgTable("reserved_organizations", {
   addedBy: text("added_by"),                        // IOC admin user id
   addedAt: timestamp("added_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ─── Event Settings (IOC-configurable per-event parameters) ──────────────────
+
+export const eventSettings = pgTable("event_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: text("event_id").notNull().unique().default("LA28"),
+  capacity: integer("capacity").notNull().default(6000),
+  iocHoldback: integer("ioc_holdback").notNull().default(0),
+  updatedBy: text("updated_by"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
 // ─── Invitations (MISS-05 — NOC/IF invited-org flow) ─────────────────────────

@@ -2,11 +2,26 @@ import AppHeader from "@/components/AppHeader";
 import { requireOcogSession } from "@/lib/session";
 import { OcogNavTabs } from "./OcogNavTabs";
 
+const HELP_ANCHORS: Record<string, string> = {
+  "/admin/ocog": "overview",
+  "/admin/ocog/eoi": "eoi-summary",
+  "/admin/ocog/pbn": "pbn-approvals",
+  "/admin/ocog/windows": "eoi-windows",
+  "/admin/ocog/duplicates": "duplicates",
+  "/admin/ocog/audit": "audit",
+  "/admin/ocog/master": "master-allocations",
+};
+
 export default async function OcogLayout({ children }: { children: React.ReactNode }) {
   const session = await requireOcogSession();
   return (
     <div className="min-h-screen">
-      <AppHeader displayName={session.displayName} roleLabel="OCOG Admin" />
+      <AppHeader
+        displayName={session.displayName}
+        roleLabel="OCOG Admin"
+        helpPath="/admin/ocog/help"
+        helpAnchors={HELP_ANCHORS}
+      />
       <OcogNavTabs />
       <div>{children}</div>
     </div>

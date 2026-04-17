@@ -7,6 +7,7 @@ const NAV = [
   { href: "/admin/ocog",               label: "Home" },
   { href: "/admin/ocog/pbn",           label: "PbN Approvals" },
   { href: "/admin/ocog/eoi",           label: "EoI Summary" },
+  { href: "/admin/ocog/windows",       label: "EoI Windows" },
   { href: "/admin/ocog/duplicates",    label: "Duplicates" },
   { href: "/admin/ocog/audit",         label: "Audit Trail" },
   { href: "/admin/ocog/master",        label: "Master Allocations" },

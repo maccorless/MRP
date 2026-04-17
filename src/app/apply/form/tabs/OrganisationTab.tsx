@@ -69,7 +69,7 @@ export function OrganisationTab({
         <div className="col-span-2 sm:col-span-1">
           <label htmlFor="website" className={LABEL}>Website</label>
           <input id="website" name="website" type="url" data-tab="0"
-            defaultValue={prefill?.orgWebsite ?? ""} placeholder="https://" className={inp("website", errors)}
+            defaultValue={prefill?.orgWebsite ?? "https://"} placeholder="https://" className={inp("website", errors)}
             aria-invalid={!!errors?.website} aria-describedby={errors?.website ? "err-website" : undefined} />
           <Err name="website" errors={errors} />
         </div>

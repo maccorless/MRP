@@ -201,3 +201,48 @@ export async function detectWithinNocDuplicates(
   }
   return duplicateOrgIds;
 }
+
+/**
+ * Returns a Map of orgId → [other orgIds that share the same email domain]
+ * within the same NOC's applications for the given event.
+ *
+ * @param nocCode  The NOC code to scope the check to
+ * @param eventId  The event identifier, defaults to "LA28"
+ */
+export async function detectWithinNocDuplicatePairs(
+  nocCode: string,
+  eventId: string = "LA28",
+): Promise<Map<string, string[]>> {
+  const rows = await db
+    .select({
+      orgId: organizations.id,
+      emailDomain: organizations.emailDomain,
+    })
+    .from(applications)
+    .innerJoin(organizations, eq(applications.organizationId, organizations.id))
+    .where(
+      and(
+        eq(applications.nocCode, nocCode),
+        eq(applications.eventId, eventId),
+        isNotNull(organizations.emailDomain),
+      ),
+    );
+
+  const domainToOrgs = new Map<string, string[]>();
+  for (const row of rows) {
+    if (!row.emailDomain) continue;
+    const existing = domainToOrgs.get(row.emailDomain) ?? [];
+    existing.push(row.orgId);
+    domainToOrgs.set(row.emailDomain, existing);
+  }
+
+  const pairs = new Map<string, string[]>();
+  for (const [, orgIds] of domainToOrgs) {
+    if (orgIds.length > 1) {
+      for (const orgId of orgIds) {
+        pairs.set(orgId, orgIds.filter((id) => id !== orgId));
+      }
+    }
+  }
+  return pairs;
+}

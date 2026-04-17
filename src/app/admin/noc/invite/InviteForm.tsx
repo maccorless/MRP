@@ -18,8 +18,10 @@ const INITIAL_STATE: InviteActionState = {
 
 export function InviteForm({
   countryCodes,
+  defaultCountry = "",
 }: {
   countryCodes: { code: string; name: string }[];
+  defaultCountry?: string;
 }) {
   const [state, formAction, isPending] = useActionState(createInvitation, INITIAL_STATE);
   const copyRef = useRef<HTMLInputElement>(null);
@@ -122,6 +124,7 @@ export function InviteForm({
               type="text"
               list="invite-country-list"
               placeholder="e.g. GB"
+              defaultValue={defaultCountry}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
             />
             <datalist id="invite-country-list">
@@ -138,6 +141,7 @@ export function InviteForm({
               name="website"
               type="url"
               placeholder="https://"
+              defaultValue="https://"
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
             />
           </div>

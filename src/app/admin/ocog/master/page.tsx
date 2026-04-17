@@ -1,160 +1,147 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { nocQuotas, orgSlotAllocations, enrRequests } from "@/db/schema";
+import { nocQuotas, orgSlotAllocations, enrRequests, eventSettings, organizations } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
 import { derivePbnStatus } from "@/lib/quota-calc";
 import {
   MasterAllocationClient,
+  addSlots,
+  ZERO_SLOTS,
   type CategorySlots,
   type NocRow,
   type EnrSummary,
   type IocDirectRow,
+  type OrgAllocRow,
+  type EventCapacity,
+  type GrandTotals,
 } from "@/app/admin/ioc/master/MasterAllocationClient";
 
 const EVENT_ID = "LA28";
 const IOC_DIRECT = "IOC_DIRECT";
 
-const ZERO_SLOTS: CategorySlots = { e: 0, es: 0, ep: 0, eps: 0, et: 0, ec: 0, nocE: 0 };
-
-function addSlots(a: CategorySlots, b: CategorySlots): CategorySlots {
+function allocRowToSlots(row: {
+  eSlots: number; esSlots: number; epSlots: number; epsSlots: number;
+  etSlots: number; ecSlots: number; nocESlots: number;
+}): CategorySlots {
   return {
-    e:    a.e    + b.e,
-    es:   a.es   + b.es,
-    ep:   a.ep   + b.ep,
-    eps:  a.eps  + b.eps,
-    et:   a.et   + b.et,
-    ec:   a.ec   + b.ec,
-    nocE: a.nocE + b.nocE,
+    e:    row.eSlots   ?? 0,
+    es:   row.esSlots  ?? 0,
+    ep:   row.epSlots  ?? 0,
+    eps:  row.epsSlots ?? 0,
+    et:   row.etSlots  ?? 0,
+    ec:   row.ecSlots  ?? 0,
+    nocE: row.nocESlots ?? 0,
   };
 }
 
 export default async function OcogMasterAllocationPage() {
   await requireOcogSession();
 
-  const [quotas, allocs, enrs] = await Promise.all([
-    db
-      .select()
-      .from(nocQuotas)
-      .where(eq(nocQuotas.eventId, EVENT_ID))
-      .orderBy(nocQuotas.nocCode),
-    db
-      .select()
-      .from(orgSlotAllocations)
+  const [quotas, allocs, enrs, settingsRows, orgAllocData] = await Promise.all([
+    db.select().from(nocQuotas).where(eq(nocQuotas.eventId, EVENT_ID)).orderBy(nocQuotas.nocCode),
+    db.select().from(orgSlotAllocations).where(eq(orgSlotAllocations.eventId, EVENT_ID)),
+    db.select().from(enrRequests).where(eq(enrRequests.eventId, EVENT_ID)),
+    db.select().from(eventSettings).where(eq(eventSettings.eventId, EVENT_ID)),
+    db.select({
+      orgId: orgSlotAllocations.organizationId,
+      orgName: organizations.name,
+      nocCode: orgSlotAllocations.nocCode,
+      pbnState: orgSlotAllocations.pbnState,
+      eSlots: orgSlotAllocations.eSlots,
+      esSlots: orgSlotAllocations.esSlots,
+      epSlots: orgSlotAllocations.epSlots,
+      epsSlots: orgSlotAllocations.epsSlots,
+      etSlots: orgSlotAllocations.etSlots,
+      ecSlots: orgSlotAllocations.ecSlots,
+      nocESlots: orgSlotAllocations.nocESlots,
+    }).from(orgSlotAllocations)
+      .innerJoin(organizations, eq(orgSlotAllocations.organizationId, organizations.id))
       .where(eq(orgSlotAllocations.eventId, EVENT_ID)),
-    db
-      .select()
-      .from(enrRequests)
-      .where(eq(enrRequests.eventId, EVENT_ID)),
   ]);
 
-  const submittedByNoc = new Map<string, CategorySlots>();
-  const approvedByNoc = new Map<string, CategorySlots>();
-  const statesByNoc = new Map<string, string[]>();
+  const eventCapacity: EventCapacity = {
+    capacity:    settingsRows[0]?.capacity    ?? 6000,
+    iocHoldback: settingsRows[0]?.iocHoldback ?? 0,
+  };
+
+  const allocatedByNoc = new Map<string, CategorySlots>();
+  const statesByNoc    = new Map<string, string[]>();
 
   for (const a of allocs) {
-    const slots: CategorySlots = {
-      e:    a.eSlots   ?? 0,
-      es:   a.esSlots  ?? 0,
-      ep:   a.epSlots  ?? 0,
-      eps:  a.epsSlots ?? 0,
-      et:   a.etSlots  ?? 0,
-      ec:   a.ecSlots  ?? 0,
-      nocE: a.nocESlots ?? 0,
-    };
+    allocatedByNoc.set(a.nocCode, addSlots(allocatedByNoc.get(a.nocCode) ?? ZERO_SLOTS, allocRowToSlots(a)));
     const states = statesByNoc.get(a.nocCode) ?? [];
     states.push(a.pbnState);
     statesByNoc.set(a.nocCode, states);
-
-    if (a.pbnState === "noc_submitted") {
-      submittedByNoc.set(a.nocCode, addSlots(submittedByNoc.get(a.nocCode) ?? ZERO_SLOTS, slots));
-    }
-    if (a.pbnState === "ocog_approved" || a.pbnState === "sent_to_acr") {
-      approvedByNoc.set(a.nocCode, addSlots(approvedByNoc.get(a.nocCode) ?? ZERO_SLOTS, slots));
-    }
   }
 
   const nocRows: NocRow[] = quotas
     .filter((q) => q.nocCode !== IOC_DIRECT)
     .map((q) => ({
-      nocCode: q.nocCode,
+      nocCode:    q.nocCode,
+      entityType: (q.entityType ?? "noc") as "noc" | "if",
       quota: {
-        e:    q.eTotal   ?? 0,
-        es:   q.esTotal  ?? 0,
-        ep:   q.epTotal  ?? 0,
-        eps:  q.epsTotal ?? 0,
-        et:   q.etTotal  ?? 0,
-        ec:   q.ecTotal  ?? 0,
+        e: q.eTotal ?? 0, es: q.esTotal ?? 0, ep: q.epTotal ?? 0,
+        eps: q.epsTotal ?? 0, et: q.etTotal ?? 0, ec: q.ecTotal ?? 0,
         nocE: q.nocETotal ?? 0,
       },
-      submitted: submittedByNoc.get(q.nocCode) ?? ZERO_SLOTS,
-      approved:  approvedByNoc.get(q.nocCode)  ?? ZERO_SLOTS,
-      pbnStatus: derivePbnStatus(statesByNoc.get(q.nocCode) ?? []),
+      allocated:  allocatedByNoc.get(q.nocCode) ?? ZERO_SLOTS,
+      pbnStatus:  derivePbnStatus(statesByNoc.get(q.nocCode) ?? []),
     }));
 
-  const quotaNocSet = new Set(quotas.map((q) => q.nocCode));
+  const quotaSet = new Set(quotas.map((q) => q.nocCode));
   for (const noc of statesByNoc.keys()) {
-    if (noc === IOC_DIRECT) continue;
-    if (quotaNocSet.has(noc)) continue;
+    if (noc === IOC_DIRECT || quotaSet.has(noc)) continue;
     nocRows.push({
-      nocCode: noc,
+      nocCode: noc, entityType: "noc",
       quota: ZERO_SLOTS,
-      submitted: submittedByNoc.get(noc) ?? ZERO_SLOTS,
-      approved:  approvedByNoc.get(noc)  ?? ZERO_SLOTS,
+      allocated: allocatedByNoc.get(noc) ?? ZERO_SLOTS,
       pbnStatus: derivePbnStatus(statesByNoc.get(noc) ?? []),
     });
   }
   nocRows.sort((a, b) => a.nocCode.localeCompare(b.nocCode));
 
-  const iocDirectQuotaRow = quotas.find((q) => q.nocCode === IOC_DIRECT);
-  const iocDirectQuota: CategorySlots = iocDirectQuotaRow
-    ? {
-        e:    iocDirectQuotaRow.eTotal   ?? 0,
-        es:   iocDirectQuotaRow.esTotal  ?? 0,
-        ep:   iocDirectQuotaRow.epTotal  ?? 0,
-        eps:  iocDirectQuotaRow.epsTotal ?? 0,
-        et:   iocDirectQuotaRow.etTotal  ?? 0,
-        ec:   iocDirectQuotaRow.ecTotal  ?? 0,
-        nocE: iocDirectQuotaRow.nocETotal ?? 0,
-      }
-    : ZERO_SLOTS;
-
+  const iocDQ = quotas.find((q) => q.nocCode === IOC_DIRECT);
   const iocDirectRow: IocDirectRow = {
     label: "IOC Direct",
-    quota: iocDirectQuota,
-    submitted: submittedByNoc.get(IOC_DIRECT) ?? ZERO_SLOTS,
-    approved:  approvedByNoc.get(IOC_DIRECT)  ?? ZERO_SLOTS,
-    pbnStatus: derivePbnStatus(statesByNoc.get(IOC_DIRECT) ?? []),
+    quota: iocDQ ? {
+      e: iocDQ.eTotal ?? 0, es: iocDQ.esTotal ?? 0, ep: iocDQ.epTotal ?? 0,
+      eps: iocDQ.epsTotal ?? 0, et: iocDQ.etTotal ?? 0, ec: iocDQ.ecTotal ?? 0,
+      nocE: iocDQ.nocETotal ?? 0,
+    } : ZERO_SLOTS,
+    allocated:  allocatedByNoc.get(IOC_DIRECT) ?? ZERO_SLOTS,
+    pbnStatus:  derivePbnStatus(statesByNoc.get(IOC_DIRECT) ?? []),
   };
 
-  const enrRequested = enrs.reduce((s, r) => s + (r.slotsRequested ?? 0), 0);
-  const enrGranted = enrs.reduce((s, r) => {
-    if (r.decision === "granted" || r.decision === "partial") {
-      return s + (r.slotsGranted ?? 0);
-    }
-    return s;
-  }, 0);
-  const enrPending = enrs.filter((r) => r.decision === null).length;
-  const enrDecided = enrs.filter((r) => r.decision !== null).length;
-
   const enrSummary: EnrSummary = {
-    totalRequests: enrs.length,
-    pending: enrPending,
-    decided: enrDecided,
-    slotsRequested: enrRequested,
-    slotsGranted: enrGranted,
+    totalRequests:  enrs.length,
+    pending:        enrs.filter((r) => r.decision === null).length,
+    decided:        enrs.filter((r) => r.decision !== null).length,
+    slotsRequested: enrs.reduce((s, r) => s + (r.slotsRequested ?? 0), 0),
+    slotsGranted:   enrs.reduce((s, r) =>
+      r.decision === "granted" || r.decision === "partial" ? s + (r.slotsGranted ?? 0) : s, 0),
   };
 
   const grandQuota     = nocRows.reduce((s, r) => addSlots(s, r.quota),     iocDirectRow.quota);
-  const grandSubmitted = nocRows.reduce((s, r) => addSlots(s, r.submitted), iocDirectRow.submitted);
-  const grandApproved  = nocRows.reduce((s, r) => addSlots(s, r.approved),  iocDirectRow.approved);
+  const grandAllocated = nocRows.reduce((s, r) => addSlots(s, r.allocated), iocDirectRow.allocated);
+  const grandTotals: GrandTotals = { quota: grandQuota, allocated: grandAllocated };
+
+  const orgAllocRows: OrgAllocRow[] = orgAllocData.map((r) => ({
+    orgId:    r.orgId,
+    orgName:  r.orgName,
+    nocCode:  r.nocCode,
+    pbnState: r.pbnState,
+    slots:    allocRowToSlots(r),
+  }));
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-full p-6">
       <MasterAllocationClient
         rows={nocRows}
         iocDirectRow={iocDirectRow}
         enrSummary={enrSummary}
-        grandTotals={{ quota: grandQuota, submitted: grandSubmitted, approved: grandApproved }}
+        grandTotals={grandTotals}
+        eventCapacity={eventCapacity}
+        orgAllocRows={orgAllocRows}
       />
     </div>
   );

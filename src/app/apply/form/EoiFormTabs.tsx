@@ -438,7 +438,7 @@ export function EoiFormTabs({
     // Validate URL fields (type="url" browser validation is bypassed by preventDefault)
     const urlInputs = form.querySelectorAll<HTMLInputElement>('input[type="url"]');
     for (const input of urlInputs) {
-      if (input.value && !input.value.match(/^https?:\/\/.+\..+/)) {
+      if (input.value && input.value !== "https://" && !input.value.match(/^https?:\/\/.+\..+/)) {
         errs[input.name] = "Please enter a valid URL (e.g. https://www.example.com)";
       }
     }
@@ -459,15 +459,10 @@ export function EoiFormTabs({
       }
       // Otherwise show the confirmation modal first
       e.preventDefault();
-      const catMap: Record<string, string> = {
-        category_e: "E", category_es: "Es", category_ep: "EP",
-        category_eps: "EPs", category_et: "ET", category_ec: "EC",
-      };
-      const categories: string[] = [];
-      for (const [name, label] of Object.entries(catMap)) {
-        const cb = form.elements.namedItem(name) as HTMLInputElement | null;
-        if (cb?.checked) categories.push(label);
-      }
+      const categories = ["E", "Es", "EP", "EPs", "ET", "EC"].filter((cat) => {
+        const cb = form.elements.namedItem(`category_${cat}`) as HTMLInputElement | null;
+        return cb?.checked;
+      });
       const firstEl = form.elements.namedItem("contact_first_name") as HTMLInputElement | null;
       const lastEl  = form.elements.namedItem("contact_last_name")  as HTMLInputElement | null;
       const orgEl   = form.elements.namedItem("org_name")           as HTMLInputElement | null;
@@ -537,7 +532,7 @@ export function EoiFormTabs({
       </div>
     )}
 
-    <form ref={formRef} action={submitApplication} onInput={handleInput} onChange={(e) => handleCountryChange(e.nativeEvent)} onBlur={handleFormBlur} onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA" && (e.target as HTMLElement).tagName !== "BUTTON") e.preventDefault(); }} className="space-y-0">
+    <form ref={formRef} action={submitApplication} onInput={handleInput} onChange={(e) => { handleCountryChange(e.nativeEvent); handleInput(); }} onBlur={handleFormBlur} onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA" && (e.target as HTMLElement).tagName !== "BUTTON") e.preventDefault(); }} className="space-y-0">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
@@ -648,7 +643,7 @@ export function EoiFormTabs({
           {activeTab < TABS.length - 1 ? (
             <button
               type="button"
-              onClick={() => { markVisited(activeTab); updateTabStatus(); setActiveTab(activeTab + 1); }}
+              onClick={() => { markVisited(activeTab); markVisited(activeTab + 1); updateTabStatus(); setActiveTab(activeTab + 1); }}
               className="px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
             >
               Continue →

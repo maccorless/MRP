@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { asc, desc } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { nocQuotas, quotaChanges } from "@/db/schema";
+import { nocQuotas, quotaChanges, eventSettings } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
-import { importQuotas, saveQuotaEdits } from "./actions";
+import { importQuotas, saveQuotaEdits, saveEventSettings } from "./actions";
 
 export default async function QuotasPage({
   searchParams,
@@ -14,16 +14,13 @@ export default async function QuotasPage({
   const { edit, success, error, count } = await searchParams;
   const isEditing = edit === "1";
 
-  const quotas = await db
-    .select()
-    .from(nocQuotas)
-    .orderBy(asc(nocQuotas.nocCode));
+  const [quotas, recentChanges, settingsRows] = await Promise.all([
+    db.select().from(nocQuotas).orderBy(asc(nocQuotas.nocCode)),
+    db.select().from(quotaChanges).orderBy(desc(quotaChanges.changedAt)).limit(50),
+    db.select().from(eventSettings).where(eq(eventSettings.eventId, "LA28")),
+  ]);
 
-  const recentChanges = await db
-    .select()
-    .from(quotaChanges)
-    .orderBy(desc(quotaChanges.changedAt))
-    .limit(50);
+  const settings = settingsRows[0] ?? { capacity: 6000, iocHoldback: 0 };
 
   // Aggregate stats
   const totalPress = quotas.reduce((s, q) => s + q.pressTotal, 0);
@@ -78,6 +75,11 @@ export default async function QuotasPage({
           Quota edits saved.
         </div>
       )}
+      {success === "settings_saved" && (
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+          Event settings saved.
+        </div>
+      )}
       {error === "empty" && (
         <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
           CSV was empty — nothing imported.
@@ -105,6 +107,48 @@ export default async function QuotasPage({
             )}
           </div>
         </div>
+      </div>
+
+      {/* Event Settings */}
+      <div className="bg-white rounded-lg shadow-sm border border-blue-200">
+        <div className="px-5 py-3 border-b border-blue-100 bg-blue-50">
+          <h2 className="text-sm font-semibold text-blue-900">Event Settings — LA 2028</h2>
+          <p className="text-xs text-blue-700 mt-0.5">
+            Set the total accreditation capacity target and IOC holdback pool. The master dashboard tracks distributed quotas against this capacity.
+          </p>
+        </div>
+        <form action={saveEventSettings} className="px-5 py-4 flex flex-wrap items-end gap-6">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Event Capacity (total target)
+            </label>
+            <input
+              type="number"
+              name="capacity"
+              min={0}
+              defaultValue={settings.capacity}
+              className="w-28 border border-gray-300 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              IOC Holdback (slots not distributed)
+            </label>
+            <input
+              type="number"
+              name="ioc_holdback"
+              min={0}
+              defaultValue={settings.iocHoldback}
+              className="w-28 border border-gray-300 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-1.5 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
+          >
+            Save Settings
+          </button>
+        </form>
       </div>
 
       {/* Import section (always visible, not gated on edit mode) */}

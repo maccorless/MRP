@@ -16,10 +16,19 @@ export async function submitDirectEntryApplication(formData: FormData) {
   const orgName       = (formData.get("org_name") as string)?.trim();
   const orgType       = (formData.get("org_type") as string)?.trim();
   const country       = (formData.get("country") as string)?.trim() || null;
-  const website       = (formData.get("website") as string)?.trim() || null;
+  const rawWebsite    = (formData.get("website") as string)?.trim() || null;
+  const website       = rawWebsite === "https://" ? null : rawWebsite;
   const contactName   = (formData.get("contact_name") as string)?.trim();
   const contactEmail  = (formData.get("contact_email") as string)?.trim().toLowerCase();
   const about         = (formData.get("about") as string)?.trim() || "";
+
+  const sportsSpecificSport      = (formData.get("sports_specific_sport") as string)?.trim() || null;
+  const secondaryFirstName       = (formData.get("secondary_first_name") as string)?.trim() || null;
+  const secondaryLastName        = (formData.get("secondary_last_name") as string)?.trim() || null;
+  const secondaryTitle           = (formData.get("secondary_title") as string)?.trim() || null;
+  const secondaryEmail           = (formData.get("secondary_email") as string)?.trim() || null;
+  const secondaryPhone           = (formData.get("secondary_phone") as string)?.trim() || null;
+  const secondaryCell            = (formData.get("secondary_cell") as string)?.trim() || null;
 
   const VALID_ORG_TYPES = ["media_print_online", "media_broadcast", "news_agency"];
   if (!orgName || !orgType || !VALID_ORG_TYPES.includes(orgType) || !country || !contactName || !contactEmail) {
@@ -101,6 +110,9 @@ export async function submitDirectEntryApplication(formData: FormData) {
         categoryPress: categoryE || categoryEs || categoryEt || categoryEc,
         categoryPhoto: categoryEp || categoryEps,
         requestedE, requestedEs, requestedEp, requestedEps, requestedEt, requestedEc,
+        sportsSpecificSport,
+        secondaryFirstName, secondaryLastName, secondaryTitle,
+        secondaryEmail, secondaryPhone, secondaryCell,
         status: "approved",
         entrySource: "noc_direct",
         reviewedAt: now,

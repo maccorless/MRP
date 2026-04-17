@@ -4,6 +4,7 @@ import { useState } from "react";
 import { categoryDisplayLabel } from "@/lib/category";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ApplicationDrawer } from "./ApplicationDrawer";
+import { DuplicateCompareModal } from "./DuplicateCompareModal";
 
 type Row = {
   id: string;
@@ -26,13 +27,18 @@ export function QueueClient({
   rows,
   allIds,
   duplicateOrgIds = [],
+  duplicatePairs = {},
+  orgIdToAppId = {},
 }: {
   rows: Row[];
   allIds: string[];
   duplicateOrgIds?: string[];
+  duplicatePairs?: Record<string, string[]>;
+  orgIdToAppId?: Record<string, string>;
 }) {
   const duplicateSet = new Set(duplicateOrgIds);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [compareAppIds, setCompareAppIds] = useState<[string, string] | null>(null);
 
   return (
     <>
@@ -61,8 +67,7 @@ export function QueueClient({
           {rows.map((row) => (
             <tr
               key={row.id}
-              className="hover:bg-gray-50 transition-colors cursor-pointer"
-              onClick={() => setSelectedId(row.id)}
+              className="hover:bg-gray-50 transition-colors"
             >
               <td className="px-4 py-3 font-mono text-xs text-gray-700">
                 {row.referenceNumber}
@@ -71,11 +76,8 @@ export function QueueClient({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    className="font-medium text-gray-900 hover:text-[#0057A8] hover:underline text-left"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedId(row.id);
-                    }}
+                    className="font-medium text-gray-900 hover:text-[#0057A8] hover:underline text-left cursor-pointer"
+                    onClick={() => setSelectedId(row.id)}
                   >
                     {row.orgName}
                   </button>
@@ -89,11 +91,23 @@ export function QueueClient({
                       Invited
                     </span>
                   )}
-                  {duplicateSet.has(row.organizationId) && (
-                    <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                      ⚠ Possible duplicate
-                    </span>
-                  )}
+                  {duplicateSet.has(row.organizationId) && (() => {
+                    const peerOrgIds = duplicatePairs[row.organizationId] ?? [];
+                    const peerAppId = peerOrgIds.length > 0 ? orgIdToAppId[peerOrgIds[0]] : undefined;
+                    return peerAppId ? (
+                      <button
+                        type="button"
+                        className="px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 cursor-pointer hover:bg-yellow-200 underline decoration-dotted transition-colors"
+                        onClick={() => setCompareAppIds([row.id, peerAppId])}
+                      >
+                        ⚠ Possible duplicate
+                      </button>
+                    ) : (
+                      <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                        ⚠ Possible duplicate
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div className="text-xs text-gray-400">{row.contactName}</div>
               </td>
@@ -121,10 +135,7 @@ export function QueueClient({
                 <button
                   type="button"
                   className="text-[#0057A8] text-xs font-medium hover:underline cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedId(row.id);
-                  }}
+                  onClick={() => setSelectedId(row.id)}
                 >
                   Review →
                 </button>
@@ -140,6 +151,16 @@ export function QueueClient({
           allIds={allIds}
           onClose={() => setSelectedId(null)}
           onNavigate={(newId) => setSelectedId(newId)}
+        />
+      )}
+
+      {compareAppIds && (
+        <DuplicateCompareModal
+          appId1={compareAppIds[0]}
+          appId2={compareAppIds[1]}
+          onClose={() => setCompareAppIds(null)}
+          onReviewApp1={() => setSelectedId(compareAppIds[0])}
+          onReviewApp2={() => setSelectedId(compareAppIds[1])}
         />
       )}
     </>
