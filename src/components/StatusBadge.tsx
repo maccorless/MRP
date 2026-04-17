@@ -9,7 +9,7 @@ const STATUS_BADGE: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   pending:     "Pending",
   resubmitted: "Resubmitted",
-  approved:    "Approved",
+  approved:    "Candidate",
   returned:    "Returned",
   rejected:    "Rejected",
 };

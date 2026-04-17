@@ -106,7 +106,7 @@ export default async function NocQueuePage({
     { key: "all",         label: `All (${totalAll})` },
     { key: "pending",     label: `Pending (${counts.pending ?? 0})` },
     { key: "resubmitted", label: `Resubmitted (${counts.resubmitted ?? 0})` },
-    { key: "approved",    label: `Approved (${counts.approved ?? 0})` },
+    { key: "approved",    label: `Candidate (${counts.approved ?? 0})` },
     { key: "returned",    label: `Returned (${counts.returned ?? 0})` },
     { key: "rejected",    label: `Rejected (${counts.rejected ?? 0})` },
   ];

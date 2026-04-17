@@ -18,7 +18,7 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: "Pending", resubmitted: "Resubmitted", approved: "Approved",
+  pending: "Pending", resubmitted: "Resubmitted", approved: "Candidate",
   returned: "Returned", rejected: "Rejected",
 };
 
@@ -144,7 +144,7 @@ export default async function IocDashboard() {
   const statCards = [
     { label: "Pending",     value: counts.pending     ?? 0, color: "text-yellow-700 bg-yellow-50 border-yellow-200" },
     { label: "Resubmitted", value: counts.resubmitted ?? 0, color: "text-blue-700 bg-blue-50 border-blue-200" },
-    { label: "Approved",    value: counts.approved    ?? 0, color: "text-green-700 bg-green-50 border-green-200" },
+    { label: "Candidate",   value: counts.approved    ?? 0, color: "text-green-700 bg-green-50 border-green-200" },
     { label: "Returned",    value: counts.returned    ?? 0, color: "text-orange-700 bg-orange-50 border-orange-200" },
     { label: "Rejected",    value: counts.rejected    ?? 0, color: "text-red-700 bg-red-50 border-red-200" },
   ];
@@ -224,7 +224,7 @@ export default async function IocDashboard() {
               <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-yellow-600 uppercase tracking-wide">Pending</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-blue-600 uppercase tracking-wide">Resubmitted</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-green-600 uppercase tracking-wide">Approved</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-green-600 uppercase tracking-wide">Candidate</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-orange-600 uppercase tracking-wide">Returned</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-red-600 uppercase tracking-wide">Rejected</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>

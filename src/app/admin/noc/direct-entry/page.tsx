@@ -181,7 +181,7 @@ export default async function DirectEntryPage({
             type="submit"
             className="px-5 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
           >
-            Submit &amp; Approve
+            Submit &amp; Accept as Candidate
           </button>
           <span className="text-xs text-gray-400">
             This application will be immediately approved and added to the PbN queue.

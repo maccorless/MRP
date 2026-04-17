@@ -39,7 +39,7 @@ const PUB_TYPE_LABEL: Record<string, string> = {
 const AUDIT_ACTION_LABEL: Record<string, string> = {
   application_submitted:   "Application submitted",
   application_resubmitted: "Application resubmitted",
-  application_approved:    "Approved",
+  application_approved:    "Accepted as Candidate",
   application_returned:    "Returned for corrections",
   application_rejected:    "Rejected",
   email_verified:          "Email verified",
@@ -443,7 +443,7 @@ export default async function ApplicationDetailPage({
 
             {/* Approve */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">Approve as Candidate</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Accept as Candidate</h3>
               <p className="text-xs text-gray-500 mb-3">
                 Marks this organisation as a <strong>candidate</strong> for press accreditation. Approval at this stage does not guarantee credentials — slot allocation happens separately in Press by Number, subject to your IOC quota. An approved org may ultimately receive zero slots.
               </p>
@@ -459,7 +459,7 @@ export default async function ApplicationDetailPage({
                   type="submit"
                   className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer"
                 >
-                  Approve as Candidate
+                  Accept as Candidate
                 </button>
               </form>
             </div>
