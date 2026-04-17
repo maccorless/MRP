@@ -32,7 +32,7 @@ export default function ApplyLayout({
         <div className="max-w-2xl mx-auto">{children}</div>
       </main>
 
-      <footer className="px-6 py-4 text-center text-xs text-gray-400 border-t border-gray-200">
+      <footer className="px-6 py-4 text-center text-xs text-gray-600 border-t border-gray-200">
         © 2028 International Olympic Committee · Media Accreditation
       </footer>
     </div>

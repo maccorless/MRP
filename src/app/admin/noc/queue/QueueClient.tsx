@@ -71,7 +71,7 @@ export function QueueClient({
             <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
               Submitted
             </th>
-            <th className="px-4 py-3"></th>
+            <th className="px-4 py-3" aria-label="Actions"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">

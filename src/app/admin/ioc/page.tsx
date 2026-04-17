@@ -222,10 +222,10 @@ export default async function IocDashboard() {
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-yellow-600 uppercase tracking-wide">Pending</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-yellow-700 uppercase tracking-wide">Pending</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-blue-600 uppercase tracking-wide">Resubmitted</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-green-600 uppercase tracking-wide">Candidate</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-orange-600 uppercase tracking-wide">Returned</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-green-700 uppercase tracking-wide">Candidate</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-orange-700 uppercase tracking-wide">Returned</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-red-600 uppercase tracking-wide">Rejected</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
             </tr>
