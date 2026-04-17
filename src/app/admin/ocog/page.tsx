@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { nocQuotas, orgSlotAllocations } from "@/db/schema";
+import { nocQuotas, orgSlotAllocations, featureFlags } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { PbnPublishToggle } from "./PbnPublishToggle";
 
 const MILESTONES = [
   { label: "NOC EoI review window",          date: "Feb–Apr 2028", state: "done"     },
@@ -15,6 +16,11 @@ export default async function OcogHomePage() {
   const session = await requireOcogSession();
 
   const quotas = await db.select({ nocCode: nocQuotas.nocCode }).from(nocQuotas).where(eq(nocQuotas.eventId, "LA28"));
+
+  const [pbnFlag] = await db
+    .select()
+    .from(featureFlags)
+    .where(eq(featureFlags.name, "pbn_results_published"));
 
   const allAllocs = await db
     .select({ nocCode: orgSlotAllocations.nocCode, pbnState: orgSlotAllocations.pbnState })
@@ -87,6 +93,9 @@ export default async function OcogHomePage() {
           </div>
         </Link>
       </div>
+
+      {/* PbN Results publish toggle */}
+      <PbnPublishToggle isPublished={pbnFlag?.state === "on"} />
 
       {/* Phase timeline */}
       <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5">

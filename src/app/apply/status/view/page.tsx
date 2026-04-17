@@ -2,20 +2,38 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { magicLinkTokens, applications, orgSlotAllocations, organizations } from "@/db/schema";
+import { magicLinkTokens, applications, orgSlotAllocations, organizations, featureFlags } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 import { STATUS_BADGE } from "@/components/StatusBadge";
 
+async function isPbnResultsPublished(): Promise<boolean> {
+  const [flag] = await db
+    .select()
+    .from(featureFlags)
+    .where(eq(featureFlags.name, "pbn_results_published"));
+  return flag?.state === "on";
+}
+
+/** Map a raw application status to what the applicant should see.
+ *  When PbN results are not yet published, anything except "returned"
+ *  is masked as "pending" (shown as "Application Under Review").
+ */
+function maskStatus(rawStatus: string, pbnPublished: boolean): string {
+  if (pbnPublished) return rawStatus;
+  if (rawStatus === "returned") return "returned";
+  return "pending";
+}
+
 const STATUS_LABEL: Record<string, string> = {
-  pending:     "Application Received",
-  resubmitted: "Resubmitted",
+  pending:     "Application Under Review",
+  resubmitted: "Application Under Review",
   approved:    "Accepted as Candidate",
   returned:    "Returned for Corrections",
   rejected:    "Rejected",
 };
 
 const STATUS_DESC: Record<string, string> = {
-  pending:     "Your application has been received and is awaiting review by your NOC.",
+  pending:     "Your application has been received and is under review.",
   resubmitted: "Your corrected application is under review.",
   approved:    "Your NOC has accepted your application as a candidate for press accreditation. Accreditation slot allocation happens in the next phase (Press by Number) and is not guaranteed — some accepted candidates may ultimately receive no slots. You will be notified once the NOC's allocation is finalised.",
   returned:    "Your NOC has requested corrections. Please review the note below and resubmit.",
@@ -72,6 +90,8 @@ export default async function StatusViewPage({
     redirect("/apply?error=invalid_token");
   }
 
+  const pbnPublished = await isPbnResultsPublished();
+
   const rows = await db
     .select({
       app: applications,
@@ -103,6 +123,7 @@ export default async function StatusViewPage({
       ) : (
         <div className="space-y-4">
           {rows.map(({ app, org, allocation }) => {
+            const displayStatus = maskStatus(app.status, pbnPublished);
             const categories = (
               [
                 ["E",   app.categoryE,   app.requestedE],
@@ -125,28 +146,28 @@ export default async function StatusViewPage({
                     <div className="font-mono text-xs text-gray-400 mb-1">{app.referenceNumber}</div>
                     <div className="font-semibold text-gray-900">{org.name}</div>
                   </div>
-                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[app.status]}`}>
-                    {STATUS_LABEL[app.status] ?? app.status}
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[displayStatus]}`}>
+                    {STATUS_LABEL[displayStatus] ?? displayStatus}
                   </span>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-4">{STATUS_DESC[app.status]}</p>
+                <p className="text-sm text-gray-600 mb-4">{STATUS_DESC[displayStatus]}</p>
 
-                {app.status === "returned" && app.reviewNote && (
+                {displayStatus === "returned" && app.reviewNote && (
                   <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
                     <div className="font-medium mb-1">NOC note:</div>
                     {app.reviewNote}
                   </div>
                 )}
 
-                {app.status === "approved" && !allocation && (
+                {displayStatus === "approved" && !allocation && (
                   <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
                     <div className="font-medium text-gray-700 mb-1">Slot allocation in progress</div>
                     Your accreditation numbers are being finalised. You will be contacted once slot allocation is confirmed.
                   </div>
                 )}
 
-                {app.status === "approved" && allocation && (
+                {displayStatus === "approved" && allocation && (
                   <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded">
                     <div className="text-xs font-medium text-green-800 mb-2">Allocated slots</div>
                     <div className="grid grid-cols-3 gap-2 text-xs text-green-900">
@@ -171,7 +192,7 @@ export default async function StatusViewPage({
 
                 {/* Action buttons */}
                 <div className="flex items-center gap-3 mb-4">
-                  {app.status === "pending" && (
+                  {displayStatus === "pending" && app.status === "pending" && (
                     <Link
                       href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
                       className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
@@ -179,7 +200,7 @@ export default async function StatusViewPage({
                       Edit application
                     </Link>
                   )}
-                  {app.status === "returned" && (
+                  {displayStatus === "returned" && (
                     <Link
                       href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
                       className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
