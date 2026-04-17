@@ -67,6 +67,10 @@ export default async function IocDirectPage({
     return {
       orgId:    org.id,
       orgName:  org.name,
+      orgType: null, orgWebsite: null, orgCountry: null, orgAddress: null,
+      contactName: null, contactEmail: null, contactTitle: null, contactPhone: null,
+      about: null, publicationTypes: null, circulation: null,
+      publicationFrequency: null, sportsToCover: null,
       // All categories available — IOC decides what to allocate
       categoryE: true, categoryEs: true, categoryEp: true,
       categoryEps: true, categoryEt: true, categoryEc: true,
