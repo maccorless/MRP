@@ -231,7 +231,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                       key={cat}
                       scope="col"
                       colSpan={2}
-                      className="text-center px-2 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap border-l border-gray-200"
+                      className="text-center px-2 py-3 text-xs font-medium text-gray-500 tracking-wide whitespace-nowrap border-l border-gray-200"
                     >
                       {cat}
                     </th>

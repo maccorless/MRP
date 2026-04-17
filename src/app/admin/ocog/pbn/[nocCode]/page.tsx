@@ -113,7 +113,7 @@ export default async function OcogPbnNocPage({
           return (
             <div key={cat.value} className={`rounded-lg border p-3 text-xs ${over ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"}`}>
               <div className="flex justify-between mb-1">
-                <span className="font-medium text-gray-700">{cat.value} — {cat.shortLabel}</span>
+                <span className="font-medium text-gray-700">{cat.shortLabel} — {cat.description}</span>
                 <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
                   {used}{total > 0 ? ` / ${total}` : ""}
                 </span>
@@ -165,9 +165,9 @@ export default async function OcogPbnNocPage({
                     {activeCategories.map((cat) => (
                       <th
                         key={cat.value}
-                        className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap"
+                        className="text-right px-4 py-3 text-xs font-medium text-gray-500 tracking-wide whitespace-nowrap"
                       >
-                        {cat.value}
+                        {cat.shortLabel}
                       </th>
                     ))}
                     <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>

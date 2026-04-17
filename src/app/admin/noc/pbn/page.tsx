@@ -220,22 +220,18 @@ export default async function NocPbnPage({
       {/* B5 — Quota dashboard: server-rendered committed allocations vs IOC quota */}
       {quota ? (
         <div className="mb-6 grid grid-cols-3 gap-3">
-          {[
-            { label: "E", desc: "Journalist",     total: quota.eTotal,   allocated: rows.reduce((s, r) => s + (r.alloc?.eSlots   ?? 0), 0) },
-            { label: "Es", desc: "Sport Journal",  total: quota.esTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.esSlots  ?? 0), 0) },
-            { label: "EP", desc: "Photographer",   total: quota.epTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.epSlots  ?? 0), 0) },
-            { label: "EPs", desc: "Sport Photo",   total: quota.epsTotal, allocated: rows.reduce((s, r) => s + (r.alloc?.epsSlots ?? 0), 0) },
-            { label: "ET", desc: "Technician",     total: quota.etTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.etSlots  ?? 0), 0) },
-            { label: "EC", desc: "Support Staff",  total: quota.ecTotal,  allocated: rows.reduce((s, r) => s + (r.alloc?.ecSlots  ?? 0), 0) },
-          ]
-            .filter(({ total }) => total > 0)
-            .map(({ label, desc, total, allocated }) => {
-              const pct = Math.min(100, Math.round((allocated / total) * 100));
+          {ACCRED_CATEGORIES.map((cat) => {
+              const quotaKey = `${cat.value.toLowerCase()}Total` as keyof typeof quota;
+              const allocKey = `${cat.value.toLowerCase()}Slots` as keyof (typeof rows)[0]["alloc"];
+              const total     = (quota[quotaKey] as number) ?? 0;
+              const allocated = rows.reduce((s, r) => s + (((r.alloc ?? {})[allocKey] as number | undefined) ?? 0), 0);
+              if (total === 0) return null;
+              const pct  = Math.min(100, Math.round((allocated / total) * 100));
               const over = allocated > total;
               return (
-                <div key={label} className="bg-white rounded-lg border border-gray-200 p-3">
+                <div key={cat.value} className="bg-white rounded-lg border border-gray-200 p-3">
                   <div className="flex justify-between text-xs mb-1.5">
-                    <span className="font-medium text-gray-700">{label} — {desc}</span>
+                    <span className="font-medium text-gray-700">{cat.shortLabel} — {cat.description}</span>
                     <span className={`font-semibold ${over ? "text-red-600" : "text-gray-900"}`}>
                       {allocated} / {total}
                     </span>
