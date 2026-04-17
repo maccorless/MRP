@@ -88,12 +88,12 @@ export function ContactsTab({
             onClick={() => setShowSecondary(true)}
             className="text-sm text-[#0057A8] font-medium hover:underline cursor-pointer"
           >
-            + Add a secondary contact
+            + Add Editor-in-Chief / Media Manager
           </button>
         ) : (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">Secondary Contact</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Editor-in-Chief / Media Organisation Manager</h3>
               <button
                 type="button"
                 onClick={() => setShowSecondary(false)}
@@ -102,6 +102,9 @@ export function ContactsTab({
                 Remove
               </button>
             </div>
+            <p className="text-xs text-gray-500 mt-0.5 mb-3">
+              The Editor-in-Chief or Media Manager who oversees the accredited team at your organisation.
+            </p>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>

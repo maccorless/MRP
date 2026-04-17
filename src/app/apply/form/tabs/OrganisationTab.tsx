@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { FormErrors, PrefillData } from "../EoiFormTabs";
 
 const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
@@ -27,6 +30,9 @@ export function OrganisationTab({
   errors?: FormErrors;
   nocAutoSuggestedName?: string | null;
 }) {
+  const [orgType, setOrgType] = useState<string>(prefill?.orgType ?? "");
+  const [pressCardHeld, setPressCardHeld] = useState<boolean | null>(null);
+
   if (isResubmission && prefill) {
     return (
       <div className="space-y-6">
@@ -69,21 +75,46 @@ export function OrganisationTab({
         </div>
       </div>
 
+      {/* Org email */}
+      <div>
+        <label htmlFor="org-email" className="block text-xs font-medium text-gray-700 mb-1">
+          Email Address of the Organisation <span className="text-gray-400 font-normal">(optional)</span>
+        </label>
+        <input
+          id="org-email"
+          name="org_email"
+          type="email"
+          placeholder="e.g. press@yourorg.com"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+
       <div>
         <label htmlFor="org_type" className={LABEL}>
           Organisation type <span className="text-red-500">*</span>
         </label>
         <select id="org_type" name="org_type" required data-tab="0"
-          defaultValue={prefill?.orgType ?? ""} className={inp("org_type", errors)}
+          value={orgType} onChange={(e) => setOrgType(e.target.value)} className={inp("org_type", errors)}
           aria-invalid={!!errors?.org_type} aria-describedby={errors?.org_type ? "err-org_type" : undefined}>
           <option value="" disabled>Select type...</option>
           <option value="media_print_online">Print / Online Media</option>
           <option value="media_broadcast">Broadcast</option>
           <option value="news_agency">News Agency</option>
           <option value="freelancer">Freelancer / Independent</option>
+          <option value="other">Other (please specify)</option>
         </select>
         <Err name="org_type" errors={errors} />
       </div>
+
+      {orgType === "other" && (
+        <input
+          type="text"
+          name="org_type_other"
+          placeholder="Please describe your organisation type"
+          required
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -166,6 +197,38 @@ export function OrganisationTab({
           <p className={HELP}>Venue accessibility arrangements will be coordinated if needed.</p>
         </fieldset>
       </div>
+
+      {/* Press card (freelancers only) */}
+      {orgType === "freelancer" && (
+        <fieldset className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
+          <legend className="text-xs font-medium text-gray-700 px-1">Press Card</legend>
+          <div className="mt-2">
+            <p className="text-xs text-gray-700 mb-2">Do you hold a Press Card? <span className="text-red-500">*</span></p>
+            <label className="inline-flex items-center gap-1.5 text-sm mr-4">
+              <input type="radio" name="press_card" value="yes" onChange={() => setPressCardHeld(true)} required />
+              Yes
+            </label>
+            <label className="inline-flex items-center gap-1.5 text-sm">
+              <input type="radio" name="press_card" value="no" onChange={() => setPressCardHeld(false)} />
+              No
+            </label>
+          </div>
+          {pressCardHeld && (
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Issuing organisation <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="press_card_issuer"
+                placeholder="e.g. National Press Association"
+                required
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+          )}
+        </fieldset>
+      )}
     </div>
   );
 }
