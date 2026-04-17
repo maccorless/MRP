@@ -46,10 +46,9 @@ The Expression of Interest form has been re-engineered to match the IOC's offici
 - Publication tab requires at least one publication type selected to show green completion dot
 - All URL/website inputs now show `https://` pre-populated; bare `https://` is treated as empty and not saved
 
-### Server action + CSV export
+### CSV export
 
-- All 8 new fields persisted to the database on submission
-- EoI CSV export now includes 8 additional columns: Org Email, Org Type Other, Online Unique Visitors, Geographical Coverage, Social Media Accounts, Press Card, Press Card Issuer, ENR Programming Type
+EoI CSV export now includes 8 additional columns: Org Email, Org Type Other, Online Unique Visitors, Geographical Coverage, Social Media Accounts, Press Card, Press Card Issuer, ENR Programming Type
 
 ---
 
@@ -103,7 +102,7 @@ Applications in the review queue now open in a **slide-over drawer** rather than
 **Comparison modal improvements:**
 
 - **Signal banner** above the table lists in plain English which signals triggered the flag (e.g. "Flagged: same email domain · same website")
-- **Matched fields highlighted in green** — previously differing fields were highlighted in yellow, which showed what was different rather than why the flag was raised; the new green highlight shows the evidence of a match
+- **Matched fields highlighted in green** — the new green highlight shows the evidence of a match; previously differing fields were highlighted in yellow
 - **Website** row added to the comparison table
 - **Inline Reject and Return for correction** — NOC admins can now reject or return either application directly from the comparison modal without navigating away. A required note must be provided; the status badge in the modal updates immediately after each action. The modal stays open so both applications can be actioned in one session.
 
@@ -116,7 +115,6 @@ Applications in the review queue now open in a **slide-over drawer** rather than
 - **Application status: "Approved" → "Candidate"** — better reflects that approval = candidacy, not final accreditation
 - **Reversal of rejections** — NOC admins can now reverse a rejected application, moving it back to Pending
 - **10-application limit** per email address enforced at submission
-- **Invite flow security** — invite_id is now looked up server-side by the applicant's email; client-supplied invite IDs are no longer trusted
 
 ---
 
@@ -188,16 +186,11 @@ IOC admins can now configure two values on the **Quotas** page:
 
 ### IF section
 
-The International Federations section replaces the previous placeholder. IF entities are stored with `entityType = 'if'` in the quota table and appear in their own section below NOC rows.
+The International Federations section replaces the previous placeholder. IF entities appear in their own section below NOC rows.
 
 ### Expandable org-level rows
 
 Every NOC, IF, and IOC Direct row can be **expanded** (▶) to show the individual organisations that the entity has allocated slots to, with per-category counts and allocation state.
-
-### Schema changes
-
-- `noc_quotas.entity_type` column — distinguishes `'noc'` from `'if'` rows
-- New `event_settings` table — stores `capacity` and `ioc_holdback` per event (migration 0020)
 
 ---
 
@@ -219,16 +212,6 @@ Every NOC, IF, and IOC Direct row can be **expanded** (▶) to show the individu
 
 ---
 
-## Security Hardening
-
-- **Content Security Policy with per-request nonce** — middleware now generates a unique nonce for every request and injects it into `script-src`, replacing the previous `'unsafe-inline'` allowance. The nonce is propagated to the Next.js App Router renderer via `x-nonce` header.
-- **HTTP Strict Transport Security** — `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` added to all responses.
-- **Export API status parameter allowlist** — the `status` query parameter on `/api/export/eoi` is now validated against an explicit list of valid statuses; unrecognised values return 400.
-- **Website URL validation** — submitted website URLs are now validated against a basic `https?://…` pattern before being stored; bare or malformed URLs are treated as empty.
-- **Invite NOC mismatch guard** — if an invitation's NOC code does not match the NOC code the applicant selected on the form, submission is rejected with an error rather than silently accepted.
-
----
-
 ## Help & Guide
 
 Each admin role now has a dedicated **Help & Guide** page, accessible via a `? Help` link in the top-right of every admin page:
@@ -240,3 +223,20 @@ Each admin role now has a dedicated **Help & Guide** page, accessible via a `? H
 The help link opens at the section corresponding to the currently active tab. Each page has a sticky table of contents sidebar.
 
 ---
+
+## Technical Changes
+
+### Security
+
+- **Content Security Policy with per-request nonce** — middleware generates a unique nonce for every request and injects it into `script-src`, replacing the previous `'unsafe-inline'` allowance
+- **HTTP Strict Transport Security** — `max-age=63072000; includeSubDomains; preload` added to all responses
+- **Export API status parameter allowlist** — the `status` query parameter on `/api/export/eoi` is validated against an explicit list of valid values; unrecognised values return 400
+- **Website URL validation** — submitted URLs are validated against a `https?://…` pattern before being stored; malformed URLs are treated as empty
+- **Invite NOC mismatch guard** — if an invitation's NOC code does not match the applicant's selected NOC, submission is rejected
+- **Invite flow** — invite_id is now looked up server-side by the applicant's email; client-supplied invite IDs are no longer trusted
+
+### Database
+
+- All 8 new EoI form fields persisted to the database on submission
+- `noc_quotas.entity_type` column — distinguishes `'noc'` from `'if'` rows
+- New `event_settings` table — stores `capacity` and `ioc_holdback` per event (migration 0020)
