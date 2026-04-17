@@ -16,6 +16,7 @@ export const orgTypeEnum = pgEnum("org_type", [
   "media_broadcast",
   "news_agency",
   "enr", // Non-Rights Broadcaster — set by ENR workflow, not EoI self-nomination
+  "freelancer",
 ]);
 
 export const applicationStatusEnum = pgEnum("application_status", [
@@ -192,6 +193,7 @@ export const applications = pgTable("applications", {
   priorParalympicYears: text("prior_paralympic_years"),
   pastCoverageExamples: text("past_coverage_examples"),
   sportsToCover: text("sports_to_cover"),
+  sportsSpecificSport: text("sports_specific_sport"),
   additionalComments: text("additional_comments"),
   accessibilityNeeds: boolean("accessibility_needs"),
 
