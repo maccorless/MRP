@@ -43,6 +43,7 @@ export type PrefillData = {
   requestedEps?: number | null;
   requestedEt?: number | null;
   requestedEc?: number | null;
+  sportsSpecificSport?: string | null;
   about?: string;
   // Publication
   publicationTypes?: string[] | null;

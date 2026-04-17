@@ -3,6 +3,7 @@
 import { useState, useId } from "react";
 import type { FormErrors, PrefillData } from "../EoiFormTabs";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
+import { LA28_SPORTS } from "@/lib/sports";
 
 const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
 const INPUT = BASE_INPUT + " border-gray-300";
@@ -55,11 +56,15 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
   };
 
   const [selected, setSelected] = useState<Record<AccredCategory, boolean>>(initSelected);
+  const [sportsSpecificSport, setSportsSpecificSport] = useState<string>(
+    prefill?.sportsSpecificSport ?? ""
+  );
 
   const toggle = (cat: AccredCategory) =>
     setSelected((prev) => ({ ...prev, [cat]: !prev[cat] }));
 
   const anySelected = Object.values(selected).some(Boolean);
+  const needsSportPicker = selected.Es || selected.EPs;
 
   return (
     <div className="space-y-6">
@@ -150,6 +155,35 @@ export function AccreditationTab({ prefill, errors }: { prefill: PrefillData | n
           </p>
         )}
       </fieldset>
+
+      {/* Sport picker — shown when Es or EPs is checked */}
+      {needsSportPicker && (
+        <div>
+          <label htmlFor="sports_specific_sport" className={LABEL}>
+            Which Olympic sport?{" "}
+            <span className="text-red-500" aria-hidden="true">*</span>
+            <span className="sr-only">(required for Es / EPs)</span>
+          </label>
+          <p className={`${HELP} mb-1`}>
+            Required for Es / EPs — both categories cover the same sport.
+          </p>
+          <select
+            id="sports_specific_sport"
+            name="sports_specific_sport"
+            value={sportsSpecificSport}
+            onChange={(e) => setSportsSpecificSport(e.target.value)}
+            data-tab="2"
+            className={INPUT}
+          >
+            <option value="">Select a sport…</option>
+            {LA28_SPORTS.map((sport) => (
+              <option key={sport} value={sport}>
+                {sport}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* NOC E note */}
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-xs text-gray-500">

@@ -119,6 +119,7 @@ export async function submitApplication(formData: FormData) {
   const circulation = (formData.get("circulation") as string)?.trim() || null;
   const publicationFrequency = (formData.get("publication_frequency") as string)?.trim() || null;
   const sportsToCover = (formData.get("sports_to_cover") as string)?.trim() || null;
+  const sportsSpecificSport = (formData.get("sports_specific_sport") as string | null)?.trim() || null;
 
   // Accreditation history
   const priorOlympicRaw = formData.get("prior_olympic") as string | null;
@@ -168,6 +169,7 @@ export async function submitApplication(formData: FormData) {
     circulation,
     publicationFrequency,
     sportsToCover,
+    sportsSpecificSport,
     priorOlympic,
     priorOlympicYears,
     priorParalympic,

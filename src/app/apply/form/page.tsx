@@ -122,6 +122,7 @@ export default async function FormPage({
       requestedEps: app.requestedEps,
       requestedEt:  app.requestedEt,
       requestedEc:  app.requestedEc,
+      sportsSpecificSport: app.sportsSpecificSport,
       about: app.about,
       publicationTypes: app.publicationTypes as string[] | null,
       circulation: app.circulation,
