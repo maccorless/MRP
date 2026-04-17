@@ -170,18 +170,18 @@ describe("NOC actions — rejectApplication", () => {
   });
 });
 
-describe("NOC fast-track — submitFastTrackApplication", () => {
-  let submitFastTrackApplication: (fd: FormData) => Promise<never>;
+describe("NOC direct entry — submitDirectEntryApplication", () => {
+  let submitDirectEntryApplication: (fd: FormData) => Promise<never>;
 
   beforeEach(async () => {
-    ({ submitFastTrackApplication } = await import(
-      "@/app/admin/noc/fast-track/actions"
+    ({ submitDirectEntryApplication } = await import(
+      "@/app/admin/noc/direct-entry/actions"
     ));
   });
 
   it("rejects unauthenticated", async () => {
     const out = await callAction(() =>
-      submitFastTrackApplication(ANY_ID)
+      submitDirectEntryApplication(ANY_ID)
     );
     expectLoginRedirect(out);
   });
@@ -189,7 +189,7 @@ describe("NOC fast-track — submitFastTrackApplication", () => {
   it("rejects ioc_admin", async () => {
     await setSession(SESSIONS.ioc);
     const out = await callAction(() =>
-      submitFastTrackApplication(ANY_ID)
+      submitDirectEntryApplication(ANY_ID)
     );
     expectLoginRedirect(out);
   });
@@ -198,7 +198,7 @@ describe("NOC fast-track — submitFastTrackApplication", () => {
     await setSession(SESSIONS.ioc);
     await setSudoSession(SESSIONS.sudoAsNocUSA);
     const out = await callAction(() =>
-      submitFastTrackApplication(ANY_ID)
+      submitDirectEntryApplication(ANY_ID)
     );
     expectSudoBlocked(out);
   });

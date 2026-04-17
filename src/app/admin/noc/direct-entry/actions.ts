@@ -6,7 +6,7 @@ import { applications, organizations, auditLog } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
 import { nextApplicationRef } from "@/lib/ref-seq";
 
-export async function submitFastTrackApplication(formData: FormData) {
+export async function submitDirectEntryApplication(formData: FormData) {
   await requireWritable();
   const session = await requireNocSession();
   const nocCode = session.nocCode;
@@ -22,7 +22,7 @@ export async function submitFastTrackApplication(formData: FormData) {
 
   const VALID_ORG_TYPES = ["media_print_online", "media_broadcast", "news_agency"];
   if (!orgName || !orgType || !VALID_ORG_TYPES.includes(orgType) || !country || !contactName || !contactEmail) {
-    redirect("/admin/noc/fast-track?error=missing_fields");
+    redirect("/admin/noc/direct-entry?error=missing_fields");
   }
 
   // ── Category flags + slot quantities ──────────────────────────────────────
@@ -34,7 +34,7 @@ export async function submitFastTrackApplication(formData: FormData) {
   const categoryEc  = formData.get("category_ec")  === "on";
 
   if (![categoryE, categoryEs, categoryEp, categoryEps, categoryEt, categoryEc].some(Boolean)) {
-    redirect("/admin/noc/fast-track?error=no_category");
+    redirect("/admin/noc/direct-entry?error=no_category");
   }
 
   const parseSlots = (key: string) => {
@@ -94,7 +94,7 @@ export async function submitFastTrackApplication(formData: FormData) {
       action: "noc_direct_entry",
       applicationId: app.id,
       organizationId: org.id,
-      detail: `${orgName} — fast-track entry by ${session.displayName}`,
+      detail: `${orgName} — direct entry by ${session.displayName}`,
     });
   });
 

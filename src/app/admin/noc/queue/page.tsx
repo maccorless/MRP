@@ -151,7 +151,7 @@ export default async function NocQueuePage({
       )}
       {success === "fast_track_submitted" && (
         <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
-          Fast-track application submitted and approved.
+          Direct entry application submitted and approved.
         </div>
       )}
 
@@ -208,7 +208,7 @@ export default async function NocQueuePage({
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900">{row.orgName}</span>
                       {row.entrySource === "noc_direct" && (
-                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">NOC Direct</span>
+                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">Direct Entry</span>
                       )}
                     </div>
                     <div className="text-xs text-gray-400">{row.contactName}</div>

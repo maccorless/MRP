@@ -22,7 +22,7 @@ Work through roles in order — **Applicant → NOC Admin → IOC Admin** — be
 > - **IOC data exports** — CSV download of PbN allocations and ENR nominations. Routes: `/api/export/pbn-allocations`, `/api/export/enr-nominations`
 > - **IOC audit trail** — all admin actions logged and searchable at `/admin/ioc/audit`
 > - **IOC sudo / impersonation** — IOC admin can open a read-only session as any NOC or OCOG admin at `/admin/ioc/sudo`
-> - **NOC fast-track entry** — NOC admin can submit a pre-approved org directly at `/admin/noc/fast-track`
+> - **NOC direct entry** — NOC admin can submit a pre-approved org directly at `/admin/noc/direct-entry`
 > - **NOC PbN direct entry** — NOC admin can add an org directly to the PbN table without an EoI at `/admin/noc/pbn` (click "+ Add organisation directly to PbN")
 > - **EoI window toggle** — NOC admin can open/close their territory's EoI window at `/admin/noc/settings`
 > - **Application reversals** — NOC admin can unapprove or unreturn an application from the application detail page; OCOG admin can reverse a PbN approval
@@ -505,19 +505,19 @@ After approving applications, the NOC admin decides how many accreditation slots
 
 ## Use Case 2b: Fast-Track and Direct PbN Entry
 
-Fast-track lets a NOC submit a pre-approved org (skipping the public EoI queue). Direct PbN entry lets a NOC add an org straight to the allocation table with no EoI record at all.
+Direct entry lets a NOC submit a pre-approved org (skipping the public EoI queue). Direct PbN entry lets a NOC add an org straight to the allocation table with no EoI record at all.
 
-### Test 2.12 — Fast-track a known organisation
+### Test 2.12 — Direct entry of a known organisation
 
 **Who:** NOC Admin (S. Kim, USOPC)
-**Route:** `/admin/noc/fast-track`
+**Route:** `/admin/noc/direct-entry`
 
 | # | Action | Expected |
 |---|--------|----------|
-| 1 | Navigate to Fast-Track Entry | Form appears with Organisation, Primary Contact, Accreditation Categories, and About sections |
+| 1 | Navigate to Direct Entry | Form appears with Organisation, Primary Contact, Accreditation Categories, and About sections |
 | 2 | Fill in: org name "USA Today Sports", type "Print / Online", country "US", contact name and email, check category E, enter 3 slots | All fields accept input |
-| 3 | Click "Submit & Approve" | Redirected to NOC queue with success banner; "USA Today Sports" appears in the queue with status "Approved" and badge "NOC Direct" |
-| 4 | Open the EoI queue and filter by "Approved" | "USA Today Sports" is visible with source badge "NOC Direct"; it is already in the PbN allocation table |
+| 3 | Click "Submit & Approve" | Redirected to NOC queue with success banner; "USA Today Sports" appears in the queue with status "Approved" and badge "Direct Entry" |
+| 4 | Open the EoI queue and filter by "Approved" | "USA Today Sports" is visible with source badge "Direct Entry"; it is already in the PbN allocation table |
 
 ### Test 2.13 — Add an organisation directly to PbN
 
@@ -786,9 +786,9 @@ After approving, the OCOG transmits the final allocation to the ACR system.
 
 ## Use Case 1: Evaluate EoI Forms
 
-IF Admin uses the same screens as NOC Admin. Note: IFs do not have a public EoI queue — all IF territory orgs come in via fast-track entry. IF admins should use the Fast-Track page to add their sport-specialist organisations, then allocate PbN slots directly. IF admins do not use the ENR workflow.
+IF Admin uses the same screens as NOC Admin. Note: IFs do not have a public EoI queue — all IF territory orgs come in via direct entry. IF admins should use the Direct Entry page to add their sport-specialist organisations, then allocate PbN slots directly. IF admins do not use the ENR workflow.
 
-Log in as `if.admin@worldathletics.org` and follow Tests 2.1 through 2.4 above for queue review behaviour. For adding IF orgs, use the Fast-Track flow (Tests 2.12–2.13).
+Log in as `if.admin@worldathletics.org` and follow Tests 2.1 through 2.4 above for queue review behaviour. For adding IF orgs, use the Direct Entry flow (Tests 2.12–2.13).
 
 ---
 

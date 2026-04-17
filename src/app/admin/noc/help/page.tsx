@@ -37,7 +37,7 @@ export default async function NocHelpPage() {
             {
               date: "Aug – Oct 2026",
               title: "Review applications",
-              body: "For each application: Approve (passes to PbN), Return (sends back to applicant with your notes for corrections), or Reject (permanent — use sparingly). You can also add known organisations directly using Fast-Track Entry.",
+              body: "For each application: Approve (passes to PbN), Return (sends back to applicant with your notes for corrections), or Reject (permanent — use sparingly). You can also add known organisations directly using Direct Entry.",
             },
             {
               date: "Oct 2026",
@@ -82,8 +82,8 @@ export default async function NocHelpPage() {
               desc: "All applications from your territory. Filter by status, search by org name. Click any application to review and act on it.",
             },
             {
-              label: "Fast-Track Entry",
-              href: "/admin/noc/fast-track",
+              label: "Direct Entry",
+              href: "/admin/noc/direct-entry",
               desc: "Submit an application on behalf of a known organisation — bypasses the public form and auto-approves immediately. Use for organisations you already know and trust.",
             },
             {
@@ -122,16 +122,16 @@ export default async function NocHelpPage() {
 
       {/* Fast-track explained */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-5">
-        <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide mb-3">Fast-Track Entry explained</h2>
+        <h2 className="text-sm font-semibold text-blue-900 uppercase tracking-wide mb-3">Direct Entry explained</h2>
         <p className="text-sm text-blue-800 mb-3">
-          Use Fast-Track for organisations you already know — media outlets your territory works with regularly,
+          Use Direct Entry for organisations you already know — media outlets your territory works with regularly,
           or your own NOC communications staff who need E-category (NOC E) credentials.
         </p>
         <ul className="text-sm text-blue-800 space-y-1 list-disc pl-4">
           <li>The application is immediately approved — no review step.</li>
           <li>Required: organisation name, type, country, contact name and email, and at least one category.</li>
           <li>Optional: website, requested slot counts, internal notes (not shown to the organisation).</li>
-          <li>To credential your own communications staff: create a fast-track entry for your NOC communications team and select category E.</li>
+          <li>To credential your own communications staff: create a direct entry for your NOC communications team and select category E.</li>
         </ul>
       </div>
 
@@ -150,7 +150,7 @@ export default async function NocHelpPage() {
             },
             {
               q: "How do I add my own NOC communications staff?",
-              a: "Use Fast-Track Entry. Create an entry for your NOC communications team (e.g. 'USA Communications Staff'), select category E, and enter the number of staff. This will be allocated from your E quota during PbN.",
+              a: "Use Direct Entry. Create an entry for your NOC communications team (e.g. 'USA Communications Staff'), select category E, and enter the number of staff. This will be allocated from your E quota during PbN.",
             },
             {
               q: "What is Press by Number (PbN)?",

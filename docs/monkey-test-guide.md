@@ -100,7 +100,7 @@ Log in as one of the three NOC users above. You'll land on the EoI review queue 
 
 **Application detail** (`/admin/noc/[id]`): Click any application to see full details. Approve as Candidate, Return, or Reject from here. An approved application can be un-approved (reversed) while PbN is still in draft.
 
-**Fast-track entry** (`/admin/noc/fast-track`): Submit a pre-approved org directly — bypasses the public EoI queue and auto-approves immediately. Useful for well-known domestic media and for nominating your NOC's own communications staff for E (Journalist) slots.
+**Direct entry** (`/admin/noc/direct-entry`): Submit a pre-approved org directly — bypasses the public EoI queue and auto-approves immediately. Useful for well-known domestic media and for nominating your NOC's own communications staff for E (Journalist) slots.
 
 **Press by Number (PbN)** (`/admin/noc/pbn`): Allocate your IOC-assigned quota slots to approved organisations. Each category (E, Es, EP, EPs, ET, EC) has an independent quota. Running totals update live as you type. You can also add an org directly to the PbN table without an EoI record using the "+ Add organisation directly to PbN" button. Submit your allocation to the OCOG for formal approval.
 
@@ -155,6 +155,6 @@ The USA queue has the most variety: two pending applications, one approved, one 
 - Set a quota of 0 for one category and try to allocate to it in PbN
 - Submit PbN with over-quota allocations (the form should block this)
 - Add an IOC-Direct org, then check that a NOC can't submit a duplicate EoI for that org
-- Try the fast-track form with only required fields; then with all fields
+- Try the direct entry form with only required fields; then with all fields
 - Open the EoI window, submit a form from a matching country, then close the window
 - Use sudo to view a NOC's queue, then verify the action appears in the audit trail

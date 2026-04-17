@@ -1,5 +1,5 @@
 /**
- * Integration tests: NOC Fast-Track EoI entry (B4).
+ * Integration tests: NOC Direct Entry EoI (B4).
  */
 
 import { vi, describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -21,7 +21,7 @@ vi.mock("next/navigation", () => ({
   redirect: (url: string): never => { throw new Error(`REDIRECT:${url}`); },
 }));
 
-import { submitFastTrackApplication } from "@/app/admin/noc/fast-track/actions";
+import { submitDirectEntryApplication } from "@/app/admin/noc/direct-entry/actions";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { eq, and, inArray, gte } from "drizzle-orm";
@@ -55,23 +55,23 @@ afterAll(async () => {
   await cleanupTestData();
 });
 
-describe("NOC Fast-Track EoI", () => {
+describe("NOC Direct Entry EoI", () => {
   it("creates org + application with status=approved and entrySource=noc_direct", async () => {
     await setSession(SESSIONS.nocUSA);
-    const name = `FT Test Org ${Date.now()}`;
+    const name = `DE Test Org ${Date.now()}`;
 
     const fd = makeFormData({
       org_name: name,
       org_type: "news_agency",
       country: "US",
-      contact_name: "Fast Track Contact",
-      contact_email: "ft@testorg.invalid",
+      contact_name: "Direct Entry Contact",
+      contact_email: "de@testorg.invalid",
       category_e: "on",
       requested_e: 3,
-      about: "Fast-track integration test org.",
+      about: "Direct entry integration test org.",
     });
 
-    const { redirect } = await callAction(() => submitFastTrackApplication(fd));
+    const { redirect } = await callAction(() => submitDirectEntryApplication(fd));
     expect(redirect?.url).toBe("/admin/noc/queue?success=fast_track_submitted");
 
     const [org] = await db
@@ -101,7 +101,7 @@ describe("NOC Fast-Track EoI", () => {
   it("writes a noc_direct_entry audit log entry", async () => {
     const testStart = new Date(Date.now() - 500);
     await setSession(SESSIONS.nocUSA);
-    const name = `FT Audit Org ${Date.now()}`;
+    const name = `DE Audit Org ${Date.now()}`;
 
     const fd = makeFormData({
       org_name: name,
@@ -113,7 +113,7 @@ describe("NOC Fast-Track EoI", () => {
       about: "Audit log test.",
     });
 
-    await callAction(() => submitFastTrackApplication(fd));
+    await callAction(() => submitDirectEntryApplication(fd));
 
     const [org] = await db.select().from(organizations)
       .where(and(eq(organizations.name, name), eq(organizations.nocCode, "USA")));
@@ -129,7 +129,7 @@ describe("NOC Fast-Track EoI", () => {
 
   it("reference number follows APP-2028-{NOC}-{seq} pattern", async () => {
     await setSession(SESSIONS.nocUSA);
-    const name = `FT Ref Org ${Date.now()}`;
+    const name = `DE Ref Org ${Date.now()}`;
 
     const fd = makeFormData({
       org_name: name,
@@ -140,7 +140,7 @@ describe("NOC Fast-Track EoI", () => {
       about: "Ref number test.",
     });
 
-    await callAction(() => submitFastTrackApplication(fd));
+    await callAction(() => submitDirectEntryApplication(fd));
 
     const [org] = await db.select().from(organizations)
       .where(and(eq(organizations.name, name), eq(organizations.nocCode, "USA")));
@@ -163,8 +163,8 @@ describe("NOC Fast-Track EoI", () => {
       about: "No category.",
     });
 
-    const { redirect } = await callAction(() => submitFastTrackApplication(fd));
-    expect(redirect?.url).toBe("/admin/noc/fast-track?error=no_category");
+    const { redirect } = await callAction(() => submitDirectEntryApplication(fd));
+    expect(redirect?.url).toBe("/admin/noc/direct-entry?error=no_category");
     clearSession();
   });
 
@@ -172,8 +172,8 @@ describe("NOC Fast-Track EoI", () => {
     await setSession(SESSIONS.nocUSA);
     const fd = makeFormData({ org_name: "Incomplete", category_e: "on" });
 
-    const { redirect } = await callAction(() => submitFastTrackApplication(fd));
-    expect(redirect?.url).toBe("/admin/noc/fast-track?error=missing_fields");
+    const { redirect } = await callAction(() => submitDirectEntryApplication(fd));
+    expect(redirect?.url).toBe("/admin/noc/direct-entry?error=missing_fields");
     clearSession();
   });
 
@@ -189,7 +189,7 @@ describe("NOC Fast-Track EoI", () => {
     });
 
     // requireWritable() redirects with sudo_readonly error
-    const { redirect } = await callAction(() => submitFastTrackApplication(fd));
+    const { redirect } = await callAction(() => submitDirectEntryApplication(fd));
     expect(redirect).toBeDefined();
     expect(redirect!.url).toContain("sudo_readonly");
     clearSession();
