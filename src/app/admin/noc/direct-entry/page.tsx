@@ -184,7 +184,7 @@ export default async function DirectEntryPage({
             Submit &amp; Accept as Candidate
           </button>
           <span className="text-xs text-gray-400">
-            This application will be immediately approved and added to the PbN queue.
+            This application will be immediately accepted as a candidate and added to the PbN queue.
           </span>
         </div>
       </form>
