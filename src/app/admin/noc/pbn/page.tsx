@@ -5,6 +5,7 @@ import { requireNocSession } from "@/lib/session";
 import { ACCRED_CATEGORIES } from "@/lib/category";
 import { PbnAllocationTable } from "./PbnAllocationTable";
 import { AddOrgToPbnPanel } from "./AddOrgToPbnPanel";
+import { PbnImportPanel } from "./PbnImportPanel";
 
 const ERROR_MSG: Record<string, string> = {
   no_quota:       "No quota has been assigned to your NOC yet. Contact IOC to set quotas.",
@@ -219,9 +220,9 @@ export default async function NocPbnPage({
           <span className={`px-3 py-1 rounded-full text-xs font-semibold ${stateBadgeClass}`}>
             {overallState}
           </span>
-          {rows.length > 0 && (
+          {allTableRows.length > 0 && (
             <a
-              href="/api/export/pbn-allocations"
+              href="/api/export/pbn-offline"
               className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Export CSV ↓
@@ -289,7 +290,8 @@ export default async function NocPbnPage({
       )}
 
       {isEditable && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-4">
+          <PbnImportPanel />
           <AddOrgToPbnPanel />
         </div>
       )}
