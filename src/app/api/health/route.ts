@@ -1,8 +1,10 @@
+import buildSha from "@/generated/build-sha.json";
+
 export const dynamic = "force-dynamic";
 
 export function GET() {
   return Response.json({
     status: "ok",
-    sha: process.env.RAILWAY_GIT_COMMIT_SHA ?? null,
+    sha: buildSha.sha || null,
   });
 }
