@@ -12,6 +12,7 @@ import {
   unApproveApplication,
   unReturnApplication,
   unRejectApplication,
+  setEnrRank,
 } from "../actions";
 
 const ORG_TYPE_LABEL: Record<string, string> = {
@@ -166,6 +167,10 @@ export function ApplicationDrawer({
   const [data, setData] = useState<AppDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [enrRankInput, setEnrRankInput] = useState<string>("");
+  const [enrRankSaving, setEnrRankSaving] = useState(false);
+  const [enrRankError, setEnrRankError] = useState<string | null>(null);
+  const [enrRankSaved, setEnrRankSaved] = useState(false);
 
   const currentIndex = allIds.indexOf(appId);
   const hasPrev = currentIndex > 0;
@@ -185,6 +190,9 @@ export function ApplicationDrawer({
       .then((json) => {
         if (!cancelled) {
           setData(json);
+          setEnrRankInput(json.app.enrRank != null ? String(json.app.enrRank) : "");
+          setEnrRankSaved(false);
+          setEnrRankError(null);
           setLoading(false);
         }
       })
@@ -817,91 +825,87 @@ export function ApplicationDrawer({
                 {/* Review actions */}
                 {isActionable ? (
                   <section className="space-y-3">
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
-                      <strong>Approving this application</strong> confirms the
-                      organisation is eligible to apply — it does not commit
-                      any accreditation slots. Slot quantities are negotiated
-                      in the Press by Number (PbN) phase after all applications
-                      are reviewed.
-                    </div>
-
-                    {/* Approve */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-4">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                        Accept as Candidate
-                      </h3>
-                      <p className="text-xs text-gray-500 mb-3">
-                        Marks this organisation as a <strong>candidate</strong>{" "}
-                        for press accreditation. Slot allocation happens
-                        separately in Press by Number.
-                      </p>
-                      <form action={approveApplication} className="space-y-3">
-                        <input type="hidden" name="id" value={app.id} />
-                        <textarea
-                          name="internal_note"
-                          rows={2}
-                          placeholder="Internal note (optional, NOC only)"
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none"
-                        />
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer"
-                        >
-                          Accept as Candidate
-                        </button>
-                      </form>
-                    </div>
-
-                    {/* Return */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-4">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                        Return for Corrections
-                      </h3>
-                      <p className="text-xs text-gray-500 mb-3">
-                        Send back to the applicant with a note explaining what
-                        needs to be corrected.
-                      </p>
-                      <form action={returnApplication} className="space-y-3">
-                        <input type="hidden" name="id" value={app.id} />
-                        <textarea
-                          name="note"
-                          required
-                          rows={3}
-                          placeholder="Explain what the applicant needs to correct..."
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none"
-                        />
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded hover:bg-orange-600 transition-colors cursor-pointer"
-                        >
-                          Return for Corrections
-                        </button>
-                      </form>
-                    </div>
-
-                    {/* Reject */}
+                    {org.orgType === "enr" ? (
+                      <>
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+                          <strong>ENR application:</strong> Assign a priority rank (1 = highest) to include this organisation in your NOC&apos;s ranked ENR list for IOC review. You can still reject clearly invalid applications.
+                        </div>
+                        <div className="bg-white rounded-lg border border-blue-300 p-4">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-1">Set ENR Priority Rank</h3>
+                          <p className="text-xs text-gray-500 mb-3">Assign a priority rank for IOC consideration. Rank 1 is highest priority.</p>
+                          {(app.enrRank as number | null) != null && (
+                            <p className="text-xs text-blue-700 mb-2 font-medium">Current rank: <strong>{app.enrRank as number}</strong></p>
+                          )}
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="number"
+                              min={1}
+                              max={99}
+                              value={enrRankInput}
+                              onChange={(e) => { setEnrRankInput(e.target.value); setEnrRankSaved(false); setEnrRankError(null); }}
+                              placeholder="1–99"
+                              className="w-24 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                            <button
+                              type="button"
+                              disabled={enrRankSaving}
+                              onClick={async () => {
+                                const parsed = parseInt(enrRankInput, 10);
+                                if (isNaN(parsed) || parsed < 1 || parsed > 99) { setEnrRankError("Enter a number between 1 and 99."); return; }
+                                setEnrRankSaving(true);
+                                setEnrRankError(null);
+                                const result = await setEnrRank(app.id, parsed);
+                                setEnrRankSaving(false);
+                                if (result.error) {
+                                  setEnrRankError(result.error);
+                                } else {
+                                  setEnrRankSaved(true);
+                                  setData((prev) => prev ? { ...prev, app: { ...prev.app, enrRank: parsed } } : prev);
+                                }
+                              }}
+                              className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer disabled:opacity-60"
+                            >
+                              {enrRankSaving ? "Saving…" : "Set Priority"}
+                            </button>
+                          </div>
+                          {enrRankError && <p className="mt-2 text-xs text-red-600">{enrRankError}</p>}
+                          {enrRankSaved && <p className="mt-2 text-xs text-green-600">Priority rank saved.</p>}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+                          <strong>Approving this application</strong> confirms the organisation is eligible to apply — it does not commit any accreditation slots. Slot quantities are negotiated in the Press by Number (PbN) phase after all applications are reviewed.
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-4">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-1">Accept as Candidate</h3>
+                          <p className="text-xs text-gray-500 mb-3">
+                            Marks this organisation as a <strong>candidate</strong>{" "}for press accreditation. Slot allocation happens separately in Press by Number.
+                          </p>
+                          <form action={approveApplication} className="space-y-3">
+                            <input type="hidden" name="id" value={app.id} />
+                            <textarea name="internal_note" rows={2} placeholder="Internal note (optional, NOC only)" className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none" />
+                            <button type="submit" className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer">Accept as Candidate</button>
+                          </form>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-4">
+                          <h3 className="text-sm font-semibold text-gray-900 mb-1">Return for Corrections</h3>
+                          <p className="text-xs text-gray-500 mb-3">Send back to the applicant with a note explaining what needs to be corrected.</p>
+                          <form action={returnApplication} className="space-y-3">
+                            <input type="hidden" name="id" value={app.id} />
+                            <textarea name="note" required rows={3} placeholder="Explain what the applicant needs to correct..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none" />
+                            <button type="submit" className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded hover:bg-orange-600 transition-colors cursor-pointer">Return for Corrections</button>
+                          </form>
+                        </div>
+                      </>
+                    )}
                     <div className="bg-white rounded-lg border border-red-200 p-4">
-                      <h3 className="text-sm font-semibold text-red-700 mb-1">
-                        Reject
-                      </h3>
-                      <p className="text-xs text-gray-500 mb-3">
-                        Reject this application. Rejections can be reversed before the batch release date.
-                      </p>
+                      <h3 className="text-sm font-semibold text-red-700 mb-1">Reject</h3>
+                      <p className="text-xs text-gray-500 mb-3">Reject this application. Rejections can be reversed before the batch release date.</p>
                       <form action={rejectApplication} className="space-y-3">
                         <input type="hidden" name="id" value={app.id} />
-                        <textarea
-                          name="note"
-                          required
-                          rows={3}
-                          placeholder="Provide the reason for rejection..."
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent resize-none"
-                        />
-                        <button
-                          type="submit"
-                          className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition-colors cursor-pointer"
-                        >
-                          Reject Application
-                        </button>
+                        <textarea name="note" required rows={3} placeholder="Provide the reason for rejection..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent resize-none" />
+                        <button type="submit" className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition-colors cursor-pointer">Reject Application</button>
                       </form>
                     </div>
                   </section>

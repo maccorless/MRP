@@ -74,6 +74,7 @@ export const auditActionEnum = pgEnum("audit_action", [
   "invitation_accepted",
   // B1 — rejection reversal
   "rejection_reversed",
+  "unreject",
 ]);
 
 export const flagStateEnum = pgEnum("flag_state", ["off", "canary", "on"]);
@@ -218,6 +219,7 @@ export const applications = pgTable("applications", {
   // Status
   status: applicationStatusEnum("status").default("pending").notNull(),
   resubmissionCount: integer("resubmission_count").default(0).notNull(),
+  enrRank: integer("enr_rank"),
 
   // NOC review
   reviewNote: text("review_note"),             // latest return/rejection reason
@@ -436,6 +438,7 @@ export const eventSettings = pgTable("event_settings", {
   eventId: text("event_id").notNull().unique().default("LA28"),
   capacity: integer("capacity").notNull().default(6000),
   iocHoldback: integer("ioc_holdback").notNull().default(0),
+  enrPoolSize: integer("enr_pool_size").notNull().default(350),
   updatedBy: text("updated_by"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });

@@ -1,196 +1,263 @@
 import Link from "next/link";
 import { eq, asc, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
-import { enrRequests, enrQuotas, organizations } from "@/db/schema";
+import { enrRequests, organizations, eventSettings } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
+import { saveAllEnrDecisions, saveEnrPoolSize } from "./actions";
 
-type EnrStatus = "not_submitted" | "awaiting" | "decided";
-
-const STATUS_BADGE: Record<EnrStatus, string> = {
-  not_submitted: "bg-gray-100 text-gray-500",
-  awaiting:      "bg-yellow-100 text-yellow-800",
-  decided:       "bg-green-100 text-green-800",
-};
-const STATUS_LABEL: Record<EnrStatus, string> = {
-  not_submitted: "Not submitted",
-  awaiting:      "Awaiting decision",
-  decided:       "Decided",
+const ORG_TYPE_LABEL: Record<string, string> = {
+  media_print_online: "Print / Online",
+  media_broadcast:    "Broadcast",
+  news_agency:        "News Agency",
+  enr:                "ENR",
+  freelancer:         "Freelancer",
+  other:              "Other",
 };
 
-type StatusFilter = "all" | EnrStatus;
+type SortKey = "noc" | "priority" | "granted" | "requested";
 
 export default async function IocEnrPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ sort?: string; success?: string }>;
 }) {
   await requireIocAdminSession();
-  const { status: statusParam } = await searchParams;
-  const activeFilter = (statusParam ?? "all") as StatusFilter;
+  const { sort: sortParam, success } = await searchParams;
+  const sortKey = (sortParam ?? "noc") as SortKey;
 
-  // All submitted ENR requests
-  const allRequests = await db
+  const allRows = await db
     .select({
       req: enrRequests,
       orgName: organizations.name,
+      orgType: organizations.orgType,
+      orgCountry: organizations.country,
     })
     .from(enrRequests)
     .innerJoin(organizations, eq(enrRequests.organizationId, organizations.id))
-    .where(isNotNull(enrRequests.submittedAt));
+    .where(isNotNull(enrRequests.submittedAt))
+    .orderBy(asc(enrRequests.nocCode), asc(enrRequests.priorityRank));
 
-  // Holdback pool totals (sum across all enrQuotas)
-  const quotas = await db.select().from(enrQuotas);
-  const totalPool = quotas.reduce((s, q) => s + q.enrTotal, 0);
-  const totalGranted = allRequests.reduce((s, r) => s + (r.req.slotsGranted ?? 0), 0);
-  const totalRequested = allRequests.reduce((s, r) => s + r.req.slotsRequested, 0);
+  const [settings] = await db
+    .select({ enrPoolSize: eventSettings.enrPoolSize })
+    .from(eventSettings)
+    .where(eq(eventSettings.eventId, "LA28"));
+  const enrPoolSize = settings?.enrPoolSize ?? 350;
 
-  // Build per-NOC summary
-  const nocMap = allRequests.reduce<Record<string, { total: number; decided: number; requested: number; granted: number }>>((acc, { req }) => {
-    if (!acc[req.nocCode]) acc[req.nocCode] = { total: 0, decided: 0, requested: 0, granted: 0 };
-    acc[req.nocCode].total++;
-    acc[req.nocCode].requested += req.slotsRequested;
-    if (req.decision !== null) {
-      acc[req.nocCode].decided++;
-      acc[req.nocCode].granted += req.slotsGranted ?? 0;
-    }
-    return acc;
-  }, {});
+  const totalGranted = allRows.reduce((s, r) => s + (r.req.slotsGranted ?? 0), 0);
+  const totalRequested = allRows.reduce((s, r) => s + r.req.slotsRequested, 0);
+  const poolPct = enrPoolSize > 0 ? Math.min(100, Math.round((totalGranted / enrPoolSize) * 100)) : 0;
+  const overPool = totalGranted > enrPoolSize;
 
-  type NocRow = {
-    nocCode: string;
-    total: number;
-    decided: number;
-    requested: number;
-    granted: number;
-    status: EnrStatus;
-  };
+  const sorted = [...allRows].sort((a, b) => {
+    if (sortKey === "priority") return (a.req.priorityRank ?? 99) - (b.req.priorityRank ?? 99);
+    if (sortKey === "granted") return (b.req.slotsGranted ?? -1) - (a.req.slotsGranted ?? -1);
+    if (sortKey === "requested") return b.req.slotsRequested - a.req.slotsRequested;
+    const nocCmp = a.req.nocCode.localeCompare(b.req.nocCode);
+    return nocCmp !== 0 ? nocCmp : (a.req.priorityRank ?? 99) - (b.req.priorityRank ?? 99);
+  });
 
-  const nocRows: NocRow[] = Object.entries(nocMap)
-    .map(([nocCode, data]) => ({
-      nocCode,
-      ...data,
-      status: (data.decided === data.total ? "decided" : "awaiting") as EnrStatus,
-    }))
-    .sort((a, b) => a.nocCode.localeCompare(b.nocCode));
-
-  const counts = nocRows.reduce<Record<string, number>>((acc, r) => {
-    acc[r.status] = (acc[r.status] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  const filtered = activeFilter === "all" ? nocRows : nocRows.filter((r) => r.status === activeFilter);
-
-  const filters: { key: StatusFilter; label: string }[] = [
-    { key: "all",           label: `All (${nocRows.length})` },
-    { key: "awaiting",      label: `Awaiting decision (${counts.awaiting ?? 0})` },
-    { key: "decided",       label: `Decided (${counts.decided ?? 0})` },
-    { key: "not_submitted", label: `Not submitted (${counts.not_submitted ?? 0})` },
-  ];
-
-  const poolPct = totalPool > 0 ? Math.min(100, Math.round((totalGranted / totalPool) * 100)) : 0;
+  function sortHref(key: SortKey) {
+    return key === "noc" ? "/admin/ioc/enr" : `/admin/ioc/enr?sort=${key}`;
+  }
+  function SortTh({ label, k }: { label: string; k: SortKey }) {
+    const active = sortKey === k;
+    return (
+      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <Link
+          href={sortHref(k)}
+          className={`hover:text-[#0057A8] transition-colors ${active ? "text-[#0057A8] font-semibold" : ""}`}
+        >
+          {label} {active ? "↑" : ""}
+        </Link>
+      </th>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">ENR Review</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          {counts.awaiting ?? 0} NOC{(counts.awaiting ?? 0) !== 1 ? "s" : ""} awaiting decision
-        </p>
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">ENR Review — Combined View</h1>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {allRows.length} organisation{allRows.length !== 1 ? "s" : ""} across all NOCs
+          </p>
+        </div>
       </div>
 
-      {/* Holdback pool banner */}
+      {success === "saved" && (
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+          ENR slot grants saved.
+        </div>
+      )}
+      {success === "pool_saved" && (
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+          ENR pool size updated.
+        </div>
+      )}
+
+      {/* Pool size banner */}
       <div className="rounded-xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #0057A8 100%)" }}>
-        <div className="flex items-start justify-between gap-8">
+        <div className="flex items-start justify-between gap-8 flex-wrap">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide opacity-80">Holdback Pool</div>
-            <div className="text-4xl font-extrabold mt-1">{totalPool > 0 ? totalPool : "—"}</div>
-            <div className="text-sm opacity-75 mt-1">total ENR slots across all NOCs</div>
+            <div className="text-xs font-semibold uppercase tracking-wide opacity-80">ENR Pool</div>
+            <div className={`text-4xl font-extrabold mt-1 ${overPool ? "text-red-300" : ""}`}>
+              {totalGranted} <span className="text-2xl font-bold opacity-70">/ {enrPoolSize}</span>
+            </div>
+            <div className="text-sm opacity-75 mt-1">
+              {overPool
+                ? `Over pool by ${totalGranted - enrPoolSize} slot${totalGranted - enrPoolSize !== 1 ? "s" : ""}`
+                : `${enrPoolSize - totalGranted} slots remaining`}
+            </div>
           </div>
-          <div className="flex-1 max-w-xs">
+          <div className="flex-1 min-w-[180px] max-w-xs">
             <div className="flex justify-between text-xs opacity-80 mb-2">
               <span>Granted: {totalGranted}</span>
-              <span>Remaining: {totalPool > 0 ? totalPool - totalGranted : "—"}</span>
+              <span>Requested: {totalRequested}</span>
             </div>
             <div className="h-3 bg-white/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white/80 rounded-full" style={{ width: `${poolPct}%` }} />
+              <div
+                className={`h-full rounded-full transition-all ${overPool ? "bg-red-400" : "bg-white/80"}`}
+                style={{ width: `${poolPct}%` }}
+              />
             </div>
           </div>
-          <div className="flex gap-6 text-center">
-            <div>
-              <div className="text-xl font-bold">{totalRequested}</div>
-              <div className="text-xs opacity-70 uppercase tracking-wide">Requested</div>
-            </div>
-            <div>
-              <div className="text-xl font-bold">{nocRows.length}</div>
-              <div className="text-xs opacity-70 uppercase tracking-wide">NOCs</div>
-            </div>
+          <div className="shrink-0">
+            <form action={saveEnrPoolSize} className="flex items-end gap-2">
+              <div>
+                <label htmlFor="enr_pool_size" className="block text-xs opacity-80 mb-1 font-medium">Pool size</label>
+                <input
+                  id="enr_pool_size"
+                  name="enr_pool_size"
+                  type="number"
+                  min={0}
+                  defaultValue={enrPoolSize}
+                  className="w-24 border border-white/30 bg-white/20 text-white placeholder-white/50 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-white/60"
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded border border-white/30 transition-colors cursor-pointer"
+              >
+                Update
+              </button>
+            </form>
           </div>
         </div>
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-1 flex-wrap">
-        {filters.map(({ key, label }) => (
-          <Link
-            key={key}
-            href={key === "all" ? "/admin/ioc/enr" : `/admin/ioc/enr?status=${key}`}
-            className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-              activeFilter === key
-                ? "bg-[#0057A8] text-white"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            {label}
-          </Link>
-        ))}
-      </div>
-
-      {/* NOC list table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        {filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">
-            {nocRows.length === 0 ? "No ENR submissions received yet." : "No NOCs in this category."}
-          </div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
-                <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Orgs</th>
-                <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Requested</th>
-                <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Granted</th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filtered.map((row) => (
-                <tr key={row.nocCode} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-3 font-mono font-semibold text-gray-900">{row.nocCode}</td>
-                  <td className="px-5 py-3 text-right text-gray-700">{row.total}</td>
-                  <td className="px-5 py-3 text-right text-gray-700">{row.requested}</td>
-                  <td className="px-5 py-3 text-right font-semibold text-gray-900">
-                    {row.decided > 0 ? row.granted : "—"}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[row.status]}`}>
-                      {STATUS_LABEL[row.status]}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <Link
-                      href={`/admin/ioc/enr/${row.nocCode}`}
-                      className="text-[#0057A8] text-xs font-medium hover:underline"
-                    >
-                      Review →
-                    </Link>
-                  </td>
+      {/* Combined cross-NOC table */}
+      <form action={saveAllEnrDecisions}>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          {allRows.length === 0 ? (
+            <div className="p-8 text-center text-sm text-gray-400">
+              No ENR submissions received yet.
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <SortTh label="NOC" k="noc" />
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organisation</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Country</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
+                  <SortTh label="Priority" k="priority" />
+                  <SortTh label="Requested" k="requested" />
+                  <SortTh label="Granted" k="granted" />
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {sorted.map(({ req, orgName, orgType, orgCountry }) => {
+                  const decided = req.decision !== null;
+                  return (
+                    <tr key={req.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/admin/ioc/enr/${req.nocCode}`}
+                          className="font-mono font-semibold text-[#0057A8] hover:underline text-xs"
+                        >
+                          {req.nocCode}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">{orgName}</div>
+                        {req.enrDescription && (
+                          <div className="text-xs text-gray-400 mt-0.5 truncate max-w-[200px]">{req.enrDescription}</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 text-xs">{orgCountry ?? "—"}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">{ORG_TYPE_LABEL[orgType] ?? orgType}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 ${
+                          req.priorityRank <= 3
+                            ? "bg-yellow-50 text-yellow-800 border-yellow-300"
+                            : "bg-blue-50 text-[#0057A8] border-blue-200"
+                        }`}>
+                          {req.priorityRank}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">
+                        {req.slotsRequested}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <input
+                          type="number"
+                          name={`slots_${req.id}`}
+                          defaultValue={req.slotsGranted ?? req.slotsRequested}
+                          min={0}
+                          className={`w-20 border rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                            decided ? "border-green-300 bg-green-50" : "border-gray-300"
+                          }`}
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        {decided ? (
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                            req.decision === "granted" ? "bg-green-100 text-green-800" :
+                            req.decision === "partial"  ? "bg-yellow-100 text-yellow-800" :
+                                                         "bg-red-100 text-red-700"
+                          }`}>
+                            {req.decision === "granted" ? "Granted" : req.decision === "partial" ? "Partial" : "Denied"}
+                          </span>
+                        ) : (
+                          <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                            Pending
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot className="bg-gray-50 border-t border-gray-200">
+                <tr>
+                  <td colSpan={5} className="px-4 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
+                  <td className="px-4 py-2.5 text-right font-semibold text-gray-900 tabular-nums">{totalRequested}</td>
+                  <td className="px-4 py-2.5 text-right font-semibold tabular-nums">
+                    <span className={overPool ? "text-red-600" : "text-gray-900"}>{totalGranted}</span>
+                    <span className="text-xs font-normal text-gray-400 ml-1">/ {enrPoolSize}</span>
+                  </td>
+                  <td />
+                </tr>
+              </tfoot>
+            </table>
+          )}
+        </div>
+
+        {allRows.length > 0 && (
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+            >
+              Save Grants
+            </button>
+            <span className="text-xs text-gray-400">
+              Saving updates granted slots and auto-sets decision status (granted / partial / denied based on slot count).
+            </span>
+          </div>
         )}
-      </div>
+      </form>
     </div>
   );
 }

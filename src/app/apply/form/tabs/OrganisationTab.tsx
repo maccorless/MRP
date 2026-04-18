@@ -87,9 +87,16 @@ export function OrganisationTab({
           <option value="media_broadcast">Broadcast</option>
           <option value="news_agency">News Agency</option>
           <option value="freelancer">Freelancer / Independent</option>
+          <option value="enr">ENR Broadcaster (Non-Rights)</option>
           <option value="other">Other (please specify)</option>
         </select>
         <Err name="org_type" errors={errors} />
+
+        {orgType === "enr" && (
+          <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+            <strong>About ENR (Extended Non-Rights) broadcasters:</strong> ENR broadcasters apply for credentials from a separate pool. Your NOC will review and rank your request. ENR credentials are allocated by the IOC from a dedicated ENR pool, separate from the standard press quota.
+          </div>
+        )}
       </div>
 
       {orgType === "other" && (

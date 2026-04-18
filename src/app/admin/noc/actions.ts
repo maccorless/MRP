@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, auditLog, orgSlotAllocations, dismissedDuplicatePairs } from "@/db/schema";
+import { applications, auditLog, orgSlotAllocations, dismissedDuplicatePairs, organizations } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
 
 async function getApplicationForNoc(id: string, nocCode: string) {
@@ -399,4 +399,36 @@ export async function dismissDuplicatePair(orgId1: string, orgId2: string) {
       detail: `Dismissed duplicate flag for orgs ${orgIdA} / ${orgIdB}`,
     });
   });
+}
+
+export async function setEnrRank(
+  appId: string,
+  rank: number | null,
+): Promise<{ error?: string }> {
+  await requireWritable();
+  const session = await requireNocSession();
+
+  if (rank !== null && (rank < 1 || rank > 99 || !Number.isInteger(rank))) {
+    return { error: "Rank must be an integer between 1 and 99." };
+  }
+
+  const app = await getApplicationForNoc(appId, session.nocCode);
+  if (!app) return { error: "Application not found." };
+
+  const [org] = await db
+    .select({ orgType: organizations.orgType })
+    .from(organizations)
+    .where(eq(organizations.id, app.organizationId));
+
+  if (!org || org.orgType !== "enr") {
+    return { error: "Priority ranking is only available for ENR applications." };
+  }
+
+  const now = new Date();
+  await db
+    .update(applications)
+    .set({ enrRank: rank, updatedAt: now })
+    .where(and(eq(applications.id, appId), eq(applications.nocCode, session.nocCode)));
+
+  return {};
 }

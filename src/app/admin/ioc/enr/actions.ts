@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq, and, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
-import { enrRequests, auditLog } from "@/db/schema";
+import { enrRequests, auditLog, eventSettings } from "@/db/schema";
 import { requireIocAdminSession, requireWritable } from "@/lib/session";
 
 /**
@@ -65,6 +65,80 @@ export async function saveEnrDecisions(formData: FormData) {
   });
 
   redirect(`/admin/ioc/enr/${nocCode}?success=saved`);
+}
+
+export async function saveEnrPoolSize(formData: FormData) {
+  await requireWritable();
+  const session = await requireIocAdminSession();
+
+  const raw = parseInt(formData.get("enr_pool_size") as string ?? "350", 10);
+  const enrPoolSize = isNaN(raw) || raw < 0 ? 350 : raw;
+  const now = new Date();
+
+  const [existing] = await db
+    .select()
+    .from(eventSettings)
+    .where(eq(eventSettings.eventId, "LA28"));
+
+  if (existing) {
+    await db
+      .update(eventSettings)
+      .set({ enrPoolSize, updatedBy: session.userId, updatedAt: now })
+      .where(eq(eventSettings.eventId, "LA28"));
+  } else {
+    await db.insert(eventSettings).values({
+      eventId: "LA28",
+      enrPoolSize,
+      updatedBy: session.userId,
+      updatedAt: now,
+    });
+  }
+
+  redirect("/admin/ioc/enr?success=pool_saved");
+}
+
+export async function saveAllEnrDecisions(formData: FormData) {
+  await requireWritable();
+  const session = await requireIocAdminSession();
+
+  const requests = await db
+    .select()
+    .from(enrRequests)
+    .where(isNotNull(enrRequests.submittedAt));
+
+  const now = new Date();
+  let decidedCount = 0;
+  const nocCodesAffected = new Set<string>();
+
+  await db.transaction(async (tx) => {
+    for (const req of requests) {
+      const slotsRaw = parseInt(formData.get(`slots_${req.id}`) as string ?? "", 10);
+      if (isNaN(slotsRaw)) continue;
+
+      const slotsGranted = Math.max(0, slotsRaw);
+      const decision = slotsGranted > 0 ? (slotsGranted >= req.slotsRequested ? "granted" : "partial") : "denied";
+
+      await tx
+        .update(enrRequests)
+        .set({ decision: decision as "granted" | "partial" | "denied", slotsGranted, reviewedBy: session.userId, reviewedAt: now })
+        .where(eq(enrRequests.id, req.id));
+
+      decidedCount++;
+      nocCodesAffected.add(req.nocCode);
+    }
+
+    if (decidedCount > 0) {
+      await tx.insert(auditLog).values({
+        actorType: "ioc_admin",
+        actorId: session.userId,
+        actorLabel: session.displayName,
+        action: "enr_decision_made",
+        detail: `Combined view: ${decidedCount} org${decidedCount !== 1 ? "s" : ""} decided across ${nocCodesAffected.size} NOC${nocCodesAffected.size !== 1 ? "s" : ""}`,
+      });
+    }
+  });
+
+  redirect("/admin/ioc/enr?success=saved");
 }
 
 export async function reviseEnrDecision(formData: FormData) {
