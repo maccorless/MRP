@@ -8,13 +8,14 @@ export async function middleware(req: NextRequest) {
 
   // nonce is generated per-request so the x-nonce header is available to the
   // root layout when nonce propagation to <Script> tags is wired up.
-  // 'unsafe-inline' is retained until that wiring is complete; in browsers that
-  // support nonces, the nonce takes precedence and 'unsafe-inline' is ignored.
+  // 'unsafe-inline' is retained on script-src until that wiring is complete;
+  // in browsers that support nonces, the nonce takes precedence and
+  // 'unsafe-inline' is ignored.
   const nonce = btoa(crypto.randomUUID());
   const cspValue = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
-    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
     "connect-src 'self'",

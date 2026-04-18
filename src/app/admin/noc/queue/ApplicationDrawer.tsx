@@ -8,6 +8,7 @@ import type { CategoryTotals } from "@/lib/quota-calc";
 import { ORG_TYPE_LABEL, GEO_COVERAGE_LABEL, PUB_TYPE_LABEL } from "@/lib/labels";
 import { ACTION_LABEL } from "@/lib/audit-query";
 import { formatAddress } from "@/lib/format";
+import { progressWidthClass } from "@/lib/progress";
 import {
   approveApplication,
   returnApplication,
@@ -91,12 +92,10 @@ function QuotaBar({
       <span className="w-8 font-mono text-gray-600">{label}</span>
       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden flex">
         <div
-          className="h-full bg-blue-400 transition-all"
-          style={{ width: `${pctAllocated}%` }}
+          className={`h-full bg-blue-400 transition-all ${progressWidthClass(pctAllocated)}`}
         />
         <div
-          className={`h-full transition-all ${overQuota ? "bg-red-400" : "bg-amber-300"}`}
-          style={{ width: `${pctRequest}%` }}
+          className={`h-full transition-all ${overQuota ? "bg-red-400" : "bg-amber-300"} ${progressWidthClass(pctRequest)}`}
         />
       </div>
       <span

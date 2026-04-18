@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { NOC_CONTINENT } from "@/lib/noc-continent";
+import { progressWidthClass } from "@/lib/progress";
 
 export type CategorySlots = {
   e: number;
@@ -143,7 +144,7 @@ function CapTracker({ grandTotals, eventCapacity }: { grandTotals: GrandTotals; 
         </span>
       </div>
       <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-        <div className={`h-2.5 rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+        <div className={`h-2.5 rounded-full transition-all ${barColor} ${progressWidthClass(pct)}`} />
       </div>
       <div className="flex gap-6 mt-2 text-xs text-gray-500">
         <span>Distributed: <strong className="text-gray-900">{distributed.toLocaleString()}</strong></span>

@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icon";
 import { saveSlotAllocations, submitPbnToOcog } from "./actions";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
+import { progressWidthClass } from "@/lib/progress";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ServerAction = (formData: FormData) => Promise<any>;
@@ -330,8 +331,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
               </div>
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${over ? "bg-red-500" : CAT_COLOR[cat.value]}`}
-                  style={{ width: `${pct}%` }}
+                  className={`h-full rounded-full transition-all ${over ? "bg-red-500" : CAT_COLOR[cat.value]} ${progressWidthClass(pct)}`}
                 />
               </div>
               <div className="text-xs text-gray-400 mt-1 truncate">
@@ -352,7 +352,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                 </span>
               </div>
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${over ? "bg-red-500" : "bg-teal-500"}`} style={{ width: `${pct}%` }} />
+                <div className={`h-full rounded-full transition-all ${over ? "bg-red-500" : "bg-teal-500"} ${progressWidthClass(pct)}`} />
               </div>
               <div className="text-xs text-gray-400 mt-1 truncate">{nocEQuota - nocEValue} remaining</div>
             </div>

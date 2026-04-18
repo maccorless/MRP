@@ -6,6 +6,7 @@ import { nocQuotas, orgSlotAllocations, organizations, applications } from "@/db
 import { requireOcogSession } from "@/lib/session";
 import { ACCRED_CATEGORIES, categoryDisplayLabel } from "@/lib/category";
 import { approvePbn, sendToAcr, reversePbnApproval } from "../actions";
+import { progressWidthClass } from "@/lib/progress";
 
 export default async function OcogPbnNocPage({
   params,
@@ -124,8 +125,7 @@ export default async function OcogPbnNocPage({
               {total > 0 && (
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${over ? "bg-red-500" : "bg-brand-blue"}`}
-                    style={{ width: `${Math.min(100, Math.round((used / total) * 100))}%` }}
+                    className={`h-full rounded-full ${over ? "bg-red-500" : "bg-brand-blue"} ${progressWidthClass((used / total) * 100)}`}
                   />
                 </div>
               )}

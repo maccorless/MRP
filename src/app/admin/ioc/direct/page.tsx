@@ -6,6 +6,7 @@ import { ACCRED_CATEGORIES } from "@/lib/category";
 import { PbnAllocationTable } from "@/app/admin/noc/pbn/PbnAllocationTable";
 import { IocDirectAddPanel } from "./IocDirectAddPanel";
 import { saveIocDirectAllocations, submitIocDirectToOcog } from "./actions";
+import { progressWidthClass } from "@/lib/progress";
 
 const IOC_DIRECT = "IOC_DIRECT";
 const EVENT_ID   = "LA28";
@@ -160,7 +161,7 @@ export default async function IocDirectPage({
                     </span>
                   </div>
                   <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${over ? "bg-red-500" : "bg-brand-blue"}`} style={{ width: `${pct}%` }} />
+                    <div className={`h-full rounded-full ${over ? "bg-red-500" : "bg-brand-blue"} ${progressWidthClass(pct)}`} />
                   </div>
                   <div className="text-xs text-gray-400 mt-1">{total - allocated} remaining</div>
                 </div>

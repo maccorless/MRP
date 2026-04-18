@@ -10,6 +10,7 @@ import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
 import { ORG_TYPE_LABEL, GEO_COVERAGE_LABEL, PUB_TYPE_LABEL } from "@/lib/labels";
 import { ACTION_LABEL } from "@/lib/audit-query";
 import { formatAddress } from "@/lib/format";
+import { progressWidthClass } from "@/lib/progress";
 import {
   approveApplication,
   returnApplication,
@@ -41,8 +42,8 @@ function QuotaBar({ label, requested, allocated, total }: {
     <div className="flex items-center gap-2 text-xs">
       <span className="w-8 font-mono text-gray-600">{label}</span>
       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden flex">
-        <div className="h-full bg-blue-400 transition-all" style={{ width: `${pctAllocated}%` }} />
-        <div className={`h-full transition-all ${overQuota ? "bg-red-400" : "bg-amber-300"}`} style={{ width: `${pctRequest}%` }} />
+        <div className={`h-full bg-blue-400 transition-all ${progressWidthClass(pctAllocated)}`} />
+        <div className={`h-full transition-all ${overQuota ? "bg-red-400" : "bg-amber-300"} ${progressWidthClass(pctRequest)}`} />
       </div>
       <span className={`tabular-nums ${overQuota ? "text-red-600 font-semibold" : "text-gray-600"}`}>
         {allocated}+{requested}/{total}

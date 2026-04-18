@@ -6,6 +6,7 @@ import { enrRequests, organizations, eventSettings } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
 import { saveAllEnrDecisions, saveEnrPoolSize } from "./actions";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
+import { progressWidthClass } from "@/lib/progress";
 
 type SortKey = "noc" | "priority" | "granted" | "requested";
 
@@ -89,7 +90,7 @@ export default async function IocEnrPage({
       )}
 
       {/* Pool size banner */}
-      <div className="rounded-xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, var(--color-brand-blue) 100%)" }}>
+      <div className="bg-brand-enr-hero rounded-xl p-5 text-white">
         <div className="flex items-start justify-between gap-8 flex-wrap">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide opacity-80">ENR Pool</div>
@@ -109,8 +110,7 @@ export default async function IocEnrPage({
             </div>
             <div className="h-3 bg-white/20 rounded-full overflow-hidden">
               <div
-                className={`h-full rounded-full transition-all ${overPool ? "bg-red-400" : "bg-white/80"}`}
-                style={{ width: `${poolPct}%` }}
+                className={`h-full rounded-full transition-all ${overPool ? "bg-red-400" : "bg-white/80"} ${progressWidthClass(poolPct)}`}
               />
             </div>
           </div>

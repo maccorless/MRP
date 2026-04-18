@@ -85,7 +85,7 @@ export function EnrPriorityList({
             {rows.map((row, index) => (
               <tr
                 key={row.id}
-                className="hover:bg-gray-50"
+                className={`hover:bg-gray-50 ${!isSubmitted ? "cursor-grab" : ""}`}
                 draggable={!isSubmitted}
                 tabIndex={!isSubmitted ? 0 : undefined}
                 role={!isSubmitted ? "row" : undefined}
@@ -117,7 +117,6 @@ export function EnrPriorityList({
                     });
                   }
                 }}
-                style={!isSubmitted ? { cursor: "grab" } : undefined}
               >
                 <td className="px-5 py-3">
                   {!isSubmitted ? (
