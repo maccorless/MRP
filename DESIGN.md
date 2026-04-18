@@ -153,14 +153,29 @@ Rules:
 - `aria-hidden="true"` on decorative SVG icons
 - Status is communicated via text label in badge, not color alone
 - Form inputs use `<label for="...">` with matching `id`
-- Focus rings use `focus:ring-2 focus:ring-[#0057A8]`
+- Focus rings use `focus:ring-2 focus:ring-brand-blue` (interactive inputs) and `focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue` (nav tabs and tablist buttons, where an inset ring avoids clashing with the active bottom-border).
+
+---
+
+## Responsive
+
+Admin surfaces (NOC/OCOG/IOC) are desktop-first — internal users on 1024px+. Containers use `max-w-5xl` or `max-w-6xl`; no mobile breakpoints are maintained below `sm:`. If an admin ever needs mobile, that is a separate design effort.
+
+The public applicant flow under `/apply` is mobile-first — applicants submit from anywhere. Rules:
+
+- Root container: `max-w-2xl mx-auto` + `px-4 py-8` in `ApplyLayout`.
+- **Breakpoints used**: `sm:` (640px) is the primary pivot. Forms collapse to single-column below `sm:`; at `sm:` and above they use two- or three-column grids per context.
+- **Grid pattern**: `grid grid-cols-1 sm:grid-cols-N gap-4` — never bare `grid-cols-N` on applicant-facing surfaces.
+- **Tab padding**: tablist buttons use `px-3 sm:px-5 py-3 sm:py-3.5` + the parent's `overflow-x-auto` so 5 tabs scroll horizontally on narrow viewports without clipping.
+- **Form body padding**: tab panels use `p-4 sm:p-8` so applicants at 375px get 16px gutters instead of 32px.
+
+Tested viewports: 375×812 (iPhone SE-era), 768×1024 (iPad portrait), 1280×800 (desktop baseline). No horizontal scroll at any of these sizes except the intentional tablist scroll.
 
 ---
 
 ## What's Not Here Yet (v1 targets)
 
-- Responsive breakpoints — currently designed for desktop (1024px+)
 - Dark mode
-- Loading/skeleton states (server components handle this implicitly; add if client fetching is introduced)
 - Toast notifications (currently using URL query param banners)
 - IOC home page (currently redirects to EoI list — needs a home page matching NOC/OCOG pattern)
+- Responsive breakpoints for **admin** surfaces — intentionally deferred; see §Responsive

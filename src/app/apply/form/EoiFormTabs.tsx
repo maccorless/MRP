@@ -581,10 +581,10 @@ export function EoiFormTabs({
     <>
       {/* How does this work? collapsible intro */}
       <details className="mb-4 bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <summary className="px-5 py-3.5 text-sm font-medium text-brand-blue cursor-pointer select-none hover:bg-gray-50 flex items-center gap-2">
+        <summary className="px-4 sm:px-5 py-3.5 text-sm font-medium text-brand-blue cursor-pointer select-none hover:bg-gray-50 flex items-center gap-2">
           <Icon name="info" label="Info" className="w-4 h-4 text-brand-blue" /> {t("form.intro.summary")}
         </summary>
-        <div className="px-5 py-4 border-t border-gray-100 text-sm text-gray-700 space-y-2">
+        <div className="px-4 sm:px-5 py-4 border-t border-gray-100 text-sm text-gray-700 space-y-2">
           <p>
             <strong>{t("form.intro.heading")}</strong>{t("form.intro.heading.suffix")}
           </p>
@@ -647,7 +647,7 @@ export function EoiFormTabs({
                 aria-controls={`eoi-panel-${i}`}
                 tabIndex={active ? 0 : -1}
                 onClick={() => { markVisited(i); updateTabStatus(); setActiveTab(i); }}
-                className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 sm:py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue ${
                   active
                     ? "border-brand-blue text-brand-blue bg-white"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -683,7 +683,7 @@ export function EoiFormTabs({
       </div>
 
       {/* Tab panels — all rendered, only active visible */}
-      <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-8">
+      <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-4 sm:p-8">
         <div id="eoi-panel-0" role="tabpanel" aria-labelledby="eoi-tab-0" hidden={activeTab !== 0}>
           <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} errors={fieldErrors} nocAutoSuggestedName={nocAutoSuggestedName} lang={lang} />
         </div>

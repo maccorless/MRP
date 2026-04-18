@@ -30,7 +30,7 @@ export function ContactsTab({
       <div>
         <h3 className="text-sm font-semibold text-gray-900 mb-4">{t("contacts.primary.heading")}</h3>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="contact_first_name" className={LABEL}>{t("contacts.firstName.label")} <span className="text-red-500">*</span></label>
               <input id="contact_first_name" name="contact_first_name" type="text" required data-tab="1"
@@ -57,7 +57,7 @@ export function ContactsTab({
               className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-50 text-gray-500" />
             <p className={HELP}>{t("contacts.email.help")}</p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="contact_phone" className={LABEL}>{t("contacts.phone.label")}</label>
               <input id="contact_phone" name="contact_phone" type="tel" data-tab="1"
@@ -105,7 +105,7 @@ export function ContactsTab({
               {t("contacts.secondary.help")}
             </p>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="secondary_first_name" className={LABEL}>{t("contacts.secondary.firstName.label")}</label>
                   <input id="secondary_first_name" name="secondary_first_name" type="text" data-tab="1"
@@ -127,7 +127,7 @@ export function ContactsTab({
                 <input id="secondary_email" name="secondary_email" type="email" data-tab="1"
                   defaultValue={prefill?.secondaryEmail ?? ""} className={INPUT} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="secondary_phone" className={LABEL}>{t("contacts.secondary.phone.label")}</label>
                   <input id="secondary_phone" name="secondary_phone" type="tel" data-tab="1"

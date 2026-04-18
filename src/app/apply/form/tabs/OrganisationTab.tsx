@@ -32,7 +32,7 @@ export function OrganisationTab({
         <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
           {t("org.readonly")}
         </div>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
           <div><dt className="text-gray-500 text-xs">{t("org.readonly.organisation")}</dt><dd className="font-medium text-gray-900">{prefill.orgName}</dd></div>
           <div><dt className="text-gray-500 text-xs">{t("org.readonly.noc")}</dt><dd className="text-gray-900">{prefill.orgNocCode}</dd></div>
           <div><dt className="text-gray-500 text-xs">{t("org.readonly.country")}</dt><dd className="text-gray-900">{prefill.orgCountry}</dd></div>
@@ -110,7 +110,7 @@ export function OrganisationTab({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="country" className={LABEL}>{t("org.country.label")} <span className="text-red-500">*</span></label>
           <input id="country" name="country" type="text" required data-tab="0"
@@ -163,7 +163,7 @@ export function OrganisationTab({
             <label htmlFor="address2" className="sr-only">Suite, floor, building</label>
             <input id="address2" name="address2" type="text" data-tab="0" placeholder={t("org.address.suite.placeholder")} className={BASE_INPUT + " border-gray-300"} />
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label htmlFor="city" className="sr-only">City</label>
               <input id="city" name="city" type="text" data-tab="0" placeholder={t("org.address.city.placeholder")} className={BASE_INPUT + " border-gray-300"} />

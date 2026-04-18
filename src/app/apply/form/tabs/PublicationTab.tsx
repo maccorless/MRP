@@ -40,7 +40,7 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
         <label className={LABEL}>
           {t("pub.types.label")} <span className="text-gray-400 font-normal">{t("pub.types.selectAll")}</span>
         </label>
-        <div className="grid grid-cols-2 gap-2 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           {PUBLICATION_TYPES.map((type) => {
             const value = type.toLowerCase().replace(/[^a-z0-9]/g, "_");
             const isOther = value === "other";
@@ -74,7 +74,7 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
       </div>
 
       {/* Circulation + frequency */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="circulation" className={LABEL}>{t("pub.circulation.label")}</label>
           <input id="circulation" name="circulation" type="text" data-tab="3"

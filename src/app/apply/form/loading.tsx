@@ -13,11 +13,11 @@ export default function ApplyFormLoading() {
         </div>
       </div>
 
-      <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-8 space-y-5">
+      <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-4 sm:p-8 space-y-5">
         <div className="h-4 bg-gray-200 rounded w-32" />
         <div className="h-10 bg-gray-200 rounded w-full" />
         <div className="h-10 bg-gray-200 rounded w-full" />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="h-10 bg-gray-200 rounded" />
           <div className="h-10 bg-gray-200 rounded" />
         </div>
