@@ -19,7 +19,7 @@ export function Paginator({ page, totalPages, total, pageSize, pageHref }: Props
 
   return (
     <div className="flex items-center justify-between text-sm mt-4">
-      <span className="text-gray-500 text-xs">
+      <span className="text-gray-600 text-xs">
         Showing {rowStart.toLocaleString()}–{rowEnd.toLocaleString()} of {total.toLocaleString()}
       </span>
       <div className="flex items-center gap-3">
@@ -30,7 +30,7 @@ export function Paginator({ page, totalPages, total, pageSize, pageHref }: Props
         ) : (
           <span className="text-gray-300 text-xs">← Previous</span>
         )}
-        <span className="text-xs text-gray-500">Page {page} of {totalPages}</span>
+        <span className="text-xs text-gray-600">Page {page} of {totalPages}</span>
         {page < totalPages ? (
           <a href={pageHref(page + 1)} className="text-[#0057A8] hover:underline text-xs">
             Next →
