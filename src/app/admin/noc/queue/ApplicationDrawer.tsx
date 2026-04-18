@@ -11,7 +11,7 @@ import {
   rejectApplication,
   unApproveApplication,
   unReturnApplication,
-  reverseRejection,
+  unRejectApplication,
 } from "../actions";
 
 const ORG_TYPE_LABEL: Record<string, string> = {
@@ -54,6 +54,7 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
   application_unapproved: "Approval reversed",
   application_unreturned: "Return cancelled",
   rejection_reversed: "Rejection reversed",
+  unreject: "Rejection reversed (un-rejected)",
   email_verified: "Email verified",
   admin_login: "Admin signed in",
 };
@@ -884,7 +885,7 @@ export function ApplicationDrawer({
                         Reject
                       </h3>
                       <p className="text-xs text-gray-500 mb-3">
-                        Permanently reject this application.
+                        Reject this application. Rejections can be reversed before the batch release date.
                       </p>
                       <form action={rejectApplication} className="space-y-3">
                         <input type="hidden" name="id" value={app.id} />
@@ -951,19 +952,26 @@ export function ApplicationDrawer({
                 ) : app.status === "rejected" ? (
                   <div className="bg-white rounded-lg border border-gray-200 p-4">
                     <h3 className="text-sm font-semibold text-gray-900 mb-1">
-                      Reverse Rejection
+                      Un-reject
                     </h3>
                     <p className="text-xs text-gray-500 mb-3">
-                      Move this application back to Pending if the rejection
-                      was made in error.
+                      Move this application back to Pending. A note is required
+                      explaining why the rejection is being reversed.
                     </p>
-                    <form action={reverseRejection}>
+                    <form action={unRejectApplication} className="space-y-3">
                       <input type="hidden" name="id" value={app.id} />
+                      <textarea
+                        name="note"
+                        required
+                        rows={3}
+                        placeholder="Explain why this rejection is being reversed..."
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent resize-none"
+                      />
                       <button
                         type="submit"
                         className="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer"
                       >
-                        Reverse Rejection
+                        Un-reject
                       </button>
                     </form>
                   </div>

@@ -1,5 +1,9 @@
 /**
- * Integration tests: NOC EoI window open/close (B3).
+ * Integration tests: EoI window checks (B3).
+ *
+ * NOC window self-service has been removed (decision 1.3). The window is now
+ * controlled by OCOG only. These tests cover:
+ *   - The window-open/closed check on application submit (still enforced).
  */
 
 import { vi, describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -21,25 +25,16 @@ vi.mock("next/navigation", () => ({
   redirect: (url: string): never => { throw new Error(`REDIRECT:${url}`); },
 }));
 
-import { toggleEoiWindow } from "@/app/admin/noc/settings/actions";
 import { submitApplication } from "@/app/apply/actions";
 import { db } from "@/db";
 import { nocEoiWindows, auditLog, organizations, applications, orgSlotAllocations } from "@/db/schema";
-import { eq, and, like } from "drizzle-orm";
-import { callAction, makeFormData, cleanupTestData, SESSIONS } from "./helpers";
+import { eq, like } from "drizzle-orm";
+import { callAction, makeFormData, cleanupTestData } from "./helpers";
 import { magicLinkTokens } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 
-async function setSession(payload: (typeof SESSIONS)[keyof typeof SESSIONS]) {
-  const { encodeSession } = await import("@/lib/session");
-  const val = await encodeSession(payload);
-  mockCookieStore.set("prp_session", val);
-}
-function clearSession() { mockCookieStore.clear(); }
-
 // Clean up any noc_eoi_windows rows we create
 async function cleanupWindows() {
-  await db.delete(nocEoiWindows).where(eq(nocEoiWindows.nocCode, "USA"));
   await db.delete(nocEoiWindows).where(eq(nocEoiWindows.nocCode, "GBR"));
 }
 
@@ -112,58 +107,6 @@ afterAll(async () => {
   await cleanupWindows();
   await cleanupBbcTestData();
   await cleanupTestData();
-});
-
-describe("NOC EoI window toggle", () => {
-  it("closes the window and writes an audit log entry", async () => {
-    await setSession(SESSIONS.nocUSA);
-    const fd = makeFormData({ set_open: "false" });
-    const { redirect } = await callAction(() => toggleEoiWindow(fd));
-    expect(redirect?.url).toBe("/admin/noc/settings?success=window_closed");
-
-    const [row] = await db
-      .select()
-      .from(nocEoiWindows)
-      .where(and(eq(nocEoiWindows.nocCode, "USA"), eq(nocEoiWindows.eventId, "LA28")));
-    expect(row).toBeDefined();
-    expect(row.isOpen).toBe(false);
-    expect(row.closedAt).not.toBeNull();
-
-    const [log] = await db
-      .select()
-      .from(auditLog)
-      .where(eq(auditLog.action, "eoi_window_toggled"));
-    expect(log).toBeDefined();
-    expect(log.actorId).toBe("test-noc-usa");
-
-    clearSession();
-  });
-
-  it("opens a previously-closed window", async () => {
-    // Window is currently closed from the previous test
-    await setSession(SESSIONS.nocUSA);
-    const fd = makeFormData({ set_open: "true" });
-    const { redirect } = await callAction(() => toggleEoiWindow(fd));
-    expect(redirect?.url).toBe("/admin/noc/settings?success=window_opened");
-
-    const [row] = await db
-      .select()
-      .from(nocEoiWindows)
-      .where(and(eq(nocEoiWindows.nocCode, "USA"), eq(nocEoiWindows.eventId, "LA28")));
-    expect(row.isOpen).toBe(true);
-    expect(row.closedAt).toBeNull();
-
-    clearSession();
-  });
-
-  it("blocks toggle in sudo mode", async () => {
-    await setSession(SESSIONS.sudoAsNocUSA);
-    const fd = makeFormData({ set_open: "false" });
-    const { redirect } = await callAction(() => toggleEoiWindow(fd));
-    expect(redirect).toBeDefined();
-    expect(redirect!.url).toContain("sudo_readonly");
-    clearSession();
-  });
 });
 
 describe("EoI window check on application submit", () => {

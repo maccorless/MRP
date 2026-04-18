@@ -255,6 +255,42 @@ export async function reverseRejection(formData: FormData) {
   redirect(`/admin/noc/${id}?success=rejection_reversed`);
 }
 
+export async function unRejectApplication(formData: FormData) {
+  await requireWritable();
+  const session = await requireNocSession();
+  const id = formData.get("id") as string;
+  const note = (formData.get("note") as string)?.trim();
+
+  if (!note) redirect(`/admin/noc/${id}?error=note_required`);
+
+  const app = await getApplicationForNoc(id, session.nocCode);
+  if (!app || app.status !== "rejected") redirect("/admin/noc/queue");
+
+  const now = new Date();
+
+  await db.transaction(async (tx) => {
+    const [updated] = await tx
+      .update(applications)
+      .set({ status: "pending", reviewNote: null, reviewedAt: null, reviewedBy: null, updatedAt: now })
+      .where(and(eq(applications.id, id), eq(applications.status, "rejected")))
+      .returning({ id: applications.id });
+
+    if (!updated) redirect(`/admin/noc/${id}?error=stale`);
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "unreject",
+      applicationId: id,
+      organizationId: app.organizationId,
+      detail: note,
+    });
+  });
+
+  redirect("/admin/noc/queue?success=unrejected");
+}
+
 export async function rejectApplicationInline(
   appId: string,
   note: string,
