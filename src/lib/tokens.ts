@@ -4,10 +4,18 @@ import { createHash, randomBytes } from "crypto";
 const CHARSET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 export function generateToken(length = 8): string {
-  const bytes = randomBytes(length);
-  return Array.from(bytes)
-    .map((b) => CHARSET[b % CHARSET.length])
-    .join("");
+  // Rejection sampling: discard bytes ≥ the largest multiple of CHARSET.length
+  // that fits in 256, so every character of CHARSET is equally likely.
+  const max = 256 - (256 % CHARSET.length); // 248 when CHARSET.length === 31
+  const out: string[] = [];
+  while (out.length < length) {
+    const draw = randomBytes(length - out.length);
+    for (const b of draw) {
+      if (b < max) out.push(CHARSET[b % CHARSET.length]);
+      if (out.length === length) break;
+    }
+  }
+  return out.join("");
 }
 
 export function hashToken(token: string): string {
