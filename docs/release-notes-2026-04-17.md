@@ -240,3 +240,87 @@ The help link opens at the section corresponding to the currently active tab. Ea
 - All 8 new EoI form fields persisted to the database on submission
 - `noc_quotas.entity_type` column — distinguishes `'noc'` from `'if'` rows
 - New `event_settings` table — stores `capacity` and `ioc_holdback` per event (migration 0020)
+
+---
+
+## Session TTL
+
+EoI applicants now receive a **90-day status token** (previously short-lived), so returning applicants can check their application status without needing to re-authenticate. Admin sessions remain at the existing 8-hour limit.
+
+---
+
+## OCOG Admin — EoI Dashboard Improvements
+
+- **NOC code search/filter** — a search box on the `/admin/ocog/eoi` summary table allows filtering by NOC code or name
+- **Drill-down to NOC applications** — NOC rows in the summary table are now clickable and navigate to a read-only list of that NOC's applications
+- **Full CSV export** — the EoI CSV export now includes all 57 form fields; previously missing fields (address, contact details, secondary contact, and several other fields) are now included
+
+---
+
+## PbN Offline Workflow
+
+NOC admins can now complete their Press by Number allocation offline:
+
+- **CSV export** — exports a pre-populated spreadsheet containing the current quota and organisation list
+- **CSV reimport** — completed allocations can be reimported via file upload or clipboard paste
+- Import is **full-overlay only** — the reimported file replaces the entire current allocation; partial updates are not supported
+- **Quota cap validation** — import is rejected if the reimported data would exceed the NOC's quota
+
+---
+
+## New Org Types: INO and IF Staff
+
+Two new organisation types are now selectable in IOC direct-entry and relevant admin views:
+
+- **INO** (`ino`) — International Non-Governmental Organisation
+- **IF Staff** (`if_staff`) — International Federation Staff
+
+---
+
+## EoI Form — Additional Information Field
+
+The free-text field on the History tab previously labelled "Additional comments" has been **relabelled to "Additional information requested by your NOC"** to better reflect its purpose. The field accepts unstructured text and is visible to NOC admins in the review drawer.
+
+---
+
+## NOC Admin — Un-reject Action
+
+NOC admins can now **reverse a rejection**, moving the application back to Pending:
+
+- A **required note** must be provided when reversing a rejection
+- The reversal and note are recorded in the **audit log**
+- Reversals are **blocked** once the application has been exported to ACR — the action is hidden and an explanatory message is shown instead
+
+---
+
+## NOC Window Self-Service Removed
+
+NOC admins can no longer set their own EoI window open/close dates. The OCOG sets a **global deadline** that applies to all NOCs. The OCOG retains a **per-NOC override** capability for pilots and exceptions, managed via the EoI Windows tab (`/admin/ocog/windows`).
+
+---
+
+## ENR Self-Application Workflow
+
+ENR (Extended Non-Rights Broadcaster) is now a **selectable org type on the public EoI form** (`/apply`), allowing ENR organisations to apply directly.
+
+### NOC queue
+
+ENR applications in the NOC review queue display a **priority ranking panel** (rank 1–99) in place of the standard Accept as Candidate action. NOC admins assign a rank to indicate priority to the IOC.
+
+### IOC ENR screen
+
+The IOC ENR review screen has been redesigned as a **cross-NOC combined view**:
+
+- Sortable table showing all ENR applications across all NOCs in a single list
+- **Configurable pool size banner** with a progress bar showing how many slots have been granted against the configured pool
+- **Inline slot grant editing** — IOC admins can grant or adjust slot counts directly in the table without navigating to a separate page
+
+---
+
+## French Localisation
+
+The public EoI form (`/apply`) is now available in **French** via a language toggle (EN | FR) in the form header:
+
+- All labels, placeholders, validation error messages, button text, and informational panels are translated
+- The selected language is persisted for the duration of the session
+- The admin portal remains English-only
