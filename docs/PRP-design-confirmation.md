@@ -4,7 +4,7 @@
 
 **Status:** ACTIVE
 **Last updated:** 2026-04-17 (decisions confirmed 17-Apr-2026: ENR self-application, OCOG-controlled global EoI window, new org types ino/if_staff, un-reject action, Accept as Candidate label, PbN offline workflow, post-handoff Model A, session TTL, additional information field, French localisation, IF tracks, duplicate detection; prior update 2026-04-17 16:00 CEST — build status table, EoI form new fields, Direct Entry rename + sport picker, OCOG EoI Windows, Master Allocation redesign, Help & Guide pages, duplicate comparison modal, application drawer)
-**Covers:** v0.1 prototype through v1 launch (August 2026) and v1.1 (October 2026)
+**Covers:** prototype phase through v1.0 launch (August 2026) and v2.0 (October 2026)
 
 ---
 
@@ -184,7 +184,7 @@ Key adapter methods: `fetchQuota(noc_id, event_id)`, `pushOrgData(org[], event_i
 
 ### Build status summary (as of 2026-04-17)
 
-The following features are built and working in the v0.1 codebase. Items marked "not yet built" are in scope but not yet implemented.
+The following features are built and working in the prototype codebase. Items marked "not yet built" are in scope but not yet implemented.
 
 | Feature | Status |
 |---------|--------|
@@ -259,13 +259,13 @@ The following features are built and working in the v0.1 codebase. Items marked 
 | Duplicate detection — 4 signals (email domain, contact email, website hostname, normalised org name + country); NOC reject/return from comparison modal; cross-NOC multi-territory flag in IOC dashboard; unresolved pairs are soft warnings (fail-open) | Built |
 | CAPTCHA on public EoI form | Not yet built |
 | Cross-NOC dedup — multi-territory flag in IOC dashboard (soft warning, fail-open) | Built |
-| ENR undertaking digital signature | Planned v1.1 |
-| ACR real-time sync | Planned v1.1 |
+| ENR undertaking digital signature | Planned v2.0 |
+| ACR real-time sync | Planned v2.0 |
 | D.TEC/DGP SSO | Planned v1.0 |
 
 ### V0.1 (prototype) and V1 — ships August 24, 2026
 
-PbN is in v0.1 scope alongside EoI. All of PbN ships August 24 except ACR real-time sync (which is v1.1). The v1.1 column contains only ACR integration and ENR undertaking in-system.
+PbN is in prototype scope alongside EoI. All of PbN ships August 24 except ACR real-time sync (which is v2.0). The v2.0 column contains only ACR integration and ENR undertaking in-system.
 
 **EoI process:**
 1. Public media organisation EoI form — E-category multi-select (E, Es, EP, EPs, ET, EC)
@@ -273,7 +273,7 @@ PbN is in v0.1 scope alongside EoI. All of PbN ships August 24 except ACR real-t
 3. NOC management dashboard — territory-scoped EoI review (approve/return/reject)
 4. OCOG and IOC visibility-only views across all NOCs during EoI phase
 
-**PbN process (in v0.1 / v1 — all except ACR real-time sync):**
+**PbN process (in prototype / v1.0 — all except ACR real-time sync):**
 5. NOC PbN allocation screen — assign per-category slots (E, Es, EP, EPs, ET, EC, NOC E) per approved org
 5a. PbN offline workflow — NOC can export a CSV template (pre-populated with quotas and org list), work offline, and reimport via file upload or clipboard paste (full-overlay). System validates quota caps on reimport. Designed to support all NOC sizes including large NOCs.
 6. OCOG PbN approval screen — cross-NOC view, formally approve or adjust NOC submissions
@@ -298,7 +298,7 @@ PbN is in v0.1 scope alongside EoI. All of PbN ships August 24 except ACR real-t
 
 Note: The PbN **software** ships August 24 in v1. The PbN **process** (NOCs allocating quotas) launches October 5. V1.1 ships in between to add ACR real-time sync before the process starts.
 
-- ACR real-time quota sync (v1 uses batch export)
+- ACR real-time quota sync (v1.0 uses batch export)
 - ENR undertaking digital signature (pending legal review — see ENR Undertaking section)
 - French admin portal localisation (v1.0 admin portal is English-only; public `/apply` form is EN|FR in v1.0 already)
 - Spanish localisation
@@ -423,7 +423,7 @@ Completely separate from E-category totals. Managed entirely by the IOC from the
 
 ### ENR undertaking
 
-The ENR undertaking (currently an Adobe Acrobat external process) is targeted for in-system delivery in v1.1. Two paths under legal review (see Resolved Decisions).
+The ENR undertaking (currently an Adobe Acrobat external process) is targeted for in-system delivery in v2.0. Two paths under legal review (see Resolved Decisions).
 
 ---
 
@@ -508,7 +508,7 @@ The IOC assigns per-category quota totals per NOC (E_total, Es_total, EP_total, 
 
 The IOC sets quota totals in July 2026. Quotas are imported from a CSV payload (not Excel directly — the UI accepts CSV text). The import produces a viewable table in the IOC dashboard.
 
-**IOC can edit quota totals after import.** For v0.1, the quota table is both importable and editable in-app. The IOC can toggle an edit mode to adjust individual NOC totals directly, in addition to re-importing the full CSV. All changes (import or manual edit) are logged in the `quota_changes` audit table (previous value → new value, actor, timestamp).
+**IOC can edit quota totals after import.** For prototype, the quota table is both importable and editable in-app. The IOC can toggle an edit mode to adjust individual NOC totals directly, in addition to re-importing the full CSV. All changes (import or manual edit) are logged in the `quota_changes` audit table (previous value → new value, actor, timestamp).
 
 **CSV format:** `NOC,E,Es,EP,EPs,ET,EC,NocE` — one row per line, eight columns. Columns: E = journalist, Es = sport-specific journalist, EP = photographer, EPs = sport-specific photographer, ET = technician, EC = support, NocE = press attaché. The `importQuotas` action parses all seven per-category columns, derives `pressTotal = E+Es+ET+EC` and `photoTotal = EP+EPs` as rollup aggregates, and upserts all fields atomically. The `quota_changes` audit records use per-category `quotaType` values (`e`, `es`, `ep`, `eps`, `et`, `ec`, `noc_e`). The in-app edit mode exposes all seven categories as individual number inputs. The quota view table shows one column per category plus a Total column.
 
@@ -713,14 +713,14 @@ When setting quotas in July 2026, the IOC should be able to compare against prio
 | 1 | ACR API contract | Define `AcrAdapter` interface with ACR team before writing any stub. Required: `fetchQuota()`, `pushOrgData()`, `getOrgCodes()`. ACR must provide sandbox before integration testing. | 2026-03-28 |
 | 2 | Auth for NOC/OCOG/IOC admins | Admin-provisioned accounts only (v1). Three distinct roles: NOC, OCOG, IOC — different logins, different permission sets. v1.0: D.TEC/DGP SSO. | 2026-03-28 / updated 2026-03-30 |
 | 3 | Public form spam/abuse | Email verification + CAPTCHA (hCaptcha) + rate limiting (max 10 submissions/IP/day, 3/email/day). | 2026-03-28 |
-| 4 | Document uploads | Deferred to v1.1. v1 form collects org name, contact details, category, free-text "About" field only. | 2026-03-28 |
-| 5 | Localisation | Public EoI form (`/apply`) in English and French via EN\|FR toggle for v1.0. Admin portal English-only for v1.0. French admin in v1.1. | 2026-03-28 / updated 2026-04-17 |
+| 4 | Document uploads | Deferred to v2.0. v1.0 form collects org name, contact details, category, free-text "About" field only. | 2026-03-28 |
+| 5 | Localisation | Public EoI form (`/apply`) in English and French via EN\|FR toggle for v1.0. Admin portal English-only for v1.0. French admin in v2.0. | 2026-03-28 / updated 2026-04-17 |
 | 6 | Org identity model | Flat model. Same domain + same NOC = true duplicate (block). Same domain + different NOC = multi-territory flag (allow, IOC informed). Parent-child model deferred. | 2026-03-29 |
 | 7 | PbN IOC approval | IOC does not approve PbN. OCOG owns formal PbN approval and adjustment. IOC has visibility only. | 2026-03-30 |
-| 8 | ENR undertaking signature | External process (Adobe Acrobat) continues for v1. In-system in v1.1 pending legal review. | 2026-03-28 |
+| 8 | ENR undertaking signature | External process (Adobe Acrobat) continues for v1. In-system in v2.0 pending legal review. | 2026-03-28 |
 | 9 | Deduplication algorithm | Name + domain matching with IOC review queue. Over-flag preferred. Cross-Games matching enabled. Freelancers: name + country only. | 2026-03-28 |
 | 10 | Quota model — structure | Press quota and photo quota tracked separately per NOC. ENR quota is a completely separate holdback pool managed by IOC. Not a single integer per NOC. | 2026-03-30 |
-| 11 | Quota import | IOC imports quota totals from Excel. Produces an editable table in the IOC dashboard. Both import and in-app edit are supported for v0.1. All changes audit-logged. | 2026-03-30 / updated 2026-03-30 |
+| 11 | Quota import | IOC imports quota totals from Excel. Produces an editable table in the IOC dashboard. Both import and in-app edit are supported for prototype. All changes audit-logged. | 2026-03-30 / updated 2026-03-30 |
 | 12 | EoI category options | ~~Press / Photo / Both.~~ **Superseded by Decision #27 (2026-03-31).** See Decision #27 for full E-category set. ENR is not an EoI category. | 2026-03-30 / superseded 2026-03-31 |
 | 13 | ENR process model | ENR is EoI inverted: NOC submits a prioritised ENR request list to IOC. IOC reviews and grants from a separate holdback pool. Media orgs do not self-apply as ENR. | 2026-03-30 |
 | 14 | EoI ownership | EoI is owned and driven by the NOC. OCOG and IOC have visibility only during EoI phase — no approve/return/reject actions. | 2026-03-30 |
@@ -729,12 +729,12 @@ When setting quotas in July 2026, the IOC should be able to compare against prio
 | 17 | Common Codes ownership | Common Codes is D.TEC (Ken's team). Both PRP and ACR are peer consumers. PRP exports org data; Common Codes assigns codes through a separate workflow. | 2026-03-29 |
 | 18 | Anomaly detection thresholds | NOC inactivity: 7-day default (configurable). Concentration risk: >30% of quota to one org (configurable). | 2026-03-28 |
 | 19 | IF role vs. NOC role | IFs use the same admin role and screens as NOC admins. Key difference: IFs have no public EoI queue. IF orgs enter via invited-org flow only. Otherwise PbN allocation and ENR submission are identical. | 2026-03-30 |
-| 20 | IOC quota editing post-import | IOC can edit quota totals after import (v0.1). The quota table supports both import and in-app edit mode. All changes audit-logged in `quota_changes` table. | 2026-03-30 / updated 2026-03-30 |
+| 20 | IOC quota editing post-import | IOC can edit quota totals after import (prototype). The quota table supports both import and in-app edit mode. All changes audit-logged in `quota_changes` table. | 2026-03-30 / updated 2026-03-30 |
 | 21 | ENR partial allocation | IOC approves a percentage of each NOC's ENR request. Per-org outcomes: Granted (full), Partial grant (fewer slots than requested), Denied (0 slots). IOC sets granted slot count per org explicitly. | 2026-03-30 |
-| 22 | Games-to-games event_id scope | `event_id` scoping is v1 / v0.1 scope (not deferred). Must be in schema before any production data is entered. Default 'LA28'. | 2026-03-30 |
+| 22 | Games-to-games event_id scope | `event_id` scoping is v1.0 / prototype scope (not deferred). Must be in schema before any production data is entered. Default 'LA28'. | 2026-03-30 |
 | 23 | Prior Games quota data | Seed Paris 2024 / Tokyo 2020 quota data as test fixtures for dev and UAT. Real IOC OIS data loaded before July 2026 quota-setting window. | 2026-03-30 |
 | 24 | ACR stub | Build AcrStubClient in Sprint 1 from the design-doc-defined OrgExportRecord interface. Do not wait for ACR API contract. Adjust stub when real contract arrives. | 2026-03-30 |
-| 25 | Data residency | v0.1 prototype: US hosting (Railway), synthetic data only, no real PII. v1 production: EU hosting on D.TEC/DGP infrastructure. | 2026-03-30 |
+| 25 | Data residency | prototype phase: US hosting (Railway), synthetic data only, no real PII. v1.0 production: EU hosting on D.TEC/DGP infrastructure. | 2026-03-30 |
 | 26 | IOC-Direct organisations | The IOC acts as the NOC-equivalent for a reserved list of major international media orgs (AFP, AP, Reuters, Xinhua, etc.) via a special pseudo-NOC code `IOC_DIRECT`. The reserved list is managed by IOC admin before EoI opens. Real NOCs get a dedup block if they attempt to submit an EoI for a reserved org. The IOC admin has a NOC-equivalent workflow (EoI queue, PbN allocation) scoped to `IOC_DIRECT`, with OCOG approval on the same state machine. | 2026-03-31 |
 | 27 | EoI/PbN accreditation categories | Replace Press / Photo / Both with the full E-category set: E (Journalist), Es (Sport-specific journalist), EP (Photographer), EPs (Sport-specific photographer), ET (Technician), EC (Support staff). NOC E (Press Attaché) is NOT on the public EoI form — NOC-nominated only. Categories flow from EoI through to PbN slot allocation and the ACR export. IOC quotas and `org_slot_allocations` are structured per category. `OrgExportRecord` includes per-category slot counts. | 2026-03-31 |
 
@@ -889,7 +889,7 @@ sudo_tokens
 - Retention: archive until December 31, 2030; then purge
 - Backup retention: 90 days rolling
 - Encryption at rest and in transit (TLS 1.3 minimum)
-- Data residency: **v0.1 prototype — US hosting (Railway), synthetic/test data only, no real PII.** **v1 production — EU hosting on D.TEC/DGP infrastructure** (same infra as rest of D.TEC systems).
+- Data residency: **prototype phase — US hosting (Railway), synthetic/test data only, no real PII.** **v1.0 production — EU hosting on D.TEC/DGP infrastructure** (same infra as rest of D.TEC systems).
 - Right-to-be-forgotten: restricted under GDPR Article 17(3)(b)
 
 ---
@@ -980,7 +980,7 @@ Two parallel paths until legal review completes (target: April 30, 2026):
 
 ## Games-to-Games Org Persistence
 
-**In v0.1 / v1 scope.** `event_id` scoping is required in the schema before any production data is entered.
+**In prototype / v1.0 scope.** `event_id` scoping is required in the schema before any production data is entered.
 
 Organisations are first-class entities that outlive a single Games edition. All tables scoped to `event_id`. Adding future events is a data operation, not a code change.
 
@@ -1007,7 +1007,7 @@ GATE 0 (deadline: April 30, 2026)
   If either gate is not cleared → timeline shifts 1:1
 
 Apr 1–25      Sprint 1: EoI form + NOC dashboard + OCOG/IOC visibility,
-              PbN allocation + OCOG approval + ENR screens (all in v0.1),
+              PbN allocation + OCOG approval + ENR screens (all in prototype),
               auth (3 roles), DB schema, AcrStubClient, quota model.
 
 Apr 25–Jun 30 Hardening, capacity testing, security review, OCOG UAT.
@@ -1020,11 +1020,11 @@ Jul 1–Aug 10  Production deployment, final QA, NOC onboarding.
 Aug 24        Portal goes live — EoI window opens.
               PbN + ENR software live; PbN process launches Oct 5.
 
-Sep 1–25      v1.1: ACR real-time sync + ENR undertaking in-system.
-              (PbN software already shipped in v1; v1.1 adds ACR
+Sep 1–25      v2.0: ACR real-time sync + ENR undertaking in-system.
+              (PbN software already shipped in v1; v2.0 adds ACR
               integration before the PbN allocation process opens)
 
-Oct 5         Press by Number process launches (v1.1 must be live).
+Oct 5         Press by Number process launches (v2.0 must be live).
 
 Oct 23        Portal closes for new EoI applications.
 
@@ -1062,11 +1062,11 @@ Summer 2028   LA28 Olympic Games.
 | 4 | ACR integration go/no-go | IOC + LA28 + ACR system | June 1, 2026 | UNASSIGNED |
 | 5 | Data handoff contract (field-level spec) | D.TEC | May 1, 2026 | UNASSIGNED |
 | 6 | RACI: IOC / LA28 / D.TEC ownership | IOC | April 30, 2026 | OPEN — No RACI exists. Critical gap for sprint ownership decisions. |
-| 7 | GDPR / EU data residency confirmation | IOC Legal | May 1, 2026 | RESOLVED — v0.1 US/Railway with no PII. v1 on D.TEC/DGP EU infra. Formal legal sign-off still needed before v1 launch. |
+| 7 | GDPR / EU data residency confirmation | IOC Legal | May 1, 2026 | RESOLVED — prototype US/Railway with no PII. v1.0 on D.TEC/DGP EU infra. Formal legal sign-off still needed before v1.0 launch. |
 | 8 | IOC SSO integration feasibility + timeline | IOC IT + D.TEC | April 15, 2026 | UNASSIGNED |
 | 9 | Quota: two-step separation enforced for all NOC sizes? | IOC OIS | TBD | OPEN |
 | 10 | Quota assignees beyond NOCs — IFs, INOs, others? | IOC OIS | TBD | RESOLVED — IFs resolved (Decision #19). IOC-Direct resolved (Decision #26). INOs confirmed (17-Apr-2026): `ino` org type follows IOC-Direct workflow with distinct label for OCOG ACR coding. |
-| 11 | Quota amendment workflow — can IOC adjust NOC totals after import? | IOC OIS | TBD | RESOLVED — Yes, for v0.1. Both import and in-app edit supported. See Decision #20. |
+| 11 | Quota amendment workflow — can IOC adjust NOC totals after import? | IOC OIS | TBD | RESOLVED — Yes, for prototype. Both import and in-app edit supported. See Decision #20. |
 | 12 | Prior Games quota data import — IOC OIS to provide Paris 2024 / Tokyo 2020 source data | IOC OIS | June 2026 | RESOLVED — Generate test fixture data for dev/UAT now. Load real IOC OIS data before July 2026 quota-setting window. |
 | 13 | Common Codes lookup API at submission time | D.TEC Common Codes team | May 1, 2026 | OPEN |
 | 14 | ENR prioritised list — does IOC grant partial allocations or all-or-nothing per org? | IOC OIS | TBD | RESOLVED — Per-org partial allocation. IOC approves a percentage of each NOC's request. Outcomes: Granted / Partial grant / Denied. See Decision #21. |
@@ -1185,7 +1185,7 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 | Outside Voice | 2026-03-28 | COMPLETE | 13 findings; 4 cross-model tensions |
 | Design Review | 2026-03-28 | DONE | 6 wireframes produced |
 | IOC Stakeholder Interview | 2026-03-30 | COMPLETE | Major structural clarifications — see Two Processes section and Resolved Decisions 10–15 |
-| Design Doc + Wireframe Review | 2026-03-30 | COMPLETE | ENR process separation clarified; cross-NOC dedup provisionally eliminated; PbN scope in v0.1 confirmed; NOC notifications added; IOC ENR and Quota screens created |
+| Design Doc + Wireframe Review | 2026-03-30 | COMPLETE | ENR process separation clarified; cross-NOC dedup provisionally eliminated; PbN scope in prototype confirmed; NOC notifications added; IOC ENR and Quota screens created |
 | Codebase accuracy audit | 2026-03-31 | COMPLETE | Design doc updated to match built code: sudo feature added, ioc_readonly role added, EoI 5-tab form documented, QuotaBar documented, pbn_state sent_to_acr added, OrgExportRecord corrected, quota import legacy gap flagged, full schema documented, build status summary table added, test files documented |
 | Design confirmation review | 2026-04-02 | COMPLETE | 5 undocumented built features added (fast-track, EoI window toggle, quota dashboard, applicant status tracking, reversals); test inventory corrected (6→12 files); IOC-Direct route corrected (`/ioc/direct` → `/ioc/orgs`); quota import gap and OrgExportRecord gap escalated to Critical Risks table; overdue open questions (#1, #6) flagged; 3 new open questions added (#20–22) for undocumented features |
 | Full doc/code audit | 2026-04-02 | COMPLETE | 5 stale items corrected (Critical Risks #9/#10 resolved, quota_changes quotaType updated, audit_action enum completed). 13 discrepancies identified between design and code. Session timeout updated from 30min to 8h. Stakeholder Confirmation Register added (24 items across 6 stakeholder groups). IOC-Direct provisional decision: direct setup + PbN, no EoI flow. NOC E provisional decision: NOC self-enters as org. Email/notifications confirmed deferred to v1.0. Security and WCAG accessibility audits initiated. |
@@ -1449,7 +1449,7 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 **Status:** NOT STARTED (maps to Open Question #2, TODO-007)
 **Provisional decision:** Two paths prepared: Path A (typed name + checkbox + timestamp, build first); Path B (DocuSign-grade e-signature, additive if legal requires it).
 **What we need:** Legal review determining which path is legally sufficient. Path A is ~1 day of work; Path B is ~3-4 weeks.
-**Deadline:** April 30, 2026 (to inform v1.1 design)
+**Deadline:** April 30, 2026 (to inform v2.0 design)
 **Confirm with:** IOC Legal
 **Implementation status:** Neither path built yet; external Adobe Acrobat process continues for v1
 
@@ -1457,8 +1457,8 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 
 ### SCR-17: Infrastructure and hosting — EU data residency for v1
 
-**Status:** RESOLVED for v0.1; v1 needs formal sign-off (maps to Open Question #3, #7)
-**Provisional decision:** v0.1 = US/Railway/synthetic data. v1 = D.TEC/DGP EU infrastructure.
+**Status:** RESOLVED for prototype; v1.0 needs formal sign-off (maps to Open Question #3, #7)
+**Provisional decision:** prototype = US/Railway/synthetic data. v1 = D.TEC/DGP EU infrastructure.
 **What we need:** (a) Formal legal sign-off on D.TEC/DGP EU hosting for v1. (b) Named infrastructure owner. (c) Deployment timeline from D.TEC infra team.
 **Confirm with:** IOC Legal (data residency), D.TEC infrastructure team (hosting)
 
@@ -1467,7 +1467,7 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 ### SCR-18: SSO integration — feasibility and timeline
 
 **Status:** UNASSIGNED (maps to Open Question #8)
-**Provisional decision:** v0.1 uses email + password (prototype auth). v1.0 replaces with D.TEC/DGP SSO.
+**Provisional decision:** prototype uses email + password (prototype auth). v1.0 replaces with D.TEC/DGP SSO.
 **What we need:** (a) Is D.TEC/DGP SSO the confirmed identity provider? (b) What protocol (SAML, OIDC)? (c) Can integration be completed by August 2026? (d) Who provisions admin accounts — IOC, D.TEC, or self-registration?
 **Confirm with:** IOC IT, D.TEC
 **Implementation status:** Cookie-based HMAC session built; SSO adapter not started
@@ -1524,7 +1524,7 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 ### SCR-23: Email notification and communication system
 
 **Status:** DEFERRED TO v1.0
-**Provisional decision:** No email infrastructure is built in v0.1. All notifications are currently in-app only (URL query parameter success/error messages). The design specifies email notifications at several points:
+**Provisional decision:** No email infrastructure is built in prototype. All notifications are currently in-app only (URL query parameter success/error messages). The design specifies email notifications at several points:
 - Applicant: magic link for form access, confirmation of submission, return-for-correction notice
 - NOC: notification of OCOG PbN approval/adjustment, notification of ACR send
 - IOC: anomaly detection digest (P2)
@@ -1539,11 +1539,11 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 
 ---
 
-### SCR-24: v1.1 scope and October 5 deadline
+### SCR-24: v2.0 scope and October 5 deadline
 
 **Status:** OPEN (maps to TODO-008)
-**Provisional decision:** v1.1 ships late September 2026, before October 5 PbN process launch. Planned scope: ACR real-time sync, ENR undertaking in-system, French admin portal + Spanish localisation (public EoI form French already in v1.0), self-service NOC account registration.
-**What we need:** Reality check — can all of this ship in 4 weeks (September 1-25) given unresolved legal reviews (ENR undertaking) and unassigned procurement (translators)? May need to split into v1.1 (ACR sync only, hard October 5 requirement) and v1.2 (everything else).
+**Provisional decision:** v2.0 ships late September 2026, before October 5 PbN process launch. Planned scope: ACR real-time sync, ENR undertaking in-system, French admin portal + Spanish localisation (public EoI form French already in v1.0), self-service NOC account registration.
+**What we need:** Reality check — can all of this ship in 4 weeks (September 1-25) given unresolved legal reviews (ENR undertaking) and unassigned procurement (translators)? May need to split into v2.0 (ACR sync only, hard October 5 requirement) and v2.0+ (everything else).
 **Confirm with:** IOC Media Operations, D.TEC leadership
 
 ---

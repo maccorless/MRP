@@ -2,7 +2,7 @@
 
 # PRP Manual Test Walkthrough
 
-**Version**: v0.1  
+**Version**: v0.2  
 **Production URL (primary)**: https://mrp.dgpbeta.com/  
 **Production URL (fallback)**: https://mrp-production-8073.up.railway.app/
 
