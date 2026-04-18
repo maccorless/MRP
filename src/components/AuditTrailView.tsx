@@ -143,7 +143,7 @@ export function AuditTrailView({
                 ← Previous
               </a>
             ) : (
-              <span className="text-gray-300 text-xs">← Previous</span>
+              <span className="text-gray-500 text-xs">← Previous</span>
             )}
             <span className="text-xs text-gray-600">Page {page} of {totalPages}</span>
             {page < totalPages ? (
@@ -151,7 +151,7 @@ export function AuditTrailView({
                 Next →
               </a>
             ) : (
-              <span className="text-gray-300 text-xs">Next →</span>
+              <span className="text-gray-500 text-xs">Next →</span>
             )}
           </div>
         </div>
