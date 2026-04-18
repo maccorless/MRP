@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import { invitations, auditLog } from "@/db/schema";
+import { requireBaseUrl } from "@/lib/env";
 import { requireNocSession, requireWritable } from "@/lib/session";
 import { generateToken, hashToken } from "@/lib/tokens";
 
@@ -77,7 +78,7 @@ export async function createInvitation(
     detail: `Invite created for ${orgName ?? "(no org name)"} — ${recipientEmail ?? "no email"} (NOC: ${session.nocCode})`,
   });
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const baseUrl = requireBaseUrl();
   const inviteUrl = `${baseUrl}/invite/${rawToken}`;
 
   return { inviteUrl, inviteId: row.id, error: null };

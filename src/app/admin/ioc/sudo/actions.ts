@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { adminUsers, sudoTokens, auditLog } from "@/db/schema";
+import { requireBaseUrl } from "@/lib/env";
 import { getBaseSession, requireIocAdminSession } from "@/lib/session";
 
 function generateToken(): string {
@@ -66,7 +67,7 @@ export async function initiateSudo(formData: FormData): Promise<{ url: string } 
     detail: `Sudo initiated as ${target.displayName} (${target.role}${target.nocCode ? ` · ${target.nocCode}` : ""})`,
   });
 
-  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  const baseUrl = requireBaseUrl();
   return { url: `${baseUrl}/admin/sudo/activate?token=${token}` };
 }
 
