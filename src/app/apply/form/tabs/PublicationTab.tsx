@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import type { PrefillData } from "../EoiFormTabs";
+import { makeT, type Lang, type TranslationKey } from "@/lib/i18n";
 
 const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
 const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 const HELP = "text-xs text-gray-400 mt-1";
 
-const PUBLICATION_TYPES = [
+// Map from display name to translation key suffix
+const PUBLICATION_TYPES: string[] = [
   "App",
   "Editorial Website / Blog",
   "Email Newsletter",
@@ -24,7 +26,8 @@ const PUBLICATION_TYPES = [
   "Other",
 ];
 
-export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
+export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData | null; lang?: Lang }) {
+  const t = makeT(lang);
   const defaultTypes = (prefill?.publicationTypes as string[] | null) ?? [];
   const [otherChecked, setOtherChecked] = useState(
     prefill?.publicationTypes?.includes("other") ?? false
@@ -33,17 +36,19 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
   return (
     <div className="space-y-6">
       <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-        Help us understand your publication's reach and output. This information supports your NOC's evaluation
-        and helps the IOC understand the media landscape for the Games.
+        {t("pub.intro")}
       </div>
 
       {/* Publication types */}
       <div>
-        <label className={LABEL}>Publication type <span className="text-gray-400 font-normal">(select all that apply)</span></label>
+        <label className={LABEL}>
+          {t("pub.types.label")} <span className="text-gray-400 font-normal">{t("pub.types.selectAll")}</span>
+        </label>
         <div className="grid grid-cols-2 gap-2 mt-2">
           {PUBLICATION_TYPES.map((type) => {
             const value = type.toLowerCase().replace(/[^a-z0-9]/g, "_");
             const isOther = value === "other";
+            const label = t(`pub.types.${type}` as TranslationKey) ?? type;
             return (
               <label key={value} className="flex items-center gap-2 p-2.5 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#0057A8] has-[:checked]:bg-blue-50 transition-colors text-sm">
                 <input
@@ -55,7 +60,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
                   className="accent-[#0057A8]"
                   onChange={isOther ? (e) => setOtherChecked(e.target.checked) : undefined}
                 />
-                {type}
+                {label}
               </label>
             );
           })}
@@ -64,7 +69,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
           <input
             name="publication_type_other"
             type="text"
-            placeholder="Please specify..."
+            placeholder={t("pub.types.other.placeholder")}
             className={BASE_INPUT + " border-gray-300 mt-2"}
             defaultValue={prefill?.publicationTypeOther ?? ""}
             data-tab="3"
@@ -75,20 +80,20 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
       {/* Circulation + frequency */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="circulation" className={LABEL}>Circulation / unique visitors per month</label>
+          <label htmlFor="circulation" className={LABEL}>{t("pub.circulation.label")}</label>
           <input id="circulation" name="circulation" type="text" data-tab="3"
-            defaultValue={prefill?.circulation ?? ""} placeholder="e.g. 500,000 monthly visitors" className={INPUT} />
-          <p className={HELP}>Print circulation or website unique visitors</p>
+            defaultValue={prefill?.circulation ?? ""} placeholder={t("pub.circulation.placeholder")} className={INPUT} />
+          <p className={HELP}>{t("pub.circulation.help")}</p>
         </div>
         <div>
           <label htmlFor="pub-online-visitors" className="block text-xs font-medium text-gray-700 mb-1">
-            Online unique visitors per month <span className="text-gray-400 font-normal">(optional)</span>
+            {t("pub.onlineVisitors.label")} <span className="text-gray-400 font-normal">{t("pub.onlineVisitors.optional")}</span>
           </label>
           <input
             id="pub-online-visitors"
             name="online_unique_visitors"
             type="text"
-            placeholder="e.g. 500,000"
+            placeholder={t("pub.onlineVisitors.placeholder")}
             defaultValue={prefill?.onlineUniqueVisitors ?? ""}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
           />
@@ -98,7 +103,7 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
       {/* Geographical coverage */}
       <div>
         <label htmlFor="pub-geo-coverage" className="block text-xs font-medium text-gray-700 mb-1">
-          Geographical coverage of publication <span className="text-gray-400 font-normal">(optional)</span>
+          {t("pub.geo.label")} <span className="text-gray-400 font-normal">{t("pub.geo.optional")}</span>
         </label>
         <select
           id="pub-geo-coverage"
@@ -106,30 +111,30 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
           defaultValue={prefill?.geographicalCoverage ?? ""}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
         >
-          <option value="">Select…</option>
-          <option value="international">International</option>
-          <option value="national">National</option>
-          <option value="local">Local / Regional</option>
+          <option value="">{t("pub.geo.placeholder")}</option>
+          <option value="international">{t("pub.geo.international")}</option>
+          <option value="national">{t("pub.geo.national")}</option>
+          <option value="local">{t("pub.geo.local")}</option>
         </select>
       </div>
 
       {/* Frequency */}
       <div>
-        <label htmlFor="publication_frequency" className={LABEL}>Frequency of publication</label>
+        <label htmlFor="publication_frequency" className={LABEL}>{t("pub.frequency.label")}</label>
         <input id="publication_frequency" name="publication_frequency" type="text" data-tab="3"
-          defaultValue={prefill?.publicationFrequency ?? ""} placeholder="e.g. Daily, Weekly, Monthly" className={INPUT} />
+          defaultValue={prefill?.publicationFrequency ?? ""} placeholder={t("pub.frequency.placeholder")} className={INPUT} />
       </div>
 
       {/* Social media accounts */}
       <div>
         <label htmlFor="pub-social-media" className="block text-xs font-medium text-gray-700 mb-1">
-          Social media accounts <span className="text-gray-400 font-normal">(optional)</span>
+          {t("pub.social.label")} <span className="text-gray-400 font-normal">{t("pub.social.optional")}</span>
         </label>
         <textarea
           id="pub-social-media"
           name="social_media_accounts"
           rows={2}
-          placeholder="e.g. @org_name on X/Twitter, Instagram: @org_name"
+          placeholder={t("pub.social.placeholder")}
           defaultValue={prefill?.socialMediaAccounts ?? ""}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
         />
@@ -137,10 +142,10 @@ export function PublicationTab({ prefill }: { prefill: PrefillData | null }) {
 
       {/* Sports */}
       <div>
-        <label htmlFor="sports_to_cover" className={LABEL}>Which sports do you plan to cover at LA 2028?</label>
+        <label htmlFor="sports_to_cover" className={LABEL}>{t("pub.sports.label")}</label>
         <textarea id="sports_to_cover" name="sports_to_cover" rows={3} data-tab="3"
           defaultValue={prefill?.sportsToCover ?? ""}
-          placeholder="e.g. Athletics, Swimming, Gymnastics, Basketball"
+          placeholder={t("pub.sports.placeholder")}
           className={`${INPUT} resize-none`} />
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PrefillData } from "../EoiFormTabs";
+import { makeT, type Lang } from "@/lib/i18n";
 
 const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
@@ -52,7 +53,8 @@ function EditionCheckboxes({
   );
 }
 
-export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
+export function HistoryTab({ prefill, lang = "en" }: { prefill: PrefillData | null; lang?: Lang }) {
+  const t = makeT(lang);
   const [priorOlympic, setPriorOlympic] = useState<string>(
     prefill?.priorOlympic === true ? "yes" : prefill?.priorOlympic === false ? "no" : ""
   );
@@ -84,21 +86,20 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
   return (
     <div className="space-y-6">
       <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-        Prior accreditation history helps establish your organisation&apos;s track record covering major international sporting events.
-        If this is your first application, that&apos;s completely fine — just tell us about your sports coverage experience.
+        {t("history.intro")}
       </div>
 
       {/* Olympic history */}
       <fieldset>
-        <legend className={LABEL}>Has your organisation received Olympic accreditation in the past?</legend>
+        <legend className={LABEL}>{t("history.olympic.legend")}</legend>
         <div className="flex gap-4 mt-1">
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_olympic" value="yes" data-tab="4"
-              checked={priorOlympic === "yes"} onChange={() => setPriorOlympic("yes")} className="accent-[#0057A8]" /> Yes
+              checked={priorOlympic === "yes"} onChange={() => setPriorOlympic("yes")} className="accent-[#0057A8]" /> {t("history.olympic.yes")}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_olympic" value="no" data-tab="4"
-              checked={priorOlympic === "no"} onChange={() => setPriorOlympic("no")} className="accent-[#0057A8]" /> No
+              checked={priorOlympic === "no"} onChange={() => setPriorOlympic("no")} className="accent-[#0057A8]" /> {t("history.olympic.no")}
           </label>
         </div>
       </fieldset>
@@ -106,14 +107,14 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
       {priorOlympic === "yes" && (
         <div className="pl-6 border-l-2 border-blue-200 space-y-4">
           <div>
-            <label className={LABEL}>Which years?</label>
-            <p className="text-xs text-gray-500 mb-2">Summer Games:</p>
+            <label className={LABEL}>{t("history.olympic.years.label")}</label>
+            <p className="text-xs text-gray-500 mb-2">{t("history.olympic.summer")}</p>
             <EditionCheckboxes
               editions={SUMMER_EDITIONS}
               checked={olympicEditions}
               onChange={toggleOlympic}
             />
-            <p className="text-xs text-gray-500 mt-3 mb-2">Winter Games:</p>
+            <p className="text-xs text-gray-500 mt-3 mb-2">{t("history.olympic.winter")}</p>
             <EditionCheckboxes
               editions={WINTER_EDITIONS}
               checked={olympicEditions}
@@ -122,27 +123,27 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
             <input type="hidden" name="prior_olympic_years" value={olympicEditions.join(",")} />
           </div>
           <div>
-            <label htmlFor="past_coverage_examples" className={LABEL}>Examples of past Games coverage</label>
+            <label htmlFor="past_coverage_examples" className={LABEL}>{t("history.olympic.coverage.label")}</label>
             <textarea id="past_coverage_examples" name="past_coverage_examples" rows={3} data-tab="4"
               defaultValue={prefill?.pastCoverageExamples ?? ""}
-              placeholder="Include links to published articles, photo galleries, or broadcasts from previous Olympic Games"
+              placeholder={t("history.olympic.coverage.placeholder")}
               className={`${INPUT} resize-none`} />
-            <p className={HELP}>Links to published work are strongly encouraged</p>
+            <p className={HELP}>{t("history.olympic.coverage.help")}</p>
           </div>
         </div>
       )}
 
       {/* Paralympic history */}
       <fieldset>
-        <legend className={LABEL}>Has your organisation received Paralympic accreditation in the past?</legend>
+        <legend className={LABEL}>{t("history.paralympic.legend")}</legend>
         <div className="flex gap-4 mt-1">
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_paralympic" value="yes" data-tab="4"
-              checked={priorParalympic === "yes"} onChange={() => setPriorParalympic("yes")} className="accent-[#0057A8]" /> Yes
+              checked={priorParalympic === "yes"} onChange={() => setPriorParalympic("yes")} className="accent-[#0057A8]" /> {t("history.paralympic.yes")}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_paralympic" value="no" data-tab="4"
-              checked={priorParalympic === "no"} onChange={() => setPriorParalympic("no")} className="accent-[#0057A8]" /> No
+              checked={priorParalympic === "no"} onChange={() => setPriorParalympic("no")} className="accent-[#0057A8]" /> {t("history.paralympic.no")}
           </label>
         </div>
       </fieldset>
@@ -150,14 +151,14 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
       {priorParalympic === "yes" && (
         <div className="pl-6 border-l-2 border-blue-200 space-y-4">
           <div>
-            <label className={LABEL}>Which years?</label>
-            <p className="text-xs text-gray-500 mb-2">Summer Games:</p>
+            <label className={LABEL}>{t("history.olympic.years.label")}</label>
+            <p className="text-xs text-gray-500 mb-2">{t("history.olympic.summer")}</p>
             <EditionCheckboxes
               editions={SUMMER_EDITIONS}
               checked={paralympicEditions}
               onChange={toggleParalympic}
             />
-            <p className="text-xs text-gray-500 mt-3 mb-2">Winter Games:</p>
+            <p className="text-xs text-gray-500 mt-3 mb-2">{t("history.olympic.winter")}</p>
             <EditionCheckboxes
               editions={WINTER_EDITIONS}
               checked={paralympicEditions}
@@ -172,23 +173,23 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
       {noPrior && (
         <div className="pl-6 border-l-2 border-gray-200">
           <label htmlFor="past_coverage_fallback" className={LABEL}>
-            What sporting events does your organisation regularly cover?
+            {t("history.noPrior.label")}
           </label>
           <textarea id="past_coverage_fallback" name="past_coverage_examples" rows={3} data-tab="4"
             defaultValue={prefill?.pastCoverageExamples ?? ""}
-            placeholder="Describe the sporting events, leagues, or competitions your organisation covers. Include any major international events."
+            placeholder={t("history.noPrior.placeholder")}
             className={`${INPUT} resize-none`} />
         </div>
       )}
 
       {/* Additional information */}
       <div className="border-t border-gray-100 pt-6">
-        <label htmlFor="additional_comments" className={LABEL}>Additional information</label>
+        <label htmlFor="additional_comments" className={LABEL}>{t("history.additional.label")}</label>
         <textarea id="additional_comments" name="additional_comments" rows={3} data-tab="4"
           defaultValue={prefill?.additionalComments ?? ""}
-          placeholder="Use this field for any additional information requested by your NOC, or anything else you'd like to tell us."
+          placeholder={t("history.additional.placeholder")}
           className={`${INPUT} resize-none`} />
-        <p className={HELP}>Use this field for any additional information requested by your NOC, or anything else you&apos;d like to tell us.</p>
+        <p className={HELP}>{t("history.additional.help")}</p>
       </div>
     </div>
   );

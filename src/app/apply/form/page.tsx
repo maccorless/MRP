@@ -6,6 +6,7 @@ import { magicLinkTokens, applications, organizations } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 import { COUNTRY_CODES, NOC_CODES } from "@/lib/codes";
 import { EoiFormTabs, type PrefillData } from "./EoiFormTabs";
+import { makeT, parseLang } from "@/lib/i18n";
 
 export default async function FormPage({
   searchParams,
@@ -20,9 +21,11 @@ export default async function FormPage({
     country?: string;
     noc_code?: string;
     website?: string;
+    lang?: string;
   }>;
 }) {
-  const { token, email, from, resubmit, org_name, org_type, country, noc_code, website } = await searchParams;
+  const { token, email, from, resubmit, org_name, org_type, country, noc_code, website, lang: langParam } = await searchParams;
+  const t = makeT(parseLang(langParam));
 
   if (!token || !email) redirect("/apply");
 
@@ -152,20 +155,20 @@ export default async function FormPage({
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4 mb-1">
           <h1 className="text-2xl font-bold text-gray-900">
-            {isResubmission ? "Resubmit Application" : isPendingEdit ? "Edit Application" : "LA 2028 Media Accreditation"}
+            {isResubmission ? t("form.title.resubmit") : isPendingEdit ? t("form.title.edit") : t("form.title.new")}
           </h1>
           {!isResubmission && !isPendingEdit && (
-            <Link href="/apply/how-it-works" className="shrink-0 text-sm text-[#0057A8] hover:underline mt-1">
-              How does this work?
+            <Link href={`/apply/how-it-works${langParam ? `?lang=${langParam}` : ""}`} className="shrink-0 text-sm text-[#0057A8] hover:underline mt-1">
+              {t("form.howDoesThisWork")}
             </Link>
           )}
         </div>
         <p className="text-sm text-gray-500 leading-relaxed">
           {isResubmission
-            ? "Review the feedback below, correct the relevant sections, and resubmit."
+            ? t("form.subtitle.resubmit")
             : isPendingEdit
-            ? "Your application is still pending review. You can update it below and save your changes."
-            : "Expression of Interest for press and photo accreditation at the Olympic and Paralympic Games Los Angeles 2028. Your application will be reviewed by your National Olympic Committee (NOC) before being forwarded to the IOC."}
+            ? t("form.subtitle.edit")
+            : t("form.subtitle.new")}
         </p>
       </div>
 
@@ -173,11 +176,11 @@ export default async function FormPage({
       {isResubmission && returnedRow && (
         <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="text-sm font-semibold text-orange-800 mb-1">
-            Returned — corrections required
+            {t("form.returnedBanner.heading")}
           </div>
           <p className="text-sm text-orange-700">{returnedRow.app.reviewNote}</p>
           <div className="mt-2 text-xs text-orange-600">
-            Reference: <span className="font-mono">{returnedRow.app.referenceNumber}</span>
+            {t("form.returnedBanner.reference")} <span className="font-mono">{returnedRow.app.referenceNumber}</span>
           </div>
         </div>
       )}
@@ -185,13 +188,12 @@ export default async function FormPage({
       {/* Pending-edit info note */}
       {isPendingEdit && editRow && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="text-sm font-semibold text-blue-800 mb-1">Application pending review</div>
+          <div className="text-sm font-semibold text-blue-800 mb-1">{t("form.pendingBanner.heading")}</div>
           <p className="text-sm text-blue-700">
-            Your application has not yet been reviewed by your NOC. You can update the details below.
-            Once your NOC begins their review you will no longer be able to make changes.
+            {t("form.pendingBanner.body")}
           </p>
           <div className="mt-2 text-xs text-blue-600">
-            Reference: <span className="font-mono">{editRow.app.referenceNumber}</span>
+            {t("form.pendingBanner.reference")} <span className="font-mono">{editRow.app.referenceNumber}</span>
           </div>
         </div>
       )}
@@ -201,15 +203,17 @@ export default async function FormPage({
         <div className="mb-6 space-y-2 text-xs text-gray-500">
           <div className="flex items-start gap-2">
             <span className="text-gray-400 mt-0.5">*</span>
-            <span>Only one application per organisation will be accepted.</span>
+            <span>{t("form.note.onePerOrg")}</span>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-gray-400 mt-0.5">*</span>
-            <span>Applications should be submitted by an authorised representative (sports editor, managing editor, or equivalent).</span>
+            <span>{t("form.note.authorised")}</span>
           </div>
           <div className="flex items-start gap-2">
             <span className="text-gray-400 mt-0.5">*</span>
-            <span>Fields marked with <span className="text-red-500">*</span> are required. All other fields are optional but help strengthen your application.</span>
+            <span>{t("form.note.required").split("*").map((part, i) =>
+              i === 1 ? <><span key="star" className="text-red-500">*</span>{part}</> : part
+            )}</span>
           </div>
         </div>
       )}
@@ -224,6 +228,7 @@ export default async function FormPage({
         isFromInvite={isFromInvite}
         countryCodes={COUNTRY_CODES}
         nocCodes={NOC_CODES}
+        lang={parseLang(langParam)}
       />
     </div>
   );

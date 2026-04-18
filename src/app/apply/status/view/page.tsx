@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { magicLinkTokens, applications, orgSlotAllocations, organizations, featureFlags } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 import { STATUS_BADGE } from "@/components/StatusBadge";
+import { makeT, parseLang, type TranslationKey } from "@/lib/i18n";
 
 async function isPbnResultsPublished(): Promise<boolean> {
   const [flag] = await db
@@ -33,39 +34,6 @@ function maskStatus(rawStatus: string, pbnPublished: boolean): string {
   return "pending";
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  pending:     "Application Under Review",
-  resubmitted: "Application Under Review",
-  approved:    "Accepted as Candidate",
-  returned:    "Returned for Corrections",
-  rejected:    "Rejected",
-};
-
-const STATUS_DESC: Record<string, string> = {
-  pending:     "Your application has been received and is under review.",
-  resubmitted: "Your corrected application is under review.",
-  approved:    "Your NOC has accepted your application as a candidate for press accreditation. Accreditation slot allocation happens in the next phase (Press by Number) and is not guaranteed — some accepted candidates may ultimately receive no slots. You will be notified once the NOC's allocation is finalised.",
-  returned:    "Your NOC has requested corrections. Please review the note below and resubmit.",
-  rejected:    "Your application has not been accepted.",
-};
-
-const ORG_TYPE_LABEL: Record<string, string> = {
-  media_print_online: "Print / Online Media",
-  media_broadcast:    "Broadcast",
-  news_agency:        "News Agency",
-  freelancer:         "Freelancer / Independent",
-  enr:                "ENR (Non-Rights Broadcaster)",
-  ino:                "INO (Intl Non-Gov Organisation)",
-  if_staff:           "IF Staff",
-  other:              "Other",
-};
-
-const CATEGORY_LABEL: Record<string, string> = {
-  E: "E — Journalist", Es: "Es — Sport Journalist",
-  EP: "EP — Photographer", EPs: "EPs — Sport Photographer",
-  ET: "ET — Technical", EC: "EC — Support",
-};
-
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null;
   return (
@@ -88,11 +56,31 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default async function StatusViewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; email?: string }>;
+  searchParams: Promise<{ token?: string; email?: string; lang?: string }>;
 }) {
-  const { token, email } = await searchParams;
+  const { token, email, lang: langParam } = await searchParams;
 
   if (!token || !email) redirect("/apply/status");
+
+  const t = makeT(parseLang(langParam));
+  const langSuffix = langParam ? `&lang=${langParam}` : "";
+
+  const ORG_TYPE_LABEL: Record<string, string> = {
+    media_print_online: "Print / Online Media",
+    media_broadcast:    "Broadcast",
+    news_agency:        "News Agency",
+    freelancer:         "Freelancer / Independent",
+    enr:                "ENR (Non-Rights Broadcaster)",
+    ino:                "INO (Intl Non-Gov Organisation)",
+    if_staff:           "IF Staff",
+    other:              "Other",
+  };
+
+  const CATEGORY_LABEL: Record<string, string> = {
+    E: "E — Journalist", Es: "Es — Sport Journalist",
+    EP: "EP — Photographer", EPs: "EPs — Sport Photographer",
+    ET: "ET — Technical", EC: "EC — Support",
+  };
 
   const tokenHash = hashToken(token);
   const [tokenRecord] = await db
@@ -125,19 +113,27 @@ export default async function StatusViewPage({
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-gray-900 mb-1">Application Status</h1>
-      <p className="text-gray-500 mb-6 text-sm">Logged in as {email}</p>
+      <h1 className="text-xl font-bold text-gray-900 mb-1">{t("statusView.title")}</h1>
+      <p className="text-gray-500 mb-6 text-sm">{t("statusView.loggedInAs")} {email}</p>
 
       {rows.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-500">
-          <div className="font-medium text-gray-700 mb-1">No applications found</div>
-          <p className="text-gray-500">We couldn&apos;t find an application for <span className="font-medium">{email}</span>.</p>
-          <p className="mt-2 text-gray-400">If you applied with a different address, <a href="/apply/status" className="text-[#0057A8] hover:underline">try again</a>. Otherwise contact your NOC directly.</p>
+          <div className="font-medium text-gray-700 mb-1">{t("statusView.noApps.heading")}</div>
+          <p className="text-gray-500">{t("statusView.noApps.body")} <span className="font-medium">{email}</span>.</p>
+          <p className="mt-2 text-gray-400">
+            {t("statusView.noApps.tryAgain").split("try again").map((part, i) =>
+              i === 0 ? part : (
+                <><a key="link" href={`/apply/status${langParam ? `?lang=${langParam}` : ""}`} className="text-[#0057A8] hover:underline">{t("statusView.noApps.tryAgainLink")}</a>{part}</>
+              )
+            )}
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
           {rows.map(({ app, org, allocation }) => {
             const displayStatus = maskStatus(app.status, pbnPublished);
+            const statusLabelKey = `statusView.status.${displayStatus}` as TranslationKey;
+            const statusDescKey = `statusView.desc.${displayStatus}` as TranslationKey;
             const categories = (
               [
                 ["E",   app.categoryE,   app.requestedE],
@@ -161,29 +157,29 @@ export default async function StatusViewPage({
                     <div className="font-semibold text-gray-900">{org.name}</div>
                   </div>
                   <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[displayStatus]}`}>
-                    {STATUS_LABEL[displayStatus] ?? displayStatus}
+                    {t(statusLabelKey)}
                   </span>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-4">{STATUS_DESC[displayStatus]}</p>
+                <p className="text-sm text-gray-600 mb-4">{t(statusDescKey)}</p>
 
                 {displayStatus === "returned" && app.reviewNote && (
                   <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
-                    <div className="font-medium mb-1">NOC note:</div>
+                    <div className="font-medium mb-1">{t("statusView.nocNote.heading")}</div>
                     {app.reviewNote}
                   </div>
                 )}
 
                 {displayStatus === "approved" && !allocation && (
                   <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
-                    <div className="font-medium text-gray-700 mb-1">Slot allocation in progress</div>
-                    Your accreditation numbers are being finalised. You will be contacted once slot allocation is confirmed.
+                    <div className="font-medium text-gray-700 mb-1">{t("statusView.allocationInProgress.heading")}</div>
+                    {t("statusView.allocationInProgress.body")}
                   </div>
                 )}
 
                 {displayStatus === "approved" && allocation && (
                   <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded">
-                    <div className="text-xs font-medium text-green-800 mb-2">Allocated slots</div>
+                    <div className="text-xs font-medium text-green-800 mb-2">{t("statusView.allocatedSlots.heading")}</div>
                     <div className="grid grid-cols-3 gap-2 text-xs text-green-900">
                       {[
                         { label: "E (Journalist)", val: allocation.eSlots },
@@ -208,18 +204,18 @@ export default async function StatusViewPage({
                 <div className="flex items-center gap-3 mb-4">
                   {displayStatus === "pending" && app.status === "pending" && (
                     <Link
-                      href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
+                      href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}${langSuffix}`}
                       className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
                     >
-                      Edit application
+                      {t("statusView.editApplication")}
                     </Link>
                   )}
                   {displayStatus === "returned" && (
                     <Link
-                      href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}`}
+                      href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}${langSuffix}`}
                       className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
                     >
-                      Correct &amp; Resubmit
+                      {t("statusView.correctResubmit")}
                     </Link>
                   )}
                 </div>
@@ -227,76 +223,76 @@ export default async function StatusViewPage({
                 {/* Collapsible read-only application view */}
                 <details className="border border-gray-200 rounded-lg overflow-hidden">
                   <summary className="px-4 py-3 text-sm font-medium text-gray-700 cursor-pointer select-none hover:bg-gray-50 bg-gray-50">
-                    View submitted application
+                    {t("statusView.viewSubmitted")}
                   </summary>
                   <div className="px-4 py-4 border-t border-gray-100 divide-y divide-gray-100">
 
-                    <Section title="Organisation">
-                      <Row label="Name" value={org.name} />
-                      <Row label="Type" value={ORG_TYPE_LABEL[org.orgType] ?? org.orgType} />
-                      <Row label="Country" value={org.country} />
-                      <Row label="NOC" value={app.nocCode} />
-                      <Row label="Website" value={org.website} />
-                      <Row label="Address" value={orgAddress || null} />
+                    <Section title={t("statusView.section.organisation")}>
+                      <Row label={t("statusView.row.name")} value={org.name} />
+                      <Row label={t("statusView.row.type")} value={ORG_TYPE_LABEL[org.orgType] ?? org.orgType} />
+                      <Row label={t("statusView.row.country")} value={org.country} />
+                      <Row label={t("statusView.row.noc")} value={app.nocCode} />
+                      <Row label={t("statusView.row.website")} value={org.website} />
+                      <Row label={t("statusView.row.address")} value={orgAddress || null} />
                     </Section>
 
                     <div className="pt-4">
-                      <Section title="Primary Contact">
-                        <Row label="Name" value={[app.contactFirstName, app.contactLastName].filter(Boolean).join(" ")} />
-                        <Row label="Title" value={app.contactTitle} />
-                        <Row label="Email" value={app.contactEmail} />
-                        <Row label="Phone" value={app.contactPhone} />
-                        <Row label="Mobile" value={app.contactCell} />
+                      <Section title={t("statusView.section.primaryContact")}>
+                        <Row label={t("statusView.row.name")} value={[app.contactFirstName, app.contactLastName].filter(Boolean).join(" ")} />
+                        <Row label={t("statusView.row.title")} value={app.contactTitle} />
+                        <Row label={t("statusView.row.email")} value={app.contactEmail} />
+                        <Row label={t("statusView.row.phone")} value={app.contactPhone} />
+                        <Row label={t("statusView.row.mobile")} value={app.contactCell} />
                       </Section>
                     </div>
 
                     {(app.secondaryFirstName || app.secondaryLastName) && (
                       <div className="pt-4">
-                        <Section title="Secondary Contact">
-                          <Row label="Name" value={[app.secondaryFirstName, app.secondaryLastName].filter(Boolean).join(" ")} />
-                          <Row label="Title" value={app.secondaryTitle} />
-                          <Row label="Email" value={app.secondaryEmail} />
-                          <Row label="Phone" value={app.secondaryPhone} />
-                          <Row label="Mobile" value={app.secondaryCell} />
+                        <Section title={t("statusView.section.secondaryContact")}>
+                          <Row label={t("statusView.row.name")} value={[app.secondaryFirstName, app.secondaryLastName].filter(Boolean).join(" ")} />
+                          <Row label={t("statusView.row.title")} value={app.secondaryTitle} />
+                          <Row label={t("statusView.row.email")} value={app.secondaryEmail} />
+                          <Row label={t("statusView.row.phone")} value={app.secondaryPhone} />
+                          <Row label={t("statusView.row.mobile")} value={app.secondaryCell} />
                         </Section>
                       </div>
                     )}
 
                     <div className="pt-4">
-                      <Section title="Accreditation">
+                      <Section title={t("statusView.section.accreditation")}>
                         {categories.length > 0 && (
                           <div className="grid grid-cols-[140px_1fr] gap-x-3 text-sm py-1">
-                            <span className="text-gray-500 shrink-0">Categories</span>
+                            <span className="text-gray-500 shrink-0">{t("statusView.row.categories")}</span>
                             <div className="space-y-0.5">
                               {categories.map(([cat, , qty]) => (
                                 <div key={cat} className="text-gray-900">
-                                  {CATEGORY_LABEL[cat] ?? cat}{qty != null ? ` — ${qty} requested` : ""}
+                                  {CATEGORY_LABEL[cat] ?? cat}{qty != null ? ` — ${qty} ${t("statusView.row.requested")}` : ""}
                                 </div>
                               ))}
                             </div>
                           </div>
                         )}
-                        <Row label="About" value={app.about} />
+                        <Row label={t("statusView.row.about")} value={app.about} />
                       </Section>
                     </div>
 
                     <div className="pt-4">
-                      <Section title="Publication">
-                        <Row label="Types" value={Array.isArray(app.publicationTypes) ? (app.publicationTypes as string[]).join(", ") : null} />
-                        <Row label="Circulation" value={app.circulation} />
-                        <Row label="Frequency" value={app.publicationFrequency} />
-                        <Row label="Sports covered" value={app.sportsToCover} />
+                      <Section title={t("statusView.section.publication")}>
+                        <Row label={t("statusView.row.types")} value={Array.isArray(app.publicationTypes) ? (app.publicationTypes as string[]).join(", ") : null} />
+                        <Row label={t("statusView.row.circulation")} value={app.circulation} />
+                        <Row label={t("statusView.row.frequency")} value={app.publicationFrequency} />
+                        <Row label={t("statusView.row.sportsCovered")} value={app.sportsToCover} />
                       </Section>
                     </div>
 
                     <div className="pt-4">
-                      <Section title="History">
-                        <Row label="Prior Olympic" value={app.priorOlympic === true ? "Yes" : app.priorOlympic === false ? "No" : null} />
-                        {app.priorOlympic && <Row label="Olympic years" value={app.priorOlympicYears} />}
-                        <Row label="Prior Paralympic" value={app.priorParalympic === true ? "Yes" : app.priorParalympic === false ? "No" : null} />
-                        {app.priorParalympic && <Row label="Paralympic years" value={app.priorParalympicYears} />}
-                        <Row label="Past coverage" value={app.pastCoverageExamples} />
-                        <Row label="Comments" value={app.additionalComments} />
+                      <Section title={t("statusView.section.history")}>
+                        <Row label={t("statusView.row.priorOlympic")} value={app.priorOlympic === true ? t("statusView.row.yes") : app.priorOlympic === false ? t("statusView.row.no") : null} />
+                        {app.priorOlympic && <Row label={t("statusView.row.olympicYears")} value={app.priorOlympicYears} />}
+                        <Row label={t("statusView.row.priorParalympic")} value={app.priorParalympic === true ? t("statusView.row.yes") : app.priorParalympic === false ? t("statusView.row.no") : null} />
+                        {app.priorParalympic && <Row label={t("statusView.row.paralympicYears")} value={app.priorParalympicYears} />}
+                        <Row label={t("statusView.row.pastCoverage")} value={app.pastCoverageExamples} />
+                        <Row label={t("statusView.row.comments")} value={app.additionalComments} />
                       </Section>
                     </div>
 
@@ -310,7 +306,7 @@ export default async function StatusViewPage({
       )}
 
       <p className="mt-6 text-xs text-gray-400 text-center">
-        Questions about your application? Contact your NOC directly.
+        {t("statusView.footer")}
       </p>
     </div>
   );

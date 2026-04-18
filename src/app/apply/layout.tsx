@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 export default function ApplyLayout({
   children,
@@ -22,9 +24,14 @@ export default function ApplyLayout({
               </div>
             </div>
           </div>
-          <Link href="/apply/status" className="text-xs text-blue-200 hover:text-white transition-colors">
-            Check status →
-          </Link>
+          <div className="flex items-center gap-4">
+            <Suspense>
+              <LanguageToggle />
+            </Suspense>
+            <Link href="/apply/status" className="text-xs text-blue-200 hover:text-white transition-colors">
+              Check status →
+            </Link>
+          </div>
         </div>
       </header>
 

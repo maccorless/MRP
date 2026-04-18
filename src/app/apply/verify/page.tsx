@@ -1,30 +1,32 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { makeT, parseLang } from "@/lib/i18n";
 
 export default async function VerifyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string; email?: string }>;
+  searchParams: Promise<{ token?: string; email?: string; lang?: string }>;
 }) {
-  const { token, email } = await searchParams;
+  const { token, email, lang: langParam } = await searchParams;
 
   if (!token || !email) redirect("/apply");
 
+  const t = makeT(parseLang(langParam));
   const chars = token.split("");
+  const langSuffix = langParam ? `&lang=${langParam}` : "";
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">
-        Your Access Code
+        {t("verify.title")}
       </h1>
       <p className="text-gray-500 mb-8">
-        Use this code to access your application. Keep this page open — you
-        will need it.
+        {t("verify.subtitle")}
       </p>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
         <p className="text-sm text-gray-500 mb-5">
-          Access code for{" "}
+          {t("verify.accessCodeFor")}{" "}
           <span className="font-medium text-gray-900">{email}</span>
         </p>
 
@@ -40,21 +42,19 @@ export default async function VerifyPage({
         </div>
 
         <p className="text-xs text-gray-400 mb-6">
-          Valid for 24 hours · Single use
+          {t("verify.validity")}
         </p>
 
         <Link
-          href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}`}
+          href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}${langSuffix}`}
           className="inline-block bg-[#0057A8] text-white rounded-md px-8 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors"
         >
-          Continue to Application →
+          {t("verify.continue")}
         </Link>
       </div>
 
       <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-xs text-yellow-800">
-        <span className="font-semibold">Prototype:</span> In production this
-        code is sent by email. Do not close this tab before submitting your
-        application.
+        <span className="font-semibold">Prototype:</span> {t("verify.prototypeNote")}
       </div>
     </div>
   );

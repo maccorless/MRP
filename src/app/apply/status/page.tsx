@@ -3,13 +3,16 @@ import { db } from "@/db";
 import { magicLinkTokens } from "@/db/schema";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { requestStatusToken } from "./actions";
+import { makeT, parseLang } from "@/lib/i18n";
 
 export default async function StatusPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; email?: string }>;
+  searchParams: Promise<{ error?: string; email?: string; lang?: string }>;
 }) {
-  const { error, email } = await searchParams;
+  const { error, email, lang: langParam } = await searchParams;
+  const t = makeT(parseLang(langParam));
+  const langSuffix = langParam ? `&lang=${langParam}` : "";
 
   // When email is passed in the URL (e.g. arriving from the submission confirmation page),
   // skip the form and generate a status token directly.
@@ -24,27 +27,28 @@ export default async function StatusPage({
       );
       const expiresAt = new Date(Date.now() + statusExpiryHours * 60 * 60 * 1000);
       await db.insert(magicLinkTokens).values({ email: clean, tokenHash: hashToken(token), expiresAt });
-      redirect(`/apply/status/view?token=${token}&email=${encodeURIComponent(clean)}`);
+      redirect(`/apply/status/view?token=${token}&email=${encodeURIComponent(clean)}${langSuffix}`);
     }
   }
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-gray-900 mb-1">Check Application Status</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-1">{t("status.title")}</h1>
       <p className="text-gray-500 mb-8">
-        Enter the email address you used to apply to view your application status.
+        {t("status.subtitle")}
       </p>
 
       {error === "invalid_email" && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
-          Please enter a valid email address.
+          {t("status.error.invalid_email")}
         </div>
       )}
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <form action={requestStatusToken}>
+          {langParam && <input type="hidden" name="lang" value={langParam} />}
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email address used when applying
+            {t("status.email.label")}
           </label>
           <input
             id="email"
@@ -60,10 +64,10 @@ export default async function StatusPage({
             type="submit"
             className="mt-4 w-full bg-[#0057A8] text-white rounded px-4 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
           >
-            View My Status
+            {t("status.submit")}
           </button>
           <p className="mt-2 text-xs text-gray-400 text-center">
-            The status link is valid for 90 days. You can request a new one at any time.
+            {t("status.tokenNote")}
           </p>
         </form>
       </div>

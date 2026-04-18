@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
+import { makeT, parseLang } from "@/lib/i18n";
 
 const CATEGORY_LABEL: Record<string, string> = {
   E: "E — Journalist", Es: "Es — Sport Journalist",
@@ -13,12 +14,13 @@ const CATEGORY_LABEL: Record<string, string> = {
 export default async function SubmittedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ref?: string; resubmit?: string; email?: string }>;
+  searchParams: Promise<{ ref?: string; resubmit?: string; email?: string; lang?: string }>;
 }) {
-  const { ref, resubmit, email } = await searchParams;
+  const { ref, resubmit, email, lang: langParam } = await searchParams;
 
   if (!ref) redirect("/apply");
 
+  const t = makeT(parseLang(langParam));
   const isResubmission = resubmit === "1";
 
   // Look up the application for email preview data
@@ -54,6 +56,7 @@ export default async function SubmittedPage({
 
   const firstName = appRow?.contactFirstName ?? null;
   const orgName   = appRow?.orgName ?? "";
+  const langSuffix = langParam ? `&lang=${langParam}` : "";
 
   return (
     <div className="text-center py-8">
@@ -74,39 +77,39 @@ export default async function SubmittedPage({
       </div>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-2">
-        {isResubmission ? "Application Resubmitted" : "Application Submitted"}
+        {isResubmission ? t("submitted.title.resubmit") : t("submitted.title.new")}
       </h1>
       <p className="text-gray-500 mb-8">
         {isResubmission
-          ? "Your corrections have been received. Your NOC will review the updated application."
-          : "Your application has been received and is pending review by your NOC."}
+          ? t("submitted.subtitle.resubmit")
+          : t("submitted.subtitle.new")}
       </p>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 inline-block text-left min-w-64">
         <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-          Reference number
+          {t("submitted.refLabel")}
         </div>
         <div className="text-xl font-mono font-bold text-[#0057A8]">{ref}</div>
         <p className="text-xs text-gray-400 mt-2">
-          Keep this for your records.
+          {t("submitted.refHelp")}
         </p>
       </div>
 
       <div className="mt-8 text-sm text-gray-500">
-        <p className="font-medium mb-2">What happens next</p>
+        <p className="font-medium mb-2">{t("submitted.nextSteps")}</p>
         <ol className="text-sm text-gray-600 text-left max-w-xs mx-auto space-y-1 list-decimal list-inside">
-          <li>Your NOC reviews the application</li>
-          <li>You&apos;ll be contacted if corrections are needed</li>
-          <li>Approved applications are forwarded to the IOC</li>
+          <li>{t("submitted.step1")}</li>
+          <li>{t("submitted.step2")}</li>
+          <li>{t("submitted.step3")}</li>
         </ol>
       </div>
 
       <div className="mt-6">
         <Link
-          href={email ? `/apply/status?email=${encodeURIComponent(email)}` : "/apply/status"}
+          href={email ? `/apply/status?email=${encodeURIComponent(email)}${langSuffix}` : `/apply/status${langParam ? `?lang=${langParam}` : ""}`}
           className="inline-block px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
         >
-          View application status →
+          {t("submitted.viewStatus")}
         </Link>
       </div>
 
@@ -115,72 +118,70 @@ export default async function SubmittedPage({
         <div className="mt-10 max-w-xl mx-auto text-left">
           <div className="flex items-center gap-2 mb-3">
             <div className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs text-gray-400 shrink-0">Email notification preview</span>
+            <span className="text-xs text-gray-400 shrink-0">{t("submitted.emailPreviewLabel")}</span>
             <div className="h-px flex-1 bg-gray-200" />
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-3 text-xs text-amber-800">
-            <span className="font-semibold">Note:</span> Email integration is not currently active. Below is a preview of the confirmation email that applicants will receive once it is enabled.
+            <span className="font-semibold">Note:</span> {t("submitted.emailPreviewNote")}
           </div>
 
           <div className="bg-white border border-gray-200 rounded-lg overflow-hidden text-left text-sm">
             {/* Email header */}
             <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 space-y-1 text-xs text-gray-600">
-              <div><span className="text-gray-400 w-12 inline-block">From:</span> LA 2028 Press Registration &lt;noreply@prp.la28.org&gt;</div>
-              <div><span className="text-gray-400 w-12 inline-block">To:</span> {email ?? "applicant@example.com"}</div>
-              <div><span className="text-gray-400 w-12 inline-block">Subject:</span> Application received – LA 2028 Olympic Games Press Accreditation</div>
+              <div><span className="text-gray-400 w-12 inline-block">{t("submitted.email.from")}</span> LA 2028 Press Registration &lt;noreply@prp.la28.org&gt;</div>
+              <div><span className="text-gray-400 w-12 inline-block">{t("submitted.email.to")}</span> {email ?? "applicant@example.com"}</div>
+              <div><span className="text-gray-400 w-12 inline-block">{t("submitted.email.subject")}</span> {t("submitted.email.subjectValue")}</div>
             </div>
 
             {/* Email body */}
             <div className="px-6 py-5 text-gray-800 space-y-4">
-              <p>Dear {firstName ?? "Applicant"},</p>
+              <p>{t("submitted.email.dear")} {firstName ?? "Applicant"},</p>
 
               <p>
-                Thank you for submitting your Expression of Interest (EoI) for press accreditation at the
-                <strong> LA 2028 Olympic and Paralympic Games</strong>.
+                {t("submitted.email.body1")}
+                {" "}<strong>{t("submitted.email.gamesBold")}</strong>.
               </p>
 
               <p>
-                We have received your application and it is now under review by your National Olympic Committee (NOC).
-                You will be notified at each stage of the process.
+                {t("submitted.email.body2")}
               </p>
 
               <div className="bg-gray-50 rounded-md p-4 text-sm space-y-1.5">
                 <div className="grid grid-cols-[130px_1fr] gap-x-2">
-                  <span className="text-gray-500">Reference number</span>
+                  <span className="text-gray-500">{t("submitted.email.refNumber")}</span>
                   <span className="font-mono font-semibold text-[#0057A8]">{ref}</span>
                 </div>
                 {orgName && (
                   <div className="grid grid-cols-[130px_1fr] gap-x-2">
-                    <span className="text-gray-500">Organisation</span>
+                    <span className="text-gray-500">{t("submitted.email.organisation")}</span>
                     <span>{orgName}</span>
                   </div>
                 )}
                 {categories.length > 0 && (
                   <div className="grid grid-cols-[130px_1fr] gap-x-2">
-                    <span className="text-gray-500">Categories requested</span>
+                    <span className="text-gray-500">{t("submitted.email.categoriesRequested")}</span>
                     <span>{categories.join(", ")}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <p className="font-medium mb-1">What happens next:</p>
+                <p className="font-medium mb-1">{t("submitted.email.nextSteps")}</p>
                 <ol className="list-decimal list-inside space-y-1 text-gray-600">
-                  <li>Your NOC will review your application for eligibility.</li>
-                  <li>You will be notified if corrections are needed.</li>
-                  <li>If accepted as a candidate, slot allocations are confirmed in the Press by Number phase.</li>
+                  <li>{t("submitted.email.step1")}</li>
+                  <li>{t("submitted.email.step2")}</li>
+                  <li>{t("submitted.email.step3")}</li>
                 </ol>
               </div>
 
               <p>
-                If you have questions about your application, please contact your NOC directly.
-                You can check your status at any time at <span className="text-[#0057A8]">prp.la28.org/apply/status</span>.
+                {t("submitted.email.contact")} <span className="text-[#0057A8]">{t("submitted.email.statusUrl")}</span>.
               </p>
 
               <p className="text-gray-600">
-                Kind regards,<br />
-                <span className="font-medium">LA 2028 Press Registration Team</span>
+                {t("submitted.email.regards")}<br />
+                <span className="font-medium">{t("submitted.email.team")}</span>
               </p>
             </div>
           </div>

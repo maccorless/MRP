@@ -9,6 +9,7 @@ import { AccreditationTab } from "./tabs/AccreditationTab";
 import { PublicationTab } from "./tabs/PublicationTab";
 import { HistoryTab } from "./tabs/HistoryTab";
 import { COUNTRY_TO_NOC, NOC_CODE_SET } from "@/lib/codes";
+import { makeT, type Lang } from "@/lib/i18n";
 
 export type FormErrors = Record<string, string>;
 
@@ -88,12 +89,13 @@ export function deserializeVisited(raw: string | null): Set<number> {
   }
 }
 
-const TABS = [
-  { label: "Organisation", icon: "1" },
-  { label: "Contacts",     icon: "2" },
-  { label: "Accreditation",icon: "3" },
-  { label: "Publication",  icon: "4" },
-  { label: "History",      icon: "5" },
+// Tab definitions use translation keys; labels are resolved at render time.
+const TAB_KEYS = [
+  { key: "tabs.organisation" as const, icon: "1" },
+  { key: "tabs.contacts"     as const, icon: "2" },
+  { key: "tabs.accreditation" as const, icon: "3" },
+  { key: "tabs.publication"  as const, icon: "4" },
+  { key: "tabs.history"      as const, icon: "5" },
 ];
 
 // Required fields per tab (by input name)
@@ -115,11 +117,7 @@ const CHECKMARK_FIELDS: Record<number, string[]> = {
   4: [], // handled in isTabFull (prior_olympic, prior_paralympic, past_coverage_examples)
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  empty: "Not started",
-  complete: "Required fields complete",
-  full: "Fully complete",
-};
+// STATUS_LABELS are now derived from translations inside the component.
 
 const MULTI_VALUE_KEYS = new Set(["publication_types"]);
 
@@ -149,6 +147,7 @@ export function EoiFormTabs({
   isFromInvite = false,
   countryCodes,
   nocCodes,
+  lang = "en",
 }: {
   token: string;
   email: string;
@@ -159,7 +158,10 @@ export function EoiFormTabs({
   isFromInvite?: boolean;
   countryCodes: { code: string; name: string }[];
   nocCodes: { code: string; name: string }[];
+  lang?: Lang;
 }) {
+  const t = makeT(lang);
+  const TABS = TAB_KEYS.map((tab) => ({ label: t(tab.key), icon: tab.icon }));
   const [activeTab, setActiveTab] = useState(0);
   const [currentOrgType, setCurrentOrgType] = useState<string>(prefill?.orgType ?? "");
   const formRef = useRef<HTMLFormElement>(null);
@@ -443,7 +445,7 @@ export function EoiFormTabs({
 
     // Gate: every tab must have at least a green dot before we accept submission.
     const incompleteTabs = TABS.reduce<{ tab: string; field: string }[]>((acc, tab, i) => {
-      if (tabStatus[i] === "empty") acc.push({ tab: tab.label, field: "Tab not yet completed" });
+      if (tabStatus[i] === "empty") acc.push({ tab: tab.label, field: t("validation.tabIncomplete") });
       return acc;
     }, []);
     if (incompleteTabs.length > 0) {
@@ -452,7 +454,11 @@ export function EoiFormTabs({
       firstErrTabRef.current = firstIncompleteTab >= 0 ? firstIncompleteTab : 0;
       firstErrNameRef.current = "";
       const errCount = incompleteTabs.length;
-      setErrorAnnouncement(`${errCount} tab${errCount > 1 ? "s are" : " is"} incomplete.`);
+      setErrorAnnouncement(
+        errCount === 1
+          ? t("validation.tabsIncomplete.one")
+          : t("validation.tabsIncomplete.many").replace("{n}", String(errCount))
+      );
       setShowValidationModal(true);
       return;
     }
@@ -474,10 +480,10 @@ export function EoiFormTabs({
         const checked = group instanceof RadioNodeList
           ? Array.from(group).some((r) => r instanceof HTMLInputElement && r.checked)
           : false;
-        if (!checked) errs[el.name] = "Please select an option.";
+        if (!checked) errs[el.name] = t("validation.selectOption");
       } else {
         const empty = el instanceof HTMLSelectElement ? !el.value : !el.value.trim();
-        if (empty) errs[el.name] = "This field is required.";
+        if (empty) errs[el.name] = t("validation.required");
       }
     }
 
@@ -485,13 +491,13 @@ export function EoiFormTabs({
     const catChecked = Array.from(
       form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
     ).some((cb) => cb.checked);
-    if (!catChecked) errs["category"] = "Please select at least one accreditation category.";
+    if (!catChecked) errs["category"] = t("accred.categoryError");
 
     // Validate URL fields (type="url" browser validation is bypassed by noValidate)
     const urlInputs = form.querySelectorAll<HTMLInputElement>('input[type="url"]');
     for (const input of urlInputs) {
       if (input.value && input.value !== "https://" && !input.value.match(/^https?:\/\/.+\..+/)) {
-        errs[input.name] = "Please enter a valid URL (e.g. https://www.example.com)";
+        errs[input.name] = t("validation.url");
       }
     }
 
@@ -542,7 +548,11 @@ export function EoiFormTabs({
     setValidationErrors(errList);
 
     const errCount = Object.keys(errs).length;
-    setErrorAnnouncement(`${errCount} required field${errCount > 1 ? "s are" : " is"} missing.`);
+    setErrorAnnouncement(
+      errCount === 1
+        ? t("validation.fieldsIncomplete.one")
+        : t("validation.fieldsIncomplete.many").replace("{n}", String(errCount))
+    );
     setShowValidationModal(true);
   }
 
@@ -571,28 +581,26 @@ export function EoiFormTabs({
       {/* How does this work? collapsible intro */}
       <details className="mb-4 bg-white border border-gray-200 rounded-lg overflow-hidden">
         <summary className="px-5 py-3.5 text-sm font-medium text-[#0057A8] cursor-pointer select-none hover:bg-gray-50 flex items-center gap-2">
-          <span className="text-base leading-none">ℹ️</span> How does this work?
+          <span className="text-base leading-none">ℹ️</span> {t("form.intro.summary")}
         </summary>
         <div className="px-5 py-4 border-t border-gray-100 text-sm text-gray-700 space-y-2">
           <p>
-            <strong>This is an Expression of Interest (EoI)</strong>, not a final accreditation decision.
-            Submitting does not guarantee press credentials for LA 2028.
+            <strong>{t("form.intro.heading")}</strong>{t("form.intro.heading.suffix")}
           </p>
           <ul className="list-disc pl-5 space-y-1 text-gray-600">
-            <li>Your <strong>National Olympic Committee (NOC)</strong> reviews your organisation&apos;s eligibility and either accepts you as a candidate, returns for corrections, or declines.</li>
-            <li>Being accepted as a candidate does not guarantee accreditation. Slot allocations are decided in the <strong>Press by Number (PbN)</strong> phase, within the IOC-assigned quota for your NOC. Some candidates may ultimately receive no slots.</li>
-            <li>Final accreditation decisions are made by the IOC and communicated via your NOC.</li>
-            <li>You will be <strong>notified by email</strong> at each stage of the process.</li>
+            <li>{t("form.intro.bullet1")}</li>
+            <li>{t("form.intro.bullet2")}</li>
+            <li>{t("form.intro.bullet3")}</li>
+            <li>{t("form.intro.bullet4")}</li>
           </ul>
         </div>
       </details>
 
     {nocWindowClosed && (
       <div className="mb-4 p-4 bg-orange-50 border border-orange-300 rounded-lg" role="alert">
-        <div className="text-sm font-semibold text-orange-800 mb-1">EoI window closed</div>
+        <div className="text-sm font-semibold text-orange-800 mb-1">{t("form.nocWindowClosed.heading")}</div>
         <p className="text-sm text-orange-700">
-          This NOC has closed its Expression of Interest window. New applications are not currently being accepted.
-          Please contact your NOC directly for more information.
+          {t("form.nocWindowClosed.body")}
         </p>
       </div>
     )}
@@ -610,7 +618,7 @@ export function EoiFormTabs({
         <div
           ref={tabListRef}
           role="tablist"
-          aria-label="Application form sections"
+          aria-label={t("form.tablist.ariaLabel")}
           className="flex overflow-x-auto"
           onKeyDown={(e) => {
             let next = activeTab;
@@ -666,7 +674,7 @@ export function EoiFormTabs({
                   )}
                 </span>
                 {tab.label}
-                <span className="sr-only">({STATUS_LABELS[status]})</span>
+                <span className="sr-only">({t(`tabs.status.${status}`)})</span>
               </button>
             );
           })}
@@ -676,19 +684,19 @@ export function EoiFormTabs({
       {/* Tab panels — all rendered, only active visible */}
       <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-8">
         <div id="eoi-panel-0" role="tabpanel" aria-labelledby="eoi-tab-0" hidden={activeTab !== 0}>
-          <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} errors={fieldErrors} nocAutoSuggestedName={nocAutoSuggestedName} />
+          <OrganisationTab prefill={prefill} isResubmission={isResubmission} countryCodes={countryCodes} nocCodes={nocCodes} errors={fieldErrors} nocAutoSuggestedName={nocAutoSuggestedName} lang={lang} />
         </div>
         <div id="eoi-panel-1" role="tabpanel" aria-labelledby="eoi-tab-1" hidden={activeTab !== 1}>
-          <ContactsTab prefill={prefill} email={email} errors={fieldErrors} />
+          <ContactsTab prefill={prefill} email={email} errors={fieldErrors} lang={lang} />
         </div>
         <div id="eoi-panel-2" role="tabpanel" aria-labelledby="eoi-tab-2" hidden={activeTab !== 2}>
-          <AccreditationTab prefill={prefill} errors={fieldErrors} orgType={currentOrgType} />
+          <AccreditationTab prefill={prefill} errors={fieldErrors} orgType={currentOrgType} lang={lang} />
         </div>
         <div id="eoi-panel-3" role="tabpanel" aria-labelledby="eoi-tab-3" hidden={activeTab !== 3}>
-          <PublicationTab prefill={prefill} />
+          <PublicationTab prefill={prefill} lang={lang} />
         </div>
         <div id="eoi-panel-4" role="tabpanel" aria-labelledby="eoi-tab-4" hidden={activeTab !== 4}>
-          <HistoryTab prefill={prefill} />
+          <HistoryTab prefill={prefill} lang={lang} />
         </div>
 
         {/* Navigation + submit */}
@@ -699,7 +707,7 @@ export function EoiFormTabs({
               onClick={() => { markVisited(activeTab); updateTabStatus(); setActiveTab(activeTab - 1); }}
               className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 cursor-pointer"
             >
-              ← Back
+              {t("form.nav.back")}
             </button>
           ) : (
             <div />
@@ -711,21 +719,21 @@ export function EoiFormTabs({
               onClick={() => { markVisited(activeTab); markVisited(activeTab + 1); updateTabStatus(); setActiveTab(activeTab + 1); }}
               className="px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
             >
-              Continue →
+              {t("form.nav.continue")}
             </button>
           ) : (
             <button
               type="submit"
               className="px-6 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-md hover:bg-green-700 transition-colors cursor-pointer"
             >
-              {isResubmission ? "Resubmit Application" : isPendingEdit ? "Save Changes" : "Submit Application"}
+              {isResubmission ? t("form.nav.resubmit") : isPendingEdit ? t("form.nav.saveChanges") : t("form.nav.submit")}
             </button>
           )}
         </div>
       </div>
 
       <p className="text-xs text-gray-400 text-center mt-3">
-        Your progress is saved automatically. By submitting you confirm this information is accurate.
+        {t("form.autoSave")}
       </p>
     </form>
 
@@ -739,12 +747,12 @@ export function EoiFormTabs({
       >
         <div ref={validationModalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
           <h2 id="validation-modal-title" className="text-lg font-bold text-gray-900 mb-1">
-            Missing required fields
+            {t("form.validationModal.title")}
           </h2>
           <p className="text-sm text-gray-500 mb-4">
-            Please complete the following before submitting:
+            {t("form.validationModal.subtitle")}
           </p>
-          <ul role="list" aria-label="Missing fields" className="mb-5 space-y-1.5">
+          <ul role="list" aria-label={t("form.validationModal.title")} className="mb-5 space-y-1.5">
             {validationErrors.map((err) => (
               <li key={`${err.tab}:${err.field}`} className="text-sm text-gray-800">
                 <span className="font-medium text-gray-500">{err.tab}:</span>{" "}
@@ -757,7 +765,7 @@ export function EoiFormTabs({
             onClick={handleGoToFirstError}
             className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-[#0057A8] rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
           >
-            Go to first missing field
+            {t("form.validationModal.goToError")}
           </button>
         </div>
       </div>
@@ -774,28 +782,28 @@ export function EoiFormTabs({
       >
         <div ref={modalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
           <h2 id="confirm-modal-title" className="text-lg font-bold text-gray-900 mb-1">
-            {isResubmission ? "Confirm resubmission" : isPendingEdit ? "Confirm changes" : "Confirm submission"}
+            {isResubmission ? t("form.confirmModal.title.resubmit") : isPendingEdit ? t("form.confirmModal.title.edit") : t("form.confirmModal.title.submit")}
           </h2>
           <p id="confirm-modal-desc" className="text-sm text-gray-500 mb-5">
             {isResubmission
-              ? "Your corrected application will be sent back to your NOC for review."
+              ? t("form.confirmModal.desc.resubmit")
               : isPendingEdit
-              ? "Your changes will be saved. Your application will remain pending review by your NOC."
-              : "Your application will be sent to your NOC for review. You won't be able to edit it until your NOC returns it."}
+              ? t("form.confirmModal.desc.edit")
+              : t("form.confirmModal.desc.submit")}
           </p>
 
           {/* Summary */}
           <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2 mb-5">
             <div>
-              <span className="text-gray-500">Organisation</span>
+              <span className="text-gray-500">{t("form.confirmModal.summary.organisation")}</span>
               <span className="ml-2 font-medium text-gray-900">{modalSummary.orgName}</span>
             </div>
             <div>
-              <span className="text-gray-500">Categories</span>
+              <span className="text-gray-500">{t("form.confirmModal.summary.categories")}</span>
               <span className="ml-2 font-medium text-gray-900">{modalSummary.categories.join(", ")}</span>
             </div>
             <div>
-              <span className="text-gray-500">Contact</span>
+              <span className="text-gray-500">{t("form.confirmModal.summary.contact")}</span>
               <span className="ml-2 font-medium text-gray-900">
                 {modalSummary.contactName} · {modalSummary.contactEmail}
               </span>
@@ -805,13 +813,8 @@ export function EoiFormTabs({
           {/* Nudge — shown only when optional fields are incomplete */}
           {!allTabsFull && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 mb-5">
-              <p className="font-semibold mb-1">Some optional sections are incomplete.</p>
-              <p>
-                Your application is ready to submit — all required information is complete.
-                To give your organisation the best chance of approval, we recommend including
-                supporting details such as publication history and coverage examples.
-                NOCs give the most consideration to applications with full information.
-              </p>
+              <p className="font-semibold mb-1">{t("form.confirmModal.nudge.heading")}</p>
+              <p>{t("form.confirmModal.nudge.body")}</p>
             </div>
           )}
 
@@ -824,14 +827,14 @@ export function EoiFormTabs({
                   onClick={() => setShowConfirmModal(false)}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  Go back
+                  {t("form.confirmModal.goBack")}
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmedSubmit}
                   className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
                 >
-                  {isResubmission ? "Confirm resubmit" : isPendingEdit ? "Save changes" : "Confirm & submit"}
+                  {isResubmission ? t("form.confirmModal.confirmResubmit") : isPendingEdit ? t("form.confirmModal.saveChanges") : t("form.confirmModal.confirmSubmit")}
                 </button>
               </>
             ) : (
@@ -845,14 +848,14 @@ export function EoiFormTabs({
                   }}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  Add/Edit my application
+                  {t("form.confirmModal.addEdit")}
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmedSubmit}
                   className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
                 >
-                  Submit application
+                  {t("form.confirmModal.submitApplication")}
                 </button>
               </>
             )}
