@@ -124,6 +124,29 @@ Example: "No approved applications yet. Approve applications in the EoI Queue fi
 
 ---
 
+## Iconography
+
+Icons are inline SVGs rendered via `<Icon name="..." />` (`src/components/Icon.tsx`), backed by `lucide-react`. Emoji are **not** used anywhere in the UI — they render inconsistently across OS/browser and clash with the restrained, typographic aesthetic of this system.
+
+Fixed vocabulary:
+
+| Name           | Lucide source  | Used for                                            |
+|----------------|----------------|-----------------------------------------------------|
+| `warning`      | AlertTriangle  | Attention banners, duplicate/concentration flags    |
+| `info`         | Info           | Intro/help panels, advisory copy                    |
+| `download`     | Download       | CSV exports                                         |
+| `upload`       | Upload         | CSV imports                                         |
+| `chevron-down` | ChevronDown    | Descending direction, remaining capacity, disclosure|
+| `chevron-up`   | ChevronUp      | Ascending direction, over-capacity, sort indicators |
+| `check`        | Check          | Completion / full-tab state                         |
+
+Rules:
+- Pass `label` when the icon conveys meaning on its own (role="img" + aria-label). Omit `label` when the icon is purely decorative next to text (aria-hidden).
+- Default size is `w-4 h-4`; override with the `className` prop when a tighter size is needed.
+- New icons are added by extending the `ICONS` map in `Icon.tsx` — do not import lucide components directly at call sites.
+
+---
+
 ## Accessibility
 
 - `aria-current="page"` on active nav tab links (all three nav components)

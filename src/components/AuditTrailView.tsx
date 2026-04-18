@@ -1,5 +1,6 @@
 import type { AuditRow } from "@/lib/audit-query";
 import { ACTION_LABEL, ACTION_BADGE } from "@/lib/audit-query";
+import { Icon } from "@/components/Icon";
 
 const PAGE_SIZE = 200;
 
@@ -50,7 +51,7 @@ export function AuditTrailView({
           href={exportHref}
           className="shrink-0 px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
         >
-          Export CSV ↓
+          Export CSV <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
         </a>
       </div>
 

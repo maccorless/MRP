@@ -62,7 +62,7 @@ export default async function InviteLandingPage({
             </p>
 
             {error === "invalid_email" && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
                 Please enter a valid email address.
               </div>
             )}
@@ -126,7 +126,7 @@ export default async function InviteLandingPage({
           </div>
 
           {error === "already_used" && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
               This invite link has already been used.
             </div>
           )}

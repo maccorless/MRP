@@ -51,7 +51,7 @@ export default async function ExportPage() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-600">
           No approved applications to export yet.
         </div>
       ) : (

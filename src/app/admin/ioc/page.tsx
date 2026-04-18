@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { desc, eq, sql } from "drizzle-orm";
+import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { applications, organizations, nocQuotas, nocEoiWindows } from "@/db/schema";
 import { categoryDisplayLabel } from "@/lib/category";
@@ -162,14 +163,14 @@ export default async function IocDashboard() {
           href="/api/export/eoi"
           className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
         >
-          Export all EoI CSV ↓
+          Export all EoI CSV <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
         </a>
       </div>
 
       {/* Anomaly banners */}
       {concentrationFlags.length > 0 && (
-        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
-          <span className="shrink-0 mt-0.5">⚠</span>
+        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-900">
+          <Icon name="warning" label="Warning" className="shrink-0 mt-0.5 w-4 h-4 text-yellow-700" />
           <span>
             <strong>Concentration risk ({concentrationFlags.length} {concentrationFlags.length === 1 ? "org" : "orgs"})</strong>
             {" "}—{" "}
@@ -181,8 +182,8 @@ export default async function IocDashboard() {
       )}
 
       {inactiveNocs.length > 0 && (
-        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
-          <span className="shrink-0 mt-0.5">⚠</span>
+        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-900">
+          <Icon name="warning" label="Warning" className="shrink-0 mt-0.5 w-4 h-4 text-yellow-700" />
           <span>
             <strong>Inactive NOCs ({inactiveNocs.length})</strong>
             {" "}—{" "}

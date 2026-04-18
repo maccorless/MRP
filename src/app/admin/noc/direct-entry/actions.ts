@@ -78,7 +78,7 @@ export async function submitDirectEntryApplication(formData: FormData) {
         ),
       );
     if (existing.length > 0) {
-      dupWarning = `⚠ possible duplicate: same domain as ${existing.map((e) => e.orgName).join(", ")}`;
+      dupWarning = `possible duplicate: same domain as ${existing.map((e) => e.orgName).join(", ")}`;
     }
   }
 

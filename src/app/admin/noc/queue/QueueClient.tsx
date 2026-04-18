@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { categoryDisplayLabel } from "@/lib/category";
+import { Icon } from "@/components/Icon";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ApplicationDrawer } from "./ApplicationDrawer";
 import { DuplicateCompareModal } from "./DuplicateCompareModal";
@@ -140,11 +141,13 @@ export function QueueClient({
                           signals: firstPeer.signals,
                         })}
                       >
-                        ⚠ Possible duplicate
+                        <Icon name="warning" label="Warning" className="inline w-3 h-3 mr-1 -mt-0.5" />
+                        Possible duplicate
                       </button>
                     ) : (
                       <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                        ⚠ Possible duplicate
+                        <Icon name="warning" label="Warning" className="inline w-3 h-3 mr-1 -mt-0.5" />
+                        Possible duplicate
                       </span>
                     );
                   })()}

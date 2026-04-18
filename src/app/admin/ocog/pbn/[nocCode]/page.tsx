@@ -135,18 +135,18 @@ export default async function OcogPbnNocPage({
       </div>
 
       {error === "not_submitted" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
           This NOC has not submitted their allocation yet.
         </div>
       )}
       {error === "not_approved" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
           This NOC's allocation must be approved before sending to ACR.
         </div>
       )}
 
       {rows.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-600">
           No allocations found for {nocCode}.
         </div>
       ) : (

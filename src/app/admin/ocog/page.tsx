@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
+import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations, featureFlags } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
@@ -50,8 +51,8 @@ export default async function OcogHomePage() {
 
       {/* Attention banner */}
       {submitted > 0 && (
-        <div className="mb-5 flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
-          <span className="shrink-0 mt-0.5">⚠</span>
+        <div className="mb-5 flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-900">
+          <Icon name="warning" label="Warning" className="shrink-0 mt-0.5 w-4 h-4 text-yellow-700" />
           <span>
             <strong>{submitted} NOC{submitted !== 1 ? "s" : ""} {submitted === 1 ? "has" : "have"} submitted PbN allocations awaiting your approval.</strong>
             {" "}Review them in PbN Approvals.

@@ -131,7 +131,7 @@ export default async function IocDirectPage({
       {success === "saved"      && <Banner color="blue">Draft allocations saved.</Banner>}
       {success === "submitted"  && <Banner color="green">Allocation submitted to OCOG for approval.</Banner>}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           {ERROR_MSG[error] ?? "An error occurred."}
         </div>
       )}
@@ -177,7 +177,7 @@ export default async function IocDirectPage({
 
       {/* Allocation table */}
       {tableRows.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-600">
           No IOC-Direct organisations yet. Add the first one below.
         </div>
       ) : (
@@ -219,7 +219,7 @@ function Banner({ color, children }: { color: "green" | "blue"; children: React.
     ? "bg-green-50 border-green-200 text-green-800"
     : "bg-blue-50 border-blue-200 text-blue-800";
   return (
-    <div className={`mb-4 p-3 border rounded text-sm ${cls}`} role="alert">
+    <div className={`mb-4 p-3 border rounded-lg text-sm ${cls}`} role="alert">
       {children}
     </div>
   );

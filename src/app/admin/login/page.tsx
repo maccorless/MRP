@@ -42,12 +42,12 @@ export default async function LoginPage({
         {/* Form */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {error === "invalid_credentials" && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               Invalid email or password.
             </div>
           )}
           {error === "missing_fields" && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               Please enter your email and password.
             </div>
           )}

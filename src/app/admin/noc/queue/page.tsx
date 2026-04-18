@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { and, desc, eq, sql } from "drizzle-orm";
+import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
@@ -146,22 +147,22 @@ export default async function NocQueuePage({
 
       {/* Success banner */}
       {success === "approved" && (
-        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Application approved.
         </div>
       )}
       {success === "returned" && (
-        <div role="alert" className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded text-orange-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-800 text-sm">
           Application returned for corrections.
         </div>
       )}
       {success === "rejected" && (
-        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           Application rejected.
         </div>
       )}
       {success === "direct_entry_submitted" && (
-        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Direct entry application submitted and approved.
         </div>
       )}
@@ -187,7 +188,7 @@ export default async function NocQueuePage({
           href={activeFilter === "all" ? "/api/export/eoi" : `/api/export/eoi?status=${activeFilter}`}
           className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
         >
-          Export CSV ↓
+          Export CSV <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
         </a>
       </div>
 

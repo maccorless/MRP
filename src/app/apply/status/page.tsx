@@ -39,7 +39,7 @@ export default async function StatusPage({
       </p>
 
       {error === "invalid_email" && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
           {t("status.error.invalid_email")}
         </div>
       )}

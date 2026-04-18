@@ -23,14 +23,14 @@ export default async function ApplyPage({
 
       {redErrors.map((code) =>
         error === code ? (
-          <div key={code} role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+          <div key={code} role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {t(`apply.error.${code}`)}
           </div>
         ) : null
       )}
       {orangeErrors.map((code) =>
         error === code ? (
-          <div key={code} role="alert" className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-md text-orange-700 text-sm">
+          <div key={code} role="alert" className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm">
             {t(`apply.error.${code}`)}
           </div>
         ) : null

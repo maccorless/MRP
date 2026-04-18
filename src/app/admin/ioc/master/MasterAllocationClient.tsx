@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Icon } from "@/components/Icon";
 import { NOC_CONTINENT } from "@/lib/noc-continent";
 
 export type CategorySlots = {
@@ -137,8 +138,8 @@ function CapTracker({ grandTotals, eventCapacity }: { grandTotals: GrandTotals; 
         <span className="text-xs text-gray-500">
           {total.toLocaleString()} / {eventCapacity.capacity.toLocaleString()} ({pct}%)
           {gap >= 0
-            ? <span className="text-green-700 ml-2">↓ {gap.toLocaleString()} remaining</span>
-            : <span className="text-red-700 ml-2">↑ {Math.abs(gap).toLocaleString()} over capacity</span>}
+            ? <span className="text-green-700 ml-2 inline-flex items-center gap-1"><Icon name="chevron-down" className="w-3.5 h-3.5" />{gap.toLocaleString()} remaining</span>
+            : <span className="text-red-700 ml-2 inline-flex items-center gap-1"><Icon name="chevron-up" className="w-3.5 h-3.5" />{Math.abs(gap).toLocaleString()} over capacity</span>}
         </span>
       </div>
       <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">

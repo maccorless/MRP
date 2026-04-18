@@ -77,7 +77,7 @@ export function InviteForm({
   return (
     <form action={formAction} className="space-y-6">
       {state.error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           {state.error}
         </div>
       )}

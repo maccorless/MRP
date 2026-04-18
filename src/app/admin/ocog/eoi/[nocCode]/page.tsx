@@ -59,7 +59,7 @@ export default async function OcogNocEoiPage({
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {rows.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">
+          <div className="p-8 text-center text-sm text-gray-600">
             No applications found for {nocCode}.
           </div>
         ) : (

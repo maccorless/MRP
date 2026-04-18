@@ -139,13 +139,13 @@ export default async function ApplicationDetailPage({
 
       {/* Success banners */}
       {success === "rejection_reversed" && (
-        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Rejection reversed — application moved back to Pending.
         </div>
       )}
 
       {success === "unrejected" && (
-        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Application un-rejected and moved back to Pending.
         </div>
       )}
@@ -444,13 +444,13 @@ export default async function ApplicationDetailPage({
             </div>
 
             {error === "note_required" && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                 A note is required when returning or rejecting an application.
               </div>
             )}
 
             {error === "stale" && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                 This application was modified by another user. Please review the current state and try again.
               </div>
             )}

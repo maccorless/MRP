@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Icon } from "@/components/Icon";
 import { saveSlotAllocations, submitPbnToOcog } from "./actions";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
@@ -386,7 +387,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                     onClick={() => setSortAsc((v) => !v)}
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSortAsc((v) => !v); } }}
                   >
-                    Responsible Organisation {sortAsc ? "↑" : "↓"}
+                    <span className="inline-flex items-center gap-1">Responsible Organisation <Icon name={sortAsc ? "chevron-up" : "chevron-down"} className="w-3 h-3" /></span>
                   </th>
                   {activeCategories.map((cat) => (
                     <th

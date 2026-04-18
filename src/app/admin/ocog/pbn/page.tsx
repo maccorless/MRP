@@ -104,7 +104,7 @@ export default async function OcogPbnPage({
 
       {/* Banners */}
       {success === "approved" && noc && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           {noc} allocation approved.
         </div>
       )}
@@ -134,7 +134,7 @@ export default async function OcogPbnPage({
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">
+          <div className="p-8 text-center text-sm text-gray-600">
             No NOCs in this category.
           </div>
         ) : (

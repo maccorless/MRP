@@ -12,6 +12,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Icon } from "@/components/Icon";
 
 type ImportResult = {
   imported: number;
@@ -104,7 +105,7 @@ export function PbnImportPanel() {
             onClick={() => fileInputRef.current?.click()}
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:text-gray-800 transition-colors disabled:opacity-50"
           >
-            <span className="text-base leading-none">↑</span>
+            <Icon name="upload" className="w-4 h-4" />
             Import CSV
           </button>
           <button

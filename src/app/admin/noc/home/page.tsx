@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { eq, and } from "drizzle-orm";
+import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { applications, orgSlotAllocations, enrRequests, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
@@ -74,8 +75,8 @@ export default async function NocHomePage() {
 
       {/* Attention banner */}
       {pendingReview > 0 && (
-        <div className="mb-5 flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-900">
-          <span className="shrink-0 mt-0.5">⚠</span>
+        <div className="mb-5 flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-900">
+          <Icon name="warning" label="Warning" className="shrink-0 mt-0.5 w-4 h-4 text-yellow-700" />
           <span>
             <strong>{pendingReview} application{pendingReview !== 1 ? "s" : ""} need{pendingReview === 1 ? "s" : ""} your review.</strong>
             {" "}Check the EoI Queue to action them.

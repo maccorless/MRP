@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { eq, asc, isNotNull } from "drizzle-orm";
+import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { enrRequests, organizations, eventSettings } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
@@ -59,7 +60,7 @@ export default async function IocEnrPage({
           href={sortHref(k)}
           className={`hover:text-brand-blue transition-colors ${active ? "text-brand-blue font-semibold" : ""}`}
         >
-          {label} {active ? "↑" : ""}
+          <span className="inline-flex items-center gap-1">{label}{active && <Icon name="chevron-up" className="w-3 h-3" />}</span>
         </Link>
       </th>
     );
@@ -77,12 +78,12 @@ export default async function IocEnrPage({
       </div>
 
       {success === "saved" && (
-        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           ENR slot grants saved.
         </div>
       )}
       {success === "pool_saved" && (
-        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           ENR pool size updated.
         </div>
       )}
@@ -141,7 +142,7 @@ export default async function IocEnrPage({
       <form action={saveAllEnrDecisions}>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {allRows.length === 0 ? (
-            <div className="p-8 text-center text-sm text-gray-400">
+            <div className="p-8 text-center text-sm text-gray-600">
               No ENR submissions received yet.
             </div>
           ) : (

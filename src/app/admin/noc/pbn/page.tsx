@@ -1,4 +1,5 @@
 import { eq, and } from "drizzle-orm";
+import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { applications, organizations, orgSlotAllocations, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
@@ -226,19 +227,19 @@ export default async function NocPbnPage({
               href="/api/export/pbn-offline"
               className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              Export CSV ↓
+              Export CSV <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
             </a>
           )}
         </div>
       </div>
 
       {success === "org_added" && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Organisation added to PbN.
         </div>
       )}
       {success === "submitted" && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Allocation submitted to OCOG for review.
         </div>
       )}
@@ -248,7 +249,7 @@ export default async function NocPbnPage({
         </div>
       )}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           {ERROR_MSG[error] ?? "An error occurred. Please try again."}
         </div>
       )}
@@ -261,7 +262,7 @@ export default async function NocPbnPage({
       )}
 
       {allTableRows.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-600">
           No organisations in your PbN yet. Approve applications in the EoI Queue, or add an organisation directly below.
         </div>
       ) : (

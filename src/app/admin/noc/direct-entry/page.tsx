@@ -37,7 +37,7 @@ export default async function DirectEntryPage({
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           {ERROR_MSG[error] ?? "An error occurred."}
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { Icon } from "@/components/Icon";
 import { StatusBadge } from "@/components/StatusBadge";
 import { categoryDisplayLabel } from "@/lib/category";
 import {
@@ -312,8 +313,9 @@ export function DuplicateCompareModal({
           aria-labelledby="compare-modal-title"
         >
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 shrink-0">
-            <h2 id="compare-modal-title" className="font-semibold text-gray-900">
-              ⚠ Possible Duplicate
+            <h2 id="compare-modal-title" className="font-semibold text-gray-900 flex items-center gap-2">
+              <Icon name="warning" label="Warning" className="w-4 h-4 text-yellow-700" />
+              Possible Duplicate
             </h2>
             <button
               type="button"

@@ -66,22 +66,22 @@ export default async function QuotasPage({
 
       {/* Banners */}
       {success === "imported" && (
-        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Imported {count} NOC quota{count !== "1" ? "s" : ""} successfully.
         </div>
       )}
       {success === "saved" && (
-        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Quota edits saved.
         </div>
       )}
       {success === "settings_saved" && (
-        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Event settings saved.
         </div>
       )}
       {error === "empty" && (
-        <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           CSV was empty — nothing imported.
         </div>
       )}
@@ -181,7 +181,7 @@ export default async function QuotasPage({
 
       {/* Quota table */}
       {quotas.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-400">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-600">
           No quotas loaded yet. Use the import tool above to add NOC quotas.
         </div>
       ) : isEditing ? (

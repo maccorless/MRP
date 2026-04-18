@@ -1,4 +1,5 @@
 import { eq, and, asc } from "drizzle-orm";
+import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { enrRequests, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
@@ -64,14 +65,14 @@ export default async function NocEnrPage({
             href="/api/export/enr"
             className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
           >
-            Export CSV ↓
+            Export CSV <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
           </a>
         )}
       </div>
 
       {/* Banners */}
       {success === "submitted" && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           ENR nominations submitted to IOC.
         </div>
       )}
@@ -91,7 +92,7 @@ export default async function NocEnrPage({
         </div>
       )}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           {ERROR_MSG[error] ?? "An error occurred."}
         </div>
       )}
@@ -125,7 +126,7 @@ export default async function NocEnrPage({
 
       {/* Priority list */}
       {requests.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-400 mb-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-600 mb-6">
           No organisations nominated yet. Use the form below to add your first nomination.
         </div>
       ) : (

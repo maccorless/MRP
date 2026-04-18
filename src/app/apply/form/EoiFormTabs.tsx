@@ -9,6 +9,7 @@ import { AccreditationTab } from "./tabs/AccreditationTab";
 import { PublicationTab } from "./tabs/PublicationTab";
 import { HistoryTab } from "./tabs/HistoryTab";
 import { COUNTRY_TO_NOC, NOC_CODE_SET } from "@/lib/codes";
+import { Icon } from "@/components/Icon";
 import { makeT, type Lang } from "@/lib/i18n";
 
 export type FormErrors = Record<string, string>;
@@ -581,7 +582,7 @@ export function EoiFormTabs({
       {/* How does this work? collapsible intro */}
       <details className="mb-4 bg-white border border-gray-200 rounded-lg overflow-hidden">
         <summary className="px-5 py-3.5 text-sm font-medium text-brand-blue cursor-pointer select-none hover:bg-gray-50 flex items-center gap-2">
-          <span className="text-base leading-none">ℹ️</span> {t("form.intro.summary")}
+          <Icon name="info" label="Info" className="w-4 h-4 text-brand-blue" /> {t("form.intro.summary")}
         </summary>
         <div className="px-5 py-4 border-t border-gray-100 text-sm text-gray-700 space-y-2">
           <p>
