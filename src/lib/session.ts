@@ -7,6 +7,7 @@
 import { timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cookieSecureFlag } from "@/lib/env";
 
 export type AdminRole =
   | "ioc_admin"
@@ -85,7 +86,7 @@ export async function setSession(payload: SessionPayload): Promise<void> {
   const jar = await cookies();
   jar.set(COOKIE_NAME, value, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecureFlag(),
     sameSite: "lax",
     maxAge: SESSION_MAX_AGE,
     path: "/",
@@ -102,7 +103,7 @@ export async function setSudoSession(payload: SessionPayload): Promise<void> {
   const jar = await cookies();
   jar.set(SUDO_COOKIE_NAME, value, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecureFlag(),
     sameSite: "lax",
     maxAge: SUDO_MAX_AGE,
     path: "/",

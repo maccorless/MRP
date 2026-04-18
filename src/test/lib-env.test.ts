@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { requireBaseUrl } from "@/lib/env";
+import { requireBaseUrl, cookieSecureFlag } from "@/lib/env";
 
 describe("requireBaseUrl", () => {
   const originalUrl = process.env.NEXTAUTH_URL;
@@ -39,5 +39,31 @@ describe("requireBaseUrl", () => {
   it("strips a trailing slash", () => {
     process.env.NEXTAUTH_URL = "https://portal.example.com/";
     expect(requireBaseUrl()).toBe("https://portal.example.com");
+  });
+});
+
+describe("cookieSecureFlag", () => {
+  const original = process.env.ALLOW_INSECURE_COOKIES;
+
+  afterEach(() => {
+    if (original === undefined) delete process.env.ALLOW_INSECURE_COOKIES;
+    else process.env.ALLOW_INSECURE_COOKIES = original;
+  });
+
+  it("defaults to true", () => {
+    delete process.env.ALLOW_INSECURE_COOKIES;
+    expect(cookieSecureFlag()).toBe(true);
+  });
+
+  it("is false only when ALLOW_INSECURE_COOKIES is exactly 'true'", () => {
+    process.env.ALLOW_INSECURE_COOKIES = "true";
+    expect(cookieSecureFlag()).toBe(false);
+  });
+
+  it("is true for any other value of ALLOW_INSECURE_COOKIES", () => {
+    for (const v of ["", "false", "0", "yes", "TRUE", " true ", "1"]) {
+      process.env.ALLOW_INSECURE_COOKIES = v;
+      expect(cookieSecureFlag(), `value=${JSON.stringify(v)}`).toBe(true);
+    }
   });
 });

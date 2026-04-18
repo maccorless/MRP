@@ -10,3 +10,12 @@ export function requireBaseUrl(): string {
   if (process.env.NODE_ENV === "development") return "http://localhost:3000";
   throw new Error("NEXTAUTH_URL is not set");
 }
+
+/**
+ * Returns the value to use for the cookie `Secure` attribute.
+ * Defaults to true so staging and prod are always Secure, regardless of NODE_ENV.
+ * Set ALLOW_INSECURE_COOKIES=true in a local .env.local to develop over http://.
+ */
+export function cookieSecureFlag(): boolean {
+  return process.env.ALLOW_INSECURE_COOKIES !== "true";
+}

@@ -3,6 +3,7 @@ import { eq, and, isNull, gt } from "drizzle-orm";
 import { db } from "@/db";
 import { sudoTokens, adminUsers } from "@/db/schema";
 import type { SessionPayload, AdminRole } from "@/lib/session";
+import { cookieSecureFlag } from "@/lib/env";
 
 async function hashToken(token: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -74,7 +75,7 @@ export async function GET(req: NextRequest) {
   const encoded = await encodeSudoSession(sudoPayload);
   response.cookies.set("prp_sudo_session", encoded, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecureFlag(),
     sameSite: "lax",
     maxAge: 60 * 60, // 1 hour
     path: "/",
