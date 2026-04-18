@@ -50,9 +50,24 @@ export function QueueClient({
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [compareTarget, setCompareTarget] = useState<CompareTarget | null>(null);
+  const [search, setSearch] = useState("");
+
+  const visibleRows = search.trim()
+    ? rows.filter((r) => r.orgName.toLowerCase().includes(search.trim().toLowerCase()))
+    : rows;
 
   return (
     <>
+      <div className="px-4 py-3 border-b border-gray-100">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by organisation name…"
+          className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+          aria-label="Search organisations"
+        />
+      </div>
       <table className="w-full text-sm">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
@@ -75,7 +90,14 @@ export function QueueClient({
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {rows.map((row) => (
+          {visibleRows.length === 0 && (
+            <tr>
+              <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">
+                No organisations match &ldquo;{search}&rdquo;.
+              </td>
+            </tr>
+          )}
+          {visibleRows.map((row) => (
             <tr
               key={row.id}
               className="hover:bg-gray-50 transition-colors"
