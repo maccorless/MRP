@@ -9,14 +9,3 @@ export function buildCsv(header: string[], rows: (string | number | null | undef
   const dataLines = rows.map((row) => row.map(csvEscape).join(","));
   return [headerLine, ...dataLines].join("\n");
 }
-
-/** Create a NextResponse for a CSV download. */
-export function csvResponse(csv: string, filename: string) {
-  const { NextResponse } = require("next/server");
-  return new NextResponse(csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-    },
-  });
-}

@@ -6,6 +6,7 @@ import { magicLinkTokens, applications, orgSlotAllocations, organizations, featu
 import { hashToken } from "@/lib/tokens";
 import { STATUS_BADGE } from "@/components/StatusBadge";
 import { makeT, parseLang, type TranslationKey } from "@/lib/i18n";
+import { ORG_TYPE_LABEL } from "@/lib/labels";
 
 async function isPbnResultsPublished(): Promise<boolean> {
   const [flag] = await db
@@ -64,17 +65,6 @@ export default async function StatusViewPage({
 
   const t = makeT(parseLang(langParam));
   const langSuffix = langParam ? `&lang=${langParam}` : "";
-
-  const ORG_TYPE_LABEL: Record<string, string> = {
-    media_print_online: "Print / Online Media",
-    media_broadcast:    "Broadcast",
-    news_agency:        "News Agency",
-    freelancer:         "Freelancer / Independent",
-    enr:                "ENR (Non-Rights Broadcaster)",
-    ino:                "INO (Intl Non-Gov Organisation)",
-    if_staff:           "IF Staff",
-    other:              "Other",
-  };
 
   const CATEGORY_LABEL: Record<string, string> = {
     E: "E — Journalist", Es: "Es — Sport Journalist",

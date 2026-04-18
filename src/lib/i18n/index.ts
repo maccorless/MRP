@@ -10,12 +10,6 @@ const dictionaries: Record<Lang, Record<TranslationKey, string>> = {
   fr,
 };
 
-export function resolveLang(searchParams: URLSearchParams): Lang {
-  const raw = searchParams.get("lang");
-  if (raw === "fr") return "fr";
-  return "en";
-}
-
 export function makeT(lang: Lang): (key: TranslationKey) => string {
   const dict = dictionaries[lang];
   return (key: TranslationKey) => dict[key] ?? en[key] ?? key;

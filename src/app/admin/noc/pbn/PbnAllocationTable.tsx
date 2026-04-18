@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { saveSlotAllocations, submitPbnToOcog } from "./actions";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
+import { ORG_TYPE_LABEL } from "@/lib/labels";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ServerAction = (formData: FormData) => Promise<any>;
@@ -87,16 +88,6 @@ const CAT_ENABLED_FIELD: Record<AccredCategory, keyof PbnRow> = {
   EC:  "categoryEc",
 };
 
-const ORG_TYPE_LABEL: Record<string, string> = {
-  media_print_online: "Print / Online Media",
-  media_broadcast:    "Broadcast",
-  news_agency:        "News Agency",
-  freelancer:         "Freelancer / Independent",
-  enr:                "ENR (Non-Rights Broadcaster)",
-  ino:                "INO (Intl Non-Gov Organisation)",
-  if_staff:           "IF Staff",
-  other:              "Other",
-};
 
 type SlotValues = Record<AccredCategory, number>;
 

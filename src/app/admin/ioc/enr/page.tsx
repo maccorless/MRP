@@ -4,15 +4,7 @@ import { db } from "@/db";
 import { enrRequests, organizations, eventSettings } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
 import { saveAllEnrDecisions, saveEnrPoolSize } from "./actions";
-
-const ORG_TYPE_LABEL: Record<string, string> = {
-  media_print_online: "Print / Online",
-  media_broadcast:    "Broadcast",
-  news_agency:        "News Agency",
-  enr:                "ENR",
-  freelancer:         "Freelancer",
-  other:              "Other",
-};
+import { ORG_TYPE_LABEL } from "@/lib/labels";
 
 type SortKey = "noc" | "priority" | "granted" | "requested";
 

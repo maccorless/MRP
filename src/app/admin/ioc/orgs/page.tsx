@@ -1,17 +1,7 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations } from "@/db/schema";
-
-const ORG_TYPE_LABEL: Record<string, string> = {
-  media_print_online: "Print / Online",
-  media_broadcast:    "Broadcast",
-  news_agency:        "News Agency",
-  freelancer:         "Freelancer",
-  enr:                "ENR",
-  ino:                "INO (Intl Non-Gov Org)",
-  if_staff:           "IF Staff",
-  other:              "Other",
-};
+import { ORG_TYPE_LABEL } from "@/lib/labels";
 
 export default async function OrgDirectoryPage() {
   const orgs = await db

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
 import { categoryDisplayLabel } from "@/lib/category";
 import type { CategoryTotals } from "@/lib/quota-calc";
+import { ORG_TYPE_LABEL, GEO_COVERAGE_LABEL, PUB_TYPE_LABEL } from "@/lib/labels";
+import { ACTION_LABEL } from "@/lib/audit-query";
 import {
   approveApplication,
   returnApplication,
@@ -14,51 +16,6 @@ import {
   unRejectApplication,
   setEnrRank,
 } from "../actions";
-
-const ORG_TYPE_LABEL: Record<string, string> = {
-  media_print_online: "Print / Online Media",
-  media_broadcast:    "Broadcast",
-  news_agency:        "News Agency",
-  freelancer:         "Freelancer / Independent",
-  enr:                "ENR (Non-Rights Broadcaster)",
-  ino:                "INO (Intl Non-Gov Organisation)",
-  if_staff:           "IF Staff",
-  other:              "Other",
-};
-
-const GEO_COVERAGE_LABEL: Record<string, string> = {
-  international: "International",
-  national: "National",
-  local: "Local / Regional",
-};
-
-const PUB_TYPE_LABEL: Record<string, string> = {
-  app: "App",
-  editorial_website___blog: "Website / Blog",
-  email_newsletter: "Email Newsletter",
-  magazine___newspaper: "Magazine / Newspaper",
-  official_ngb_publication: "NGB Publication",
-  photo_journal___online_gallery: "Photo Gallery",
-  podcast: "Podcast",
-  print_newsletter: "Print Newsletter",
-  social_media: "Social Media",
-  freelancer_with_confirmed_assignment: "Freelancer",
-  other: "Other",
-};
-
-const AUDIT_ACTION_LABEL: Record<string, string> = {
-  application_submitted: "Application submitted",
-  application_resubmitted: "Application resubmitted",
-  application_approved: "Accepted as Candidate",
-  application_returned: "Returned for corrections",
-  application_rejected: "Rejected",
-  application_unapproved: "Approval reversed",
-  application_unreturned: "Return cancelled",
-  rejection_reversed: "Rejection reversed",
-  unreject: "Rejection reversed (un-rejected)",
-  email_verified: "Email verified",
-  admin_login: "Admin signed in",
-};
 
 type AppDetail = {
   // We type the server response loosely — the drawer only reads fields that
@@ -793,7 +750,7 @@ export function ApplicationDrawer({
                           <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 shrink-0" />
                           <div>
                             <span className="font-medium text-gray-900">
-                              {AUDIT_ACTION_LABEL[log.action] ?? log.action}
+                              {ACTION_LABEL[log.action] ?? log.action}
                             </span>
                             {log.actorLabel && (
                               <span className="text-gray-500">
