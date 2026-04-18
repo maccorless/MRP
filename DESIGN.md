@@ -28,7 +28,7 @@ Status color conventions (consistent across all admin roles):
 |---------------|-------------------|------------------|
 | Pending       | `yellow-100`      | `yellow-800`     |
 | Resubmitted   | `blue-100`        | `blue-800`       |
-| Approved      | `green-100`       | `green-700/800`  |
+| Candidate     | `green-100`       | `green-700/800`  |
 | Returned      | `orange-100`      | `orange-800`     |
 | Rejected      | `red-100`         | `red-800`        |
 | Draft         | `gray-100`        | `gray-600`       |

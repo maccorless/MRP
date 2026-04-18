@@ -5,12 +5,14 @@ import { db } from "@/db";
 import { applications, orgSlotAllocations, enrRequests, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 
+// NOTE: Milestone dates and states are under business review — see TODOS.md.
+// Ordered chronologically by date so the timeline renders consistently.
 const MILESTONES = [
-  { label: "EoI application window opens",  date: "Feb 2028",  state: "done"     },
+  { label: "Final accreditation confirmed",  date: "Jan 2028",  state: "upcoming" },
+  { label: "EoI application window opens",   date: "Feb 2028",  state: "done"     },
   { label: "NOC EoI review deadline",        date: "Apr 2028",  state: "active"   },
   { label: "PbN submission deadline",        date: "May 2028",  state: "upcoming" },
   { label: "ENR nominations deadline",       date: "Jun 2028",  state: "upcoming" },
-  { label: "Final accreditation confirmed",  date: "Jan 2028",  state: "upcoming" },
 ] as const;
 
 export default async function NocHomePage() {
