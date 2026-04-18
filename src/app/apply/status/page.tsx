@@ -17,8 +17,12 @@ export default async function StatusPage({
     const clean = email.trim().toLowerCase();
     if (clean.includes("@") && clean.includes(".")) {
       const token = generateToken();
-      const expiryHours = parseInt(process.env.TOKEN_EXPIRY_HOURS ?? "24", 10);
-      const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
+      // Status tokens last 90 days — same as requestStatusToken in actions.ts
+      const statusExpiryHours = parseInt(
+        process.env.STATUS_TOKEN_EXPIRY_HOURS ?? String(90 * 24),
+        10
+      );
+      const expiresAt = new Date(Date.now() + statusExpiryHours * 60 * 60 * 1000);
       await db.insert(magicLinkTokens).values({ email: clean, tokenHash: hashToken(token), expiresAt });
       redirect(`/apply/status/view?token=${token}&email=${encodeURIComponent(clean)}`);
     }
@@ -59,7 +63,7 @@ export default async function StatusPage({
             View My Status
           </button>
           <p className="mt-2 text-xs text-gray-400 text-center">
-            The status link is valid for 1 hour. You can request a new one at any time.
+            The status link is valid for 90 days. You can request a new one at any time.
           </p>
         </form>
       </div>
