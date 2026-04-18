@@ -7,6 +7,7 @@ import { hashToken } from "@/lib/tokens";
 import { STATUS_BADGE } from "@/components/StatusBadge";
 import { makeT, parseLang, type TranslationKey } from "@/lib/i18n";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
+import { formatAddress } from "@/lib/format";
 
 async function isPbnResultsPublished(): Promise<boolean> {
   const [flag] = await db
@@ -135,8 +136,7 @@ export default async function StatusViewPage({
               ] as [string, boolean | null, number | null][]
             ).filter(([, checked]) => checked);
 
-            const orgAddress = [org.address, org.address2, org.city, org.stateProvince, org.postalCode]
-              .filter(Boolean).join(", ");
+            const orgAddress = formatAddress(org);
 
             return (
               <div key={app.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">

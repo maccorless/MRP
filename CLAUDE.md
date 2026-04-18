@@ -31,6 +31,10 @@ bun db:studio     # open Drizzle Studio
 - Never edit past migrations; always generate new ones via `db:generate`
 - Design tokens and role colour scheme are in `DESIGN.md`
 - Do not commit `.env.local`
+- Shared label maps live in `src/lib/labels.ts` (`ORG_TYPE_LABEL`, `PUB_TYPE_LABEL`, `GEO_COVERAGE_LABEL`) and `src/lib/audit-query.ts` (`ACTION_LABEL`, `ACTION_BADGE`). Do not redeclare locally.
+- Form-tab Tailwind constants (`INPUT`, `BASE_INPUT`, `LABEL`, `HELP`, `inp()`, `Err()`) come from `src/app/apply/form/form-styles.tsx`. Do not redeclare per tab.
+- Address formatting — use `formatAddress(org)` from `src/lib/format.ts`.
+- Server-action error convention: form-submit actions redirect with `?error=code` query params (see `src/app/admin/noc/actions.ts`). Programmatic/async actions called from client handlers may return `{ error: string }` objects (see `setEnrRank` in `src/app/admin/noc/actions.ts`). Do not mix patterns in the same action.
 
 ## Skill routing
 

@@ -5,11 +5,7 @@ import type { FormErrors, PrefillData } from "../EoiFormTabs";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 import { LA28_SPORTS } from "@/lib/sports";
 import { makeT, type Lang } from "@/lib/i18n";
-
-const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
-const INPUT = BASE_INPUT + " border-gray-300";
-const LABEL = "block text-sm font-medium text-gray-700 mb-1";
-const HELP = "text-xs text-gray-400 mt-1";
+import { BASE_INPUT, INPUT, LABEL, HELP } from "../form-styles";
 
 function InfoTooltip({ text, ariaLabel }: { text: string; ariaLabel: string }) {
   const [open, setOpen] = useState(false);

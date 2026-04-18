@@ -7,6 +7,7 @@ import { categoryDisplayLabel } from "@/lib/category";
 import type { CategoryTotals } from "@/lib/quota-calc";
 import { ORG_TYPE_LABEL, GEO_COVERAGE_LABEL, PUB_TYPE_LABEL } from "@/lib/labels";
 import { ACTION_LABEL } from "@/lib/audit-query";
+import { formatAddress } from "@/lib/format";
 import {
   approveApplication,
   returnApplication,
@@ -379,15 +380,13 @@ export function ApplicationDrawer({
                     <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
                       <dt className="text-gray-500 text-xs mb-1">Address</dt>
                       <dd className="text-gray-900">
-                        {[
-                          org.address,
-                          org.address2,
-                          [org.city, org.stateProvince, org.postalCode]
-                            .filter(Boolean)
-                            .join(", "),
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
+                        {formatAddress({
+                          address: org.address as string | null,
+                          address2: org.address2 as string | null,
+                          city: org.city as string | null,
+                          stateProvince: org.stateProvince as string | null,
+                          postalCode: org.postalCode as string | null,
+                        })}
                       </dd>
                     </div>
                   )}

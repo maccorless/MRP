@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { applications, organizations, orgSlotAllocations, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 import { ACCRED_CATEGORIES } from "@/lib/category";
+import { formatAddress } from "@/lib/format";
 import { PbnAllocationTable } from "./PbnAllocationTable";
 import { AddOrgToPbnPanel } from "./AddOrgToPbnPanel";
 import { PbnImportPanel } from "./PbnImportPanel";
@@ -118,7 +119,7 @@ export default async function NocPbnPage({
     orgType:   org.orgType ?? null,
     orgWebsite: org.website ?? null,
     orgCountry: org.country ?? null,
-    orgAddress: [org.address, org.city, org.stateProvince, org.postalCode].filter(Boolean).join(", ") || null,
+    orgAddress: formatAddress(org) || null,
     contactName: [app.contactFirstName, app.contactLastName].filter(Boolean).join(" ") || null,
     contactEmail: app.contactEmail ?? null,
     contactTitle: app.contactTitle ?? null,

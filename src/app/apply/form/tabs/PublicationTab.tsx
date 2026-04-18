@@ -3,11 +3,7 @@
 import { useState } from "react";
 import type { PrefillData } from "../EoiFormTabs";
 import { makeT, type Lang, type TranslationKey } from "@/lib/i18n";
-
-const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
-const BASE_INPUT = "w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent";
-const LABEL = "block text-sm font-medium text-gray-700 mb-1";
-const HELP = "text-xs text-gray-400 mt-1";
+import { BASE_INPUT, INPUT, LABEL, HELP } from "../form-styles";
 
 // Map from display name to translation key suffix
 const PUBLICATION_TYPES: string[] = [

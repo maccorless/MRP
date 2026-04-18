@@ -9,6 +9,7 @@ import { sumAllocations } from "@/lib/quota-calc";
 import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
 import { ORG_TYPE_LABEL, GEO_COVERAGE_LABEL, PUB_TYPE_LABEL } from "@/lib/labels";
 import { ACTION_LABEL } from "@/lib/audit-query";
+import { formatAddress } from "@/lib/format";
 import {
   approveApplication,
   returnApplication,
@@ -201,7 +202,7 @@ export default async function ApplicationDetailPage({
             <div className="mt-3 pt-3 border-t border-gray-100 text-sm">
               <dt className="text-gray-500 text-xs mb-1">Address</dt>
               <dd className="text-gray-900">
-                {[org.address, org.address2, [org.city, org.stateProvince, org.postalCode].filter(Boolean).join(", ")].filter(Boolean).join(", ")}
+                {formatAddress(org)}
               </dd>
             </div>
           )}
