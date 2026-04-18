@@ -17,21 +17,21 @@ export default async function NocHelpPage() {
         <nav className="w-48 shrink-0 sticky top-4 self-start">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Contents</p>
           <ul className="space-y-1 text-sm">
-            <li><a href="#overview" className="text-[#0057A8] hover:underline">Overview</a></li>
-            <li><a href="#workflow" className="text-[#0057A8] hover:underline">Workflow</a></li>
+            <li><a href="#overview" className="text-brand-blue hover:underline">Overview</a></li>
+            <li><a href="#workflow" className="text-brand-blue hover:underline">Workflow</a></li>
             <li>
               <p className="text-xs font-medium text-gray-500 mt-2 mb-1">Key Screens</p>
               <ul className="space-y-1 pl-2">
-                <li><a href="#eoi-queue" className="text-[#0057A8] hover:underline">EoI Queue</a></li>
-                <li><a href="#direct-entry" className="text-[#0057A8] hover:underline">Direct Entry</a></li>
-                <li><a href="#invite-org" className="text-[#0057A8] hover:underline">Invite Org</a></li>
-                <li><a href="#pbn" className="text-[#0057A8] hover:underline">PbN Allocations</a></li>
-                <li><a href="#enr" className="text-[#0057A8] hover:underline">ENR Requests</a></li>
-                <li><a href="#audit" className="text-[#0057A8] hover:underline">Audit Trail</a></li>
+                <li><a href="#eoi-queue" className="text-brand-blue hover:underline">EoI Queue</a></li>
+                <li><a href="#direct-entry" className="text-brand-blue hover:underline">Direct Entry</a></li>
+                <li><a href="#invite-org" className="text-brand-blue hover:underline">Invite Org</a></li>
+                <li><a href="#pbn" className="text-brand-blue hover:underline">PbN Allocations</a></li>
+                <li><a href="#enr" className="text-brand-blue hover:underline">ENR Requests</a></li>
+                <li><a href="#audit" className="text-brand-blue hover:underline">Audit Trail</a></li>
               </ul>
             </li>
-            <li className="mt-2"><a href="#direct-entry-explained" className="text-[#0057A8] hover:underline">Direct Entry Explained</a></li>
-            <li><a href="#faq" className="text-[#0057A8] hover:underline">FAQ</a></li>
+            <li className="mt-2"><a href="#direct-entry-explained" className="text-brand-blue hover:underline">Direct Entry Explained</a></li>
+            <li><a href="#faq" className="text-brand-blue hover:underline">FAQ</a></li>
           </ul>
         </nav>
 
@@ -131,7 +131,7 @@ export default async function NocHelpPage() {
                 <div key={label} id={id} className="flex gap-3">
                   <Link
                     href={href}
-                    className="shrink-0 text-sm font-medium text-[#0057A8] hover:underline w-36"
+                    className="shrink-0 text-sm font-medium text-brand-blue hover:underline w-36"
                   >
                     {label}
                   </Link>
@@ -188,7 +188,7 @@ export default async function NocHelpPage() {
             </dl>
           </div>
 
-          <Link href="/admin/noc/home" className="text-sm text-[#0057A8] hover:underline">
+          <Link href="/admin/noc/home" className="text-sm text-brand-blue hover:underline">
             ← Back to dashboard
           </Link>
         </div>

@@ -13,7 +13,7 @@ export default async function HowItWorksPage({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link href={`/apply${langSuffix}`} className="text-sm text-[#0057A8] hover:underline">
+        <Link href={`/apply${langSuffix}`} className="text-sm text-brand-blue hover:underline">
           {t("hiw.backLink")}
         </Link>
       </div>
@@ -29,7 +29,7 @@ export default async function HowItWorksPage({
         <ol className="space-y-5">
           {(["1", "2", "3", "4"] as const).map((n) => (
             <li key={n} className="flex gap-4">
-              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#0057A8] text-white text-sm font-bold flex items-center justify-center">
+              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-blue text-white text-sm font-bold flex items-center justify-center">
                 {n}
               </div>
               <div>
@@ -83,7 +83,7 @@ export default async function HowItWorksPage({
       <div className="text-center">
         <Link
           href={`/apply${langSuffix}`}
-          className="inline-block px-6 py-3 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
+          className="inline-block px-6 py-3 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
         >
           {t("hiw.readyToApply")}
         </Link>

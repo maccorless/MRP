@@ -92,11 +92,11 @@ export function HistoryTab({ prefill, lang = "en" }: { prefill: PrefillData | nu
         <div className="flex gap-4 mt-1">
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_olympic" value="yes" data-tab="4"
-              checked={priorOlympic === "yes"} onChange={() => setPriorOlympic("yes")} className="accent-[#0057A8]" /> {t("history.olympic.yes")}
+              checked={priorOlympic === "yes"} onChange={() => setPriorOlympic("yes")} className="accent-brand-blue" /> {t("history.olympic.yes")}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_olympic" value="no" data-tab="4"
-              checked={priorOlympic === "no"} onChange={() => setPriorOlympic("no")} className="accent-[#0057A8]" /> {t("history.olympic.no")}
+              checked={priorOlympic === "no"} onChange={() => setPriorOlympic("no")} className="accent-brand-blue" /> {t("history.olympic.no")}
           </label>
         </div>
       </fieldset>
@@ -136,11 +136,11 @@ export function HistoryTab({ prefill, lang = "en" }: { prefill: PrefillData | nu
         <div className="flex gap-4 mt-1">
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_paralympic" value="yes" data-tab="4"
-              checked={priorParalympic === "yes"} onChange={() => setPriorParalympic("yes")} className="accent-[#0057A8]" /> {t("history.paralympic.yes")}
+              checked={priorParalympic === "yes"} onChange={() => setPriorParalympic("yes")} className="accent-brand-blue" /> {t("history.paralympic.yes")}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="radio" name="prior_paralympic" value="no" data-tab="4"
-              checked={priorParalympic === "no"} onChange={() => setPriorParalympic("no")} className="accent-[#0057A8]" /> {t("history.paralympic.no")}
+              checked={priorParalympic === "no"} onChange={() => setPriorParalympic("no")} className="accent-brand-blue" /> {t("history.paralympic.no")}
           </label>
         </div>
       </fieldset>

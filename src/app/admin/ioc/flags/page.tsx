@@ -88,7 +88,7 @@ export default async function FlagsListPage({
               placeholder="e.g. new_pbn_ui"
               pattern="[a-z0-9_]+"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
             />
           </div>
           <div className="flex-1 min-w-64">
@@ -99,12 +99,12 @@ export default async function FlagsListPage({
               type="text"
               name="description"
               placeholder="Short description of what this flag controls"
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-2 bg-[#0057A8] text-white text-sm font-medium rounded hover:bg-[#004a90] transition-colors whitespace-nowrap"
+            className="px-4 py-2 bg-brand-blue text-white text-sm font-medium rounded hover:bg-[#004a90] transition-colors whitespace-nowrap"
           >
             Create flag
           </button>
@@ -134,7 +134,7 @@ export default async function FlagsListPage({
                   <td className="px-5 py-3">
                     <a
                       href={`/admin/ioc/flags/${flag.name}`}
-                      className="font-mono font-semibold text-[#0057A8] hover:underline"
+                      className="font-mono font-semibold text-brand-blue hover:underline"
                     >
                       {flag.name}
                     </a>

@@ -85,14 +85,14 @@ export default async function NocHomePage() {
 
       <div className="grid grid-cols-1 gap-5">
         {/* EoI Queue card */}
-        <Link href="/admin/noc/queue" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-[#0057A8] p-6 transition-all hover:shadow-sm">
+        <Link href="/admin/noc/queue" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-brand-blue p-6 transition-all hover:shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 bg-[#0057A8] rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
                   <span className="text-white text-xs font-bold">EoI</span>
                 </div>
-                <h2 className="font-semibold text-gray-900 group-hover:text-[#0057A8] transition-colors">
+                <h2 className="font-semibold text-gray-900 group-hover:text-brand-blue transition-colors">
                   Expression of Interest Queue
                 </h2>
               </div>
@@ -117,14 +117,14 @@ export default async function NocHomePage() {
         </Link>
 
         {/* PbN card */}
-        <Link href="/admin/noc/pbn" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-[#0057A8] p-6 transition-all hover:shadow-sm">
+        <Link href="/admin/noc/pbn" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-brand-blue p-6 transition-all hover:shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                   <span className="text-white text-xs font-bold">PbN</span>
                 </div>
-                <h2 className="font-semibold text-gray-900 group-hover:text-[#0057A8] transition-colors">
+                <h2 className="font-semibold text-gray-900 group-hover:text-brand-blue transition-colors">
                   Press by Number — Slot Allocations
                 </h2>
               </div>
@@ -145,14 +145,14 @@ export default async function NocHomePage() {
         </Link>
 
         {/* ENR card */}
-        <Link href="/admin/noc/enr" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-[#0057A8] p-6 transition-all hover:shadow-sm">
+        <Link href="/admin/noc/enr" className="group block bg-white rounded-xl border-2 border-gray-200 hover:border-brand-blue p-6 transition-all hover:shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
                   <span className="text-white text-xs font-bold">ENR</span>
                 </div>
-                <h2 className="font-semibold text-gray-900 group-hover:text-[#0057A8] transition-colors">
+                <h2 className="font-semibold text-gray-900 group-hover:text-brand-blue transition-colors">
                   ENR Nominations
                 </h2>
               </div>
@@ -184,7 +184,7 @@ export default async function NocHomePage() {
             <div key={m.label} className="flex items-center gap-3">
               <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
                 m.state === "done"    ? "bg-green-500" :
-                m.state === "active"  ? "bg-[#0057A8] ring-2 ring-blue-200" :
+                m.state === "active"  ? "bg-brand-blue ring-2 ring-blue-200" :
                 "bg-gray-200"
               }`} />
               <span className={`text-sm flex-1 ${m.state === "active" ? "font-medium text-gray-900" : "text-gray-500"}`}>
@@ -193,7 +193,7 @@ export default async function NocHomePage() {
                   {m.state === "done" ? " (completed)" : m.state === "active" ? " (current)" : " (upcoming)"}
                 </span>
               </span>
-              <span className={`text-xs ${m.state === "active" ? "font-semibold text-[#0057A8]" : "text-gray-400"}`}>
+              <span className={`text-xs ${m.state === "active" ? "font-semibold text-brand-blue" : "text-gray-400"}`}>
                 {m.date}
               </span>
             </div>

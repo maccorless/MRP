@@ -24,7 +24,7 @@ export function Paginator({ page, totalPages, total, pageSize, pageHref }: Props
       </span>
       <div className="flex items-center gap-3">
         {page > 1 ? (
-          <a href={pageHref(page - 1)} className="text-[#0057A8] hover:underline text-xs">
+          <a href={pageHref(page - 1)} className="text-brand-blue hover:underline text-xs">
             ← Previous
           </a>
         ) : (
@@ -32,7 +32,7 @@ export function Paginator({ page, totalPages, total, pageSize, pageHref }: Props
         )}
         <span className="text-xs text-gray-600">Page {page} of {totalPages}</span>
         {page < totalPages ? (
-          <a href={pageHref(page + 1)} className="text-[#0057A8] hover:underline text-xs">
+          <a href={pageHref(page + 1)} className="text-brand-blue hover:underline text-xs">
             Next →
           </a>
         ) : (

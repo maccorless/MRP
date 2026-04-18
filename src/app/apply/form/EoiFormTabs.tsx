@@ -580,7 +580,7 @@ export function EoiFormTabs({
     <>
       {/* How does this work? collapsible intro */}
       <details className="mb-4 bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <summary className="px-5 py-3.5 text-sm font-medium text-[#0057A8] cursor-pointer select-none hover:bg-gray-50 flex items-center gap-2">
+        <summary className="px-5 py-3.5 text-sm font-medium text-brand-blue cursor-pointer select-none hover:bg-gray-50 flex items-center gap-2">
           <span className="text-base leading-none">ℹ️</span> {t("form.intro.summary")}
         </summary>
         <div className="px-5 py-4 border-t border-gray-100 text-sm text-gray-700 space-y-2">
@@ -648,7 +648,7 @@ export function EoiFormTabs({
                 onClick={() => { markVisited(i); updateTabStatus(); setActiveTab(i); }}
                 className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
                   active
-                    ? "border-[#0057A8] text-[#0057A8] bg-white"
+                    ? "border-brand-blue text-brand-blue bg-white"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
               >
@@ -717,7 +717,7 @@ export function EoiFormTabs({
             <button
               type="button"
               onClick={() => { markVisited(activeTab); markVisited(activeTab + 1); updateTabStatus(); setActiveTab(activeTab + 1); }}
-              className="px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
+              className="px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
             >
               {t("form.nav.continue")}
             </button>
@@ -763,7 +763,7 @@ export function EoiFormTabs({
           <button
             type="button"
             onClick={handleGoToFirstError}
-            className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-[#0057A8] rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
+            className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-brand-blue rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
           >
             {t("form.validationModal.goToError")}
           </button>

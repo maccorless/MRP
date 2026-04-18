@@ -134,7 +134,7 @@ export function EnrPriorityList({
                     <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 ${
                       row.priorityRank <= 3
                         ? "bg-yellow-50 text-yellow-800 border-yellow-300"
-                        : "bg-blue-50 text-[#0057A8] border-blue-200"
+                        : "bg-blue-50 text-brand-blue border-blue-200"
                     }`}>
                       {row.priorityRank}
                     </span>

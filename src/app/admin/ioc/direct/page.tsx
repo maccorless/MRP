@@ -160,7 +160,7 @@ export default async function IocDirectPage({
                     </span>
                   </div>
                   <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${over ? "bg-red-500" : "bg-[#0057A8]"}`} style={{ width: `${pct}%` }} />
+                    <div className={`h-full rounded-full ${over ? "bg-red-500" : "bg-brand-blue"}`} style={{ width: `${pct}%` }} />
                   </div>
                   <div className="text-xs text-gray-400 mt-1">{total - allocated} remaining</div>
                 </div>

@@ -34,7 +34,7 @@ export default async function VerifyPage({
           {chars.map((char, i) => (
             <div
               key={i}
-              className="w-14 h-16 border-2 border-[#0057A8] rounded-lg flex items-center justify-center text-3xl font-bold text-[#0057A8] bg-blue-50 select-all"
+              className="w-14 h-16 border-2 border-brand-blue rounded-lg flex items-center justify-center text-3xl font-bold text-brand-blue bg-blue-50 select-all"
             >
               {char}
             </div>
@@ -47,7 +47,7 @@ export default async function VerifyPage({
 
         <Link
           href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}${langSuffix}`}
-          className="inline-block bg-[#0057A8] text-white rounded-md px-8 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors"
+          className="inline-block bg-brand-blue text-white rounded-md px-8 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors"
         >
           {t("verify.continue")}
         </Link>

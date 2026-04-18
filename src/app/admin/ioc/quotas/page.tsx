@@ -56,7 +56,7 @@ export default async function QuotasPage({
           ) : (
             <Link
               href="/admin/ioc/quotas?edit=1"
-              className="px-3 py-1.5 text-xs font-medium text-white bg-[#0057A8] rounded hover:bg-blue-800 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-white bg-brand-blue rounded hover:bg-blue-800 transition-colors"
             >
               ✎ Edit Quotas
             </Link>
@@ -127,7 +127,7 @@ export default async function QuotasPage({
               name="capacity"
               min={0}
               defaultValue={settings.capacity}
-              className="w-28 border border-gray-300 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-28 border border-gray-300 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
           <div>
@@ -139,12 +139,12 @@ export default async function QuotasPage({
               name="ioc_holdback"
               min={0}
               defaultValue={settings.iocHoldback}
-              className="w-28 border border-gray-300 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-28 border border-gray-300 rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-1.5 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
+            className="px-4 py-1.5 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
           >
             Save Settings
           </button>
@@ -171,7 +171,7 @@ export default async function QuotasPage({
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
             >
               Import Quotas
             </button>
@@ -223,7 +223,7 @@ export default async function QuotasPage({
                           name={`${key}_${q.nocCode}`}
                           defaultValue={val}
                           min={0}
-                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand-blue"
                         />
                       </td>
                     ))}

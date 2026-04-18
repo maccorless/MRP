@@ -176,7 +176,7 @@ export default async function ApplicationDetailPage({
               <div>
                 <dt className="text-gray-500 text-xs">Website</dt>
                 <dd>
-                  <a href={org.website} target="_blank" rel="noopener noreferrer" className="text-[#0057A8] hover:underline text-xs">
+                  <a href={org.website} target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline text-xs">
                     {org.website}
                   </a>
                 </dd>

@@ -105,7 +105,7 @@ export function OrganisationTab({
             placeholder={t("org.type.other.placeholder")}
             required
             defaultValue={prefill?.orgTypeOther ?? ""}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
         </div>
       )}
@@ -138,7 +138,7 @@ export function OrganisationTab({
           </datalist>
           <Err name="noc_code" errors={errors} />
           {nocAutoSuggestedName ? (
-            <p id="noc-help" className="text-xs text-[#0057A8] mt-1">
+            <p id="noc-help" className="text-xs text-brand-blue mt-1">
               {t("org.noc.autoSelected")} <strong>{nocAutoSuggestedName}</strong> {t("org.noc.autoSelectedSuffix")}
             </p>
           ) : (
@@ -186,10 +186,10 @@ export function OrganisationTab({
           <legend className={LABEL}>{t("org.accessibility.legend")}</legend>
           <div className="flex gap-4 mt-1">
             <label className="flex items-center gap-2 text-sm">
-              <input type="radio" name="accessibility_needs" value="yes" data-tab="0" className="accent-[#0057A8]" /> {t("org.accessibility.yes")}
+              <input type="radio" name="accessibility_needs" value="yes" data-tab="0" className="accent-brand-blue" /> {t("org.accessibility.yes")}
             </label>
             <label className="flex items-center gap-2 text-sm">
-              <input type="radio" name="accessibility_needs" value="no" data-tab="0" className="accent-[#0057A8]" defaultChecked /> {t("org.accessibility.no")}
+              <input type="radio" name="accessibility_needs" value="no" data-tab="0" className="accent-brand-blue" defaultChecked /> {t("org.accessibility.no")}
             </label>
           </div>
           <p className={HELP}>{t("org.accessibility.help")}</p>
@@ -224,7 +224,7 @@ export function OrganisationTab({
                 placeholder={t("org.pressCard.issuer.placeholder")}
                 required
                 defaultValue={prefill?.pressCardIssuer ?? ""}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
               />
             </div>
           )}

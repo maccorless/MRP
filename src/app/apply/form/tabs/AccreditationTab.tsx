@@ -18,7 +18,7 @@ function InfoTooltip({ text, ariaLabel }: { text: string; ariaLabel: string }) {
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
         onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
-        className="w-4 h-4 rounded-full bg-gray-200 text-gray-600 text-[10px] font-bold leading-none flex items-center justify-center hover:bg-gray-300 focus:outline-none focus:ring-1 focus:ring-[#0057A8] cursor-pointer"
+        className="w-4 h-4 rounded-full bg-gray-200 text-gray-600 text-[10px] font-bold leading-none flex items-center justify-center hover:bg-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-blue cursor-pointer"
         aria-label={ariaLabel}
         aria-describedby={open ? tooltipId : undefined}
         aria-expanded={open}
@@ -108,7 +108,7 @@ export function AccreditationTab({
                 htmlFor={`category_${cat.value}`}
                 className={`block border rounded-lg p-4 cursor-pointer transition-colors ${
                   isChecked
-                    ? "border-[#0057A8] bg-blue-50"
+                    ? "border-brand-blue bg-blue-50"
                     : "border-gray-200 hover:bg-gray-50"
                 }`}
               >
@@ -120,7 +120,7 @@ export function AccreditationTab({
                     checked={isChecked}
                     onChange={() => toggle(cat.value)}
                     data-tab="2"
-                    className="mt-0.5 accent-[#0057A8] cursor-pointer"
+                    className="mt-0.5 accent-brand-blue cursor-pointer"
                   />
                   <div className="flex-1">
                     <div className="flex items-center">
@@ -163,7 +163,7 @@ export function AccreditationTab({
                         setQuantities((prev) => ({ ...prev, [cat.value]: Number(e.target.value) }))
                       }
                       placeholder={t("accred.quantity.placeholder")}
-                      className="w-32 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+                      className="w-32 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
                     />
                     {orgType === "enr" && quantities[cat.value] > 3 && (
                       <p className="text-xs text-red-600 mt-0.5">{t("accred.quantity.maxEnr")}</p>
@@ -258,7 +258,7 @@ export function AccreditationTab({
             rows={2}
             placeholder={t("accred.enrType.placeholder")}
             defaultValue={prefill?.enrProgrammingType ?? ""}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
           />
           <p className="text-xs text-gray-500 mt-1">{t("accred.enrType.help")}</p>
         </div>

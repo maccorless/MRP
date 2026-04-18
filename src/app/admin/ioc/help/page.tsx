@@ -17,15 +17,15 @@ export default async function IocHelpPage() {
         <nav className="w-48 shrink-0 sticky top-4 self-start">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Contents</p>
           <ul className="space-y-1 text-sm">
-            <li><a href="#overview" className="text-[#0057A8] hover:underline">Overview</a></li>
+            <li><a href="#overview" className="text-brand-blue hover:underline">Overview</a></li>
             <li>
               <p className="text-xs font-medium text-gray-500 mt-2 mb-1">Key Screens</p>
               <ul className="space-y-1 pl-2">
-                <li><a href="#master-allocations" className="text-[#0057A8] hover:underline">Master Allocations</a></li>
-                <li><a href="#quotas" className="text-[#0057A8] hover:underline">Quotas</a></li>
-                <li><a href="#ioc-direct" className="text-[#0057A8] hover:underline">IOC Direct</a></li>
-                <li><a href="#enr-review" className="text-[#0057A8] hover:underline">ENR Review</a></li>
-                <li><a href="#audit" className="text-[#0057A8] hover:underline">Audit Trail</a></li>
+                <li><a href="#master-allocations" className="text-brand-blue hover:underline">Master Allocations</a></li>
+                <li><a href="#quotas" className="text-brand-blue hover:underline">Quotas</a></li>
+                <li><a href="#ioc-direct" className="text-brand-blue hover:underline">IOC Direct</a></li>
+                <li><a href="#enr-review" className="text-brand-blue hover:underline">ENR Review</a></li>
+                <li><a href="#audit" className="text-brand-blue hover:underline">Audit Trail</a></li>
               </ul>
             </li>
           </ul>
@@ -84,7 +84,7 @@ export default async function IocHelpPage() {
                 <div key={label} id={id} className="flex gap-3">
                   <Link
                     href={href}
-                    className="shrink-0 text-sm font-medium text-[#0057A8] hover:underline w-36"
+                    className="shrink-0 text-sm font-medium text-brand-blue hover:underline w-36"
                   >
                     {label}
                   </Link>
@@ -132,7 +132,7 @@ export default async function IocHelpPage() {
             </dl>
           </div>
 
-          <Link href="/admin/ioc" className="text-sm text-[#0057A8] hover:underline">
+          <Link href="/admin/ioc" className="text-sm text-brand-blue hover:underline">
             ← Back to dashboard
           </Link>
         </div>

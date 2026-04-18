@@ -114,7 +114,7 @@ export default async function StatusViewPage({
           <p className="mt-2 text-gray-400">
             {t("statusView.noApps.tryAgain").split("try again").map((part, i) =>
               i === 0 ? part : (
-                <><a key="link" href={`/apply/status${langParam ? `?lang=${langParam}` : ""}`} className="text-[#0057A8] hover:underline">{t("statusView.noApps.tryAgainLink")}</a>{part}</>
+                <><a key="link" href={`/apply/status${langParam ? `?lang=${langParam}` : ""}`} className="text-brand-blue hover:underline">{t("statusView.noApps.tryAgainLink")}</a>{part}</>
               )
             )}
           </p>
@@ -195,7 +195,7 @@ export default async function StatusViewPage({
                   {displayStatus === "pending" && app.status === "pending" && (
                     <Link
                       href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}${langSuffix}`}
-                      className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
+                      className="inline-block px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
                     >
                       {t("statusView.editApplication")}
                     </Link>
@@ -203,7 +203,7 @@ export default async function StatusViewPage({
                   {displayStatus === "returned" && (
                     <Link
                       href={`/apply/form?token=${token}&email=${encodeURIComponent(email)}&resubmit=${app.id}${langSuffix}`}
-                      className="inline-block px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
+                      className="inline-block px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
                     >
                       {t("statusView.correctResubmit")}
                     </Link>

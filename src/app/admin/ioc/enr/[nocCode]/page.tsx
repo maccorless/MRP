@@ -93,7 +93,7 @@ export default async function IocEnrNocPage({
                     <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 ${
                       req.priorityRank <= 3
                         ? "bg-yellow-50 text-yellow-800 border-yellow-300"
-                        : "bg-blue-50 text-[#0057A8] border-blue-200"
+                        : "bg-blue-50 text-brand-blue border-blue-200"
                     }`}>
                       {req.priorityRank}
                     </span>
@@ -143,7 +143,7 @@ export default async function IocEnrNocPage({
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
           >
             Save Decisions
           </button>

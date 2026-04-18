@@ -62,11 +62,11 @@ export function AuditTrailView({
             name="q"
             defaultValue={q}
             placeholder="actor:kim  action:approved  type:noc_admin  from:2025-01-01  to:2025-12-31  date:2025-11-04"
-            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-[#0057A8] text-white rounded-md text-sm font-medium hover:bg-blue-800 transition-colors"
+            className="px-4 py-2 bg-brand-blue text-white rounded-md text-sm font-medium hover:bg-blue-800 transition-colors"
           >
             Search
           </button>
@@ -138,7 +138,7 @@ export function AuditTrailView({
           </span>
           <div className="flex items-center gap-3">
             {page > 1 ? (
-              <a href={pageHref(basePath, q, page - 1)} className="text-[#0057A8] hover:underline text-xs">
+              <a href={pageHref(basePath, q, page - 1)} className="text-brand-blue hover:underline text-xs">
                 ← Previous
               </a>
             ) : (
@@ -146,7 +146,7 @@ export function AuditTrailView({
             )}
             <span className="text-xs text-gray-600">Page {page} of {totalPages}</span>
             {page < totalPages ? (
-              <a href={pageHref(basePath, q, page + 1)} className="text-[#0057A8] hover:underline text-xs">
+              <a href={pageHref(basePath, q, page + 1)} className="text-brand-blue hover:underline text-xs">
                 Next →
               </a>
             ) : (

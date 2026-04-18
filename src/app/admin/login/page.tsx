@@ -21,7 +21,7 @@ export default async function LoginPage({
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-[#0057A8] rounded-lg flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 bg-brand-blue rounded-lg flex items-center justify-center mx-auto mb-3">
             <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7" aria-hidden="true">
               <circle cx="8" cy="12" r="5" stroke="white" strokeWidth="1.75"/>
               <circle cx="16" cy="12" r="5" stroke="white" strokeWidth="1.75"/>
@@ -67,7 +67,7 @@ export default async function LoginPage({
                 required
                 autoComplete="email"
                 placeholder="you@noc.org"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
               />
             </div>
 
@@ -84,13 +84,13 @@ export default async function LoginPage({
                 type="password"
                 required
                 autoComplete="current-password"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-[#0057A8] text-white rounded-md px-4 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
+              className="w-full bg-brand-blue text-white rounded-md px-4 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
             >
               Sign In
             </button>

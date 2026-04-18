@@ -179,7 +179,7 @@ function AppActionPanel({
       <button
         type="button"
         onClick={onReview}
-        className="w-full px-3 py-1.5 text-xs font-medium text-[#0057A8] border border-[#0057A8] rounded hover:bg-blue-50 transition-colors cursor-pointer"
+        className="w-full px-3 py-1.5 text-xs font-medium text-brand-blue border border-brand-blue rounded hover:bg-blue-50 transition-colors cursor-pointer"
       >
         Review {appRef} →
       </button>

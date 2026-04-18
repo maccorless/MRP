@@ -58,11 +58,11 @@ export default async function StatusPage({
             autoComplete="email"
             defaultValue={email ?? ""}
             placeholder="you@newsorg.com"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
           />
           <button
             type="submit"
-            className="mt-4 w-full bg-[#0057A8] text-white rounded px-4 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
+            className="mt-4 w-full bg-brand-blue text-white rounded px-4 py-2.5 text-sm font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
           >
             {t("status.submit")}
           </button>

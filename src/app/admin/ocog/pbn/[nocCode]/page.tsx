@@ -124,7 +124,7 @@ export default async function OcogPbnNocPage({
               {total > 0 && (
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${over ? "bg-red-500" : "bg-[#0057A8]"}`}
+                    className={`h-full rounded-full ${over ? "bg-red-500" : "bg-brand-blue"}`}
                     style={{ width: `${Math.min(100, Math.round((used / total) * 100))}%` }}
                   />
                 </div>
@@ -283,7 +283,7 @@ export default async function OcogPbnNocPage({
               <input type="hidden" name="noc_code" value={nocCode} />
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
               >
                 Send to ACR
               </button>

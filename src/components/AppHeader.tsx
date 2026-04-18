@@ -21,7 +21,7 @@ export default function AppHeader({
   const anchor = helpAnchors?.[pathname] ?? "";
 
   return (
-    <header className="bg-[#0057A8]">
+    <header className="bg-brand-blue">
       <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 bg-white/15 border border-white/20 rounded-md flex items-center justify-center">

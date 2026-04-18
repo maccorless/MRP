@@ -94,7 +94,7 @@ export function AddOrgToPbnPanel() {
         <div className="flex gap-2">
           <button
             type="submit"
-            className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
+            className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
           >
             Add to PbN
           </button>

@@ -35,7 +35,7 @@ export function CategoryQuantityFields({
           {CATEGORIES.map(({ value, label, desc }) => (
             <label
               key={value}
-              className="flex items-start gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#0057A8] has-[:checked]:bg-blue-50"
+              className="flex items-start gap-3 p-3 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-brand-blue has-[:checked]:bg-blue-50"
             >
               <input
                 type="radio"
@@ -44,7 +44,7 @@ export function CategoryQuantityFields({
                 required
                 checked={category === value}
                 onChange={() => setCategory(value)}
-                className="mt-0.5 accent-[#0057A8]"
+                className="mt-0.5 accent-brand-blue"
               />
               <div>
                 <div className="text-sm font-medium text-gray-900">{label}</div>
@@ -73,7 +73,7 @@ export function CategoryQuantityFields({
                 min={1}
                 defaultValue={defaultRequestedPress ?? ""}
                 placeholder="e.g. 3"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
               />
               <p className="text-xs text-gray-400 mt-1">How many journalists/reporters?</p>
             </div>
@@ -94,7 +94,7 @@ export function CategoryQuantityFields({
                 min={1}
                 defaultValue={defaultRequestedPhoto ?? ""}
                 placeholder="e.g. 2"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
               />
               <p className="text-xs text-gray-400 mt-1">How many photographers?</p>
             </div>

@@ -58,7 +58,7 @@ export function InviteForm({
           <button
             type="button"
             onClick={handleCopy}
-            className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer whitespace-nowrap"
+            className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer whitespace-nowrap"
           >
             Copy link
           </button>
@@ -66,7 +66,7 @@ export function InviteForm({
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="text-sm text-[#0057A8] hover:underline"
+          className="text-sm text-brand-blue hover:underline"
         >
           Create another invite
         </button>
@@ -98,7 +98,7 @@ export function InviteForm({
               name="org_name"
               type="text"
               placeholder="Reuters"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
           <div>
@@ -107,7 +107,7 @@ export function InviteForm({
             </label>
             <select
               name="org_type"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             >
               <option value="">— Select —</option>
               {ORG_TYPE_OPTIONS.map((o) => (
@@ -125,7 +125,7 @@ export function InviteForm({
               list="invite-country-list"
               placeholder="e.g. GB"
               defaultValue={defaultCountry}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
             <datalist id="invite-country-list">
               {countryCodes.map((c) => (
@@ -142,7 +142,7 @@ export function InviteForm({
               type="url"
               placeholder="https://"
               defaultValue="https://"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
         </div>
@@ -161,7 +161,7 @@ export function InviteForm({
             name="recipient_email"
             type="email"
             placeholder="editor@organisation.com"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
           <p className="mt-1 text-xs text-gray-400">
             If left blank, the link will ask the recipient to enter their email before opening the form.
@@ -173,7 +173,7 @@ export function InviteForm({
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer disabled:opacity-50"
+          className="px-5 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer disabled:opacity-50"
         >
           {isPending ? "Creating…" : "Create Invite Link"}
         </button>

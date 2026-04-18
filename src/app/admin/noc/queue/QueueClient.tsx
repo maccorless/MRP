@@ -64,7 +64,7 @@ export function QueueClient({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by organisation name…"
-          className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+          className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
           aria-label="Search organisations"
         />
       </div>
@@ -109,7 +109,7 @@ export function QueueClient({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    className="font-medium text-gray-900 hover:text-[#0057A8] hover:underline text-left cursor-pointer"
+                    className="font-medium text-gray-900 hover:text-brand-blue hover:underline text-left cursor-pointer"
                     onClick={() => setSelectedId(row.id)}
                   >
                     {row.orgName}
@@ -174,7 +174,7 @@ export function QueueClient({
               <td className="px-4 py-3 text-right">
                 <button
                   type="button"
-                  className="text-[#0057A8] text-xs font-medium hover:underline cursor-pointer"
+                  className="text-brand-blue text-xs font-medium hover:underline cursor-pointer"
                   onClick={() => setSelectedId(row.id)}
                 >
                   Review →

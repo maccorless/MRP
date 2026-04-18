@@ -45,7 +45,7 @@ export default async function OcogNocEoiPage({
       <div className="mb-6">
         <Link
           href="/admin/ocog/eoi"
-          className="text-xs text-[#0057A8] hover:underline mb-2 inline-block"
+          className="text-xs text-brand-blue hover:underline mb-2 inline-block"
         >
           ← Back to EoI Summary
         </Link>

@@ -175,7 +175,7 @@ export default async function NocQueuePage({
               href={key === "all" ? "/admin/noc/queue" : `/admin/noc/queue?status=${key}`}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                 activeFilter === key
-                  ? "bg-[#0057A8] text-white"
+                  ? "bg-brand-blue text-white"
                   : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
               }`}
             >

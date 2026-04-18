@@ -8,14 +8,14 @@ const ROLES = [
     title: "NOC Admin",
     subtitle: "National Olympic Committee",
     href: "/admin/login?role=noc_admin",
-    color: "border-[#0057A8]",
-    hoverTitle: "group-hover:text-[#0057A8]",
-    cta: "text-[#0057A8]",
+    color: "border-brand-blue",
+    hoverTitle: "group-hover:text-brand-blue",
+    cta: "text-brand-blue",
     iconBg: "bg-blue-50",
-    dotColor: "bg-[#0057A8]",
+    dotColor: "bg-brand-blue",
     icon: (
       <svg viewBox="0 0 22 22" fill="none" className="w-5 h-5" aria-hidden="true">
-        <path d="M4 3v16M4 5l10-2v7L4 12" stroke="#0057A8" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M4 3v16M4 5l10-2v7L4 12" stroke="var(--color-brand-blue)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
     tasks: [
@@ -110,7 +110,7 @@ export default async function AdminPortalPage() {
   return (
     <div className="min-h-screen bg-[#f1f5f9]">
       {/* Header */}
-      <header className="bg-[#0057A8]">
+      <header className="bg-brand-blue">
         <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 bg-white/15 border border-white/20 rounded-md flex items-center justify-center">
@@ -136,7 +136,7 @@ export default async function AdminPortalPage() {
           <h1 className="text-xl font-bold text-gray-900">Select your role to sign in</h1>
           <p className="text-sm text-gray-500 mt-2">
             Each role has a dedicated workflow. Media organisations use the separate{" "}
-            <Link href="/apply" className="text-[#0057A8] hover:underline">
+            <Link href="/apply" className="text-brand-blue hover:underline">
               application form
             </Link>.
           </p>

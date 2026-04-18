@@ -42,7 +42,7 @@ export function OcogEoiClient({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter by NOC code…"
-          className="w-full sm:w-64 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent"
+          className="w-full sm:w-64 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
           aria-label="Filter NOC rows by code"
         />
       </div>
@@ -93,7 +93,7 @@ export function OcogEoiClient({
                   <td className="px-5 py-3 font-mono font-semibold text-gray-900">
                     <Link
                       href={`/admin/ocog/eoi/${row.nocCode}`}
-                      className="hover:text-[#0057A8] hover:underline"
+                      className="hover:text-brand-blue hover:underline"
                     >
                       {row.nocCode}
                     </Link>

@@ -57,7 +57,7 @@ export default async function IocEnrPage({
       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
         <Link
           href={sortHref(k)}
-          className={`hover:text-[#0057A8] transition-colors ${active ? "text-[#0057A8] font-semibold" : ""}`}
+          className={`hover:text-brand-blue transition-colors ${active ? "text-brand-blue font-semibold" : ""}`}
         >
           {label} {active ? "↑" : ""}
         </Link>
@@ -88,7 +88,7 @@ export default async function IocEnrPage({
       )}
 
       {/* Pool size banner */}
-      <div className="rounded-xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, #0057A8 100%)" }}>
+      <div className="rounded-xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1e3a8a 0%, var(--color-brand-blue) 100%)" }}>
         <div className="flex items-start justify-between gap-8 flex-wrap">
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide opacity-80">ENR Pool</div>
@@ -166,7 +166,7 @@ export default async function IocEnrPage({
                       <td className="px-4 py-3">
                         <Link
                           href={`/admin/ioc/enr/${req.nocCode}`}
-                          className="font-mono font-semibold text-[#0057A8] hover:underline text-xs"
+                          className="font-mono font-semibold text-brand-blue hover:underline text-xs"
                         >
                           {req.nocCode}
                         </Link>
@@ -183,7 +183,7 @@ export default async function IocEnrPage({
                         <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border-2 ${
                           req.priorityRank <= 3
                             ? "bg-yellow-50 text-yellow-800 border-yellow-300"
-                            : "bg-blue-50 text-[#0057A8] border-blue-200"
+                            : "bg-blue-50 text-brand-blue border-blue-200"
                         }`}>
                           {req.priorityRank}
                         </span>
@@ -240,7 +240,7 @@ export default async function IocEnrPage({
           <div className="flex items-center gap-3 mt-4">
             <button
               type="submit"
-              className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
             >
               Save Grants
             </button>

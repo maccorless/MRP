@@ -158,8 +158,8 @@ function CapTracker({ grandTotals, eventCapacity }: { grandTotals: GrandTotals; 
 
 function GrandTotalsBanner({ totals }: { totals: GrandTotals }) {
   return (
-    <div className="rounded-lg border border-[#0057A8]/20 bg-[#0057A8]/5 p-4">
-      <div className="text-xs uppercase tracking-wide font-semibold text-[#0057A8] mb-3">
+    <div className="rounded-lg border border-brand-blue/20 bg-brand-blue/5 p-4">
+      <div className="text-xs uppercase tracking-wide font-semibold text-brand-blue mb-3">
         System-wide Grand Totals — Quota vs Allocated
       </div>
       <div className="grid grid-cols-4 md:grid-cols-8 gap-2 text-sm">
@@ -170,10 +170,10 @@ function GrandTotalsBanner({ totals }: { totals: GrandTotals }) {
             <div className="text-xs text-gray-500">alloc: {totals.allocated[key]}</div>
           </div>
         ))}
-        <div className="bg-[#0057A8]/10 rounded p-2 text-center">
-          <div className="text-xs font-semibold text-[#0057A8] mb-1">Total</div>
-          <div className="text-base font-bold text-[#0057A8]">{grandTotal(totals.quota)}</div>
-          <div className="text-xs text-[#0057A8]/80">alloc: {grandTotal(totals.allocated)}</div>
+        <div className="bg-brand-blue/10 rounded p-2 text-center">
+          <div className="text-xs font-semibold text-brand-blue mb-1">Total</div>
+          <div className="text-base font-bold text-brand-blue">{grandTotal(totals.quota)}</div>
+          <div className="text-xs text-brand-blue/80">alloc: {grandTotal(totals.allocated)}</div>
         </div>
       </div>
     </div>
@@ -357,8 +357,8 @@ function GrandTotalRow({ totals, showContinent }: { totals: GrandTotals; showCon
   const tq = grandTotal(totals.quota);
   const ta = grandTotal(totals.allocated);
   return (
-    <tr className="bg-[#0057A8]/5 border-y-2 border-[#0057A8]/20 font-semibold">
-      <td className="px-3 py-2.5 text-[#0057A8] text-sm sticky left-0 bg-[#0057A8]/5 z-10">GRAND TOTAL</td>
+    <tr className="bg-brand-blue/5 border-y-2 border-brand-blue/20 font-semibold">
+      <td className="px-3 py-2.5 text-brand-blue text-sm sticky left-0 bg-brand-blue/5 z-10">GRAND TOTAL</td>
       {showContinent && <td />}
       <td />
       {CATS.map(({ key }) => (
@@ -367,8 +367,8 @@ function GrandTotalRow({ totals, showContinent }: { totals: GrandTotals; showCon
           <td key={`${key}-a`} className="px-1 py-2.5 text-right text-xs font-bold text-gray-900">{totals.allocated[key]}</td>
         </>
       ))}
-      <td className="px-2 py-2.5 text-right text-sm text-[#0057A8] border-l border-gray-200">{tq}</td>
-      <td className="px-2 py-2.5 text-right text-sm text-[#0057A8]">{ta}</td>
+      <td className="px-2 py-2.5 text-right text-sm text-brand-blue border-l border-gray-200">{tq}</td>
+      <td className="px-2 py-2.5 text-right text-sm text-brand-blue">{ta}</td>
       <td className={`px-3 py-2.5 text-right text-sm ${tq - ta < 0 ? "text-red-600" : "text-gray-600"}`}>{tq - ta}</td>
     </tr>
   );
@@ -505,12 +505,12 @@ export function MasterAllocationClient({
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           placeholder="Search NOC / IF code or continent…"
-          className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0057A8]/30 focus:border-[#0057A8] w-60"
+          className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-60"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className="px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#0057A8]/30 focus:border-[#0057A8]"
+          className="px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
         >
           <option value="all">All statuses</option>
           <option value="not_started">Not Started</option>

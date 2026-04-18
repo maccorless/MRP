@@ -346,7 +346,7 @@ export function ApplicationDrawer({
                             href={org.website as string}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[#0057A8] hover:underline text-xs"
+                            className="text-brand-blue hover:underline text-xs"
                           >
                             {org.website as string}
                           </a>
@@ -819,7 +819,7 @@ export function ApplicationDrawer({
                                   setData((prev) => prev ? { ...prev, app: { ...prev.app, enrRank: parsed } } : prev);
                                 }
                               }}
-                              className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer disabled:opacity-60"
+                              className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer disabled:opacity-60"
                             >
                               {enrRankSaving ? "Saving…" : "Set Priority"}
                             </button>

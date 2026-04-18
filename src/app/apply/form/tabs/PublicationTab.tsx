@@ -46,14 +46,14 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
             const isOther = value === "other";
             const label = t(`pub.types.${type}` as TranslationKey) ?? type;
             return (
-              <label key={value} className="flex items-center gap-2 p-2.5 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-[#0057A8] has-[:checked]:bg-blue-50 transition-colors text-sm">
+              <label key={value} className="flex items-center gap-2 p-2.5 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50 has-[:checked]:border-brand-blue has-[:checked]:bg-blue-50 transition-colors text-sm">
                 <input
                   type="checkbox"
                   name="publication_types"
                   value={value}
                   defaultChecked={defaultTypes.includes(value)}
                   data-tab="3"
-                  className="accent-[#0057A8]"
+                  className="accent-brand-blue"
                   onChange={isOther ? (e) => setOtherChecked(e.target.checked) : undefined}
                 />
                 {label}
@@ -91,7 +91,7 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
             type="text"
             placeholder={t("pub.onlineVisitors.placeholder")}
             defaultValue={prefill?.onlineUniqueVisitors ?? ""}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
           />
         </div>
       </div>
@@ -105,7 +105,7 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
           id="pub-geo-coverage"
           name="geographical_coverage"
           defaultValue={prefill?.geographicalCoverage ?? ""}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
         >
           <option value="">{t("pub.geo.placeholder")}</option>
           <option value="international">{t("pub.geo.international")}</option>
@@ -132,7 +132,7 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
           rows={2}
           placeholder={t("pub.social.placeholder")}
           defaultValue={prefill?.socialMediaAccounts ?? ""}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
         />
       </div>
 

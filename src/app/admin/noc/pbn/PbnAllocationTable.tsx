@@ -131,7 +131,7 @@ function OrgDetailModal({ row, onClose }: { row: PbnRow; onClose: () => void }) 
               <div className="space-y-1 text-sm">
                 {row.orgWebsite && (
                   <div><span className="text-gray-500 w-20 inline-block">Website</span>
-                    <a href={row.orgWebsite} target="_blank" rel="noopener noreferrer" className="text-[#0057A8] hover:underline">{row.orgWebsite}</a>
+                    <a href={row.orgWebsite} target="_blank" rel="noopener noreferrer" className="text-brand-blue hover:underline">{row.orgWebsite}</a>
                   </div>
                 )}
                 {row.orgCountry && <div><span className="text-gray-500 w-20 inline-block">Country</span>{row.orgCountry}</div>}
@@ -301,7 +301,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
   }
 
   const CAT_COLOR: Record<AccredCategory, string> = {
-    E:   "bg-[#0057A8]",
+    E:   "bg-brand-blue",
     Es:  "bg-blue-400",
     EP:  "bg-purple-600",
     EPs: "bg-purple-400",
@@ -423,7 +423,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                         <button
                           type="button"
                           onClick={() => setModalOrg(row)}
-                          className="text-left text-[#0057A8] hover:underline cursor-pointer"
+                          className="text-left text-brand-blue hover:underline cursor-pointer"
                         >
                           {row.orgName}
                         </button>
@@ -561,7 +561,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                   handleSubmitToOcog(fakeEvent);
                 }
               }}
-              className="px-4 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
             >
               {submitLabel ?? "Submit to OCOG"}
             </button>

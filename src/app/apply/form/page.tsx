@@ -158,7 +158,7 @@ export default async function FormPage({
             {isResubmission ? t("form.title.resubmit") : isPendingEdit ? t("form.title.edit") : t("form.title.new")}
           </h1>
           {!isResubmission && !isPendingEdit && (
-            <Link href={`/apply/how-it-works${langParam ? `?lang=${langParam}` : ""}`} className="shrink-0 text-sm text-[#0057A8] hover:underline mt-1">
+            <Link href={`/apply/how-it-works${langParam ? `?lang=${langParam}` : ""}`} className="shrink-0 text-sm text-brand-blue hover:underline mt-1">
               {t("form.howDoesThisWork")}
             </Link>
           )}

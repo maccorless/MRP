@@ -89,7 +89,7 @@ export default async function SubmittedPage({
         <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
           {t("submitted.refLabel")}
         </div>
-        <div className="text-xl font-mono font-bold text-[#0057A8]">{ref}</div>
+        <div className="text-xl font-mono font-bold text-brand-blue">{ref}</div>
         <p className="text-xs text-gray-400 mt-2">
           {t("submitted.refHelp")}
         </p>
@@ -107,7 +107,7 @@ export default async function SubmittedPage({
       <div className="mt-6">
         <Link
           href={email ? `/apply/status?email=${encodeURIComponent(email)}${langSuffix}` : `/apply/status${langParam ? `?lang=${langParam}` : ""}`}
-          className="inline-block px-5 py-2.5 bg-[#0057A8] text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
+          className="inline-block px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
         >
           {t("submitted.viewStatus")}
         </Link>
@@ -150,7 +150,7 @@ export default async function SubmittedPage({
               <div className="bg-gray-50 rounded-md p-4 text-sm space-y-1.5">
                 <div className="grid grid-cols-[130px_1fr] gap-x-2">
                   <span className="text-gray-500">{t("submitted.email.refNumber")}</span>
-                  <span className="font-mono font-semibold text-[#0057A8]">{ref}</span>
+                  <span className="font-mono font-semibold text-brand-blue">{ref}</span>
                 </div>
                 {orgName && (
                   <div className="grid grid-cols-[130px_1fr] gap-x-2">
@@ -176,7 +176,7 @@ export default async function SubmittedPage({
               </div>
 
               <p>
-                {t("submitted.email.contact")} <span className="text-[#0057A8]">{t("submitted.email.statusUrl")}</span>.
+                {t("submitted.email.contact")} <span className="text-brand-blue">{t("submitted.email.statusUrl")}</span>.
               </p>
 
               <p className="text-gray-600">

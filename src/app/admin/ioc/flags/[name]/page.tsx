@@ -202,12 +202,12 @@ export default async function FlagDetailPage({
                   name="email"
                   placeholder="admin@example.com"
                   required
-                  className="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent w-60"
+                  className="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent w-60"
                 />
               </div>
               <button
                 type="submit"
-                className="px-3 py-1.5 bg-[#0057A8] text-white text-xs font-medium rounded hover:bg-[#004a90] transition-colors"
+                className="px-3 py-1.5 bg-brand-blue text-white text-xs font-medium rounded hover:bg-[#004a90] transition-colors"
               >
                 Enrol
               </button>
@@ -220,12 +220,12 @@ export default async function FlagDetailPage({
                   name="nocCode"
                   placeholder="e.g. USA"
                   required
-                  className="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:border-transparent w-32 uppercase"
+                  className="px-3 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent w-32 uppercase"
                 />
               </div>
               <button
                 type="submit"
-                className="px-3 py-1.5 bg-[#0057A8] text-white text-xs font-medium rounded hover:bg-[#004a90] transition-colors"
+                className="px-3 py-1.5 bg-brand-blue text-white text-xs font-medium rounded hover:bg-[#004a90] transition-colors"
               >
                 Enrol NOC
               </button>

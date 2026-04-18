@@ -122,7 +122,7 @@ export default async function OcogPbnPage({
             href={key === "all" ? "/admin/ocog/pbn" : `/admin/ocog/pbn?status=${key}`}
             className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
               activeFilter === key
-                ? "bg-[#0057A8] text-white"
+                ? "bg-brand-blue text-white"
                 : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
             }`}
           >
@@ -167,7 +167,7 @@ export default async function OcogPbnPage({
                     {(row.status === "submitted" || row.status === "approved") && (
                       <Link
                         href={`/admin/ocog/pbn/${row.nocCode}`}
-                        className="text-[#0057A8] text-xs font-medium hover:underline"
+                        className="text-brand-blue text-xs font-medium hover:underline"
                       >
                         Review →
                       </Link>

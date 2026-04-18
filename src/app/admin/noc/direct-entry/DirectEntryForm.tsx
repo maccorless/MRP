@@ -50,7 +50,7 @@ export default function DirectEntryForm({ action }: Props) {
             </label>
             <input
               name="org_name" type="text" required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
           <div>
@@ -59,7 +59,7 @@ export default function DirectEntryForm({ action }: Props) {
             </label>
             <select
               name="org_type" required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             >
               <option value="">— Select —</option>
               {ORG_TYPE_OPTIONS.map((o) => (
@@ -74,7 +74,7 @@ export default function DirectEntryForm({ action }: Props) {
             <input
               name="country" type="text" list="country-list" required
               placeholder="e.g. US"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
             <datalist id="country-list">
               {COUNTRY_CODES.map((c) => (
@@ -86,7 +86,7 @@ export default function DirectEntryForm({ action }: Props) {
             <label className="block text-xs text-gray-500 mb-1">Website</label>
             <input
               name="website" type="url" placeholder="https://" defaultValue="https://"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function DirectEntryForm({ action }: Props) {
             </label>
             <input
               name="contact_name" type="text" required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
           <div>
@@ -110,7 +110,7 @@ export default function DirectEntryForm({ action }: Props) {
             </label>
             <input
               name="contact_email" type="email" required
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function DirectEntryForm({ action }: Props) {
           <button
             type="button"
             onClick={() => setShowSecondary(true)}
-            className="text-sm text-[#0057A8] hover:underline"
+            className="text-sm text-brand-blue hover:underline"
           >
             + Add Editor-in-Chief / Media Manager
           </button>
@@ -142,42 +142,42 @@ export default function DirectEntryForm({ action }: Props) {
                 <label className="block text-xs text-gray-500 mb-1">First name</label>
                 <input
                   name="secondary_first_name" type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Last name</label>
                 <input
                   name="secondary_last_name" type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div className="col-span-2">
                 <label className="block text-xs text-gray-500 mb-1">Title / position</label>
                 <input
                   name="secondary_title" type="text"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div className="col-span-2">
                 <label className="block text-xs text-gray-500 mb-1">Email</label>
                 <input
                   name="secondary_email" type="email"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Phone</label>
                 <input
                   name="secondary_phone" type="tel"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Cell / mobile</label>
                 <input
                   name="secondary_cell" type="tel"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function DirectEntryForm({ action }: Props) {
                 type="number" name={`requested_${key}`}
                 min={0} placeholder="slots"
                 aria-label={`${label} (${sub}) — requested slots`}
-                className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+                className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
               />
             </div>
           ))}
@@ -217,7 +217,7 @@ export default function DirectEntryForm({ action }: Props) {
             </label>
             <select
               name="sports_specific_sport"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8]"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             >
               <option value="">— Select sport —</option>
               {LA28_SPORTS.map((sport) => (
@@ -237,7 +237,7 @@ export default function DirectEntryForm({ action }: Props) {
           <textarea
             name="about" rows={3}
             placeholder="Internal context for this organisation (not shown to the applicant)"
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0057A8] resize-none"
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
           />
         </div>
       </div>
@@ -245,7 +245,7 @@ export default function DirectEntryForm({ action }: Props) {
       <div className="flex items-center gap-4">
         <button
           type="submit"
-          className="px-5 py-2 bg-[#0057A8] text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
+          className="px-5 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
         >
           Submit &amp; Accept as Candidate
         </button>

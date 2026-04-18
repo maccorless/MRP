@@ -49,7 +49,7 @@ export default async function OrgDirectoryPage() {
                 <td className="px-5 py-3">
                   <div className="font-medium text-gray-900">{org.name}</div>
                   {org.website && (
-                    <a href={org.website} target="_blank" rel="noopener noreferrer" className="text-xs text-[#0057A8] hover:underline">
+                    <a href={org.website} target="_blank" rel="noopener noreferrer" className="text-xs text-brand-blue hover:underline">
                       {org.website}
                     </a>
                   )}

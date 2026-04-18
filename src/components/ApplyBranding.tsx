@@ -12,7 +12,7 @@ export function ApplyHeader() {
   const statusHref = lang === "fr" ? "/apply/status?lang=fr" : "/apply/status";
 
   return (
-    <header className="bg-[#0057A8] text-white px-6 py-4">
+    <header className="bg-brand-blue text-white px-6 py-4">
       <div className="max-w-2xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center shrink-0">

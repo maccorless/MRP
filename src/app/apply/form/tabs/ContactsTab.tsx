@@ -85,7 +85,7 @@ export function ContactsTab({
           <button
             type="button"
             onClick={() => setShowSecondary(true)}
-            className="text-sm text-[#0057A8] font-medium hover:underline cursor-pointer"
+            className="text-sm text-brand-blue font-medium hover:underline cursor-pointer"
           >
             {t("contacts.addSecondary")}
           </button>
