@@ -24,24 +24,23 @@ jobs:
       - name: Wait for Railway deployment
         env:
           RAILWAY_URL: ${{ vars.RAILWAY_PRODUCTION_URL }}
+          EXPECTED_SHA: ${{ github.sha }}
         run: |
           if [ -z "$RAILWAY_URL" ]; then
             echo "Error: RAILWAY_PRODUCTION_URL is not set in repository variables (Settings → Secrets and variables → Actions → Variables)"
             exit 1
           fi
-          echo "Waiting 3 minutes for Railway build to complete..."
-          sleep 180
-          echo "Waiting for Railway to become healthy..."
-          for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${RAILWAY_URL}/")
-            if [ "$STATUS" = "200" ]; then
-              echo "Railway is up (attempt $i)"
+          echo "Waiting for Railway to deploy commit ${EXPECTED_SHA}..."
+          for i in $(seq 1 40); do
+            DEPLOYED_SHA=$(curl -sf "${RAILWAY_URL}/api/health" | jq -r '.sha // empty' 2>/dev/null || true)
+            if [ "$DEPLOYED_SHA" = "$EXPECTED_SHA" ]; then
+              echo "Railway is up with correct commit (attempt $i)"
               exit 0
             fi
-            echo "Attempt $i: HTTP $STATUS — waiting 30s..."
+            echo "Attempt $i: deployed=${DEPLOYED_SHA:-none} expected=${EXPECTED_SHA} — waiting 30s..."
             sleep 30
           done
-          echo "Railway did not become healthy in time"
+          echo "Railway did not deploy the expected commit in time"
           exit 1
 
       - name: Run Playwright tests against Railway
