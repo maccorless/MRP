@@ -181,13 +181,14 @@ export function HistoryTab({ prefill }: { prefill: PrefillData | null }) {
         </div>
       )}
 
-      {/* Additional comments */}
+      {/* Additional information */}
       <div className="border-t border-gray-100 pt-6">
-        <label htmlFor="additional_comments" className={LABEL}>Additional comments</label>
+        <label htmlFor="additional_comments" className={LABEL}>Additional information</label>
         <textarea id="additional_comments" name="additional_comments" rows={3} data-tab="4"
           defaultValue={prefill?.additionalComments ?? ""}
-          placeholder="Anything else you'd like your NOC to know about your application?"
+          placeholder="Use this field for any additional information requested by your NOC, or anything else you'd like to tell us."
           className={`${INPUT} resize-none`} />
+        <p className={HELP}>Use this field for any additional information requested by your NOC, or anything else you&apos;d like to tell us.</p>
       </div>
     </div>
   );

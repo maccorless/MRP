@@ -15,8 +15,17 @@ async function isPbnResultsPublished(): Promise<boolean> {
 }
 
 /** Map a raw application status to what the applicant should see.
- *  When PbN results are not yet published, anything except "returned"
- *  is masked as "pending" (shown as "Application Under Review").
+ *
+ *  BATCH RELEASE GATE: Applicants must NOT see "Approved as Candidate", "Rejected",
+ *  or any other final-decision status until the official batch communication release
+ *  date. The `pbn_results_published` feature flag acts as this gate — flip it to "on"
+ *  via the IOC Feature Flags panel only when the batch communication has been sent.
+ *
+ *  Until then, only "Returned for Corrections" is surfaced; everything else (including
+ *  approved, rejected, resubmitted) is shown as "Application Under Review".
+ *
+ *  TODO (batch-release): Wire the actual release-date timestamp here once the batch
+ *  communication system is built, so the gate opens automatically at the scheduled time.
  */
 function maskStatus(rawStatus: string, pbnPublished: boolean): string {
   if (pbnPublished) return rawStatus;
@@ -44,6 +53,11 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online Media",
   media_broadcast:    "Broadcast",
   news_agency:        "News Agency",
+  freelancer:         "Freelancer / Independent",
+  enr:                "ENR (Non-Rights Broadcaster)",
+  ino:                "INO (Intl Non-Gov Organisation)",
+  if_staff:           "IF Staff",
+  other:              "Other",
 };
 
 const CATEGORY_LABEL: Record<string, string> = {

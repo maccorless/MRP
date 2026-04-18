@@ -7,6 +7,8 @@ const ORG_TYPES = [
   { value: "news_agency",        label: "News Agency" },
   { value: "media_broadcast",    label: "Broadcast" },
   { value: "media_print_online", label: "Print / Online Media" },
+  { value: "ino",                label: "INO (Intl Non-Gov Organisation)" },
+  { value: "if_staff",           label: "IF Staff" },
 ];
 
 export function IocDirectAddPanel() {

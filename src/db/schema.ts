@@ -17,6 +17,8 @@ export const orgTypeEnum = pgEnum("org_type", [
   "news_agency",
   "enr", // Non-Rights Broadcaster — set by ENR workflow, not EoI self-nomination
   "freelancer",
+  "ino",      // International Non-Governmental Organisation — IOC-Direct workflow
+  "if_staff", // IF staff journalists/photographers — IOC-Direct workflow with IF-Staff flag
   "other",
 ]);
 

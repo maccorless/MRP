@@ -49,7 +49,7 @@ export async function addIocDirectOrg(formData: FormData) {
       .values({
         name,
         nocCode: IOC_DIRECT,
-        orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr",
+        orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr" | "ino" | "if_staff",
         ...(country      ? { country }      : {}),
         ...(website      ? { website }      : {}),
         ...(emailDomain  ? { emailDomain }  : {}),

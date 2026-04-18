@@ -6,7 +6,11 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online",
   media_broadcast:    "Broadcast",
   news_agency:        "News Agency",
+  freelancer:         "Freelancer",
   enr:                "ENR",
+  ino:                "INO (Intl Non-Gov Org)",
+  if_staff:           "IF Staff",
+  other:              "Other",
 };
 
 export default async function OrgDirectoryPage() {

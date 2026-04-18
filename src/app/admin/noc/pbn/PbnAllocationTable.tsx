@@ -91,6 +91,11 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   media_print_online: "Print / Online Media",
   media_broadcast:    "Broadcast",
   news_agency:        "News Agency",
+  freelancer:         "Freelancer / Independent",
+  enr:                "ENR (Non-Rights Broadcaster)",
+  ino:                "INO (Intl Non-Gov Organisation)",
+  if_staff:           "IF Staff",
+  other:              "Other",
 };
 
 type SlotValues = Record<AccredCategory, number>;

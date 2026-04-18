@@ -22,6 +22,8 @@ const ORG_TYPE_LABEL: Record<string, string> = {
   news_agency:        "News Agency",
   freelancer:         "Freelancer / Independent",
   enr:                "ENR (Non-Rights Broadcaster)",
+  ino:                "INO (Intl Non-Gov Organisation)",
+  if_staff:           "IF Staff",
   other:              "Other",
 };
 
