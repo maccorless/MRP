@@ -29,8 +29,9 @@ if git merge-base --is-ancestor "$fixes_sha" "$main_sha"; then
   ahead=$(git rev-list --count "$fixes_sha..$main_sha")
   echo "fixes is $ahead commit(s) behind main. Fast-forwarding..."
 
-  if [ -n "$(git status --porcelain)" ]; then
-    echo "FAIL: working tree has uncommitted changes. Commit or stash first."
+  # Untracked files don't block branch operations — only modified/staged tracked files do.
+  if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+    echo "FAIL: working tree has uncommitted changes to tracked files. Commit or stash first."
     exit 1
   fi
 
