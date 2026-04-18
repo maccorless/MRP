@@ -14,7 +14,16 @@ bun test          # run test suite
 bun db:generate   # generate migration from schema changes
 bun db:migrate    # apply pending migrations
 bun db:studio     # open Drizzle Studio
+bun run sync      # fast-forward `fixes` to match `main` (staging catch-up)
 ```
+
+## Branches & deploys
+
+- `main` → production (Railway prod watches this)
+- `fixes` → staging (Railway staging watches this)
+- **Golden rule:** `fixes` is never behind `main`.
+- After any direct commit to `main`, run `bun run sync` to bring `fixes` up. Before starting work on `fixes`, run `bun run sync` first so you branch off the current prod state.
+- Release flow for major work: commit to `fixes` → Railway stages → verify → `git checkout main && git merge --ff-only origin/fixes && git push origin main` → Railway deploys to prod.
 
 ## Architecture
 
