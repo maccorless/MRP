@@ -28,7 +28,7 @@ export function Paginator({ page, totalPages, total, pageSize, pageHref }: Props
             ← Previous
           </a>
         ) : (
-          <span className="text-gray-500 text-xs">← Previous</span>
+          <span className="text-gray-600 text-xs">← Previous</span>
         )}
         <span className="text-xs text-gray-600">Page {page} of {totalPages}</span>
         {page < totalPages ? (
@@ -36,7 +36,7 @@ export function Paginator({ page, totalPages, total, pageSize, pageHref }: Props
             Next →
           </a>
         ) : (
-          <span className="text-gray-500 text-xs">Next →</span>
+          <span className="text-gray-600 text-xs">Next →</span>
         )}
       </div>
     </div>
