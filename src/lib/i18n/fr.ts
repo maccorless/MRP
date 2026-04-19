@@ -36,7 +36,7 @@ export const fr: Record<TranslationKey, string> = {
   "apply.error.invalid_noc":
     "Veuillez sélectionner un code CNO valide dans la liste (code olympique à 3 lettres).",
   "apply.error.window_closed":
-    "La fenêtre de dépôt des EdI de votre CNO est actuellement fermée. Veuillez contacter directement votre CNO.",
+    "La fenêtre d'expression d'intérêt pour votre territoire est actuellement fermée par le comité d'organisation des Jeux olympiques. Veuillez revenir plus tard ou contacter le comité d'organisation pour plus d'informations.",
   "apply.error.rate_limited":
     "Trop de tentatives. Veuillez patienter avant de réessayer.",
   "apply.error.application_limit":
@@ -107,10 +107,10 @@ export const fr: Record<TranslationKey, string> = {
   "form.intro.bullet4":
     "Vous serez notifié par e-mail à chaque étape du processus.",
 
-  // NOC window closed
-  "form.nocWindowClosed.heading": "Fenêtre d'EdI fermée",
+  // Window closed (authority: OCOG, not the NOC)
+  "form.nocWindowClosed.heading": "Fenêtre d'expression d'intérêt fermée",
   "form.nocWindowClosed.body":
-    "Ce CNO a fermé sa fenêtre d'Expression d'intérêt. Les nouvelles demandes ne sont pas acceptées pour le moment. Veuillez contacter directement votre CNO pour plus d'informations.",
+    "Le comité d'organisation des Jeux olympiques a fermé la fenêtre d'expression d'intérêt pour ce territoire. Les nouvelles demandes ne sont pas acceptées pour le moment.",
 
   // Navigation buttons
   "form.nav.back": "← Retour",

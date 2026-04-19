@@ -34,7 +34,7 @@ export const en = {
   "apply.error.invalid_noc":
     "Please select a valid NOC code from the list (3-letter Olympic code).",
   "apply.error.window_closed":
-    "The EoI window for your NOC is currently closed. Please contact your NOC directly.",
+    "The Expression of Interest window for your territory is currently closed by the Olympic Games organising committee. Please check back later or contact the organising committee for more information.",
   "apply.error.rate_limited":
     "Too many requests. Please wait before trying again.",
   "apply.error.application_limit":
@@ -102,10 +102,10 @@ export const en = {
     "Final accreditation decisions are made by the IOC and communicated via your NOC.",
   "form.intro.bullet4": "You will be notified by email at each stage of the process.",
 
-  // NOC window closed
-  "form.nocWindowClosed.heading": "EoI window closed",
+  // Window closed (authority: OCOG, not the NOC)
+  "form.nocWindowClosed.heading": "Expression of Interest window closed",
   "form.nocWindowClosed.body":
-    "This NOC has closed its Expression of Interest window. New applications are not currently being accepted. Please contact your NOC directly for more information.",
+    "The Olympic Games organising committee has closed the Expression of Interest window for this territory. New applications are not currently being accepted.",
 
   // Navigation buttons
   "form.nav.back": "← Back",

@@ -54,7 +54,7 @@ export default async function OcogWindowsPage() {
         <div>
           <h1 className="text-xl font-bold text-gray-900">EoI Windows</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Manage EoI acceptance windows per NOC — LA 2028
+            Manage EoI acceptance windows — LA 2028. OCOG-only control; NOC admins cannot modify these settings.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -168,8 +168,10 @@ export default async function OcogWindowsPage() {
       </div>
 
       <p className="mt-3 text-xs text-gray-400">
-        NOCs without an explicit window row default to Open. Closing a window blocks new public
-        applications from that territory.
+        Use <strong>Open All / Close All</strong> to set a default state that applies to every NOC
+        with a submitted application. Per-NOC toggles extend that default — close a single NOC early,
+        or keep one open past a global close. NOCs without an explicit row default to Open. Closing a
+        window blocks new public applications from that territory.
       </p>
     </div>
   );
