@@ -12,7 +12,8 @@ const NAV = [
   { href: "/admin/ioc/orgs", label: "Org Directory" },
   { href: "/admin/ioc/audit", label: "Audit Trail" },
   { href: "/admin/ioc/export", label: "PBN Export" },
-  { href: "/admin/ioc/flags", label: "Flags" },
+  // Feature flags deferred — re-add behind DTEC.SYSADMIN gate when ready:
+  // { href: "/admin/ioc/flags", label: "Flags" },
 ];
 
 export function IocNav() {
