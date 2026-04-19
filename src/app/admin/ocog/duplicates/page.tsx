@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, applications } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
@@ -24,6 +24,9 @@ export default async function OcogDuplicatesPage() {
       and(
         eq(organizations.isMultiTerritoryFlag, true),
         eq(applications.eventId, "LA28"),
+        // A rejected application is a permanent NOC decision; it no longer
+        // competes with its sibling as a duplicate.
+        ne(applications.status, "rejected"),
       ),
     )
     .orderBy(organizations.emailDomain, organizations.name);
@@ -64,7 +67,12 @@ export default async function OcogDuplicatesPage() {
     })
     .from(applications)
     .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-    .where(eq(applications.eventId, "LA28"))
+    .where(
+      and(
+        eq(applications.eventId, "LA28"),
+        ne(applications.status, "rejected"),
+      ),
+    )
     .orderBy(applications.nocCode, organizations.emailDomain);
 
   // Group by (nocCode, emailDomain) — keep only groups with 2+ entries

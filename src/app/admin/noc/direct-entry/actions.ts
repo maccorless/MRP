@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
@@ -75,6 +75,8 @@ export async function submitDirectEntryApplication(formData: FormData) {
           eq(applications.nocCode, nocCode),
           eq(applications.eventId, "LA28"),
           eq(organizations.emailDomain, emailDomain),
+          // Skip rejected apps — a rejected sibling is no longer a live duplicate.
+          ne(applications.status, "rejected"),
         ),
       );
     if (existing.length > 0) {

@@ -4,7 +4,7 @@
  * detectWithinNocDuplicates queries the DB directly.
  */
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, dismissedDuplicatePairs, organizations } from "@/db/schema";
 
@@ -262,6 +262,10 @@ async function fetchDuplicatePairMap(
         and(
           eq(applications.nocCode, nocCode),
           eq(applications.eventId, eventId),
+          // Rejected applications are permanent NOC decisions and should no
+          // longer participate in duplicate detection — the "other" half of
+          // the pair is no longer a competing record.
+          ne(applications.status, "rejected"),
         ),
       ),
     getDismissedPairs(nocCode, eventId),
