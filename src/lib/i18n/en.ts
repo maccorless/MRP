@@ -295,6 +295,7 @@ export const en = {
   "pub.types.Freelancer with confirmed assignment":
     "Freelancer with confirmed assignment",
   "pub.types.Other": "Other",
+  "pub.types.required": "Please select at least one publication type.",
 
   "pub.circulation.label": "Circulation / unique visitors per month",
   "pub.circulation.placeholder": "e.g. 500,000 monthly visitors",

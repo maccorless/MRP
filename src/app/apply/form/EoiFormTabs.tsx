@@ -376,6 +376,12 @@ export function EoiFormTabs({
           form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
         ).some((cb) => cb.checked);
         if (!catChecked || !allRequired) return "empty";
+      } else if (tabIndex === 3) {
+        // Publication tab: at least one publication_types checkbox required
+        const pubChecked = Array.from(
+          form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]')
+        ).some((cb) => cb.checked);
+        if (!pubChecked) return "empty";
       } else if (tabIndex === 0) {
         const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
         if (orgTypeEl?.value === "freelancer") {
@@ -512,6 +518,12 @@ export function EoiFormTabs({
     ).some((cb) => cb.checked);
     if (!catChecked) errs["category"] = t("accred.categoryError");
 
+    // Custom: at least one publication_types checkbox must be checked
+    const pubChecked = Array.from(
+      form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]')
+    ).some((cb) => cb.checked);
+    if (!pubChecked) errs["publication_types"] = t("pub.types.required");
+
     // Validate URL fields (type="url" browser validation is bypassed by noValidate)
     const urlInputs = form.querySelectorAll<HTMLInputElement>('input[type="url"]');
     for (const input of urlInputs) {
@@ -548,7 +560,9 @@ export function EoiFormTabs({
     const firstErrEl = requiredEls.find((el) => errs[el.name]) ?? null;
     const firstErrTab = firstErrEl
       ? parseInt(firstErrEl.getAttribute("data-tab") ?? "0", 10)
-      : errs["category"] ? 2 : 0;
+      : errs["category"] ? 2
+      : errs["publication_types"] ? 3
+      : 0;
     firstErrNameRef.current = firstErrEl?.name ?? "";
     firstErrTabRef.current = firstErrTab;
 
@@ -556,6 +570,7 @@ export function EoiFormTabs({
     const errList = Object.keys(errs).map((name) => {
       const el = requiredEls.find((r) => r.name === name);
       const tabIndex = name === "category" ? 2
+        : name === "publication_types" ? 3
         : el ? parseInt(el.getAttribute("data-tab") ?? "0", 10) : 0;
       const labelEl = el?.id
         ? document.querySelector<HTMLLabelElement>(`label[for="${el.id}"]`)
@@ -582,6 +597,8 @@ export function EoiFormTabs({
     flushSync(() => setActiveTab(tabIndex));
     const target = errName
       ? formRef.current?.querySelector<HTMLElement>(`[name="${errName}"]`)
+      : tabIndex === 3
+      ? formRef.current?.querySelector<HTMLElement>('input[name="publication_types"]')
       : formRef.current?.querySelector<HTMLElement>('[name^="category_"]');
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
     target?.focus();

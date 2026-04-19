@@ -308,6 +308,7 @@ export const fr: Record<TranslationKey, string> = {
   "pub.types.Freelancer with confirmed assignment":
     "Pigiste avec commande confirmée",
   "pub.types.Other": "Autre",
+  "pub.types.required": "Veuillez sélectionner au moins un type de publication.",
 
   "pub.circulation.label": "Tirage / visiteurs uniques par mois",
   "pub.circulation.placeholder": "ex. 500 000 visiteurs mensuels",

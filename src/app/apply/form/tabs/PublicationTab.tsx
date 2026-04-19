@@ -38,7 +38,7 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
       {/* Publication types */}
       <div>
         <label className={LABEL}>
-          {t("pub.types.label")} <span className="text-gray-400 font-normal">{t("pub.types.selectAll")}</span>
+          {t("pub.types.label")} <span className="text-red-500" aria-hidden="true">*</span> <span className="text-gray-400 font-normal">{t("pub.types.selectAll")}</span>
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           {PUBLICATION_TYPES.map((type) => {
