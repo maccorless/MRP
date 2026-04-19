@@ -449,10 +449,18 @@ export function EoiFormTabs({
     // submission so Enter/autofill/regressed-button-type cannot reach the server.
     e.preventDefault();
 
+    // Defense against a type-flip race: if React swaps Continue (type=button)
+    // → Submit (type=submit) on the same DOM node during a click handler,
+    // the browser may still fire the native submit default action. If the
+    // submitter isn't our explicit final-tab Submit button, treat it as a
+    // tab-advance, never as a real submit.
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLElement | null;
+    const isRealSubmit = submitter?.dataset.eoiSubmit === "final";
+
     // Only validate and potentially surface the confirm modal from the last tab.
     // From any earlier tab (e.g. Enter key in a field), advance to the next tab.
-    if (activeTab < TABS.length - 1) {
-      setActiveTab(activeTab + 1);
+    if (activeTab < TABS.length - 1 || !isRealSubmit) {
+      if (activeTab < TABS.length - 1) setActiveTab(activeTab + 1);
       return;
     }
 
@@ -758,6 +766,7 @@ export function EoiFormTabs({
 
           {activeTab < TABS.length - 1 ? (
             <button
+              key="eoi-nav-continue"
               type="button"
               onClick={() => { markVisited(activeTab); updateTabStatus(); setActiveTab(activeTab + 1); }}
               className="px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
@@ -766,7 +775,9 @@ export function EoiFormTabs({
             </button>
           ) : (
             <button
+              key="eoi-nav-submit"
               type="submit"
+              data-eoi-submit="final"
               className="px-6 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-md hover:bg-green-700 transition-colors cursor-pointer"
             >
               {isResubmission ? t("form.nav.resubmit") : isPendingEdit ? t("form.nav.saveChanges") : t("form.nav.submit")}

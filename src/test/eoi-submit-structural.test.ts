@@ -76,4 +76,22 @@ describe("EoiFormTabs submission structural invariants", () => {
     // the tab appears visited before the user has ever seen it.
     expect(source).not.toMatch(/markVisited\(activeTab \+ 1\)/);
   });
+
+  it("Continue and Submit buttons have distinct keys so React cannot reuse the DOM node", () => {
+    // Without distinct keys, React treats the Continue (type="button") and
+    // Submit (type="submit") buttons as the same element across the ternary
+    // and just flips `type`. If React reconciles the type flip mid-click, the
+    // browser's native submit default fires — the exact Publication-tab race
+    // that hit Railway staging but not dev.
+    expect(source).toMatch(/key="eoi-nav-continue"/);
+    expect(source).toMatch(/key="eoi-nav-submit"/);
+  });
+
+  it("Submit button carries a data-eoi-submit marker and handleSubmit checks the submitter", () => {
+    // Belt-and-suspenders: even if a stray submit event fires with an
+    // unexpected submitter (type-flip race, autofill, extension), handleSubmit
+    // must ignore it unless the submitter is our explicit final Submit button.
+    expect(source).toMatch(/data-eoi-submit="final"/);
+    expect(source).toMatch(/submitter\?\.dataset\.eoiSubmit === "final"/);
+  });
 });
