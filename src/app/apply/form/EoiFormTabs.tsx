@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useTransition } from "react";
 import { flushSync } from "react-dom";
 import { submitApplication, checkNocWindow } from "../actions";
 import { OrganisationTab } from "./tabs/OrganisationTab";
@@ -176,7 +176,7 @@ export function EoiFormTabs({
   const [nocWindowClosed, setNocWindowClosed] = useState(false);
   const [nocAutoSuggestedName, setNocAutoSuggestedName] = useState<string | null>(null);
   const autoSuggestedNocRef = useRef<string | null>(null);
-  const confirmedRef = useRef(false);
+  const [isSubmitting, startSubmitTransition] = useTransition();
   const validationModalRef = useRef<HTMLDivElement>(null);
   const firstErrNameRef = useRef<string>("");
   const firstErrTabRef = useRef<number>(0);
@@ -298,6 +298,16 @@ export function EoiFormTabs({
 
     updateTabStatus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mark the current tab as visited whenever it becomes active.
+  // Covers keyboard-arrow navigation, direct tab-click navigation (redundant but safe),
+  // and the initial-mount case. The "Continue" button intentionally does NOT pre-mark
+  // the next tab, so the history-tab-visited gate in handleSubmit fires only when the
+  // user has actually arrived on the history tab at least once.
+  useEffect(() => {
+    markVisited(activeTab);
+    updateTabStatus();
+  }, [activeTab, markVisited]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useModalEsc(showConfirmModal, modalRef, () => setShowConfirmModal(false));
   useModalEsc(showValidationModal, validationModalRef, () => setShowValidationModal(false));
@@ -428,19 +438,27 @@ export function EoiFormTabs({
     const form = formRef.current;
     if (!form) return;
 
-    // Confirmed path: the user approved the confirmation modal — let the server action run.
-    if (confirmedRef.current) {
-      confirmedRef.current = false;
+    // The form has no `action` attribute — the server action is invoked
+    // imperatively from handleConfirmedSubmit. We always block native
+    // submission so Enter/autofill/regressed-button-type cannot reach the server.
+    e.preventDefault();
+
+    // Only validate and potentially surface the confirm modal from the last tab.
+    // From any earlier tab (e.g. Enter key in a field), advance to the next tab.
+    if (activeTab < TABS.length - 1) {
+      setActiveTab(activeTab + 1);
       return;
     }
 
-    // All other paths: we own the outcome, so always prevent native submission.
-    e.preventDefault();
-
-    // Only validate and potentially submit from the last tab.
-    // If triggered from any earlier tab (e.g. Enter key in a field), just advance.
-    if (activeTab < TABS.length - 1) {
-      setActiveTab(activeTab + 1);
+    // Gate: history tab (last tab) must have been visited before we accept submission.
+    // This ensures the applicant actually opens the history tab rather than being
+    // pre-marked visited by the Continue button.
+    if (!visitedTabsRef.current.has(TABS.length - 1)) {
+      setValidationErrors([{ tab: TABS[TABS.length - 1].label, field: t("validation.tabIncomplete") }]);
+      firstErrTabRef.current = TABS.length - 1;
+      firstErrNameRef.current = "";
+      setErrorAnnouncement(t("validation.tabsIncomplete.one"));
+      setShowValidationModal(true);
       return;
     }
 
@@ -570,11 +588,18 @@ export function EoiFormTabs({
   }
 
   function handleConfirmedSubmit() {
-    confirmedRef.current = true;
+    const form = formRef.current;
+    if (!form) return;
     setShowConfirmModal(false);
     localStorage.removeItem(storageKey);
     localStorage.removeItem(visitedKey);
-    formRef.current?.requestSubmit();
+    // Invoke the server action imperatively with the form's FormData.
+    // The form element intentionally has no `action` attribute so this is
+    // the ONLY path that can reach submitApplication (prevents ambient submit hijack).
+    const fd = new FormData(form);
+    startSubmitTransition(async () => {
+      await submitApplication(fd);
+    });
   }
 
   return (
@@ -606,7 +631,7 @@ export function EoiFormTabs({
       </div>
     )}
 
-    <form ref={formRef} action={submitApplication} noValidate onInput={handleInput} onChange={(e) => { handleCountryChange(e.nativeEvent); handleInput(); }} onBlur={handleFormBlur} onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA" && (e.target as HTMLElement).tagName !== "BUTTON") e.preventDefault(); }} className="space-y-0">
+    <form ref={formRef} noValidate onInput={handleInput} onChange={(e) => { handleCountryChange(e.nativeEvent); handleInput(); }} onBlur={handleFormBlur} onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA" && (e.target as HTMLElement).tagName !== "BUTTON") e.preventDefault(); }} className="space-y-0">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="email" value={email} />
       {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
@@ -717,7 +742,7 @@ export function EoiFormTabs({
           {activeTab < TABS.length - 1 ? (
             <button
               type="button"
-              onClick={() => { markVisited(activeTab); markVisited(activeTab + 1); updateTabStatus(); setActiveTab(activeTab + 1); }}
+              onClick={() => { markVisited(activeTab); updateTabStatus(); setActiveTab(activeTab + 1); }}
               className="px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
             >
               {t("form.nav.continue")}
@@ -833,7 +858,8 @@ export function EoiFormTabs({
                 <button
                   type="button"
                   onClick={handleConfirmedSubmit}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isResubmission ? t("form.confirmModal.confirmResubmit") : isPendingEdit ? t("form.confirmModal.saveChanges") : t("form.confirmModal.confirmSubmit")}
                 </button>
@@ -854,7 +880,8 @@ export function EoiFormTabs({
                 <button
                   type="button"
                   onClick={handleConfirmedSubmit}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {t("form.confirmModal.submitApplication")}
                 </button>
