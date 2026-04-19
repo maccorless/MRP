@@ -13,6 +13,9 @@ const ORG_TYPE_OPTIONS = [
 const INITIAL_STATE: InviteActionState = {
   inviteUrl: null,
   inviteId: null,
+  emailTo: null,
+  emailSubject: null,
+  emailBody: null,
   error: null,
 };
 
@@ -25,6 +28,7 @@ export function InviteForm({
 }) {
   const [state, formAction, isPending] = useActionState(createInvitation, INITIAL_STATE);
   const copyRef = useRef<HTMLInputElement>(null);
+  const emailBodyRef = useRef<HTMLTextAreaElement>(null);
 
   function handleCopy() {
     if (copyRef.current) {
@@ -33,6 +37,22 @@ export function InviteForm({
         document.execCommand("copy");
       });
     }
+  }
+
+  function handleCopyEmail() {
+    if (!state.emailSubject || !state.emailBody) return;
+    const combined = `Subject: ${state.emailSubject}\n\n${state.emailBody}`;
+    navigator.clipboard.writeText(combined).catch(() => {
+      emailBodyRef.current?.select();
+      document.execCommand("copy");
+    });
+  }
+
+  function handleOpenMailto() {
+    if (!state.emailSubject || !state.emailBody) return;
+    const to = state.emailTo ?? "";
+    const href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(state.emailSubject)}&body=${encodeURIComponent(state.emailBody)}`;
+    window.location.href = href;
   }
 
   if (state.inviteUrl) {
@@ -63,6 +83,55 @@ export function InviteForm({
             Copy link
           </button>
         </div>
+        {state.emailSubject && state.emailBody && (
+          <div className="p-4 bg-white border border-gray-200 rounded-lg space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Invitation email preview</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Email delivery isn&apos;t wired up yet. Copy the text below or open it in your
+                  mail client, then send it from your own inbox.
+                </p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleCopyEmail}
+                  className="px-3 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 rounded hover:bg-gray-200 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  Copy email
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenMailto}
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-brand-blue rounded hover:bg-blue-800 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  Open in mail client
+                </button>
+              </div>
+            </div>
+
+            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm border-t border-gray-100 pt-3">
+              {state.emailTo && (
+                <>
+                  <dt className="text-gray-500 font-medium">To:</dt>
+                  <dd className="text-gray-900 font-mono">{state.emailTo}</dd>
+                </>
+              )}
+              <dt className="text-gray-500 font-medium">Subject:</dt>
+              <dd className="text-gray-900">{state.emailSubject}</dd>
+            </dl>
+
+            <textarea
+              ref={emailBodyRef}
+              readOnly
+              value={state.emailBody}
+              rows={12}
+              className="w-full font-mono text-xs border border-gray-200 rounded px-3 py-2 bg-gray-50 whitespace-pre-wrap focus:outline-none focus:ring-2 focus:ring-brand-blue"
+            />
+          </div>
+        )}
+
         <button
           type="button"
           onClick={() => window.location.reload()}

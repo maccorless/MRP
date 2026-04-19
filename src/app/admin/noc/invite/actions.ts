@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import { invitations, auditLog } from "@/db/schema";
+import { NOC_CODES } from "@/lib/codes";
 import { requireBaseUrl } from "@/lib/env";
 import { requireNocSession, requireWritable } from "@/lib/session";
 import { generateToken, hashToken } from "@/lib/tokens";
@@ -9,8 +10,39 @@ import { generateToken, hashToken } from "@/lib/tokens";
 export type InviteActionState = {
   inviteUrl: string | null;
   inviteId: string | null;
+  emailTo: string | null;
+  emailSubject: string | null;
+  emailBody: string | null;
   error: string | null;
 };
+
+function composeInviteEmail(opts: {
+  inviteUrl: string;
+  orgName: string | null;
+  nocCode: string;
+  adminDisplayName: string;
+  expiryDays: number;
+}): { subject: string; body: string } {
+  const nocName = NOC_CODES.find((n) => n.code === opts.nocCode)?.name ?? opts.nocCode;
+  const orgLine = opts.orgName ? opts.orgName : "your organisation";
+  const subject = `Invitation to apply for LA 2028 Olympic Press Accreditation`;
+  const body = [
+    `Hello,`,
+    ``,
+    `The ${nocName} National Olympic Committee has invited ${orgLine} to submit an Expression of Interest (EoI) for press accreditation at the Olympic Games LA 2028.`,
+    ``,
+    `To begin your application, click the link below. This invitation is single-use and will expire in ${opts.expiryDays} days.`,
+    ``,
+    opts.inviteUrl,
+    ``,
+    `If you have any questions, please contact your NOC representative.`,
+    ``,
+    `Kind regards,`,
+    opts.adminDisplayName,
+    `${nocName} — Press Accreditation Team`,
+  ].join("\n");
+  return { subject, body };
+}
 
 export async function createInvitation(
   _prev: InviteActionState,
@@ -19,14 +51,14 @@ export async function createInvitation(
   try {
     await requireWritable();
   } catch {
-    return { inviteUrl: null, inviteId: null, error: "You do not have permission to perform this action." };
+    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "You do not have permission to perform this action." };
   }
 
   let session: Awaited<ReturnType<typeof requireNocSession>>;
   try {
     session = await requireNocSession();
   } catch {
-    return { inviteUrl: null, inviteId: null, error: "Session expired. Please log in again." };
+    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "Session expired. Please log in again." };
   }
 
   const orgName        = (formData.get("org_name") as string)?.trim() || null;
@@ -37,12 +69,12 @@ export async function createInvitation(
   const recipientEmail = (formData.get("recipient_email") as string)?.trim().toLowerCase() || null;
 
   if (recipientEmail && (!recipientEmail.includes("@") || !recipientEmail.includes("."))) {
-    return { inviteUrl: null, inviteId: null, error: "Please enter a valid email address." };
+    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "Please enter a valid email address." };
   }
 
   const VALID_ORG_TYPES = ["media_print_online", "media_broadcast", "news_agency", "freelancer"];
   if (orgType && !VALID_ORG_TYPES.includes(orgType)) {
-    return { inviteUrl: null, inviteId: null, error: "Invalid organisation type selected." };
+    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "Invalid organisation type selected." };
   }
 
   const rawToken = generateToken();
@@ -81,5 +113,20 @@ export async function createInvitation(
   const baseUrl = requireBaseUrl();
   const inviteUrl = `${baseUrl}/invite/${rawToken}`;
 
-  return { inviteUrl, inviteId: row.id, error: null };
+  const { subject: emailSubject, body: emailBody } = composeInviteEmail({
+    inviteUrl,
+    orgName,
+    nocCode: session.nocCode,
+    adminDisplayName: session.displayName,
+    expiryDays,
+  });
+
+  return {
+    inviteUrl,
+    inviteId: row.id,
+    emailTo: recipientEmail,
+    emailSubject,
+    emailBody,
+    error: null,
+  };
 }
