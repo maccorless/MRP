@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { makeT, parseLang } from "@/lib/i18n";
@@ -18,12 +18,14 @@ export default async function SubmittedPage({
 }) {
   const { ref, resubmit, email, lang: langParam } = await searchParams;
 
-  if (!ref) redirect("/apply");
+  if (!ref || !email) redirect("/apply");
 
   const t = makeT(parseLang(langParam));
   const isResubmission = resubmit === "1";
 
-  // Look up the application for email preview data
+  // Look up the application for email preview data.
+  // Require both reference number AND matching contact email so ref enumeration
+  // alone can't reveal applicant data.
   const [appRow] = await db
     .select({
       contactFirstName: applications.contactFirstName,
@@ -37,7 +39,14 @@ export default async function SubmittedPage({
     })
     .from(applications)
     .innerJoin(organizations, eq(applications.organizationId, organizations.id))
-    .where(eq(applications.referenceNumber, ref));
+    .where(
+      and(
+        eq(applications.referenceNumber, ref),
+        eq(applications.contactEmail, email),
+      ),
+    );
+
+  if (!appRow) redirect("/apply");
 
   const categories = appRow
     ? (
