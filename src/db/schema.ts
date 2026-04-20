@@ -12,13 +12,28 @@ import {
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 export const orgTypeEnum = pgEnum("org_type", [
-  "media_print_online",
-  "media_broadcast",
-  "news_agency",
-  "enr", // Non-Rights Broadcaster — set by ENR workflow, not EoI self-nomination
-  "freelancer",
-  "ino",      // International Non-Governmental Organisation — IOC-Direct workflow
-  "if_staff", // IF staff journalists/photographers — IOC-Direct workflow with IF-Staff flag
+  // Legacy values — kept for existing rows; hidden from /applyb dropdown
+  "media_print_online",    // legacy: replaced by "print_media"
+  "media_broadcast",       // legacy: IOC does not accredit Broadcast; hidden
+  "news_agency",           // legacy: replaced by "press_agency"
+  "enr",                   // legacy: ENR is a category, not an org type; replaced by "non_mrh"
+  "freelancer",            // legacy: split into freelance_journalist / freelance_photographer
+  "ino",                   // IOC-Direct workflow
+  "if_staff",              // IOC-Direct workflow with IF-Staff flag
+
+  // Excel-aligned values (LA28 Apr 2026 spec)
+  "print_media",                    // Print (Newspaper/Magazine)
+  "press_agency",                   // Press Agency
+  "photo_agency",                   // Photo Agency
+  "editorial_website",              // Editorial Website
+  "sport_specialist_website",       // Sport Specialist Website
+  "photographer",                   // Staff Photographer (non-freelance)
+  "freelance_journalist",           // Freelance Journalist
+  "freelance_photographer",         // Freelance Photographer
+  "sport_specialist_print",         // Sport Specialist Print
+  "sport_specialist_photographer",  // Sport Specialist Photographer
+  "non_mrh",                        // Non-Media Rights-Holding Radio/TV
+
   "other",
 ]);
 
@@ -212,6 +227,25 @@ export const applications = pgTable("applications", {
   socialMediaAccounts: text("social_media_accounts"),
   additionalComments: text("additional_comments"),
   accessibilityNeeds: boolean("accessibility_needs"),
+
+  // Editor-in-Chief contact (LA28 Apr 2026 spec) — optional for freelance org types
+  editorInChiefFirstName: text("editor_in_chief_first_name"),
+  editorInChiefLastName: text("editor_in_chief_last_name"),
+  editorInChiefEmail: text("editor_in_chief_email"),
+
+  // Organisation office phone (LA28 Apr 2026 spec) — with country code
+  orgPhone: text("org_phone"),
+
+  // Non-MRH sub-type (shown when org_type = non_mrh)
+  nonMrhMediaType: text("non_mrh_media_type"),             // 'television' | 'radio' | 'other'
+  nonMrhMediaTypeOther: text("non_mrh_media_type_other"),  // free text when above = 'other'
+
+  // ENR as 7th accreditation category (LA28 Apr 2026 spec; max 3)
+  categoryEnr: boolean("category_enr").notNull().default(false),
+  requestedEnr: integer("requested_enr"),
+
+  // GDPR / privacy disclaimer acceptance (required)
+  gdprAcceptedAt: timestamp("gdpr_accepted_at", { withTimezone: true }),
 
   // Entry source — how this application entered the system
   entrySource: text("entry_source").notNull().default("self_submitted"), // 'self_submitted' | 'noc_direct' | 'invited'

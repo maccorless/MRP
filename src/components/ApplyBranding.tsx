@@ -5,11 +5,11 @@ import { useSearchParams } from "next/navigation";
 import { makeT, parseLang } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
 
-export function ApplyHeader() {
+export function ApplyHeader({ basePath = "/apply" }: { basePath?: string } = {}) {
   const sp = useSearchParams();
   const lang = parseLang(sp.get("lang") ?? undefined);
   const t = makeT(lang);
-  const statusHref = lang === "fr" ? "/apply/status?lang=fr" : "/apply/status";
+  const statusHref = lang === "fr" ? `${basePath}/status?lang=fr` : `${basePath}/status`;
 
   return (
     <header className="bg-brand-blue text-white px-6 py-4">

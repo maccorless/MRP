@@ -34,7 +34,7 @@ export async function requestToken(formData: FormData) {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
 
   if (!email || !email.includes("@") || !email.includes(".")) {
-    redirect("/apply?error=invalid_email");
+    redirect("/applyb?error=invalid_email");
   }
 
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -44,7 +44,7 @@ export async function requestToken(formData: FormData) {
     .select({ emailCount: count() })
     .from(magicLinkTokens)
     .where(and(eq(magicLinkTokens.email, email), gte(magicLinkTokens.createdAt, oneHourAgo)));
-  if (emailCount >= 5) redirect("/apply?error=rate_limited");
+  if (emailCount >= 5) redirect("/applyb?error=rate_limited");
 
   // Per-IP rate limit: max 15 token requests per hour
   const h = await headers();
@@ -54,7 +54,7 @@ export async function requestToken(formData: FormData) {
       .select({ ipCount: count() })
       .from(magicLinkTokens)
       .where(and(eq(magicLinkTokens.ipAddress, ip), gte(magicLinkTokens.createdAt, oneHourAgo)));
-    if (ipCount >= 15) redirect("/apply?error=rate_limited");
+    if (ipCount >= 15) redirect("/applyb?error=rate_limited");
   }
 
   const token = generateToken();
@@ -64,7 +64,7 @@ export async function requestToken(formData: FormData) {
 
   await db.insert(magicLinkTokens).values({ email, tokenHash, expiresAt, ipAddress: ip });
 
-  redirect(`/apply/verify?token=${token}&email=${encodeURIComponent(email)}`);
+  redirect(`/applyb/verify?token=${token}&email=${encodeURIComponent(email)}`);
 }
 
 export async function submitApplication(formData: FormData) {
@@ -72,7 +72,7 @@ export async function submitApplication(formData: FormData) {
   const email = (formData.get("email") as string)?.trim().toLowerCase();
   const resubmitId = (formData.get("resubmit_id") as string) || null;
 
-  if (!token || !email) redirect("/apply");
+  if (!token || !email) redirect("/applyb");
 
   // Lightweight pre-check (non-authoritative — the real gate is the atomic consume inside the tx)
   const tokenHash = hashToken(token);
@@ -89,10 +89,10 @@ export async function submitApplication(formData: FormData) {
     );
 
   if (!tokenCheck) {
-    redirect("/apply?error=invalid_token");
+    redirect("/applyb?error=invalid_token");
   }
 
-  // Primary contact (LA28 Apr 2026 Excel-aligned)
+  // Primary contact
   const contactFirstName = (formData.get("contact_first_name") as string)?.trim() || "";
   const contactLastName = (formData.get("contact_last_name") as string)?.trim() || "";
   const contactName = `${contactFirstName} ${contactLastName}`.trim();
@@ -128,34 +128,34 @@ export async function submitApplication(formData: FormData) {
   // GDPR
   const gdprAccepted = formData.get("gdpr_accepted") === "true";
   if (!gdprAccepted) {
-    redirect("/apply?error=invalid_token");
+    redirect("/applyb?error=invalid_token");
   }
 
   // Must request at least one category (ENR counted)
   const anyRequested =
     Object.values(cats).some(Boolean) || (requestedEnr !== null && requestedEnr > 0);
   if (!anyRequested) {
-    redirect("/apply?error=invalid_category");
+    redirect("/applyb?error=invalid_category");
   }
 
   const expandedFields = {
     contactFirstName: contactFirstName || null,
     contactLastName: contactLastName || null,
     contactTitle,
-    contactPhone: null,         // legacy — not collected in spec-aligned form
+    contactPhone: null,          // legacy — replaced by orgPhone on org section
     contactCell,
     // Editor-in-Chief
     editorInChiefFirstName,
     editorInChiefLastName,
     editorInChiefEmail,
-    // Secondary contact — no longer collected; clear old values on resubmit
+    // Secondary contact — no longer collected; write null to clear old values on resubmit
     secondaryFirstName: null,
     secondaryLastName: null,
     secondaryTitle: null,
     secondaryEmail: null,
     secondaryPhone: null,
     secondaryCell: null,
-    // Per-category accreditation flags + quantities
+    // Per-category E accreditation flags + quantities
     categoryE:   cats.E,
     categoryEs:  cats.Es,
     categoryEp:  cats.EP,
@@ -183,6 +183,7 @@ export async function submitApplication(formData: FormData) {
     priorParalympicYears: null,
     pastCoverageExamples,
     additionalComments,
+    // accessibility_needs no longer collected
     accessibilityNeeds: null,
     orgTypeOther: (formData.get("org_type_other") as string | null) || null,
     pressCard: formData.get("press_card") === "yes" ? true : formData.get("press_card") === "no" ? false : null,
@@ -191,7 +192,7 @@ export async function submitApplication(formData: FormData) {
     onlineUniqueVisitors: (formData.get("online_unique_visitors") as string | null) || null,
     geographicalCoverage: (formData.get("geographical_coverage") as string | null) || null,
     socialMediaAccounts: (formData.get("social_media_accounts") as string | null) || null,
-    // LA28 Apr 2026 new fields
+    // New LA28 Apr 2026 spec fields
     orgPhone: (formData.get("org_phone") as string)?.trim() || null,
     nonMrhMediaType: (formData.get("non_mrh_media_type") as string)?.trim() || null,
     nonMrhMediaTypeOther: (formData.get("non_mrh_media_type_other") as string)?.trim() || null,
@@ -211,7 +212,7 @@ export async function submitApplication(formData: FormData) {
         )
       );
 
-    if (!returnedApp) redirect("/apply?error=invalid_token");
+    if (!returnedApp) redirect("/applyb?error=invalid_token");
 
     await db.transaction(async (tx) => {
       // Atomic token consumption — prevents concurrent double-submission
@@ -230,7 +231,7 @@ export async function submitApplication(formData: FormData) {
 
       if (!consumed) {
         // Token was consumed by a concurrent request — abort
-        redirect("/apply?error=invalid_token");
+        redirect("/applyb?error=invalid_token");
       }
 
       const wasReturned = returnedApp.status === "returned";
@@ -263,7 +264,7 @@ export async function submitApplication(formData: FormData) {
       });
     });
 
-    redirect(`/apply/submitted?ref=${returnedApp.referenceNumber}&resubmit=1&email=${encodeURIComponent(email)}`);
+    redirect(`/applyb/submitted?ref=${returnedApp.referenceNumber}&resubmit=1&email=${encodeURIComponent(email)}`);
   }
 
   // ── NEW APPLICATION PATH ───────────────────────────────────────────────────
@@ -274,7 +275,7 @@ export async function submitApplication(formData: FormData) {
     .from(applications)
     .where(eq(applications.contactEmail, email));
   if (appCount >= 10) {
-    redirect("/apply?error=application_limit");
+    redirect("/applyb?error=application_limit");
   }
 
   const orgName = (formData.get("org_name") as string).trim();
@@ -285,10 +286,10 @@ export async function submitApplication(formData: FormData) {
   const nocCode = nocRaw.split(" — ")[0].trim().toUpperCase();
 
   if (!COUNTRY_CODE_SET.has(country)) {
-    redirect("/apply?error=invalid_country");
+    redirect("/applyb?error=invalid_country");
   }
   if (!NOC_CODE_SET.has(nocCode)) {
-    redirect("/apply?error=invalid_noc");
+    redirect("/applyb?error=invalid_noc");
   }
 
   // Check if EoI window is closed for this NOC (absence of row = open)
@@ -297,10 +298,11 @@ export async function submitApplication(formData: FormData) {
     .from(nocEoiWindows)
     .where(and(eq(nocEoiWindows.nocCode, nocCode), eq(nocEoiWindows.eventId, "LA28")));
   if (windowRow && !windowRow.isOpen) {
-    redirect("/apply?error=window_closed");
+    redirect("/applyb?error=window_closed");
   }
 
   // Accept any value from the LA28 Apr 2026 Excel-aligned enum.
+  // Type-safe cast is handled by the orgTypeEnum pgEnum at insert time.
   const orgType = formData.get("org_type") as
     | "print_media"
     | "press_agency"
@@ -336,7 +338,7 @@ export async function submitApplication(formData: FormData) {
       )
     );
   if (reservedMatch) {
-    redirect("/apply?error=reserved_org");
+    redirect("/applyb?error=reserved_org");
   }
 
   const [existingOrg] = await db
@@ -374,7 +376,7 @@ export async function submitApplication(formData: FormData) {
       .returning({ id: magicLinkTokens.id });
 
     if (!consumed) {
-      redirect("/apply?error=invalid_token");
+      redirect("/applyb?error=invalid_token");
     }
 
     let org;
@@ -426,7 +428,7 @@ export async function submitApplication(formData: FormData) {
       );
 
     if (linkedInvite?.nocCode && linkedInvite.nocCode !== nocCode) {
-      redirect("/apply?error=invite_noc_mismatch");
+      redirect("/applyb?error=invite_noc_mismatch");
     }
 
     const [app] = await tx
@@ -493,5 +495,5 @@ export async function submitApplication(formData: FormData) {
     ]);
   });
 
-  redirect(`/apply/submitted?ref=${referenceNumber}&email=${encodeURIComponent(email)}`);
+  redirect(`/applyb/submitted?ref=${referenceNumber}&email=${encodeURIComponent(email)}`);
 }

@@ -99,23 +99,27 @@ const TAB_KEYS = [
   { key: "tabs.history"      as const, icon: "5" },
 ];
 
-// Required fields per tab (by input name)
+// Required fields per tab (by input name) — LA28 Apr 2026 Excel-aligned.
 const REQUIRED_FIELDS: Record<number, string[]> = {
-  0: ["org_name", "org_type", "country", "noc_code"],
-  1: ["contact_first_name", "contact_last_name"],
+  0: [
+    "org_name", "org_type", "website", "address", "city", "postal_code",
+    "country", "noc_code", "org_phone", "org_email",
+  ],
+  1: ["contact_first_name", "contact_last_name", "contact_title", "contact_cell"],
   2: ["about"],
   3: [],
-  4: [],
+  4: ["prior_olympic", "past_coverage_examples"],
 };
 
-// Fields beyond required that must be filled for a "full" (checkmark) status.
-// Accreditation and History use custom DOM logic in isTabFull — listed here for reference only.
+// With the Excel-aligned field set, "complete" and "full" are effectively the same:
+// there are no optional-but-nudged fields beyond the required set. We keep this map
+// empty so isTabFull simply checks the required fields (same as "complete").
 const CHECKMARK_FIELDS: Record<number, string[]> = {
-  0: ["website", "address", "city", "state_province", "postal_code"],
+  0: [],
   1: [],
-  2: [], // handled in isTabFull (requested_* per checked category)
-  3: ["circulation", "publication_frequency", "sports_to_cover"],
-  4: [], // handled in isTabFull (prior_olympic, prior_paralympic, past_coverage_examples)
+  2: [],
+  3: [],
+  4: [],
 };
 
 // STATUS_LABELS are now derived from translations inside the component.
@@ -183,7 +187,7 @@ export function EoiFormTabs({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ tab: string; field: string }[]>([]);
-  const [allTabsFull, setAllTabsFull] = useState(false);
+  const [gdprAccepted, setGdprAccepted] = useState(false);
   const [modalSummary, setModalSummary] = useState<{
     orgName: string;
     categories: string[];
@@ -207,7 +211,7 @@ export function EoiFormTabs({
   }, [visitedKey]);
 
   function isTabFull(tabIndex: number, form: HTMLFormElement): boolean {
-    // Check standard extra fields first
+    // LA28 Apr 2026 Excel-aligned completeness — "complete" and "full" are equivalent.
     const extraFields = CHECKMARK_FIELDS[tabIndex] ?? [];
     for (const name of extraFields) {
       const el = form.elements.namedItem(name);
@@ -216,41 +220,67 @@ export function EoiFormTabs({
       }
     }
 
-    // Tab-specific custom checks
+    if (tabIndex === 0) {
+      // Organisation: conditional fields based on org_type
+      const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
+      const orgTypeVal = orgTypeEl?.value ?? "";
+      if (orgTypeVal === "other") {
+        const other = form.elements.namedItem("org_type_other") as HTMLInputElement | null;
+        if (!other?.value.trim()) return false;
+      }
+      if (orgTypeVal === "non_mrh") {
+        const subtype = form.elements.namedItem("non_mrh_media_type") as HTMLSelectElement | null;
+        if (!subtype?.value) return false;
+        if (subtype.value === "other") {
+          const spec = form.elements.namedItem("non_mrh_media_type_other") as HTMLInputElement | null;
+          if (!spec?.value.trim()) return false;
+        }
+      }
+    }
+
     if (tabIndex === 1) {
-      // At least one of office phone or cell phone must be filled
-      const phone = form.elements.namedItem("contact_phone") as HTMLInputElement | null;
-      const cell  = form.elements.namedItem("contact_cell")  as HTMLInputElement | null;
-      if (!phone?.value.trim() && !cell?.value.trim()) return false;
+      // Contacts: Editor-in-Chief required unless freelance org type
+      const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
+      const orgTypeVal = orgTypeEl?.value ?? "";
+      const isFreelance = orgTypeVal === "freelance_journalist" || orgTypeVal === "freelance_photographer" || orgTypeVal === "freelancer";
+      if (!isFreelance) {
+        for (const name of ["editor_in_chief_first_name", "editor_in_chief_last_name", "editor_in_chief_email"]) {
+          const el = form.elements.namedItem(name) as HTMLInputElement | null;
+          if (!el?.value.trim()) return false;
+        }
+      }
     }
 
     if (tabIndex === 2) {
-      // All checked categories must have a quantity filled
-      const categories = ["E", "Es", "EP", "EPs", "ET", "EC"];
-      for (const cat of categories) {
-        const checkbox = form.elements.namedItem(`category_${cat}`) as HTMLInputElement | null;
-        if (checkbox?.checked) {
-          const qty = form.elements.namedItem(`requested_${cat}`) as HTMLInputElement | null;
-          if (!qty?.value.trim()) return false;
-        }
-      }
-      return true;
+      // Accreditation: at least one of E/Es/EP/EPs/ET/EC/ENR must be > 0
+      const catKeys = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"];
+      const anyPositive = catKeys.some((k) => {
+        const el = form.elements.namedItem(`requested_${k}`) as HTMLInputElement | null;
+        return (parseInt(el?.value ?? "0", 10) || 0) > 0;
+      });
+      if (!anyPositive) return false;
     }
 
     if (tabIndex === 4) {
-      // Both prior accreditation radios must be answered
+      // History: prior_olympic answered; past_coverage_examples filled; press_card if freelance
       const olympicInputs = form.elements.namedItem("prior_olympic");
-      const paralympicInputs = form.elements.namedItem("prior_paralympic");
       const olympicAnswered = olympicInputs instanceof RadioNodeList
         ? Array.from(olympicInputs).some((el) => el instanceof HTMLInputElement && el.checked)
         : false;
-      const paralympicAnswered = paralympicInputs instanceof RadioNodeList
-        ? Array.from(paralympicInputs).some((el) => el instanceof HTMLInputElement && el.checked)
-        : false;
-      if (!olympicAnswered || !paralympicAnswered) return false;
-      // If the coverage textarea is in the DOM (shown when olympic=yes or both=no), it must be filled
+      if (!olympicAnswered) return false;
       const coverage = form.elements.namedItem("past_coverage_examples");
       if (coverage instanceof HTMLTextAreaElement && !coverage.value.trim()) return false;
+
+      const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
+      const orgTypeVal = orgTypeEl?.value ?? "";
+      const isFreelance = orgTypeVal === "freelance_journalist" || orgTypeVal === "freelance_photographer" || orgTypeVal === "freelancer";
+      if (isFreelance) {
+        const pressCard = form.elements.namedItem("press_card");
+        const pressCardAnswered = pressCard instanceof RadioNodeList
+          ? Array.from(pressCard).some((el) => el instanceof HTMLInputElement && el.checked)
+          : false;
+        if (!pressCardAnswered) return false;
+      }
     }
 
     return true;
@@ -370,29 +400,14 @@ export function EoiFormTabs({
         return false;
       });
 
-      // Accreditation tab: at least one category checkbox required
+      // Accreditation: at least one requested_* > 0 (ENR included)
       if (tabIndex === 2) {
-        const catChecked = Array.from(
-          form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
-        ).some((cb) => cb.checked);
-        if (!catChecked || !allRequired) return "empty";
-      } else if (tabIndex === 3) {
-        // Publication tab: at least one publication_types checkbox required
-        const pubChecked = Array.from(
-          form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]')
-        ).some((cb) => cb.checked);
-        if (!pubChecked) return "empty";
-      } else if (tabIndex === 0) {
-        const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
-        if (orgTypeEl?.value === "freelancer") {
-          const pressCard = form.elements.namedItem("press_card");
-          const pressCardAnswered = pressCard instanceof RadioNodeList
-            ? Array.from(pressCard).some((el) => el instanceof HTMLInputElement && el.checked)
-            : false;
-          if (!pressCardAnswered || !allRequired) return "empty";
-        } else if (!allRequired) {
-          return "empty";
-        }
+        const catKeys = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"];
+        const anyPositive = catKeys.some((k) => {
+          const el = form.elements.namedItem(`requested_${k}`) as HTMLInputElement | null;
+          return (parseInt(el?.value ?? "0", 10) || 0) > 0;
+        });
+        if (!anyPositive || !allRequired) return "empty";
       } else if (!allRequired) {
         return "empty";
       }
@@ -520,17 +535,33 @@ export function EoiFormTabs({
       }
     }
 
-    // Custom: at least one category checkbox must be checked
-    const catChecked = Array.from(
-      form.querySelectorAll<HTMLInputElement>('input[name^="category_"]')
-    ).some((cb) => cb.checked);
-    if (!catChecked) errs["category"] = t("accred.categoryError");
+    // Custom: at least one accreditation category must be requested (> 0), incl. ENR
+    const catKeys = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"];
+    const anyPositive = catKeys.some((k) => {
+      const el = form.elements.namedItem(`requested_${k}`) as HTMLInputElement | null;
+      return (parseInt(el?.value ?? "0", 10) || 0) > 0;
+    });
+    if (!anyPositive) errs["category"] = "Please request at least one accreditation category.";
 
-    // Custom: at least one publication_types checkbox must be checked
-    const pubChecked = Array.from(
-      form.querySelectorAll<HTMLInputElement>('input[name="publication_types"]')
-    ).some((cb) => cb.checked);
-    if (!pubChecked) errs["publication_types"] = t("pub.types.required");
+    // Editor-in-Chief required unless freelance org type
+    const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
+    const orgTypeVal = orgTypeEl?.value ?? "";
+    const isFreelance = orgTypeVal === "freelance_journalist" || orgTypeVal === "freelance_photographer" || orgTypeVal === "freelancer";
+    if (!isFreelance) {
+      for (const name of ["editor_in_chief_first_name", "editor_in_chief_last_name", "editor_in_chief_email"]) {
+        const el = form.elements.namedItem(name) as HTMLInputElement | null;
+        if (!el?.value.trim()) errs[name] = "Required for non-freelance organisations.";
+      }
+    }
+    // Non-MRH sub-dropdown
+    if (orgTypeVal === "non_mrh") {
+      const subtype = form.elements.namedItem("non_mrh_media_type") as HTMLSelectElement | null;
+      if (!subtype?.value) errs["non_mrh_media_type"] = "Please select a media type.";
+      if (subtype?.value === "other") {
+        const spec = form.elements.namedItem("non_mrh_media_type_other") as HTMLInputElement | null;
+        if (!spec?.value.trim()) errs["non_mrh_media_type_other"] = "Please specify the media type.";
+      }
+    }
 
     // Validate URL fields (type="url" browser validation is bypassed by noValidate)
     const urlInputs = form.querySelectorAll<HTMLInputElement>('input[type="url"]');
@@ -543,9 +574,9 @@ export function EoiFormTabs({
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
       setErrorAnnouncement("");
-      const categories = ["E", "Es", "EP", "EPs", "ET", "EC"].filter((cat) => {
-        const cb = form.elements.namedItem(`category_${cat}`) as HTMLInputElement | null;
-        return cb?.checked;
+      const categories = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"].filter((cat) => {
+        const el = form.elements.namedItem(`requested_${cat}`) as HTMLInputElement | null;
+        return (parseInt(el?.value ?? "0", 10) || 0) > 0;
       });
       const firstEl = form.elements.namedItem("contact_first_name") as HTMLInputElement | null;
       const lastEl  = form.elements.namedItem("contact_last_name")  as HTMLInputElement | null;
@@ -556,8 +587,6 @@ export function EoiFormTabs({
         contactName:  [firstEl?.value, lastEl?.value].filter(Boolean).join(" "),
         contactEmail: email,
       });
-      const allFull = tabStatus.every((s) => s === "full");
-      setAllTabsFull(allFull);
       setShowConfirmModal(true);
       return;
     }
@@ -569,7 +598,6 @@ export function EoiFormTabs({
     const firstErrTab = firstErrEl
       ? parseInt(firstErrEl.getAttribute("data-tab") ?? "0", 10)
       : errs["category"] ? 2
-      : errs["publication_types"] ? 3
       : 0;
     firstErrNameRef.current = firstErrEl?.name ?? "";
     firstErrTabRef.current = firstErrTab;
@@ -578,7 +606,6 @@ export function EoiFormTabs({
     const errList = Object.keys(errs).map((name) => {
       const el = requiredEls.find((r) => r.name === name);
       const tabIndex = name === "category" ? 2
-        : name === "publication_types" ? 3
         : el ? parseInt(el.getAttribute("data-tab") ?? "0", 10) : 0;
       const labelEl = el?.id
         ? document.querySelector<HTMLLabelElement>(`label[for="${el.id}"]`)
@@ -605,9 +632,7 @@ export function EoiFormTabs({
     flushSync(() => setActiveTab(tabIndex));
     const target = errName
       ? formRef.current?.querySelector<HTMLElement>(`[name="${errName}"]`)
-      : tabIndex === 3
-      ? formRef.current?.querySelector<HTMLElement>('input[name="publication_types"]')
-      : formRef.current?.querySelector<HTMLElement>('[name^="category_"]');
+      : formRef.current?.querySelector<HTMLElement>('[name^="requested_"]');
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
     target?.focus();
   }
@@ -615,6 +640,7 @@ export function EoiFormTabs({
   function handleConfirmedSubmit() {
     const form = formRef.current;
     if (!form) return;
+    if (!gdprAccepted) return; // guard; button is disabled anyway
     setShowConfirmModal(false);
     localStorage.removeItem(storageKey);
     localStorage.removeItem(visitedKey);
@@ -622,6 +648,7 @@ export function EoiFormTabs({
     // The form element intentionally has no `action` attribute so this is
     // the ONLY path that can reach submitApplication (prevents ambient submit hijack).
     const fd = new FormData(form);
+    fd.set("gdpr_accepted", "true");
     startSubmitTransition(async () => {
       await submitApplication(fd);
     });
@@ -864,57 +891,41 @@ export function EoiFormTabs({
             </div>
           </div>
 
-          {/* Nudge — shown only when optional fields are incomplete */}
-          {!allTabsFull && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 mb-5">
-              <p className="font-semibold mb-1">{t("form.confirmModal.nudge.heading")}</p>
-              <p>{t("form.confirmModal.nudge.body")}</p>
-            </div>
-          )}
+          {/* GDPR disclaimer — mandatory per LA28 Apr 2026 spec */}
+          <label className="block bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-5 cursor-pointer">
+            <span className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={gdprAccepted}
+                onChange={(e) => setGdprAccepted(e.target.checked)}
+                className="mt-0.5 accent-brand-blue cursor-pointer"
+              />
+              <span className="text-xs text-indigo-900 leading-relaxed">
+                <b>Privacy notice:</b> I consent to the LA 2028 Organising Committee, the IOC and
+                my National Olympic Committee processing the personal data in this application for
+                the purpose of evaluating my press accreditation request. I understand that my data
+                will be stored securely and handled in line with applicable data-protection law.
+                <span className="text-red-500"> *</span>
+              </span>
+            </span>
+          </label>
 
-          {/* CTAs */}
           <div className="flex gap-3">
-            {allTabsFull ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmModal(false)}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  {t("form.confirmModal.goBack")}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmedSubmit}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isResubmission ? t("form.confirmModal.confirmResubmit") : isPendingEdit ? t("form.confirmModal.saveChanges") : t("form.confirmModal.confirmSubmit")}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowConfirmModal(false);
-                    const firstIncomplete = tabStatus.findIndex((s) => s !== "full");
-                    if (firstIncomplete !== -1) setActiveTab(firstIncomplete);
-                  }}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  {t("form.confirmModal.addEdit")}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmedSubmit}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {t("form.confirmModal.submitApplication")}
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={() => setShowConfirmModal(false)}
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              {t("form.confirmModal.goBack")}
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmedSubmit}
+              disabled={isSubmitting || !gdprAccepted}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isResubmission ? t("form.confirmModal.confirmResubmit") : isPendingEdit ? t("form.confirmModal.saveChanges") : t("form.confirmModal.confirmSubmit")}
+            </button>
           </div>
         </div>
       </div>

@@ -2,26 +2,25 @@ import Link from "next/link";
 import { requestToken } from "./actions";
 import { makeT, parseLang } from "@/lib/i18n";
 
-export default async function ApplyPage({
+export default async function ApplyBPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; lang?: string }>;
 }) {
   const { error, lang: langParam } = await searchParams;
   const t = makeT(parseLang(langParam));
+  const langSuffix = langParam ? `?lang=${langParam}` : "";
 
   const redErrors = ["invalid_email", "invalid_token", "invalid_country", "invalid_noc", "rate_limited", "application_limit"] as const;
   const orangeErrors = ["window_closed"] as const;
 
-  const langSuffix = langParam ? `?lang=${langParam}` : "";
-
   return (
     <div>
-      {/* Link to beta */}
+      {/* Beta banner */}
       <div className="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs text-indigo-800 flex items-center justify-between gap-3">
-        <span>Try the new 3-step flow we're testing.</span>
-        <Link href={`/applyb${langSuffix}`} className="text-indigo-700 hover:text-indigo-900 underline whitespace-nowrap">
-          New flow (beta) →
+        <span><span className="font-semibold">New flow (beta):</span> a 3-step redesign we're testing. Feedback welcome.</span>
+        <Link href={`/apply${langSuffix}`} className="text-indigo-700 hover:text-indigo-900 underline whitespace-nowrap">
+          ← Classic version
         </Link>
       </div>
 

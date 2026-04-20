@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>/apply — reimagined (wireframes)</title>
+<style>
+  :root {
+    --ink: #111;
+    --line: #111;
+    --mute: #6b6b6b;
+    --bg: #f4f3ef;
+    --paper: #fff;
+    --accent: #0066ff;
+    --warn: #d97706;
+    --ok: #0a8a3f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px; line-height: 1.5; }
+  a { color: var(--accent); }
+  .page { max-width: 1100px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 28px; font-weight: 800; margin: 0 0 4px; }
+  h2 { font-size: 20px; font-weight: 700; margin: 56px 0 4px; padding-top: 24px; border-top: 2px solid var(--line); }
+  h3 { font-size: 15px; font-weight: 700; margin: 24px 0 8px; letter-spacing: .02em; text-transform: uppercase; color: var(--mute); }
+  p.lead { color: var(--mute); margin: 0 0 12px; max-width: 780px; }
+  nav.toc { font-size: 13px; color: var(--mute); margin: 16px 0 40px; }
+  nav.toc a { margin-right: 18px; }
+
+  /* Wireframe primitives */
+  .wf { background: var(--paper); border: 1.5px solid var(--line); border-radius: 10px;
+        padding: 20px; margin: 16px 0; position: relative; overflow: hidden; }
+  .wf.browser::before {
+    content: ""; display: block; height: 28px; background: #fafafa;
+    border-bottom: 1px dashed var(--line); margin: -20px -20px 16px; border-radius: 10px 10px 0 0;
+    background-image: radial-gradient(circle at 14px 14px, #ddd 4px, transparent 4.5px),
+                      radial-gradient(circle at 30px 14px, #ddd 4px, transparent 4.5px),
+                      radial-gradient(circle at 46px 14px, #ddd 4px, transparent 4.5px);
+  }
+  .row { display: flex; gap: 12px; align-items: stretch; }
+  .col { flex: 1; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+
+  .box { border: 1.2px dashed var(--line); border-radius: 6px; padding: 12px;
+         font-size: 12px; color: var(--mute); background: #fafafa; }
+  .field { border: 1.2px solid var(--line); border-radius: 4px; padding: 8px 10px;
+           font-size: 12px; background: #fff; color: #333; }
+  .field.ph { color: #aaa; font-style: italic; }
+  .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); margin-bottom: 4px; }
+
+  .btn { display: inline-block; border: 1.5px solid var(--line); padding: 8px 14px;
+         border-radius: 6px; font-weight: 600; font-size: 13px; background: #fff; cursor: default; }
+  .btn.primary { background: var(--ink); color: #fff; }
+  .btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.ghost { background: transparent; border-style: dashed; color: var(--mute); }
+
+  .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 99px; }
+  .pill.warn { background: #fff7e6; color: var(--warn); border-color: var(--warn); }
+  .pill.ok { background: #e8f7ee; color: var(--ok); border-color: var(--ok); }
+
+  .stepper { list-style: none; padding: 0; margin: 0; }
+  .stepper li { display: flex; gap: 12px; padding: 10px 12px; border-left: 3px solid #ddd;
+                align-items: flex-start; }
+  .stepper li.active { border-left-color: var(--accent); background: #f2f7ff; }
+  .stepper li.done  { border-left-color: var(--ok); }
+  .stepper .num { width: 22px; height: 22px; border-radius: 50%; background: #eee; color: var(--mute);
+                  display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex: 0 0 auto; }
+  .stepper .done .num { background: var(--ok); color: #fff; }
+  .stepper .active .num { background: var(--accent); color: #fff; }
+  .stepper .ttl { font-weight: 600; font-size: 13px; margin-bottom: 1px; }
+  .stepper .sub { font-size: 11px; color: var(--mute); }
+
+  .ribbon { background: var(--ink); color: #fff; padding: 8px 14px; font-size: 12px;
+            border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; }
+
+  .progress { height: 6px; background: #eee; border-radius: 99px; overflow: hidden; margin: 8px 0 2px; }
+  .progress > div { height: 100%; background: var(--accent); }
+
+  .meta { font-size: 11px; color: var(--mute); display: flex; gap: 10px; }
+  .meta .dot { width: 6px; height: 6px; background: var(--ok); border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+
+  .card-split { display: grid; grid-template-columns: 260px 1fr; gap: 0; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .card-split .aside { background: #fafafa; border-right: 1px dashed var(--line); padding: 18px; }
+  .card-split .main  { padding: 22px; }
+
+  .annot { font-size: 12px; color: var(--mute); border-left: 3px solid var(--accent); padding: 4px 10px; margin: 10px 0 0; background: #f2f7ff; }
+  .annot b { color: var(--ink); }
+  .caption { font-size: 12px; color: var(--mute); margin-top: 6px; }
+
+  .typeform { min-height: 340px; display: flex; flex-direction: column; justify-content: center;
+              align-items: flex-start; padding: 48px; background: #0f1320; color: #fff; border-radius: 10px; }
+  .typeform .q { font-size: 22px; font-weight: 700; margin-bottom: 14px; }
+  .typeform .opt { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .typeform .opt .chip { border: 1.5px solid rgba(255,255,255,.5); border-radius: 6px; padding: 8px 14px; font-size: 14px; color: #fff; }
+  .typeform .prog { font-size: 11px; color: #8aa; margin-bottom: 24px; letter-spacing: .1em; text-transform: uppercase; }
+  .typeform .help { font-size: 12px; color: #8aa; margin-top: 18px; }
+
+  hr.sep { border: 0; border-top: 1px dashed var(--mute); margin: 28px 0; }
+
+  .legend { font-size: 11px; color: var(--mute); padding: 10px; background: #fafafa; border: 1px dashed var(--line); border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<h1>/apply — reimagined</h1>
+<p class="lead">Three concept directions, ordered from conservative to radical. Wireframe only — no visual design, no final copy. Focus: does the structure read better than the current 5-tab form?</p>
+
+<nav class="toc">
+  <a href="#context">Current flow recap</a>
+  <a href="#concept-a">A · Stepper wizard</a>
+  <a href="#concept-b">B · Fit-first / story-led</a>
+  <a href="#concept-c">C · Conversational</a>
+  <a href="#status">Bonus · Status page rethink</a>
+</nav>
+
+<div class="legend">
+  Legend — <b>dashed</b> = content region; <b>solid</b> = input / component; <b>rail on left</b> = navigation or progress; annotated comments in blue indicate the UX intent.
+</div>
+
+<!-- =========================== CURRENT =========================== -->
+
+<h2 id="context">Current flow recap (today's UI)</h2>
+<p class="lead">Linear content, non-linear navigation. Tabs create random access the user is then gated back out of via "history must be visited" logic.</p>
+
+<div class="wf browser">
+  <div class="ribbon"><span>LA 2028 · Press Registration</span><span>EN · ES · FR · 中</span></div>
+  <h3 style="margin-top:0">EoI — Press Accreditation</h3>
+
+  <div class="grid-5" style="margin:8px 0">
+    <div class="box" style="text-align:center;background:#e8f1ff;border-color:var(--accent)"><span class="pill ok">● 1 Organisation</span></div>
+    <div class="box" style="text-align:center"><span class="pill">○ 2 Contacts</span></div>
+    <div class="box" style="text-align:center"><span class="pill">○ 3 Accreditation</span></div>
+    <div class="box" style="text-align:center"><span class="pill">○ 4 Publication</span></div>
+    <div class="box" style="text-align:center"><span class="pill">○ 5 History</span></div>
+  </div>
+
+  <div class="box" style="padding:28px;">Active tab content — 10+ fields in a single pane. User must click into each tab to learn what's inside.</div>
+
+  <div class="row" style="margin-top:14px"><span class="btn ghost">← Back</span><span style="flex:1"></span><span class="btn accent">Continue →</span></div>
+  <div class="caption" style="text-align:center;margin-top:12px">auto-saves as you type</div>
+</div>
+
+<div class="annot"><b>What's wrong:</b> tab strip implies you can jump around, but the flow is actually linear. No overall progress. Labels are nouns that don't tell you what's inside. Auto-save reassurance is buried.</div>
+
+<!-- =========================== CONCEPT A =========================== -->
+
+<h2 id="concept-a">Concept A · Vertical stepper wizard <span class="pill">conservative rethink</span></h2>
+<p class="lead">Smallest possible change: same 5 content groups, but tabs become a vertical progress rail with labels-as-outcomes, a live save indicator, and one merged confirm step.</p>
+
+<div class="wf browser">
+  <div class="ribbon"><span>🏟 LA 2028 Summer Games · EoIs close 14 Nov 2026</span><span>EN · ES · FR · 中</span></div>
+
+  <div class="card-split">
+    <aside class="aside">
+      <div class="lbl">Your application</div>
+      <div style="font-weight:700;margin-bottom:2px">La Gazzetta dello Sport</div>
+      <div class="meta" style="margin-bottom:14px"><span><span class="dot"></span>Saved 2s ago</span></div>
+
+      <div class="lbl">Progress</div>
+      <div class="progress"><div style="width:60%"></div></div>
+      <div class="caption" style="margin:2px 0 18px">Step 3 of 5 · ~7 min left</div>
+
+      <ol class="stepper">
+        <li class="done"><div class="num">✓</div><div><div class="ttl">About your organisation</div><div class="sub">Who you are</div></div></li>
+        <li class="done"><div class="num">✓</div><div><div class="ttl">Who we contact</div><div class="sub">Primary + backup</div></div></li>
+        <li class="active"><div class="num">3</div><div><div class="ttl">What you're applying for</div><div class="sub">Categories + headcount</div></div></li>
+        <li><div class="num">4</div><div><div class="ttl">How you publish</div><div class="sub">Reach + cadence</div></div></li>
+        <li><div class="num">5</div><div><div class="ttl">Your track record</div><div class="sub">Prior Games + clips</div></div></li>
+      </ol>
+    </aside>
+
+    <section class="main">
+      <div class="caption">Step 3 of 5</div>
+      <h3 style="font-size:20px;color:var(--ink);text-transform:none;letter-spacing:0;margin:2px 0 4px">What accreditation are you applying for?</h3>
+      <p class="lead" style="margin-bottom:16px">Select every category relevant to your team and estimate headcount. You can revise before submitting.</p>
+
+      <div class="grid-2">
+        <div class="box" style="padding:14px;background:#fff">
+          <div style="display:flex;justify-content:space-between"><strong>E — Journalist</strong><span class="field" style="width:48px;text-align:center">4</span></div>
+          <div class="caption">Writers, editors covering the Games generally.</div>
+        </div>
+        <div class="box" style="padding:14px;background:#fff">
+          <div style="display:flex;justify-content:space-between"><strong>Es — Sport Journalist</strong><span class="field" style="width:48px;text-align:center">2</span></div>
+          <div class="caption">Sport-specialist writers / commentators.</div>
+        </div>
+        <div class="box" style="padding:14px;">
+          <div style="display:flex;justify-content:space-between"><strong>EP — Photographer</strong><span class="field ph" style="width:48px;text-align:center">—</span></div>
+          <div class="caption">Stills photographers.</div>
+        </div>
+        <div class="box" style="padding:14px;">
+          <div style="display:flex;justify-content:space-between"><strong>ET — Technical</strong><span class="field ph" style="width:48px;text-align:center">—</span></div>
+          <div class="caption">Broadcast / satellite / producer.</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;margin-top:24px">About your editorial plans</h3>
+      <div class="box" style="min-height:90px">free-text, 500 chars</div>
+
+      <div class="row" style="margin-top:20px;align-items:center">
+        <span class="btn ghost">← Back</span>
+        <span style="flex:1"></span>
+        <span class="caption">Changes saved</span>&nbsp;&nbsp;
+        <span class="btn accent">Continue →</span>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="annot">
+  <b>Key moves:</b> (1) Games/deadline ribbon always visible. (2) Steps labelled as outcomes, not field names. (3) Live "saved 2s ago" replaces the silent footer. (4) Vertical rail + progress bar + "X min left" addresses completion anxiety. (5) No tri-state dots — done vs. current vs. pending is obvious. (6) Each category is a self-contained "card" with its definition inline — no need to bounce to a glossary.
+</div>
+
+<!-- =========================== CONCEPT B =========================== -->
+
+<h2 id="concept-b">Concept B · Story-led form, with conditional window-check <span class="pill">moderate rethink</span></h2>
+<p class="lead">Lead with the editorial story (what IOC reviewers actually judge); end with admin data. NOC window is <em>not</em> centre-stage — default is "all NOCs open" so no pre-flight at all. The check only surfaces when it's actually useful.</p>
+
+<h3>B.1 · Window-state routing (the smart part)</h3>
+<p class="lead">One cheap server check on page load decides which landing to render. Invitees always bypass — an invite is authorisation, regardless of window state.</p>
+
+<div class="wf">
+  <div class="grid-3">
+    <div class="box" style="background:#e8f7ee;border-color:var(--ok);padding:14px">
+      <div class="pill ok">State 1 · All NOCs open</div>
+      <p style="margin:8px 0 4px"><b>Default — common case</b></p>
+      <p class="caption" style="margin:0">No pre-flight. Landing = plain email entry, same as today. Don't tax every applicant with a check that's almost never actionable.</p>
+    </div>
+
+    <div class="box" style="background:#fff7e6;border-color:var(--warn);padding:14px">
+      <div class="pill warn">State 2 · Closed except OCOG reopens</div>
+      <p style="margin:8px 0 4px"><b>Global deadline passed</b></p>
+      <p class="caption" style="margin:0">Default messaging = "window closed". Landing asks NOC up front — only users from an OCOG-reopened NOC get past it. See B.2.</p>
+    </div>
+
+    <div class="box" style="background:#ffe8e8;border-color:#c1272d;padding:14px">
+      <div class="pill" style="background:#ffe8e8;color:#c1272d;border-color:#c1272d">State 3 · All NOCs closed</div>
+      <p style="margin:8px 0 4px"><b>No reopens</b></p>
+      <p class="caption" style="margin:0">Landing explains the window has closed, offers status-check for existing applicants, and surfaces the invite-only path.</p>
+    </div>
+  </div>
+
+  <div class="box" style="margin-top:12px;background:#f2f7ff;border-color:var(--accent);padding:12px">
+    <div class="pill" style="border-color:var(--accent);color:var(--accent)">Fast path — invite link</div>
+    <p style="margin:6px 0 0">Arrivals with a valid <code>?token=…</code> invite skip window checks entirely. The invite is the NOC's explicit authorisation; UI should not second-guess it. This is how late extra-time applicants will flow through in practice.</p>
+  </div>
+</div>
+
+<h3>B.2 · Landing page — State 2 (closed-by-default, a few NOCs reopened)</h3>
+<p class="lead">After the global deadline, the majority of applicants hitting <code>/apply</code> should see "closed" messaging. Only users from an OCOG-reopened NOC should be allowed through.</p>
+
+<div class="wf browser" style="max-width:620px">
+  <div class="ribbon"><span>🏟 LA 2028 · Press Registration</span><span>EN · ES · FR · 中</span></div>
+
+  <div class="box" style="background:#fff3e0;border-color:var(--warn);padding:14px;margin-bottom:16px">
+    <div class="pill warn">⏱ The main EoI window closed on 14 Nov 2026</div>
+    <p style="margin:8px 0 0">A small number of NOCs have been granted extra time by the OCOG. Tell us your country to check.</p>
+  </div>
+
+  <h3 style="color:var(--ink);text-transform:none;letter-spacing:0;margin:0 0 4px;font-size:20px">Apply for press accreditation</h3>
+
+  <div class="lbl" style="margin-top:10px">Your organisation is based in</div>
+  <div class="field" style="margin-bottom:6px">Italy · CONI</div>
+  <div class="caption" style="color:var(--ok);margin-bottom:14px">✓ CONI has been granted extra time — open through 28 Nov 2026</div>
+
+  <div class="lbl">Your email</div>
+  <div class="field ph" style="margin-bottom:12px">you@newsorg.com</div>
+
+  <span class="btn accent">Send access code →</span>
+  <p class="caption" style="margin-top:12px">Already applied? <a>Check status</a> · Got an invite from your NOC? <a>Open it from your email</a></p>
+</div>
+
+<div class="wf browser" style="max-width:620px;margin-top:14px">
+  <div class="ribbon"><span>🏟 LA 2028 · Press Registration</span><span>EN · ES · FR · 中</span></div>
+
+  <div class="box" style="background:#fff3e0;border-color:var(--warn);padding:14px;margin-bottom:16px">
+    <div class="pill warn">⏱ The main EoI window closed on 14 Nov 2026</div>
+    <p style="margin:8px 0 0">A small number of NOCs have been granted extra time by the OCOG. Tell us your country to check.</p>
+  </div>
+
+  <div class="lbl">Your organisation is based in</div>
+  <div class="field" style="margin-bottom:6px">Germany · DOSB</div>
+  <div class="box" style="background:#ffe8e8;border-color:#c1272d;color:#c1272d;padding:10px;margin-bottom:14px">
+    <b>DOSB's window is closed.</b> DOSB was not granted extra time. If your organisation has been specifically invited by DOSB, open the invite link from your email instead.
+  </div>
+  <span class="btn ghost" style="opacity:.5">Send access code →</span>
+  <p class="caption" style="margin-top:12px"><a>Contact DOSB</a> · <a>Check status of an existing application</a></p>
+</div>
+
+<div class="annot">
+  Same landing, two outcomes based on NOC. User from an OCOG-reopened NOC gets through; everyone else gets a soft-stop that directs them to the invite path (which still works) or their NOC's contact. Critically: the page never lies — it doesn't say "closed" to someone who can still apply, and it doesn't say "open" to someone who can't.
+</div>
+
+<h3>B.3 · Once inside — story-led form (all states)</h3>
+
+<div class="wf browser">
+  <div class="ribbon"><span>🏟 LA 2028 · Press Registration</span><span>EN · ES · FR · 中</span></div>
+
+  <div class="grid-2" style="gap:16px">
+    <div class="box" style="background:#fff;padding:22px">
+      <div class="pill">Step 1 of 3 · ~6 min</div>
+      <h3 style="color:var(--ink);text-transform:none;letter-spacing:0;margin:8px 0 4px;font-size:18px">Tell us who you cover and how.</h3>
+      <p class="lead" style="margin:0 0 14px">This is what the IOC panel weighs most. Give yourself room.</p>
+
+      <div class="lbl">In a sentence — what will your LA 2028 coverage look like?</div>
+      <div class="box" style="min-height:90px;margin-bottom:12px">hero narrative field</div>
+
+      <div class="lbl">Your Olympic / Paralympic track record</div>
+      <div class="grid-3" style="margin-bottom:12px">
+        <div class="box">☑ Prior Olympic<br/>Tokyo '21, Paris '24</div>
+        <div class="box">☑ Prior Paralympic<br/>Paris '24</div>
+        <div class="box">Clips / portfolio URLs<br/>+ add link</div>
+      </div>
+
+      <div class="lbl">Publication reach</div>
+      <div class="grid-3">
+        <div class="field">Circulation: 180k daily</div>
+        <div class="field">Online uniques: 14M/mo</div>
+        <div class="field">Geo: National · EU</div>
+      </div>
+    </div>
+
+    <div class="box" style="background:#fff;padding:22px">
+      <div class="pill">Step 2 of 3 · ~3 min</div>
+      <h3 style="color:var(--ink);text-transform:none;letter-spacing:0;margin:8px 0 4px;font-size:18px">What you're applying for.</h3>
+      <p class="lead" style="margin:0 0 14px">Categories + headcount estimates.</p>
+      <div class="grid-2">
+        <div class="box" style="background:#fff;border:1.5px solid var(--line)"><b>E</b> Journalist · <span class="field" style="width:40px;text-align:center;display:inline-block">4</span></div>
+        <div class="box" style="background:#fff;border:1.5px solid var(--line)"><b>Es</b> Sport Journ · <span class="field" style="width:40px;text-align:center;display:inline-block">2</span></div>
+        <div class="box"><b>EP</b> Photographer · <span class="field ph" style="width:40px;text-align:center;display:inline-block">—</span></div>
+        <div class="box"><b>ET</b> Technical · <span class="field ph" style="width:40px;text-align:center;display:inline-block">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box" style="background:#fff;padding:22px;margin-top:12px">
+    <div class="pill">Step 3 of 3 · ~3 min</div>
+    <h3 style="color:var(--ink);text-transform:none;letter-spacing:0;margin:8px 0 4px;font-size:18px">Housekeeping.</h3>
+    <p class="lead" style="margin:0 0 14px">Admin fields we need for records.</p>
+
+    <div class="grid-3">
+      <div><div class="lbl">Legal name</div><div class="field">La Gazzetta dello Sport</div></div>
+      <div><div class="lbl">Website</div><div class="field">gazzetta.it</div></div>
+      <div><div class="lbl">Registered address</div><div class="field">Via Solferino, Milano</div></div>
+      <div><div class="lbl">Primary contact</div><div class="field">Elena Ricci</div></div>
+      <div><div class="lbl">Backup contact</div><div class="field">Marco Bianchi</div></div>
+      <div><div class="lbl">Phones</div><div class="field">+39 02 ···</div></div>
+    </div>
+
+    <div class="row" style="margin-top:16px;align-items:center">
+      <span class="btn ghost">← Back</span>
+      <span style="flex:1"></span>
+      <span class="btn primary">Review &amp; submit →</span>
+    </div>
+  </div>
+</div>
+
+<div class="annot">
+  <b>What's different from today:</b> 5 tabs collapse to 3 steps. Story comes first (it's what reviewers judge). Admin fields last. Window-state check is conditional — surfaces only when it actually helps.<br/>
+  <b>What's the same:</b> every field still collected; validation still per-step; invite prefill still lands the user directly in Step 3 with Steps 1–2 auto-populated.
+</div>
+
+<!-- =========================== CONCEPT C =========================== -->
+
+<h2 id="concept-c">Concept C · One question at a time <span class="pill">radical rethink</span></h2>
+<p class="lead">Typeform-style single-question flow. Best for mobile, ESL applicants, and anyone intimidated by a dense form. Trades scannability for radical simplicity per screen.</p>
+
+<div class="wf browser" style="padding:0;overflow:hidden">
+  <div class="typeform">
+    <div class="prog">Question 4 of ~18 · 28% complete</div>
+    <div class="q">What accreditation categories are you applying for?</div>
+    <div class="caption" style="color:#8aa;margin-bottom:10px">Select all that apply. You'll set headcount on the next screen.</div>
+    <div class="opt">
+      <div class="chip">📝 Journalist (E)</div>
+      <div class="chip" style="background:rgba(255,255,255,.2);border-color:#fff">📝 Sport Journalist (Es) ✓</div>
+      <div class="chip">📷 Photographer (EP)</div>
+      <div class="chip">📷 Sport Photographer (EPs)</div>
+      <div class="chip">🎥 Technical (ET)</div>
+      <div class="chip">🤝 Support (EC)</div>
+    </div>
+    <div class="help">↵ press Enter to continue · ← back · jump to summary</div>
+  </div>
+</div>
+
+<div class="wf browser" style="padding:0;overflow:hidden;margin-top:16px">
+  <div class="typeform" style="background:#1a1f30">
+    <div class="prog">Question 12 of ~18 · 72% complete</div>
+    <div class="q">Were you accredited at a previous Olympic Games?</div>
+    <div class="opt">
+      <div class="chip" style="background:rgba(255,255,255,.2);border-color:#fff">Yes ✓</div>
+      <div class="chip">No</div>
+    </div>
+    <div class="help">pressing "Yes" reveals a follow-up: which years?</div>
+  </div>
+</div>
+
+<div class="annot">
+  <b>Strengths:</b> dramatically lower cognitive load per screen; works excellently on mobile; progress bar is unavoidable; skips conditional fields instead of hiding them.<br/>
+  <b>Risks:</b> power users / professionals may find it slow; "jump to summary" is essential or it feels like being on rails; harder to review 18 micro-answers at the end than 5 tabs.
+</div>
+
+<!-- =========================== STATUS BONUS =========================== -->
+
+<h2 id="status">Bonus · Status page rethink</h2>
+<p class="lead">Current page hides the submitted application behind a <code>&lt;details&gt;</code> element and buries the reviewer's note when an application is returned. Rethink: promote what the user came to see.</p>
+
+<div class="wf browser">
+  <div class="ribbon"><span>Your applications · logged in as elena@gazzetta.it</span><span>EN · ES · FR · 中</span></div>
+
+  <div class="box" style="background:#fff3e0;border-color:var(--warn);padding:18px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:start">
+      <div>
+        <span class="pill warn">⚠ Needs correction — due 21 Apr</span>
+        <h3 style="color:var(--ink);text-transform:none;letter-spacing:0;margin:6px 0 2px;font-size:18px">CONI asked you to revise 2 sections</h3>
+        <p style="margin:0;color:#5c2b00">"Publication circulation figure is materially inconsistent with website traffic shown. Please reconcile and re-submit." — <em>CONI reviewer, 18 Apr</em></p>
+      </div>
+      <span class="btn accent">Fix &amp; resubmit →</span>
+    </div>
+    <div class="grid-2" style="margin-top:14px">
+      <div class="box" style="background:#fff;border-color:var(--warn)"><b>4 · How you publish</b><br/><span class="caption">circulation · sports to cover</span></div>
+      <div class="box" style="background:#fff;border-color:var(--warn)"><b>5 · Your track record</b><br/><span class="caption">past coverage examples</span></div>
+    </div>
+  </div>
+
+  <div class="box" style="background:#fff;padding:18px">
+    <div style="display:flex;justify-content:space-between">
+      <div><span class="pill ok">✓ Under review</span><h3 style="color:var(--ink);text-transform:none;letter-spacing:0;margin:6px 0 2px;font-size:16px">La Gazzetta dello Sport — Paralympic EoI</h3><div class="caption">Submitted 14 Apr · Reference PRP-2026-0842</div></div>
+    </div>
+    <hr class="sep" />
+    <div class="lbl">What you applied for</div>
+    <div class="grid-3">
+      <div class="box">E — Journalist · <b>4</b></div>
+      <div class="box">Es — Sport Journalist · <b>2</b></div>
+      <div class="box">EP — Photographer · <b>1</b></div>
+    </div>
+    <div class="lbl" style="margin-top:14px">Primary contact</div>
+    <div class="field">Elena Ricci · elena@gazzetta.it</div>
+  </div>
+</div>
+
+<div class="annot">
+  <b>Key moves:</b> (1) Returned-with-corrections app is the hero card — bright, at top, with the reviewer's actual words quoted. (2) Tabs that need edits are flagged with badges so the user knows <em>where</em> to go. (3) For apps under review, the submission summary is visible by default (not hidden behind a disclosure). (4) Allocation results (when published) would appear as an even more prominent green card above.
+</div>
+
+<hr class="sep" />
+
+<h3 style="text-transform:none;color:var(--ink);letter-spacing:0">Which direction?</h3>
+<p class="lead" style="margin-bottom:6px">My ranked recommendation:</p>
+<ol>
+  <li><b>Concept A</b> as the baseline rebuild — highest ROI, lowest risk, keeps all existing content and the 5-group content model.</li>
+  <li>Adopt Concept B's <b>window-state routing</b> (3 landing variants + invite fast-path). This is cheap to implement and avoids showing pre-flight UI to the majority of applicants who don't need it.</li>
+  <li>Concept B's <b>story-first 3-step reorder</b> is a bigger content restructure — worth doing, but plan it as a second phase after A ships.</li>
+  <li>Concept C is worth prototyping for the <em>mobile</em> variant only — probably not the primary desktop experience.</li>
+</ol>
+
+</div>
+</body>
+</html>
