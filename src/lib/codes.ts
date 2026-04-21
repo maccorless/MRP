@@ -517,3 +517,12 @@ export const COUNTRY_TO_NOC: Record<string, string> = {
   "VN": "VIE", "VU": "VAN", "WS": "SAM", "XK": "KOS", "YE": "YEM",
   "ZA": "RSA", "ZM": "ZAM", "ZW": "ZIM",
 };
+
+/**
+ * Country list filtered to only countries that have a mapped NOC.
+ * Used by the applicant-facing /apply and /applyb forms so the country
+ * dropdown can never present a territory without a corresponding NOC.
+ * Admin surfaces keep using COUNTRY_CODES for the full ISO list.
+ */
+export const COUNTRY_CODES_WITH_NOC: { code: string; name: string }[] =
+  COUNTRY_CODES.filter((c) => Object.prototype.hasOwnProperty.call(COUNTRY_TO_NOC, c.code));

@@ -18,6 +18,5 @@ export function AccreditationTab({
   lang?: Lang;
 }) {
   void lang;
-  void orgType;
-  return <AccreditationStep prefill={prefill} errors={errors} />;
+  return <AccreditationStep prefill={prefill} errors={errors} orgType={orgType ?? ""} />;
 }

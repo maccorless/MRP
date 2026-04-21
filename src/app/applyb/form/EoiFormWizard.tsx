@@ -306,6 +306,102 @@ export function EoiFormWizard({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Per-step validation run when the user clicks Continue. Mirrors the
+  // checks validateAndSubmit does, but scoped to fields on this step so
+  // applicants catch missing required entries before reaching the final
+  // submit gate.
+  function validateStep(stepIndex: number): FormErrors {
+    if (!formRef.current) return {};
+    const form = formRef.current;
+    const fd = new FormData(form);
+    const errs: FormErrors = {};
+    const orgTypeVal = (fd.get("org_type") as string) ?? "";
+    const isFreelance = FREELANCE_ORG_TYPES.has(orgTypeVal);
+
+    // data-tab mapping (as used in validateAndSubmit): 0,1 → Step 2; 2 → Step 1; 3,4 → Step 0
+    const STEP_TO_TABS: Record<number, number[]> = { 0: [3, 4], 1: [2], 2: [0, 1] };
+    const tabSelectors = (STEP_TO_TABS[stepIndex] ?? []).map((n) => `[data-tab="${n}"]`).join(", ");
+    if (tabSelectors) {
+      const requiredEls = Array.from(
+        form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+          `input[required]:not([type='checkbox']), select[required], textarea[required]`
+        )
+      ).filter((el) => {
+        const t = el.getAttribute("data-tab");
+        return t !== null && (STEP_TO_TABS[stepIndex] ?? []).includes(parseInt(t, 10));
+      });
+      const seenRadioGroups = new Set<string>();
+      for (const el of requiredEls) {
+        if (el instanceof HTMLInputElement && el.type === "radio") {
+          if (seenRadioGroups.has(el.name)) continue;
+          seenRadioGroups.add(el.name);
+          const group = form.elements.namedItem(el.name) as RadioNodeList | null;
+          const checked = group instanceof RadioNodeList
+            ? Array.from(group).some((r) => r instanceof HTMLInputElement && r.checked)
+            : false;
+          if (!checked) errs[el.name] = "Please select an option.";
+        } else {
+          const empty = el instanceof HTMLSelectElement ? !el.value : !el.value.trim();
+          if (empty) errs[el.name] = "This field is required.";
+        }
+      }
+    }
+
+    // Step 1 (applying) — at least one category requested
+    if (stepIndex === 1) {
+      const catKeys = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"];
+      const anyPositive = catKeys.some((k) => (parseInt((fd.get(`requested_${k}`) as string) ?? "0", 10) || 0) > 0);
+      if (!anyPositive) errs["category"] = "Please request at least one accreditation category.";
+    }
+
+    // Step 2 (organisation) — Editor-in-Chief, Non-MRH sub-dropdown, Other org type
+    if (stepIndex === 2) {
+      if (!isFreelance) {
+        for (const name of ["editor_in_chief_first_name", "editor_in_chief_last_name", "editor_in_chief_email"]) {
+          const v = (fd.get(name) as string)?.trim() ?? "";
+          if (!v) errs[name] = "This field is required for non-freelance organisations.";
+        }
+      }
+      if (orgTypeVal === "non_mrh") {
+        if (!(fd.get("non_mrh_media_type") as string)?.trim()) {
+          errs["non_mrh_media_type"] = "Please select a media type.";
+        }
+        if ((fd.get("non_mrh_media_type") as string) === "other" && !(fd.get("non_mrh_media_type_other") as string)?.trim()) {
+          errs["non_mrh_media_type_other"] = "Please specify the media type.";
+        }
+      }
+      if (orgTypeVal === "other" && !(fd.get("org_type_other") as string)?.trim()) {
+        errs["org_type_other"] = "Please specify the organisation type.";
+      }
+    }
+
+    return errs;
+  }
+
+  function handleContinueClick() {
+    const errs = validateStep(activeStep);
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...errs }));
+      const errList = Object.keys(errs).map((name) => {
+        const el = formRef.current?.querySelector<HTMLElement>(`[name="${name}"]`);
+        const labelEl = el?.id
+          ? document.querySelector<HTMLLabelElement>(`label[for="${el.id}"]`)
+          : null;
+        const fieldLabel = labelEl?.textContent?.replace(/\s*\*|\(optional\)/g, "").trim()
+          ?? (name === "category" ? "Accreditation category" : name.replace(/_/g, " "));
+        return { tab: STEPS[activeStep]?.title ?? "", field: fieldLabel };
+      });
+      setValidationErrors(errList);
+      firstErrNameRef.current = Object.keys(errs)[0] ?? "";
+      firstErrStepRef.current = activeStep;
+      const errCount = errList.length;
+      setErrorAnnouncement(errCount === 1 ? "1 field needs your attention." : `${errCount} fields need your attention.`);
+      setShowValidationModal(true);
+      return;
+    }
+    goToStep(activeStep + 1);
+  }
+
   function validateAndSubmit() {
     const form = formRef.current;
     if (!form) return;
@@ -381,7 +477,12 @@ export function EoiFormWizard({
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
       setErrorAnnouncement("");
-      const categories = catKeys.filter((k) => (parseInt((fd.get(`requested_${k}`) as string) ?? "0", 10) || 0) > 0);
+      const categories = catKeys
+        .map((k) => {
+          const n = parseInt((fd.get(`requested_${k}`) as string) ?? "0", 10) || 0;
+          return n > 0 ? `${k} (${n})` : null;
+        })
+        .filter((s): s is string => s !== null);
       const orgEl = fd.get("org_name") as string;
       const firstEl = fd.get("contact_first_name") as string;
       const lastEl = fd.get("contact_last_name") as string;
@@ -580,7 +681,7 @@ export function EoiFormWizard({
               <StoryStep prefill={prefill} errors={fieldErrors} orgType={currentOrgType} />
             </div>
             <div style={{ display: activeStep === 1 ? undefined : "none" }}>
-              <AccreditationStep prefill={prefill} errors={fieldErrors} />
+              <AccreditationStep prefill={prefill} errors={fieldErrors} orgType={currentOrgType} />
             </div>
             <div style={{ display: activeStep === 2 ? undefined : "none" }}>
               <OrganisationStep
@@ -612,7 +713,7 @@ export function EoiFormWizard({
               {activeStep < STEPS.length - 1 ? (
                 <button
                   type="button"
-                  onClick={() => goToStep(activeStep + 1)}
+                  onClick={handleContinueClick}
                   className="px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
                 >
                   Continue →
@@ -675,20 +776,20 @@ export function EoiFormWizard({
               Please review the summary and accept the privacy notice to continue.
             </p>
 
-            <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2 mb-5">
+            <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-4 mb-5">
               <div>
-                <span className="text-gray-500">Organisation:</span>
-                <span className="ml-2 font-medium text-gray-900">{modalSummary.orgName}</span>
+                <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">Organisation</div>
+                <div className="font-medium text-gray-900">{modalSummary.orgName}</div>
               </div>
               <div>
-                <span className="text-gray-500">Categories:</span>
-                <span className="ml-2 font-medium text-gray-900">{modalSummary.categories.join(", ")}</span>
+                <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">Press Accreditation Categories</div>
+                <div className="font-medium text-gray-900">{modalSummary.categories.join(", ")}</div>
               </div>
               <div>
-                <span className="text-gray-500">Contact:</span>
-                <span className="ml-2 font-medium text-gray-900">
+                <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">Contact</div>
+                <div className="font-medium text-gray-900">
                   {modalSummary.contactName} · {modalSummary.contactEmail}
-                </span>
+                </div>
               </div>
             </div>
 

@@ -10,7 +10,7 @@ export default async function ApplyPage({
   const { error, lang: langParam } = await searchParams;
   const t = makeT(parseLang(langParam));
 
-  const redErrors = ["invalid_email", "invalid_token", "invalid_country", "invalid_noc", "rate_limited", "application_limit"] as const;
+  const redErrors = ["invalid_email", "invalid_token", "invalid_country", "invalid_noc", "rate_limited", "application_limit", "enr_non_mrh_only"] as const;
   const orangeErrors = ["window_closed"] as const;
 
   const langSuffix = langParam ? `?lang=${langParam}` : "";
@@ -79,7 +79,13 @@ export default async function ApplyPage({
       </div>
 
       <p className="mt-4 text-xs text-gray-500 text-center">
-        {t("apply.alreadyHaveRef")}
+        {t("apply.alreadyHaveRef")}{" "}
+        <Link
+          href={`/apply/status${langSuffix}`}
+          className="text-brand-blue hover:underline"
+        >
+          {t("apply.checkStatusLink")}
+        </Link>
       </p>
     </div>
   );

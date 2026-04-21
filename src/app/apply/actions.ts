@@ -320,6 +320,14 @@ export async function submitApplication(formData: FormData) {
     | "news_agency"
     | "freelancer"
     | "enr";
+
+  // Gate ENR to Non-MRH organisations only. Mirrors the UI that disables the
+  // ENR row in AccreditationStep when org type is not Non-MRH. Belt-and-braces
+  // because the UI control is a client-side disabled attribute.
+  if ((requestedEnr ?? 0) > 0 && orgType !== "non_mrh") {
+    redirect("/apply?error=enr_non_mrh_only");
+  }
+
   const websiteRaw = (formData.get("website") as string)?.trim();
   const website = websiteRaw && /^https?:\/\/.+\..+/.test(websiteRaw) ? websiteRaw : null;
 

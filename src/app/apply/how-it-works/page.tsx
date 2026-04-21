@@ -19,9 +19,14 @@ export default async function HowItWorksPage({
       </div>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("hiw.title")}</h1>
-      <p className="text-gray-500 mb-8">
+      <p className="text-gray-500 mb-4">
         {t("hiw.subtitle")}
       </p>
+
+      <div className="mb-8 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+        <span className="font-semibold">{t("hiw.reviewBanner.label")}</span>{" "}
+        {t("hiw.reviewBanner.body")}
+      </div>
 
       {/* Steps */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
@@ -82,7 +87,7 @@ export default async function HowItWorksPage({
 
       <div className="text-center">
         <Link
-          href={`/apply${langSuffix}`}
+          href={`/apply/form${langSuffix}`}
           className="inline-block px-6 py-3 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors"
         >
           {t("hiw.readyToApply")}

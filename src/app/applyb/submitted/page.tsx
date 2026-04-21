@@ -18,7 +18,7 @@ export default async function SubmittedPage({
 }) {
   const { ref, resubmit, email, lang: langParam } = await searchParams;
 
-  if (!ref || !email) redirect("/applyb");
+  if (!ref || !email) redirect("/applyb/status");
 
   const t = makeT(parseLang(langParam));
   const isResubmission = resubmit === "1";
@@ -43,7 +43,7 @@ export default async function SubmittedPage({
       ),
     );
 
-  if (!appRow) redirect("/applyb");
+  if (!appRow) redirect("/applyb/status");
 
   const categories = (
     [

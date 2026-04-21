@@ -44,7 +44,7 @@ export default async function InviteLandingPage({
         <div className="w-full max-w-md">
           <div className="mb-6 text-center">
             <div className="text-2xl font-bold text-gray-900 mb-1">
-              LA 2028 Media Accreditation
+              LA 2028 Press Accreditation
             </div>
             <p className="text-sm text-gray-500">
               You have been invited to submit an Expression of Interest

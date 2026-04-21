@@ -10,9 +10,6 @@ export function PublicationTab({ prefill, lang = "en" }: { prefill: PrefillData 
   void lang;
   return (
     <div className="space-y-6">
-      <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-        These fields help your NOC assess your organisation's reach. All are optional.
-      </div>
       <PublicationFields prefill={prefill} />
     </div>
   );

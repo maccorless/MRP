@@ -455,6 +455,104 @@ export function EoiFormTabs({
     setNocWindowClosed(closed);
   }
 
+  // Per-tab validation run when the user clicks Continue. Gates advance so
+  // applicants find missing required fields before reaching the final Submit.
+  function validateTabFields(tabIndex: number): FormErrors {
+    if (!formRef.current) return {};
+    const form = formRef.current;
+    const errs: FormErrors = {};
+
+    // Required [data-tab] fields on this tab. Using the attribute keeps the
+    // per-tab validator aligned with the markup rather than duplicating the
+    // REQUIRED_FIELDS list.
+    const tabEls = Array.from(
+      form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+        `input[required][data-tab="${tabIndex}"]:not([type='checkbox']), select[required][data-tab="${tabIndex}"], textarea[required][data-tab="${tabIndex}"]`
+      )
+    );
+    const seenRadioGroups = new Set<string>();
+    for (const el of tabEls) {
+      if (el instanceof HTMLInputElement && el.type === "radio") {
+        if (seenRadioGroups.has(el.name)) continue;
+        seenRadioGroups.add(el.name);
+        const group = form.elements.namedItem(el.name) as RadioNodeList | null;
+        const checked = group instanceof RadioNodeList
+          ? Array.from(group).some((r) => r instanceof HTMLInputElement && r.checked)
+          : false;
+        if (!checked) errs[el.name] = t("validation.selectOption");
+      } else {
+        const empty = el instanceof HTMLSelectElement ? !el.value : !el.value.trim();
+        if (empty) errs[el.name] = t("validation.required");
+      }
+    }
+
+    // Tab-specific extras that handleSubmit also checks
+    if (tabIndex === 0) {
+      const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
+      const orgTypeVal = orgTypeEl?.value ?? "";
+      if (orgTypeVal === "non_mrh") {
+        const subtype = form.elements.namedItem("non_mrh_media_type") as HTMLSelectElement | null;
+        if (!subtype?.value) errs["non_mrh_media_type"] = "Please select a media type.";
+        if (subtype?.value === "other") {
+          const spec = form.elements.namedItem("non_mrh_media_type_other") as HTMLInputElement | null;
+          if (!spec?.value.trim()) errs["non_mrh_media_type_other"] = "Please specify the media type.";
+        }
+      }
+    }
+    if (tabIndex === 1) {
+      const orgTypeEl = form.elements.namedItem("org_type") as HTMLSelectElement | null;
+      const orgTypeVal = orgTypeEl?.value ?? "";
+      const isFreelance = orgTypeVal === "freelance_journalist" || orgTypeVal === "freelance_photographer" || orgTypeVal === "freelancer";
+      if (!isFreelance) {
+        for (const name of ["editor_in_chief_first_name", "editor_in_chief_last_name", "editor_in_chief_email"]) {
+          const el = form.elements.namedItem(name) as HTMLInputElement | null;
+          if (!el?.value.trim()) errs[name] = "Required for non-freelance organisations.";
+        }
+      }
+    }
+    if (tabIndex === 2) {
+      const catKeys = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"];
+      const anyPositive = catKeys.some((k) => {
+        const el = form.elements.namedItem(`requested_${k}`) as HTMLInputElement | null;
+        return (parseInt(el?.value ?? "0", 10) || 0) > 0;
+      });
+      if (!anyPositive) errs["category"] = "Please request at least one accreditation category.";
+    }
+
+    return errs;
+  }
+
+  function handleContinueClick() {
+    const errs = validateTabFields(activeTab);
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...errs }));
+      // Build error list for the validation modal, mirroring final-submit UX.
+      const errList = Object.keys(errs).map((name) => {
+        const el = formRef.current?.querySelector<HTMLElement>(`[name="${name}"]`);
+        const labelEl = el?.id
+          ? document.querySelector<HTMLLabelElement>(`label[for="${el.id}"]`)
+          : null;
+        const fieldLabel = labelEl?.textContent?.replace(/\s*\*|\(optional\)/g, "").trim()
+          ?? (name === "category" ? "Accreditation category" : name.replace(/_/g, " "));
+        return { tab: TABS[activeTab]?.label ?? "", field: fieldLabel };
+      });
+      setValidationErrors(errList);
+      firstErrNameRef.current = Object.keys(errs)[0] ?? "";
+      firstErrTabRef.current = activeTab;
+      const errCount = errList.length;
+      setErrorAnnouncement(
+        errCount === 1
+          ? t("validation.fieldsIncomplete.one")
+          : t("validation.fieldsIncomplete.many").replace("{n}", String(errCount))
+      );
+      setShowValidationModal(true);
+      return;
+    }
+    markVisited(activeTab);
+    updateTabStatus();
+    setActiveTab(activeTab + 1);
+  }
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     const form = formRef.current;
     if (!form) return;
@@ -574,10 +672,13 @@ export function EoiFormTabs({
     if (Object.keys(errs).length === 0) {
       setFieldErrors({});
       setErrorAnnouncement("");
-      const categories = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"].filter((cat) => {
-        const el = form.elements.namedItem(`requested_${cat}`) as HTMLInputElement | null;
-        return (parseInt(el?.value ?? "0", 10) || 0) > 0;
-      });
+      const categories = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"]
+        .map((cat) => {
+          const el = form.elements.namedItem(`requested_${cat}`) as HTMLInputElement | null;
+          const n = parseInt(el?.value ?? "0", 10) || 0;
+          return n > 0 ? `${cat} (${n})` : null;
+        })
+        .filter((s): s is string => s !== null);
       const firstEl = form.elements.namedItem("contact_first_name") as HTMLInputElement | null;
       const lastEl  = form.elements.namedItem("contact_last_name")  as HTMLInputElement | null;
       const orgEl   = form.elements.namedItem("org_name")           as HTMLInputElement | null;
@@ -795,7 +896,7 @@ export function EoiFormTabs({
             <button
               key="eoi-nav-continue"
               type="button"
-              onClick={() => { markVisited(activeTab); updateTabStatus(); setActiveTab(activeTab + 1); }}
+              onClick={handleContinueClick}
               className="px-5 py-2.5 bg-brand-blue text-white text-sm font-semibold rounded-md hover:bg-blue-800 transition-colors cursor-pointer"
             >
               {t("form.nav.continue")}
@@ -874,20 +975,26 @@ export function EoiFormTabs({
           </p>
 
           {/* Summary */}
-          <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-2 mb-5">
+          <div className="bg-gray-50 rounded-lg p-4 text-sm space-y-4 mb-5">
             <div>
-              <span className="text-gray-500">{t("form.confirmModal.summary.organisation")}</span>
-              <span className="ml-2 font-medium text-gray-900">{modalSummary.orgName}</span>
+              <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+                {t("form.confirmModal.summary.organisation")}
+              </div>
+              <div className="font-medium text-gray-900">{modalSummary.orgName}</div>
             </div>
             <div>
-              <span className="text-gray-500">{t("form.confirmModal.summary.categories")}</span>
-              <span className="ml-2 font-medium text-gray-900">{modalSummary.categories.join(", ")}</span>
+              <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+                {t("form.confirmModal.summary.categories")}
+              </div>
+              <div className="font-medium text-gray-900">{modalSummary.categories.join(", ")}</div>
             </div>
             <div>
-              <span className="text-gray-500">{t("form.confirmModal.summary.contact")}</span>
-              <span className="ml-2 font-medium text-gray-900">
+              <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+                {t("form.confirmModal.summary.contact")}
+              </div>
+              <div className="font-medium text-gray-900">
                 {modalSummary.contactName} · {modalSummary.contactEmail}
-              </span>
+              </div>
             </div>
           </div>
 

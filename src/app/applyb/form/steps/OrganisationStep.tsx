@@ -83,7 +83,7 @@ export function OrganisationStep({
           <input
             id="org_type_other" name="org_type_other" type="text" required data-tab="0"
             defaultValue={prefill?.orgTypeOther ?? ""}
-            placeholder="e.g. documentary production company"
+            placeholder=""
             className={`${INPUT} ${errBorder("org_type_other", errors)}`}
           />
           <Err name="org_type_other" errors={errors} />
@@ -94,13 +94,11 @@ export function OrganisationStep({
       {isNonMrh && (
         <div className="pl-4 border-l-2 border-blue-200 space-y-4">
           <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-800">
-            Please ensure that you have read carefully the conditions that apply to non-MRH
-            accreditation. ENR accreditation is limited to a maximum of 3 slots and is
-            granted only by the IOC in consultation with the NOC.
+            Please ensure that you have read carefully the conditions that apply to non-MRH organisations as outlined on olympics.com. ENR accreditation is very limited and non-MRH organisations can only apply for a maximum of 3 accreditations. Accreditation is granted by the National Olympic Committees but in close consultation with the IOC and the numbers of accreditations are very limited. NOCs do not receive an automatic quota allocation for ENR accreditation.
           </div>
           <div>
             <label htmlFor="non_mrh_media_type" className={LABEL}>
-              Type of media <span className="text-red-500">*</span>
+              Type of Non-MRH — either Radio, TV or Other <span className="text-red-500">*</span>
             </label>
             <select
               id="non_mrh_media_type" name="non_mrh_media_type" required data-tab="0"
@@ -241,7 +239,7 @@ export function OrganisationStep({
             </p>
           ) : (
             <p className={HELP}>
-              Your NOC will review your application. The country should be where your organisation is based.
+              *Please make sure that you select the correct country of your NOC. The country should be where your press organisation is based. This information is very important as the NOCs (not the IOC) will be handling all expressions of interest and all information concerning the status of your submission will be from your NOC.
             </p>
           )}
         </div>

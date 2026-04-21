@@ -68,8 +68,11 @@ export function PublicationFields({ prefill }: { prefill: PrefillData | null }) 
       </div>
 
       <div>
+        <p className="text-xs font-medium text-red-600 mb-1">
+          If applying for ENR accreditation, please select the type of programming.
+        </p>
         <label htmlFor="enr_programming_type" className={LABEL}>
-          If applying for ENR accreditation — type of programming <span className="text-gray-400 font-normal">(optional)</span>
+          Type of programming <span className="text-gray-400 font-normal">(optional)</span>
         </label>
         <textarea
           id="enr_programming_type" name="enr_programming_type" rows={2} data-tab="3"
@@ -81,7 +84,7 @@ export function PublicationFields({ prefill }: { prefill: PrefillData | null }) 
 
       <div>
         <label htmlFor="social_media_accounts" className={LABEL}>
-          Social media accounts <span className="text-gray-400 font-normal">(optional)</span>
+          Please list the social media accounts of the organisation <span className="text-gray-400 font-normal">(optional)</span>
         </label>
         <textarea
           id="social_media_accounts" name="social_media_accounts" rows={2} data-tab="3"

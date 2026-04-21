@@ -9,23 +9,23 @@ export const fr: Record<TranslationKey, string> = {
   "layout.header.title": "Portail d'accréditation presse",
   "layout.header.subtitle": "Jeux olympiques LA 2028",
   "layout.header.checkStatus": "Vérifier le statut →",
-  "layout.footer": "© 2028 Comité International Olympique · Accréditation média",
+  "layout.footer": "© 2028 Comité International Olympique · Accréditation presse",
 
   // ─── Language toggle ────────────────────────────────────────────────────────
   "lang.en": "EN",
   "lang.fr": "FR",
 
   // ─── Apply landing page ─────────────────────────────────────────────────────
-  "apply.title": "Demander une accréditation média",
+  "apply.title": "Demander une accréditation presse",
   "apply.subtitle":
     "Saisissez votre e-mail professionnel pour commencer. Nous vous enverrons un code d'accès pour vérifier votre identité.",
   "apply.email.label": "Adresse e-mail professionnelle",
   "apply.email.placeholder": "vous@votre-media.com",
   "apply.email.help":
-    "Utilisez le domaine e-mail de votre organisation — c'est ainsi que nous identifions votre média.",
+    "Utilisez le domaine e-mail de votre organisation — c'est ainsi que nous identifions votre organe de presse.",
   "apply.submit": "Envoyer le code d'accès →",
-  "apply.alreadyHaveRef":
-    "Vous avez déjà un numéro de référence ? Contactez directement votre CNO.",
+  "apply.alreadyHaveRef": "Déjà soumis ?",
+  "apply.checkStatusLink": "Vérifier le statut de votre demande",
 
   // Apply error messages
   "apply.error.invalid_email": "Veuillez saisir une adresse e-mail valide.",
@@ -41,6 +41,8 @@ export const fr: Record<TranslationKey, string> = {
     "Trop de tentatives. Veuillez patienter avant de réessayer.",
   "apply.error.application_limit":
     "Vous avez atteint le maximum de 10 demandes pour cette adresse e-mail. Contactez votre CNO pour obtenir de l'aide.",
+  "apply.error.enr_non_mrh_only":
+    "L'accréditation ENR ne peut être demandée que par les organisations non-MRH. Modifiez le type de votre organisation ou mettez la demande ENR à 0.",
 
   // ─── Verify page ────────────────────────────────────────────────────────────
   "verify.title": "Votre code d'accès",
@@ -53,7 +55,7 @@ export const fr: Record<TranslationKey, string> = {
     "Prototype : en production, ce code est envoyé par e-mail. Ne fermez pas cet onglet avant de soumettre votre demande.",
 
   // ─── Form page (server wrapper) ─────────────────────────────────────────────
-  "form.title.new": "Accréditation média LA 2028",
+  "form.title.new": "Accréditation presse LA 2028",
   "form.title.resubmit": "Resoumettre la demande",
   "form.title.edit": "Modifier la demande",
   "form.howDoesThisWork": "Comment ça marche ?",
@@ -140,7 +142,7 @@ export const fr: Record<TranslationKey, string> = {
   "form.confirmModal.desc.edit":
     "Vos modifications seront enregistrées. Votre demande restera en attente d'examen par votre CNO.",
   "form.confirmModal.summary.organisation": "Organisation",
-  "form.confirmModal.summary.categories": "Catégories",
+  "form.confirmModal.summary.categories": "Catégories d'accréditation presse",
   "form.confirmModal.summary.contact": "Contact",
   "form.confirmModal.nudge.heading":
     "Certaines sections facultatives sont incomplètes.",
@@ -461,13 +463,13 @@ export const fr: Record<TranslationKey, string> = {
   "submitted.email.to": "À :",
   "submitted.email.subject": "Objet :",
   "submitted.email.subjectValue":
-    "Demande reçue – Accréditation presse Jeux olympiques LA 2028",
+    "Expression d'intérêt reçue – Accréditation presse LA 2028",
   "submitted.email.dear": "Cher(e)",
   "submitted.email.body1":
-    "Merci d'avoir soumis votre Expression d'intérêt (EdI) pour l'accréditation presse aux",
-  "submitted.email.gamesBold": "Jeux olympiques et paralympiques LA 2028",
+    "Merci d'avoir complété votre expression d'intérêt pour l'accréditation presse afin de couvrir les",
+  "submitted.email.gamesBold": "Jeux olympiques LA28",
   "submitted.email.body2":
-    "Nous avons bien reçu votre demande et elle est maintenant en cours d'examen par votre Comité National Olympique (CNO). Vous serez notifié à chaque étape du processus.",
+    "Veuillez noter que toute communication ultérieure proviendra de votre CNO que vous avez sélectionné dans le formulaire, et non du CIO ni du Comité d'organisation des Jeux olympiques LA28.",
   "submitted.email.refNumber": "Numéro de référence",
   "submitted.email.organisation": "Organisation",
   "submitted.email.categoriesRequested": "Catégories demandées",
@@ -488,7 +490,10 @@ export const fr: Record<TranslationKey, string> = {
   "hiw.backLink": "← Retour à la demande",
   "hiw.title": "Comment fonctionne le processus d'EdI",
   "hiw.subtitle":
-    "Guide rapide pour les organisations médiatiques déposant une demande d'accréditation presse pour les Jeux olympiques LA 2028.",
+    "Guide rapide pour les organisations de presse déposant une demande d'accréditation presse pour les Jeux olympiques LA 2028.",
+  "hiw.reviewBanner.label": "Projet :",
+  "hiw.reviewBanner.body":
+    "Cette page fait l'objet d'une révision par le CIO. La formulation définitive est en attente.",
   "hiw.steps.heading": "Les quatre étapes",
   "hiw.step1.title": "Demander un lien magique",
   "hiw.step1.body":

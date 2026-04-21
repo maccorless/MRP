@@ -4,7 +4,7 @@ import { eq, and, or } from "drizzle-orm";
 import { db } from "@/db";
 import { magicLinkTokens, applications, organizations } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
-import { COUNTRY_CODES, NOC_CODES } from "@/lib/codes";
+import { COUNTRY_CODES_WITH_NOC, NOC_CODES } from "@/lib/codes";
 import { EoiFormWizard, type PrefillData } from "./EoiFormWizard";
 import { makeT, parseLang } from "@/lib/i18n";
 
@@ -208,7 +208,7 @@ export default async function FormPage({
         isResubmission={isResubmission}
         isPendingEdit={isPendingEdit}
         isFromInvite={isFromInvite}
-        countryCodes={COUNTRY_CODES}
+        countryCodes={COUNTRY_CODES_WITH_NOC}
         nocCodes={NOC_CODES}
         lang={parseLang(langParam)}
       />

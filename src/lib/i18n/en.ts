@@ -7,23 +7,23 @@ export const en = {
   "layout.header.title": "Press Registration Portal",
   "layout.header.subtitle": "LA 2028 Olympic Games",
   "layout.header.checkStatus": "Check status →",
-  "layout.footer": "© 2028 International Olympic Committee · Media Accreditation",
+  "layout.footer": "© 2028 International Olympic Committee · Press Accreditation",
 
   // ─── Language toggle ────────────────────────────────────────────────────────
   "lang.en": "EN",
   "lang.fr": "FR",
 
   // ─── Apply landing page ─────────────────────────────────────────────────────
-  "apply.title": "Apply for Media Accreditation",
+  "apply.title": "Apply for Press Accreditation",
   "apply.subtitle":
     "Enter your work email to get started. We'll issue an access code to verify your identity.",
   "apply.email.label": "Work email address",
   "apply.email.placeholder": "you@newsorg.com",
   "apply.email.help":
-    "Use your organization's email domain — this is how we identify your media outlet.",
+    "Use your organisation's email domain — this is how we identify your press organisation outlet.",
   "apply.submit": "Send Access Code →",
-  "apply.alreadyHaveRef":
-    "Already have a reference number? Contact your NOC directly.",
+  "apply.alreadyHaveRef": "Already submitted?",
+  "apply.checkStatusLink": "Check your application status",
 
   // Apply error messages
   "apply.error.invalid_email": "Please enter a valid email address.",
@@ -39,6 +39,8 @@ export const en = {
     "Too many requests. Please wait before trying again.",
   "apply.error.application_limit":
     "You have reached the maximum of 10 applications for this email address. Contact your NOC for assistance.",
+  "apply.error.enr_non_mrh_only":
+    "ENR accreditation can only be requested by Non-MRH organisations. Change your organisation type or set the ENR request to 0.",
 
   // ─── Verify page ────────────────────────────────────────────────────────────
   "verify.title": "Your Access Code",
@@ -51,7 +53,7 @@ export const en = {
     "Prototype: In production this code is sent by email. Do not close this tab before submitting your application.",
 
   // ─── Form page (server wrapper) ─────────────────────────────────────────────
-  "form.title.new": "LA 2028 Media Accreditation",
+  "form.title.new": "LA 2028 Press Accreditation",
   "form.title.resubmit": "Resubmit Application",
   "form.title.edit": "Edit Application",
   "form.howDoesThisWork": "How does this work?",
@@ -134,7 +136,7 @@ export const en = {
   "form.confirmModal.desc.edit":
     "Your changes will be saved. Your application will remain pending review by your NOC.",
   "form.confirmModal.summary.organisation": "Organisation",
-  "form.confirmModal.summary.categories": "Categories",
+  "form.confirmModal.summary.categories": "Press Accreditation Categories",
   "form.confirmModal.summary.contact": "Contact",
   "form.confirmModal.nudge.heading": "Some optional sections are incomplete.",
   "form.confirmModal.nudge.body":
@@ -442,13 +444,13 @@ export const en = {
   "submitted.email.to": "To:",
   "submitted.email.subject": "Subject:",
   "submitted.email.subjectValue":
-    "Application received – LA 2028 Olympic Games Press Accreditation",
+    "Expression of Interest received – LA 2028 Press Accreditation",
   "submitted.email.dear": "Dear",
   "submitted.email.body1":
-    "Thank you for submitting your Expression of Interest (EoI) for press accreditation at the",
-  "submitted.email.gamesBold": "LA 2028 Olympic and Paralympic Games",
+    "Thank you for completing your expression of interest for press accreditation to cover the",
+  "submitted.email.gamesBold": "Olympic Games LA28",
   "submitted.email.body2":
-    "We have received your application and it is now under review by your National Olympic Committee (NOC). You will be notified at each stage of the process.",
+    "Please note that all further communication will be from your NOC that you selected in the form and not the IOC or the Organising Committee of the Olympic Games LA28.",
   "submitted.email.refNumber": "Reference number",
   "submitted.email.organisation": "Organisation",
   "submitted.email.categoriesRequested": "Categories requested",
@@ -467,7 +469,10 @@ export const en = {
   "hiw.backLink": "← Back to application",
   "hiw.title": "How the EoI Process Works",
   "hiw.subtitle":
-    "A quick guide for media organisations applying for LA 2028 Olympic Games press accreditation.",
+    "A quick guide for press organisations applying for LA 2028 Olympic Games press accreditation.",
+  "hiw.reviewBanner.label": "Draft:",
+  "hiw.reviewBanner.body":
+    "This page is subject to IOC review. Final wording pending.",
   "hiw.steps.heading": "The four steps",
   "hiw.step1.title": "Request a magic link",
   "hiw.step1.body":

@@ -32,9 +32,12 @@ export function ContactsStep({
     <div className="space-y-8">
       {/* Primary contact */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
+        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">
           Primary Contact
         </h3>
+        <p className={`${HELP} mb-4`}>
+          Please ensure that this information is correct. The person who is listed will be the contact person for press accreditation matters if your organisation is granted press accreditation.
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="contact_first_name" className={LABEL}>
