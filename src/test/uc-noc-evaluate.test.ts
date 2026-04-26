@@ -34,8 +34,8 @@ vi.mock("next/navigation", () => ({
 
 import { approveApplication, returnApplication, rejectApplication } from "@/app/admin/noc/actions";
 import { db } from "@/db";
-import { applications } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { applications, organizations, auditLog } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import {
   SESSIONS,
   makeFormData,
@@ -214,5 +214,86 @@ describe("approveApplication — sudo read-only guard", () => {
     // DB must be unchanged
     const row = await getAppStatus(appId);
     expect(row.status).toBe("pending");
+  });
+});
+
+// ─── §2 from 2026-04-26 test plan: government .gov soft-warn enforcement ──────
+
+describe("approveApplication — government .gov eligibility flag", () => {
+  it("blocks approval when ack_eligibility_flag is absent and any email is on .gov", async () => {
+    const orgId = await createTestOrg("USA");
+    // Patch the org's orgEmail to a .gov address to trigger the flag.
+    await db
+      .update(organizations)
+      .set({ orgEmail: "press@example.gov" })
+      .where(eq(organizations.id, orgId));
+
+    const { id: appId } = await createTestApplication(orgId, "USA", { status: "pending" });
+    // Patch contact email to a .gov country-code address as well, matching §2.
+    await db
+      .update(applications)
+      .set({ contactEmail: "j.doe@dept.gov.uk" })
+      .where(eq(applications.id, appId));
+
+    await setSession(SESSIONS.nocUSA);
+
+    const { redirect, error } = await callAction(() =>
+      approveApplication(makeFormData({ id: appId })),
+    );
+
+    expect(error).toBeUndefined();
+    expect(redirect?.url).toBe(`/admin/noc/${appId}?error=eligibility_ack_required`);
+
+    const row = await getAppStatus(appId);
+    expect(row.status).toBe("pending");
+  });
+
+  it("allows approval when ack_eligibility_flag=1 is supplied", async () => {
+    const orgId = await createTestOrg("USA");
+    await db
+      .update(organizations)
+      .set({ orgEmail: "press@example.gov" })
+      .where(eq(organizations.id, orgId));
+
+    const { id: appId } = await createTestApplication(orgId, "USA", { status: "pending" });
+
+    await setSession(SESSIONS.nocUSA);
+
+    const { redirect, error } = await callAction(() =>
+      approveApplication(makeFormData({ id: appId, ack_eligibility_flag: "1" })),
+    );
+
+    expect(error).toBeUndefined();
+    expect(redirect?.url).toContain("/admin/noc/queue?success=approved");
+
+    const row = await getAppStatus(appId);
+    expect(row.status).toBe("approved");
+
+    const log = await db
+      .select()
+      .from(auditLog)
+      .where(and(
+        eq(auditLog.applicationId, appId),
+        eq(auditLog.action, "application_approved"),
+      ));
+    expect(log.length).toBeGreaterThan(0);
+  });
+
+  it("does not require ack when no email is on .gov", async () => {
+    // Default helpers create non-.gov emails (`*@test.invalid`), so no flag.
+    const orgId = await createTestOrg("USA");
+    const { id: appId } = await createTestApplication(orgId, "USA", { status: "pending" });
+
+    await setSession(SESSIONS.nocUSA);
+
+    const { redirect, error } = await callAction(() =>
+      approveApplication(makeFormData({ id: appId })),
+    );
+
+    expect(error).toBeUndefined();
+    expect(redirect?.url).toContain("/admin/noc/queue?success=approved");
+
+    const row = await getAppStatus(appId);
+    expect(row.status).toBe("approved");
   });
 });

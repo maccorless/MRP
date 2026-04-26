@@ -43,4 +43,27 @@ test.describe('NOC Admin', () => {
     await expect(page).toHaveURL(/\/admin\/login/);
     await context.close();
   });
+
+  // ─── §10 from 2026-04-26 test plan: Direct-Entry category access scopes ────
+
+  test('Direct Entry form shows access scope inline for each category', async ({ page }) => {
+    await page.goto('/admin/noc/direct-entry');
+
+    // Per Emma 2026-04-24 #71: NOC reviewers must see what each category
+    // grants without leaving the form. Two anchor strings cover both ends.
+    await expect(page.getByText(/Access:\s*ALL competition venues/i).first()).toBeVisible();
+    await expect(page.getByText(/Access:\s*MPC only/i).first()).toBeVisible();
+  });
+
+  // ─── §8 from 2026-04-26 test plan: cancel-PbN UI surface ───────────────────
+
+  test('PbN page renders without crashing (cancel UI lives per-row)', async ({ page }) => {
+    // The Cancel PbN entry "Danger zone" form is rendered conditionally on
+    // each editable allocation row. Verifying the section exists requires
+    // seeded allocations; this smoke test just asserts the page loads under
+    // NOC auth so a routing/regression failure surfaces fast. The state
+    // machine itself is covered by uc-noc-pbn-cancel.test.ts.
+    await page.goto('/admin/noc/pbn');
+    await expect(page).toHaveURL(/\/admin\/noc\/pbn/);
+  });
 });

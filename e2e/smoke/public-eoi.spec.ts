@@ -11,8 +11,11 @@ test.describe('Public EoI — /apply', () => {
   });
 
   test('renders page title and Send Access Code button', async ({ page }) => {
+    // Title was renamed to "Press Accreditation" in an earlier copy sweep —
+    // the regex tolerates either "Press" or "Media" so the test survives a
+    // future rename without a test-only patch.
     await expect(
-      page.getByRole('heading', { name: /Apply for Media Accreditation/i }),
+      page.getByRole('heading', { name: /Apply for (Press|Media) Accreditation/i }),
     ).toBeVisible();
 
     await expect(
@@ -52,5 +55,62 @@ test.describe('Public EoI — /apply', () => {
     const label = page.locator('label[for="email"]');
     await expect(label).toHaveCount(1);
     await expect(label).toContainText(/work email/i);
+  });
+});
+
+// ─── §6 + §10 from 2026-04-26 test plan ──────────────────────────────────────
+
+test.describe('Public — /apply/how-it-works content', () => {
+  test('renders the OIAC heading and the LA28+US-authority caveat', async ({ page }) => {
+    await page.goto('/apply/how-it-works');
+
+    await expect(
+      page.getByRole('heading', {
+        name: /Olympic Identity and Accreditation Card.*OIAC/i,
+      }),
+    ).toBeVisible();
+
+    await expect(
+      page.getByText(/Subject to LA28 and the relevant US authorities/i),
+    ).toBeVisible();
+  });
+
+  test('FR translation of how-it-works still renders the OIAC section (EN fallback OK)', async ({ page }) => {
+    await page.goto('/apply/how-it-works?lang=fr');
+    // Core heading must still be present even if not yet localised.
+    await expect(
+      page.getByRole('heading', {
+        name: /Olympic Identity and Accreditation Card.*OIAC/i,
+      }),
+    ).toBeVisible();
+  });
+
+  test('does not still display the legacy "August 24, 2026" date string', async ({ page }) => {
+    await page.goto('/apply/how-it-works');
+    const html = await page.content();
+    expect(html).not.toMatch(/August\s+24,\s*2026/i);
+    expect(html).not.toMatch(/24\s+August\s+2026/i);
+  });
+});
+
+// ─── §5 from 2026-04-26 test plan: ENR >3 soft warning lives in the wizard ────
+
+import * as fs from 'fs';
+import * as path from 'path';
+
+test.describe('Public — ENR >3 soft warning (source-level)', () => {
+  // The warning is rendered by AccreditationStep inside the multi-tab wizard
+  // (which requires a magic-link token to enter). To avoid wrapping a full
+  // token-bootstrapped form in this smoke suite, this assertion is a
+  // source-level invariant: the warning string MUST exist in the step.
+  // Server-side acceptance of ENR>3 is covered by the vitest integration test.
+  test('AccreditationStep renders the IOC-only-approves-more-than soft-warn copy', () => {
+    const src = fs.readFileSync(
+      path.resolve(__dirname, '../../src/app/applyb/form/steps/AccreditationStep.tsx'),
+      'utf8',
+    );
+    expect(src).toMatch(/IOC only approves more than/i);
+    // And the soft-warn predicate must reference the soft cap, not just max.
+    expect(src).toMatch(/cat\.softMax/);
   });
 });

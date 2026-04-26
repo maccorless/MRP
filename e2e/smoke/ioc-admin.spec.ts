@@ -50,4 +50,31 @@ test.describe('IOC Admin', () => {
     await expect(page).toHaveURL(/\/admin\/login/);
     await context.close();
   });
+
+  // ─── §7 from 2026-04-26 test plan: NocEs column on quotas page ─────────────
+
+  test('IOC quotas page renders a NocEs column', async ({ page }) => {
+    await page.goto('/admin/ioc/quotas');
+    await expect(page).toHaveURL(/\/admin\/ioc\/quotas/);
+
+    // The NocEs (sport-specific press attaché) column was added 2026-04-26
+    // per Emma #197. The page renders the read-only and edit tables behind
+    // a "Show editable view" toggle; "NocEs" is in both tables. Assert by
+    // textContent rather than CSS-uppercased rendered name.
+    const allText = await page.locator('table').first().textContent();
+    expect(allText ?? '').toMatch(/NocEs/);
+  });
+
+  // ─── §10 from 2026-04-26 test plan: INO terminology ───────────────────────
+
+  test('IOC admin pages do not surface the legacy "Non-Governmental" wording', async ({ page }) => {
+    // Strategic Plan re-review on 2026-04-26 retired the "Non-Governmental"
+    // label in favour of "International News Organisation" (INO). Spot-check
+    // the dashboard + quotas page to ensure no stale copy lingers.
+    await page.goto('/admin/ioc');
+    expect(await page.content()).not.toMatch(/Non-Governmental/i);
+
+    await page.goto('/admin/ioc/quotas');
+    expect(await page.content()).not.toMatch(/Non-Governmental/i);
+  });
 });

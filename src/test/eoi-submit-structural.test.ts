@@ -1,6 +1,30 @@
-import { describe, it, expect } from "vitest";
+import { vi, describe, it, expect, afterAll } from "vitest";
 import fs from "fs";
 import path from "path";
+
+// ─── Mocks for the integration block at the bottom ────────────────────────────
+// (vi.mock is hoisted; the structural tests above don't import next/*, so the
+// mocks are inert for them.)
+
+const mockCookieStore = new Map<string, string>();
+
+vi.mock("next/headers", () => ({
+  cookies: () => ({
+    get: (name: string) => {
+      const v = mockCookieStore.get(name);
+      return v !== undefined ? { name, value: v } : undefined;
+    },
+    set: (name: string, value: string) => mockCookieStore.set(name, value),
+    delete: (name: string) => mockCookieStore.delete(name),
+  }),
+  headers: async () => ({ get: (_n: string) => null }),
+}));
+
+vi.mock("next/navigation", () => ({
+  redirect: (url: string): never => {
+    throw new Error(`REDIRECT:${url}`);
+  },
+}));
 
 /**
  * Structural invariant tests for the EoI form submission flow.
@@ -93,5 +117,68 @@ describe("EoiFormTabs submission structural invariants", () => {
     // must ignore it unless the submitter is our explicit final Submit button.
     expect(source).toMatch(/data-eoi-submit="final"/);
     expect(source).toMatch(/submitter\?\.dataset\.eoiSubmit === "final"/);
+  });
+});
+
+// ─── §5 from 2026-04-26 test plan: server accepts ENR > 3 for non_mrh ─────────
+
+describe("submitApplication — ENR slot soft warning (server)", () => {
+  // Lazy import after vi.mock hoist
+  it("accepts requested_ENR > 3 for non_mrh org type", async () => {
+    const { submitApplication } = await import("@/app/apply/actions");
+    const { db } = await import("@/db");
+    const { magicLinkTokens, organizations, applications, auditLog } = await import("@/db/schema");
+    const { eq, like } = await import("drizzle-orm");
+    const { hashToken } = await import("@/lib/tokens");
+
+    const ts = Date.now();
+    const email = `applicant_enr4_${ts}@test.invalid`;
+    const rawToken = `TESTUC_ENR4_${ts}`;
+    await db.insert(magicLinkTokens).values({
+      email,
+      tokenHash: hashToken(rawToken),
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
+
+    const fd = new FormData();
+    fd.append("token", rawToken);
+    fd.append("email", email);
+    fd.append("org_name", `Test ENR Org ${ts}`);
+    fd.append("org_type", "non_mrh");
+    fd.append("country", "US");
+    fd.append("noc_code", "USA");
+    fd.append("contact_first_name", "Jane");
+    fd.append("contact_last_name", "Tester");
+    fd.append("about", "ENR > 3 server-acceptance test.");
+    fd.append("gdpr_accepted", "true");
+    fd.append("category_ENR", "on");
+    fd.append("requested_ENR", "4");
+
+    let redirected: string | undefined;
+    try {
+      await submitApplication(fd);
+    } catch (err) {
+      if (err instanceof Error && err.message.startsWith("REDIRECT:")) {
+        redirected = err.message.slice("REDIRECT:".length);
+      } else {
+        throw err;
+      }
+    }
+
+    expect(redirected).toBeDefined();
+    // The action should land on /apply/submitted, NOT /apply?error=...
+    expect(redirected!).toMatch(/^\/apply\/submitted\?ref=/);
+
+    // Cleanup the rows this test created
+    const testApps = await db
+      .select({ id: applications.id, organizationId: applications.organizationId })
+      .from(applications)
+      .where(eq(applications.contactEmail, email));
+    for (const a of testApps) {
+      await db.delete(auditLog).where(eq(auditLog.applicationId, a.id));
+    }
+    await db.delete(applications).where(eq(applications.contactEmail, email));
+    await db.delete(organizations).where(like(organizations.name, `%${ts}%`));
+    await db.delete(magicLinkTokens).where(eq(magicLinkTokens.email, email));
   });
 });

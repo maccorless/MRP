@@ -26,23 +26,25 @@ export default defineConfig({
       name: 'smoke-ioc',
       dependencies: ['setup'],
       use: { storageState: 'e2e/.auth/ioc.json' },
-      testMatch: 'e2e/smoke/ioc-admin.spec.ts',
+      // Any e2e/smoke/ioc-*.spec.ts inherits IOC storage state.
+      testMatch: 'e2e/smoke/ioc-*.spec.ts',
     },
     {
       name: 'smoke-noc',
       dependencies: ['setup'],
       use: { storageState: 'e2e/.auth/noc.json' },
-      testMatch: 'e2e/smoke/noc-admin.spec.ts',
+      // Any e2e/smoke/noc-*.spec.ts inherits NOC storage state.
+      testMatch: 'e2e/smoke/noc-*.spec.ts',
     },
     {
       name: 'smoke-ocog',
       dependencies: ['setup'],
       use: { storageState: 'e2e/.auth/ocog.json' },
-      testMatch: 'e2e/smoke/ocog-admin.spec.ts',
+      testMatch: 'e2e/smoke/ocog-*.spec.ts',
     },
     {
       name: 'smoke-public',
-      testMatch: 'e2e/smoke/public-eoi.spec.ts',
+      testMatch: 'e2e/smoke/public-*.spec.ts',
     },
     {
       name: 'a11y',
