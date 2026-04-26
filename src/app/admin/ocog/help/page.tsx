@@ -54,22 +54,27 @@ export default async function OcogHelpPage() {
                 {
                   date: "Jul 2026",
                   title: "Open EoI windows",
-                  body: "Use the EoI Windows screen to open acceptance windows for each NOC (or all at once). Once a NOC's window is open, media organisations in that territory can submit EoI applications through the public form.",
+                  body: "Use the EoI Windows screen to open acceptance windows for each NOC (or all at once). Public EoI form goes live 31 Aug 2026 — windows must be open before then for applications in that territory to be accepted.",
                 },
                 {
-                  date: "Aug – Oct 2026",
+                  date: "31 Aug – 30 Oct 2026",
                   title: "Monitor EoI progress",
-                  body: "Track application counts per NOC via the EoI Summary. Flag any NOCs with low candidate rates or outstanding issues. You can adjust window status at any time.",
+                  body: "Track application counts per NOC via the EoI Summary. Flag any NOCs with low candidate rates or outstanding issues. Applicant deadline 23 Oct 2026; platform hard close 30 Oct 2026 (IOC-owned).",
                 },
                 {
-                  date: "Oct 2026",
-                  title: "Approve PbN allocations",
-                  body: "Once NOCs have completed their PbN phase (allocating IOC-assigned quota slots to approved organisations), review and formally approve their submissions in the PbN Approvals screen.",
+                  date: "Oct – Dec 2026",
+                  title: "Quota-compliance review of PbN allocations",
+                  body: "As NOCs complete their PbN phase (allocating IOC-assigned quota slots to approved organisations), review their submissions in the PbN Approvals screen for quota-compliance issues. Per Strategic Plan §2 reframe, OCOG coordinates and flags anomalies — IOC retains final approval authority. NOC PbN deadline 18 Dec 2026.",
                 },
                 {
-                  date: "Nov 2026",
-                  title: "Review master allocations",
-                  body: "Use the Master Allocations view to see the full accreditation picture across all NOCs and categories. Identify any anomalies before the IOC final review.",
+                  date: "Oct – Dec 2026",
+                  title: "Push approved allocations to ACR",
+                  body: "Once NOC allocations clear quota-compliance review, push them to ACR (the downstream accreditation system). The Master Allocations view gives you the full cross-NOC picture; flag anomalies before the IOC review.",
+                },
+                {
+                  date: "Jan – Feb 2027",
+                  title: "IF PbN coordination",
+                  body: "International Federations allocate sport-specialist quota (Es / EPs) to specialists not chosen by their NOC. IF PbN window 18 Jan – 12 Feb 2027 (proposed; Strategic Plan §2.6 — pending confirmation).",
                 },
                 {
                   date: "Ongoing",

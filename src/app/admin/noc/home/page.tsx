@@ -5,15 +5,37 @@ import { db } from "@/db";
 import { applications, orgSlotAllocations, enrRequests, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
 
-// NOTE: Milestone dates and states are under business review — see TODOS.md.
-// Ordered chronologically by date so the timeline renders consistently.
-const MILESTONES = [
-  { label: "Final accreditation confirmed",  date: "Jan 2028",  state: "upcoming" },
-  { label: "EoI application window opens",   date: "Feb 2028",  state: "done"     },
-  { label: "NOC EoI review deadline",        date: "Apr 2028",  state: "active"   },
-  { label: "PbN submission deadline",        date: "May 2028",  state: "upcoming" },
-  { label: "ENR nominations deadline",       date: "Jun 2028",  state: "upcoming" },
+// LA28 — Key Milestones for the NOC role.
+// Source of truth: docs/process-timeline-2026-04-26.md +
+// docs/LA28 PRP Integrated Timeline.html (Strategic Plan Feb 2026 FINAL +
+// Emma 2026-04-24 corrections — EoI opens 31 Aug, not 24 Aug).
+//
+// `endsAt` drives state computation: anything strictly before today is "done";
+// anything where today falls inside [startsAt, endsAt] is "active"; everything
+// else is "upcoming". Display string is decoupled from the date used for state
+// so we can show ranges like "Oct–Dec 2026" without parsing them back.
+type MilestoneState = "done" | "active" | "upcoming";
+type Milestone = {
+  label: string;
+  date: string;            // display string
+  startsAt?: Date;         // optional range start (inclusive)
+  endsAt: Date;            // hard end of the milestone (used for "done" cutoff)
+};
+
+const MILESTONES: readonly Milestone[] = [
+  { label: "EoI window opens",                    date: "31 Aug 2026",   endsAt: new Date("2026-08-31") },
+  { label: "EoI applicant deadline",              date: "23 Oct 2026",   endsAt: new Date("2026-10-23") },
+  { label: "Platform hard close",                 date: "30 Oct 2026",   endsAt: new Date("2026-10-30") },
+  { label: "PbN + ENR submission deadline",       date: "18 Dec 2026",   startsAt: new Date("2026-10-05"), endsAt: new Date("2026-12-18") },
+  { label: "IOC notifies NOCs of approved ENRs",  date: "w/c 1 Feb 2027", endsAt: new Date("2027-02-05") },
+  { label: "OIAC card distribution",              date: "Apr 2028",      startsAt: new Date("2028-04-01"), endsAt: new Date("2028-04-30") },
 ] as const;
+
+function milestoneState(m: Milestone, now: Date): MilestoneState {
+  if (m.endsAt < now) return "done";
+  if (m.startsAt && m.startsAt <= now && now <= m.endsAt) return "active";
+  return "upcoming";
+}
 
 export default async function NocHomePage() {
   const session = await requireNocSession();
@@ -183,26 +205,29 @@ export default async function NocHomePage() {
       <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5">
         <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">LA 2028 — Key Milestones</h2>
         <div className="flex flex-col gap-3">
-          {MILESTONES.map((m) => (
-            <div key={m.label} className="flex items-center gap-3">
-              <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
-                m.state === "done"    ? "bg-green-500" :
-                m.state === "active"  ? "bg-brand-blue ring-2 ring-blue-200" :
-                "bg-gray-200"
-              }`} />
-              <span className={`text-sm flex-1 ${m.state === "active" ? "font-medium text-gray-900" : "text-gray-500"}`}>
-                {m.label}
-                <span className="sr-only">
-                  {m.state === "done" ? " (completed)" : m.state === "active" ? " (current)" : " (upcoming)"}
+          {MILESTONES.map((m) => {
+            const state = milestoneState(m, new Date());
+            return (
+              <div key={m.label} className="flex items-center gap-3">
+                <span aria-hidden="true" className={`w-2 h-2 rounded-full shrink-0 ${
+                  state === "done"    ? "bg-green-500" :
+                  state === "active"  ? "bg-brand-blue ring-2 ring-blue-200" :
+                  "bg-gray-200"
+                }`} />
+                <span className={`text-sm flex-1 ${state === "active" ? "font-medium text-gray-900" : "text-gray-500"}`}>
+                  {m.label}
+                  <span className="sr-only">
+                    {state === "done" ? " (completed)" : state === "active" ? " (current)" : " (upcoming)"}
+                  </span>
                 </span>
-              </span>
-              <span className={`text-xs ${m.state === "active" ? "font-semibold text-brand-blue" : "text-gray-400"}`}>
-                {m.date}
-              </span>
-            </div>
-          ))}
+                <span className={`text-xs ${state === "active" ? "font-semibold text-brand-blue" : "text-gray-400"}`}>
+                  {m.date}
+                </span>
+              </div>
+            );
+          })}
         </div>
-        <p className="mt-3 text-xs text-gray-400">Dates are indicative — confirm with your IOC liaison.</p>
+        <p className="mt-3 text-xs text-gray-400">Dates per IOC Press Accreditation Strategic Plan (Feb 2026 FINAL) + Emma 2026-04-24 corrections.</p>
       </div>
     </div>
   );

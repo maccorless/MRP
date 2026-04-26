@@ -53,29 +53,29 @@ export default async function NocHelpPage() {
             <ol className="space-y-5">
               {[
                 {
-                  date: "Aug 2026",
+                  date: "31 Aug 2026",
                   title: "EoI window opens",
-                  body: "Media organisations in your territory can submit Expressions of Interest through the public form. Applications appear in your EoI Queue for review.",
+                  body: "Media organisations in your territory can submit Expressions of Interest through the public form. Applications appear in your EoI Queue for review. Applicant deadline 23 Oct 2026; platform hard close 30 Oct 2026 (IOC-owned).",
                 },
                 {
                   date: "Aug – Oct 2026",
                   title: "Review applications",
-                  body: "For each application: Approve (passes to PbN), Return (sends back to applicant with your notes for corrections), or Reject (permanent — use sparingly). You can also add known organisations directly using Direct Entry.",
+                  body: "For each application: Accept as Candidate (passes to PbN), Return (sends back to applicant with your notes for corrections), or Reject (permanent — use sparingly). You can also add known organisations directly using Direct Entry.",
                 },
                 {
-                  date: "Oct 2026",
+                  date: "Oct – Dec 2026",
                   title: "Press by Number (PbN)",
-                  body: "The IOC assigns your territory a quota of accreditation slots per category (E, Es, EP, EPs, ET, EC). You allocate those slots to your approved organisations. OCOG formally approves your allocations.",
+                  body: "The IOC assigns your territory a quota of accreditation slots per category (E, Es, EP, EPs, ET, EC, NocE, NocEs). You allocate those slots to your approved organisations. PbN deadline 18 Dec 2026. OCOG performs quota-compliance review; IOC retains final approval authority per Strategic Plan.",
                 },
                 {
                   date: "Oct – Dec 2026",
                   title: "ENR requests",
-                  body: "If applicable, nominate Extended Non-Rights Broadcasters from your territory. These are submitted separately to the IOC for approval from their holdback pool.",
+                  body: "If applicable, nominate Extended Non-Rights Broadcasters from your territory. Submitted alongside PbN with the same 18 Dec 2026 deadline. IOC notifies of approved ENRs week commencing 1 Feb 2027.",
                 },
                 {
-                  date: "2027",
+                  date: "Oct 2027 – Feb 2028",
                   title: "Press by Name",
-                  body: "Individual credentialing (not managed in this portal) — handled separately in the ACR accreditation system.",
+                  body: "Individual credentialing (not managed in this portal) — handled separately in the ACR accreditation system. Press by Name deadline 18 Feb 2028; OIAC card distribution Apr 2028.",
                 },
               ].map(({ date, title, body }) => (
                 <li key={title} className="flex gap-4">
