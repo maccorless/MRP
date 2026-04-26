@@ -319,8 +319,11 @@ export async function cancelPbnEntry(formData: FormData) {
       ),
     );
 
+  // Only direct-entry sources should flip to `rejected` on cancel.
+  // EoI-sourced apps (`self_submitted`, `invited`) stay as approved
+  // candidates so the NOC can re-allocate later.
   const directEntryAppIds = apps
-    .filter((a) => a.entrySource && a.entrySource !== "public_eoi")
+    .filter((a) => a.entrySource === "noc_direct" || a.entrySource === "pbn_direct")
     .map((a) => a.id);
 
   await db.transaction(async (tx) => {
