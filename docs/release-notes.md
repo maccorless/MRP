@@ -1,10 +1,72 @@
 Created: 21-Apr-2026 10:45 CDT
+**Last updated: 26-Apr-2026 19:00 CEST**
 
 # PRP Release Notes — Changes Since April 17, 2026
 
-This is the consolidated release-notes document. It covers everything merged into `main` from the April 17 release through the April 21 working state. Business-facing changes come first. **Technical changes are bundled at the bottom; business readers can skip that section.**
+This is the consolidated release-notes document. It covers everything merged into `main` from the April 17 release through the working state on 2026-04-26. Business-facing changes come first. **Technical changes are bundled at the bottom; business readers can skip that section.**
 
 A dedicated release-notes page (recent at the top, older below) is on the v0.9 backlog — until that ships, this document is the single source.
+
+---
+
+## 0a. 2026-04-26 — Strategic Plan re-review + Emma 2026-04-24 feedback walkthrough
+
+Two reviews on 2026-04-26 produced a single combined commit (`824faee`). Morning: cross-checked the IOC Press Accreditation Strategic Plan (Feb 2026 FINAL) against the current PRP state, surfacing 12 plan-driven items. Afternoon: walked through the 46 inline Word comments Emma Morris returned on the 21-April stakeholder-questions document. The doc-side decisions, code changes shipped pre-meeting, and items deferred until the next stakeholder meeting are all summarised below.
+
+### Doc updates
+- **`stakeholder-questions-21-April-2026.md`** — re-opened §1.2 (multi-Es/EPs across multiple sports), §1.5 (Direct Entry category list), §2.1 + §2.2 (decision-making framing), §3.1 (EOR placement + category enumeration + INO terminology), §4.2 (IOC-Direct workflow), §4.3 (PRP→ACR master-status), and R-2 (PbN approval). Reframed §2 around a three-role model: NOC arbitrates within their quota, OCOG and IOC are co-reviewers (compliance, flags), neither approves individual orgs unless an issue is found. Added new Part 1 sections §6.7 (notifications + sender domain hybrid) and §6.8 (NOC authentication model). Marked CLOSED candidates R-1, R-3, R-5, R-7, R-8, §4.1, §5.1 mechanic, §5.1 >3 ENR policy, §5.1 IOC-Direct ENR concept. Recorded USOPC sizing (~500 quota, ~1,500 expected EoI volume) in §2.3b. Added FIBA to the §4.6 IF Sport Specialists list.
+- **`PRP-rq.md`** — revised PRP-FR-009 / FR-019 (removed the OCOG publish-gate; NOC controls applicant communication timing), FR-024 (NOC remains RO post-IOC-grant), FR-020 (NOC Es slot count + ENR records both included in ACR export), FR-026 (no OCOG approval for IOC-Direct, falls out of §2 reframe). Localisation section rewritten with a symmetric French/Spanish scope table; admin-screen localisation demoted to v2.0 conditional on stakeholder confirmation.
+- **`TODOS.md`** — about 20 new committed v0.9 items added (PbN mandatory field set per Emma's MiCo26 reference, NOC Es category, NOC PbN inline contact visibility, cancel PbN entry, LA28 cross-RO change feed, date sweep, multi-select sport picker, IOC review surface, return-flow mechanic, §1.5 category access scopes, INO terminology sweep, NOC Direct Entry / Invite for ENR, IOC ENR Excel export, IOC ENR review EoI fields, USOPC outreach, NOC rep engagement). Sender domain decision flipped from D.TEC to OCOG/LA28 (configuration of the email service, not PRP code) — supersedes the 2026-04-16 D.TEC decision. Spanish v0.9 scope narrowed to `/apply` + applicant emails only; admin scope demoted to v2.0 for both French and Spanish.
+- **`strategic-plan-gap-analysis.md`** — refreshed with a "Resolved since 13 April" inventory and a "Decisions taken 2026-04-26" section documenting the four-bucket disposition (commit-to-v0.9, process-only, open-question-for-Emma, parked).
+
+### Code changes (pre-meeting tranche)
+
+Public EoI form (`/apply` + `/applyb`):
+- **ENR slot soft warning.** The 3-slot cap on ENR is now informational, not a hard error. Values >3 surface an amber message ("The IOC only approves more than 3 ENR slots for certain press organisations") instead of blocking. Hard cap stays at 100. Per Emma 2026-04-24 #225 + Strategic Plan §Non-MRH allocation reminders.
+- **OIAC visa note** added to `/apply/how-it-works`: caveated paragraph describing the OIAC card's intended ≥1-month-before / ≥1-month-after entry and work-permit privilege, with an explicit "subject to LA28 + US authority confirmation closer to the Games" qualifier. EN copy only; FR/ES will follow the localisation pass.
+
+NOC admin:
+- **NOC EoI queue priority sort.** New "IOC suggested priority" sort option alongside "Most recent submission". Orders applications by `org_type` priority per Strategic Plan §1.6 (national news agency → national sports agency → general daily → sports daily → specialist outlet → general magazine). NOC retains discretion — this is guidance, not enforcement.
+- **Government `.gov` soft-warn flag.** Applications whose contact, secondary, or organisation email lands on a `.gov` / `.gov.*` domain now display an amber "Eligibility flag" banner in the review drawer. Accept-as-Candidate requires the NOC to tick an "I confirm this isn't a government ministry" checkbox; server enforces the same gate. Government ministries and officials are ineligible for press accreditation per Strategic Plan §1.3.
+- **Direct Entry category access scopes.** Each accreditation category in the Direct Entry form now shows its access scope inline (E = ALL competition venues, Es = own sport only, EP = ALL venues, EPs = own sport only, ET = ALL venues no seating, Ec = MPC only). Footer note clarifies that NOC E and NOC Es are allocated to the NOC's own communications-staff record on the PbN screen, not selected here.
+- **Cancel PbN entry.** New "Danger zone — Cancel PbN entry" section in the PbN org detail modal. Available only while the allocation is editable (`draft` or `noc_submitted`); the action removes the allocation row, marks the underlying application `cancelled` for Direct-Entry-sourced orgs, and is audit-logged as `noc_pbn_cancel`. Per Emma 2026-04-24 #9.
+- **NOC help page additions:** new "IOC suggested allocation hierarchy" section explains the priority order; new "Ineligible organisations" section enumerates the §1.3 ineligibility list (publishers, marketing, athlete management, advertising/PR/promotion agencies, commercial partners, government ministries) so NOC reviewers can make compliance calls.
+
+IOC admin:
+- **NOC Es category in IOC Quotas.** New `NocEs` column on the read-only and edit views of `/admin/ioc/quotas`. CSV import supports both 7-column (legacy) and 8-column (with NOC Es) formats. All NOC Es edits are logged in `quota_changes` and `audit_log` alongside the other categories.
+- **IOC-Direct ENR path.** New page at `/admin/ioc/enr/direct` lets the IOC add ENR organisations directly without NOC mediation — for international-focus non-MRH orgs like CNN, Al Jazeera, BBC World, ESPN. Form collects org name, contact first/last name, email, address, phone, and slot count per Emma 2026-04-24 #226. Records use `nocCode = IOC_DIRECT` and surface in the existing cross-NOC ENR review screen alongside NOC-nominated requests.
+
+Cross-cutting:
+- **INO terminology fix.** Throughout docs, schema descriptions, and the org-type label, the abbreviation INO now expands to "International News Organisation" (corrected from the misreading "International Non-Governmental Organisation"). The `ino` schema enum value is unchanged.
+- **Date sweep.** The EoI window opening date is now stated as 31 August 2026 (not 24 August 2026) across all documents, plus the relevant UI copy. Per Emma 2026-04-24 #65.
+
+Schema:
+- Migration **`0027_noc_es_category.sql`** adds `noc_es_total` to `noc_quotas` and `noc_es_slots` to `org_slot_allocations`. Both default to 0 for back-compat.
+- Migration **`0028_audit_action_noc_pbn_cancel.sql`** adds `noc_pbn_cancel` to the `audit_action` enum.
+- ACR adapter type extended with `nocEsSlots`; ACR stub-client log includes the new value.
+
+### Items deferred to follow-on commits (design-blocked by stakeholder meeting)
+
+- LA28 cross-RO change feed at `/admin/ocog/changes` — depends on §4.3 master-status decision.
+- IOC review + flag surface (parity with OCOG) and the OCOG/IOC → NOC return-flow mechanic — depend on the §2 reframe being agreed.
+- Removing the publish/unpublish gate from the actual `/admin/noc/queue` and `/admin/ocog/eoi` flows in code — same dependency.
+- Multi-select sport picker on EoI for Es / EPs — depends on §1.2 sub-question (option 1A org-level vs option 1B per-slot).
+- Spanish v0.9 i18n bundle (`/apply` + applicant emails) — depends on the UI copy finalisation pass and on the not-yet-built transactional email infrastructure.
+- IOC-Direct ENR continuous-update feed to LA28 — held until §4.3 resolves.
+- PbN mandatory field set enforcement at `noc_submitted` transition — held until Martyn confirms the official LA28 PbN field set.
+
+### Outreach actions opened on 2026-04-26
+
+- **Ike Hartman (USOPC)** — Emma offered to introduce; D.TEC will schedule a ~30-minute conversation to understand USOPC's current Excel workflow, the expected ~1,500 EoI volume, and PbN allocation practices. Output feeds §2.3b, §4.5, and §4.6.
+- **NOC representative engagement sessions** — 2-3 sessions to be scheduled before the next stakeholder meeting (or as part of it), one large territory plus one or two smaller territories, per the Appendix in stakeholder-questions.
+
+### Awaiting external input
+- IOC-rewritten introduction / how-it-works copy (interim banner shipped 2026-04-21).
+- IOC-Legal-blessed privacy notice wording.
+- Martyn's official LA28 Press by Number form (interim spec is Emma's MiCo26 reference: first name, last name, company, email, website, address, phone).
+- IOC rewrite of the NOC E nomination tip text on §1.5.
+- IOC review of the post-submit confirmation message.
+- Emma's Discus list of EoI fields needed for IOC ENR allocation decisions.
 
 ---
 
