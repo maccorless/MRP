@@ -1,4 +1,4 @@
-**Last updated: 17-Apr-2026 16:00 CEST**
+**Last updated: 26-Apr-2026 19:30 CEST**
 
 # PRP Monkey Test Guide
 
@@ -188,3 +188,33 @@ The USA queue has the most variety: two pending applications, one candidate, one
 - Click a "Possible Duplicate" badge in the NOC queue — confirm the side-by-side comparison modal opens with differences highlighted
 - Use sudo to view a NOC's queue, then verify the action appears in the audit trail
 - Visit the Help & Guide links for each admin role — confirm context-sensitive section opens
+
+---
+
+## New flows shipped 2026-04-26 (Strategic Plan alignment + Emma feedback)
+
+These are user-visible changes from the 2026-04-26 release. Worth a focused pass.
+
+### Public EoI form (`/apply`)
+
+- **ENR slot soft warning** — On the Accreditation step, request more than 3 ENR slots. Confirm an amber message appears ("The IOC only approves more than 3 ENR slots for certain press organisations") but submission is **not** blocked. Try values up to the hard cap of 100; values above 100 should still be rejected.
+- **OIAC visa note** — Visit `/apply/how-it-works`. Confirm the caveated paragraph about the OIAC card's intended ≥1-month-before / ≥1-month-after entry and work-permit privilege is present, with the "subject to LA28 + US authority confirmation closer to the Games" qualifier.
+- **EoI window date** — Confirm any UI copy that mentions the window opening date now reads **31 August 2026** (not 24 August).
+
+### NOC admin
+
+- **EoI queue priority sort** — On `/admin/noc/queue`, switch the sort dropdown between "Most recent submission" and "IOC suggested priority". The latter should order by org_type priority (national news agency → national sports agency → general daily → sports daily → specialist outlet → general magazine).
+- **Government `.gov` soft-warn flag** — Open an application whose contact, secondary, or organisation email uses a `.gov` / `.gov.*` domain. Confirm an amber "Eligibility flag" banner appears in the review drawer. Try Accept-as-Candidate without ticking the "I confirm this isn't a government ministry" checkbox — server should reject. Tick the box and confirm acceptance proceeds.
+- **Direct Entry category access scopes** — On `/admin/noc/direct-entry`, confirm each category shows its access scope inline (E = ALL competition venues, Es = own sport only, EP = ALL venues, EPs = own sport only, ET = ALL venues no seating, Ec = MPC only). Confirm the footer note about NOC E / NOC Es allocation on the PbN screen.
+- **Cancel PbN entry (Danger zone)** — On `/admin/noc/pbn`, open an org detail modal for an allocation in `draft` or `noc_submitted` state. Confirm a "Danger zone — Cancel PbN entry" section is visible. For an allocation already approved or beyond editable state, confirm the Cancel section is hidden. After cancelling, confirm the row is removed and the action is recorded in the audit trail as `noc_pbn_cancel`. For Direct-Entry-sourced orgs, confirm the underlying application is marked `cancelled`.
+- **Help page additions** — On `/admin/noc/help`, confirm new sections "IOC suggested allocation hierarchy" and "Ineligible organisations" are present and link from the table of contents.
+
+### IOC admin
+
+- **NOC Es column on Quotas** — On `/admin/ioc/quotas`, confirm a `NocEs` column is present in both read-only and edit views. Edit a NOC Es value and confirm the change appears in the audit trail.
+- **CSV import — 7 vs 8 column** — Try importing a 7-column legacy CSV (without NOC Es) — confirm it is accepted. Try an 8-column CSV (with NOC Es) — confirm both formats import cleanly.
+- **IOC-Direct ENR path** — Visit `/admin/ioc/enr/direct`. Confirm the form collects org name, contact first/last name, email, address, phone, and slot count. Submit an entry and confirm it appears in the cross-NOC ENR review screen at `/admin/ioc/enr` with `nocCode = IOC_DIRECT`.
+
+### Cross-cutting copy
+
+- **INO terminology** — Anywhere the abbreviation **INO** appears (e.g. IOC Direct Entry org type list, schema hints in admin views), confirm it now expands to **"International News Organisation"** (not the previous misreading).

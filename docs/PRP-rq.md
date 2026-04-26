@@ -33,10 +33,10 @@ That document has two parts:
 
 Where an open question affects a requirement in this document, the requirement text carries a cross-reference (e.g. "see 4.4b in stakeholder-questions-21-April-2026") so the read-across is explicit.
 
-Two architectural disputes resolved at the April 15/16/17 meetings are now built into the body of this document rather than flagged in this preamble:
+Two architectural disputes resolved at the April 15/16/17 meetings — and reframed on 2026-04-26 — are built into the body of this document rather than flagged in this preamble:
 
-- **PbN approval authority + quota entry ownership:** IOC enters per-category quota totals directly; OCOG is the primary PbN decision-maker and formal approver; IOC retains override authority and has read-only visibility on PbN. See FR-013 and FR-019.
-- **ENR front door:** ENR organisations self-apply via the public EoI form; NOCs prioritise; IOC grants from a configurable holdback pool. ENR flows entirely through the PRP. See FR-022 to FR-025.
+- **Three-role review model (reframed 2026-04-26 per Emma #2, #23, #73, #77, #78).** IOC enters per-category quota totals directly. **NOC = arbiter** of per-org slot allocations within its assigned quota. **OCOG = coordinator + safety-net reviewer** (ingests NOC submissions, coordinates downstream services, flags issues back to the NOC). **IOC = compliance reviewer** (focused on which orgs are accredited, not per-category counts). Neither OCOG nor IOC approves individual orgs unless an issue is found. The previous OCOG publish/unpublish gate on applicant outcomes has been removed. See FR-009, FR-013, FR-019.
+- **ENR front door:** ENR organisations self-apply via the public EoI form; NOCs prioritise; IOC grants from a configurable holdback pool. The NOC remains the Responsible Organisation for ENR orgs through Press by Name and downstream services. See FR-022 to FR-025.
 
 ## Target Audience
 
@@ -82,7 +82,7 @@ August – October 2026. A media organisation submits a structured application l
 
 ### Process 2 — Press by Number (PbN)
 
-October – December 2026. The NOC takes its candidate org list and assigns per-category quota slots to each org, within its IOC-assigned per-category totals. The OCOG formally approves or adjusts the allocation; the IOC has read-only visibility and retains ultimate override authority. Approved allocations are exported to ACR. Primary owner: OCOG (formal approval). NOC handles allocation. IOC retains oversight and override.
+October – December 2026. The NOC takes its candidate org list and assigns per-category quota slots to each org, within its IOC-assigned per-category totals. **The NOC is the arbiter** of per-org slot allocations (revised 2026-04-26 per §2 reframe). The OCOG ingests the NOC submission, coordinates downstream services (accommodation, rate card, SEAT, ACR enrolment), and flags issues back to the NOC if anomalies are found. The IOC reviews submissions for compliance with eligibility rules (which orgs are accredited). Neither OCOG nor IOC approves individual orgs. Approved allocations are exported to ACR once the OCOG marks them "received and clean". Primary owner: NOC. OCOG: coordinator + safety-net reviewer. IOC: compliance reviewer.
 
 ### ENR Track — Extended Non-Rights Broadcasters
 
@@ -104,8 +104,8 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 | Applicant (media organisation) | EoI submission | Submits own application via public form. Views own application status. No account required — email verification via magic link; 90-day status token after submission. |
 | NOC Admin | EoI review + PbN allocation + ENR prioritisation | Sees own territory only. Accepts (as Candidate) / returns / rejects EoI applications. Invites known organisations. Adds known organisations via Direct Entry. Allocates per-category slots in PbN. Prioritises and submits ranked ENR list. Nominates NOC communications staff (NOC E). |
 | IF Admin | PbN allocation + ENR prioritisation | Uses the same screens as NOC admin. No public EoI queue — IFs bring organisations in via the invited-org flow or Direct Entry only. Allocates per-category slots. Submits ranked ENR list. |
-| OCOG Admin (LA28) | PbN formal approval + EoI window and dedup oversight | Cross-NOC access. Reviews and formally approves or adjusts NOC/IF PbN submissions. Controls the global EoI window open/close date with per-NOC overrides. Reviews cross-NOC duplicates. Publishes/unpublishes PbN results to applicants. Read-only visibility on EoI content. |
-| IOC Admin | ENR grant + quota-setting + IOC-Direct + sudo + ultimate authority | Read-only visibility on EoI and PbN for all NOCs/IFs. Sets per-category quota totals per NOC/IF. Reviews and grants ENR requests from the holdback pool. Manages IOC-Direct reserved org list and acts as Responsible Organisation for those orgs (NOC-equivalent workflow under the `IOC_DIRECT` code). Configures event capacity and holdback. Sudo impersonation mode (read-only). Retains override authority on OCOG PbN approvals (exercised rarely). |
+| OCOG Admin (LA28) | PbN coordination + EoI window and dedup oversight | Cross-NOC access. Ingests NOC/IF PbN submissions and marks them "received and clean" (or returns to NOC with flagged issues); does not approve individual orgs (revised 2026-04-26 per §2 reframe). Coordinates downstream services (accommodation, rate card, SEAT, ACR enrolment). Controls the global EoI window open/close date with per-NOC overrides. Reviews cross-NOC duplicates. Read-only visibility on EoI content. |
+| IOC Admin | ENR grant + quota-setting + IOC-Direct + sudo + compliance review | Read-only visibility on EoI and PbN for all NOCs/IFs. Sets per-category quota totals per NOC/IF (including NOC Es). Reviews PbN submissions for compliance with eligibility rules and flags concerns to NOC; does not approve individual orgs (revised 2026-04-26 per §2 reframe). Reviews and grants ENR requests from the holdback pool, including via the IOC-Direct ENR path. Manages IOC-Direct reserved org list and acts as Responsible Organisation for those orgs (NOC-equivalent workflow under the `IOC_DIRECT` code). Configures event capacity and holdback. Sudo impersonation mode (read-only). |
 | IOC Readonly | Visibility only | Same read-only visibility as IOC Admin. Cannot write data. Cannot use sudo. |
 
 # Functional Requirements — Expression of Interest (EoI)
@@ -141,7 +141,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 
 ### PRP-FR-003 — E-category accreditation selection
 
-**Description.** Applicants select one or more of six accreditation categories: E (Journalist), Es (Sport-specific journalist), EP (Photographer), EPs (Sport-specific photographer), ET (Technician), EC (Support staff). Each category includes inline eligibility help. Es and EPs applicants must declare the sport they cover via a sport picker. Applicants enter a requested quantity per selected category, capped at 100 per E-category and 3 for ENR organisations. ENR and NOC E are not selectable E-categories on the public form — ENR is an organisation type; NOC E is NOC-nominated in PbN.
+**Description.** Applicants select one or more of six accreditation categories: E (Journalist), Es (Sport-specific journalist), EP (Photographer), EPs (Sport-specific photographer), ET (Technician), EC (Support staff). Each category includes inline eligibility help. Es and EPs applicants must declare the sport they cover via a sport picker. Applicants enter a requested quantity per selected category, capped at 100 per E-category. For ENR organisations the public form shows a soft amber warning when the requested ENR slot count exceeds 3 ("The IOC only approves more than 3 ENR slots for certain press organisations") but does not block submission (revised 2026-04-26 — soft warn replaces former hard cap). ENR and NOC E are not selectable E-categories on the public form — ENR is an organisation type; NOC E is NOC-nominated in PbN.
 
 **Acceptance criteria.**
 - At least one category required to submit.
@@ -177,7 +177,7 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 
 ### PRP-FR-006 — NOC EoI review queue
 
-**Description.** NOC admins have a dashboard showing all EoI applications from their territory. Per application the NOC can: Accept as Candidate (mark eligible for PbN — does not set slot quantities); Return with a review note (applicant may resubmit); Reject with a reason. Applications open in a slide-over drawer with Prev/Next navigation (keyboard `←` / `→`) and inline actions; a full-page view is also available. A QuotaBar shows the per-category impact of accepting the application. Applications flagged as possible duplicates display a badge; clicking the badge opens a side-by-side comparison modal with Reject/Return/status-update shortcuts.
+**Description.** NOC admins have a dashboard showing all EoI applications from their territory. Per application the NOC can: Accept as Candidate (mark eligible for PbN — does not set slot quantities); Return with a review note (applicant may resubmit); Reject with a reason. Applications open in a slide-over drawer with Prev/Next navigation (keyboard `←` / `→`) and inline actions; a full-page view is also available. A QuotaBar shows the per-category impact of accepting the application. Applications flagged as possible duplicates display a badge; clicking the badge opens a side-by-side comparison modal with Reject/Return/status-update shortcuts. The queue supports an "IOC suggested priority" sort alongside "Most recent submission" — applications are ordered by `org_type` priority per Strategic Plan §1.6 (national news agency → national sports agency → general daily → sports daily → specialist outlet → general magazine). Guidance only; NOC retains discretion. Government (`.gov` / `.gov.*`) email domains surface an amber "Eligibility flag" in the drawer per Strategic Plan §1.3 (government ministries are ineligible); Accept-as-Candidate requires the NOC to confirm the org is not a government ministry.
 
 **Acceptance criteria.**
 - NOC sees only its own territory's applications.
@@ -187,6 +187,8 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 - Over-quota state highlighted in red with "over quota" label.
 - Accept action labelled "Accept as Candidate" with eligibility tooltip.
 - Possible-duplicate badge opens comparison modal with matched-field highlighting and inline actions.
+- "IOC suggested priority" sort option available alongside recency; ordering follows Strategic Plan §1.6 org-type hierarchy.
+- `.gov` / `.gov.*` email-domain matches show an amber Eligibility flag; Accept-as-Candidate gated on a NOC-confirmed "not a government ministry" attestation, enforced server-side.
 
 ### PRP-FR-007 — NOC Direct Entry
 
@@ -263,15 +265,16 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 
 ### PRP-FR-013 — IOC quota import and in-app editing
 
-**Description.** The IOC imports per-category quota totals for each of the 206 NOCs and active IFs from a CSV file. Format: NOC/IF code, E, Es, EP, EPs, ET, EC, NocE (eight columns, one row per body). The IOC can also edit individual quota totals directly in the portal after import. All quota changes (import and manual edit) are logged in an append-only audit table (`quota_changes`) with prior value, new value, actor, timestamp, and change source.
+**Description.** The IOC imports per-category quota totals for each of the 206 NOCs and active IFs from a CSV file. Format: NOC/IF code, E, Es, EP, EPs, ET, EC, NocE, NocEs (nine columns, one row per body). CSV import accepts both the legacy 7-category format and the new 8-category format including NOC Es (added 2026-04-26). The IOC can also edit individual quota totals directly in the portal after import. All quota changes (import and manual edit) are logged in an append-only audit table (`quota_changes`) with prior value, new value, actor, timestamp, and change source.
 
 **Acceptance criteria.**
 - CSV import produces a viewable, editable quota table in the IOC dashboard at `/admin/ioc/quotas`.
-- Seven per-category totals per body: E, Es, EP, EPs, ET, EC, NocE.
+- Eight per-category totals per body: E, Es, EP, EPs, ET, EC, NocE, NocEs.
 - In-app edit mode allows per-cell editing.
 - All changes logged in `quota_changes` with `change_source` (`import` / `manual_edit`).
 - `entity_type` ('noc' vs 'if') distinguishes NOC rows from IF rows.
 - Prior Games comparison column (Paris 2024 / Tokyo 2020) shown for reference.
+- CSV import supports both 7-column (legacy) and 8-column (with NOC Es) formats.
 
 ### PRP-FR-014 — IOC event settings
 
@@ -285,14 +288,14 @@ Technology stack: Next.js App Router (server components, server actions), Drizzl
 
 ### PRP-FR-015 — NOC / IF PbN slot allocation
 
-**Description.** NOC and IF admins assign per-category slot quantities to each candidate organisation in their territory, constrained by their IOC-assigned per-category totals. All seven categories (E, Es, EP, EPs, ET, EC, NOC E) are tracked independently. The system enforces a hard quota cap server-side: the body cannot allocate more slots in any category than its IOC-assigned total for that category.
+**Description.** NOC and IF admins assign per-category slot quantities to each candidate organisation in their territory, constrained by their IOC-assigned per-category totals. All eight categories (E, Es, EP, EPs, ET, EC, NOC E, NOC Es) are tracked independently. The system enforces a hard quota cap server-side: the body cannot allocate more slots in any category than its IOC-assigned total for that category.
 
 **Acceptance criteria.**
-- PbN screen shows per-category quota state: X of Y allocated. All six E-category bars and the NOC E bar are always visible.
+- PbN screen shows per-category quota state: X of Y allocated. All six E-category bars plus the NOC E and NOC Es bars are always visible.
 - Hard cap enforced server-side; over-quota allocation blocked.
 - Org list includes EoI-candidate orgs, Direct Entry orgs, and direct-PbN-entry orgs.
 - NOC/IF can save as draft and return to edit.
-- NOC E allocated via a nominated NOC Communications Staff org (created via Direct Entry).
+- NOC E and NOC Es allocated via a nominated NOC Communications Staff org (created via Direct Entry).
 
 ### PRP-FR-016 — PbN offline workflow (CSV export and reimport)
 
@@ -402,7 +405,8 @@ The OCOG can mark a submission as "received and clean" (`noc_submitted` → `oco
 - Running total against the configurable holdback pool visible at all times.
 - IOC sets granted slot count per org (0 to requested amount); inline editing supported.
 - Outcome recorded as granted / partial / denied with optional decision notes.
-- NOC/IF sees IOC decisions per org after IOC submits.
+- NOC/IF sees IOC decisions per org after IOC submits and remains the Responsible Organisation post-grant; the NOC's view of granted ENR records is read-only after IOC grant (the NOC does not re-rank or amend grants — it informs its ENR orgs and supports them through Press by Name and downstream services).
+- IOC-Direct ENR records (`nocCode = IOC_DIRECT`) created via `/admin/ioc/enr/direct` surface in the same combined view.
 
 ### PRP-FR-025 — ENR quota pool and undertaking
 
@@ -431,7 +435,8 @@ When a regular NOC attempts to submit an EoI for a reserved-list org, the form b
 **Acceptance criteria.**
 - IOC admin can add/remove orgs from the `IOC_DIRECT` reserved list.
 - IOC admin has the full NOC-equivalent workflow for IOC-Direct: EoI review queue, Direct Entry, PbN allocation.
-- OCOG approves IOC-Direct PbN on the same state machine as any NOC.
+- No OCOG approval step on IOC-Direct PbN entries (revised 2026-04-26 per §2 reframe and Emma #193). LA28 receives IOC-Direct entries via the cross-RO change feed and uses them to coordinate accommodation, rate card, SEAT, and ACR enrolment. OCOG retains visibility and may flag concerns by process.
+- IOC-Direct ENR records flow through `/admin/ioc/enr/direct` and use `nocCode = IOC_DIRECT`.
 - Domain-based dedup block prevents regular NOC submissions for reserved org email domains.
 - All add/remove/allocation changes audit-logged.
 
@@ -592,12 +597,12 @@ Note: Delivery is iterative. The working design record (PRP-design-confirmation.
 
 ## Success Criteria
 
-- Portal live by 31 August 2026.
+- Portal live by 31 August 2026 (EoI window opens).
 - All 206 NOCs and active IFs can log in, review EoI applications (NOCs), and manage PbN allocations.
-- OCOG can formally approve PbN allocations across all NOCs and IFs, with publish/unpublish control over applicant-visible outcomes.
-- IOC has real-time read-only visibility on EoI and PbN; manages ENR grants from the configurable holdback pool and retains override authority on OCOG PbN approvals.
+- OCOG can ingest PbN submissions across all NOCs and IFs, mark them "received and clean", and coordinate downstream services; the NOC controls applicant-facing communication timing (no system-enforced publish gate; revised 2026-04-26).
+- IOC has real-time read-only visibility on EoI and PbN; manages ENR grants from the configurable holdback pool (including the IOC-Direct ENR path); reviews PbN for compliance.
 - Zero quota overruns — no body can allocate more slots in any category than its IOC-assigned total.
-- PbN output to ACR: per-category slots (E/Es/EP/EPs/ET/EC/NOC E) plus ENR per org, OCOG-approved, zero manual cleanup; IOC-Direct orgs included.
+- PbN output to ACR: per-category slots (E/Es/EP/EPs/ET/EC/NOC E/NOC Es) plus ENR per org, "received and clean", zero manual cleanup; IOC-Direct orgs included.
 - All PII handling compliant with GDPR.
 
 # RACI — Responsibilities
@@ -614,16 +619,17 @@ Legend: **R** = Responsible (does the work), **A** = Accountable (single signer)
 | EoI queue decisions (accept / return / reject) | NOC | NOC | OCOG | IOC |
 | Cross-NOC EoI visibility + duplicate flags | OCOG | OCOG | IOC | NOCs |
 | Quota totals per NOC / IF (per category) | IOC | IOC | OCOG | NOCs / IFs |
-| PbN allocations (NOC / IF submits to OCOG) | NOC / IF | OCOG | IOC | D.TEC |
-| PbN formal approval | OCOG | OCOG | IOC | NOCs / IFs |
+| PbN allocations (NOC / IF submits to OCOG) | NOC / IF | NOC / IF | OCOG, IOC | D.TEC |
+| PbN coordination + "received and clean" sign-off (revised 2026-04-26) | OCOG | OCOG | IOC | NOCs / IFs |
+| PbN compliance review (eligibility of accredited orgs; revised 2026-04-26) | IOC | IOC | OCOG | NOCs / IFs |
 | PbN close date (global) | OCOG | OCOG | IOC | NOCs / IFs |
 | IOC-Direct org list (AFP, AP, Reuters, etc.) | IOC | IOC | OCOG | D.TEC |
-| IOC-Direct PbN allocations | IOC | OCOG | — | D.TEC |
+| IOC-Direct PbN allocations (no OCOG approval; revised 2026-04-26) | IOC | IOC | OCOG | D.TEC |
 | ENR nominations (NOC list) | NOC | NOC | IOC | D.TEC |
 | ENR grants from holdback pool | IOC | IOC | OCOG | NOCs |
 | NOC admin account provisioning (206 accounts) | OCOG | OCOG | D.TEC | IOC |
 | NOC user manual content | OCOG | OCOG | IOC, D.TEC | NOCs |
-| Batch communication sign-off / release | OCOG | OCOG | IOC | NOCs |
+| Applicant communication of decisions (revised 2026-04-26 — no OCOG batch gate) | NOC | NOC | OCOG (visibility) | IOC, applicant |
 | ACR push (per PbN allocation) | OCOG | OCOG | IOC | D.TEC, NOCs |
 | Post-`sent_to_acr` data edits | ACR team | OCOG | IOC | NOCs |
 | Production incident response (on-call) | D.TEC | D.TEC | OCOG | IOC |
@@ -641,8 +647,8 @@ The following are the core data entities in the PRP. Full schema maintained in `
 | `applications` | EoI application records. Per-category flags (E/Es/EP/EPs/ET/EC) and requested quantities, ENR fields where applicable, primary and secondary contact details, publication details, accreditation history. Status lifecycle (pending / candidate / returned / resubmitted / rejected). |
 | `application_sequences` | Per-NOC reference number counters (manages `APP-2028-USA-00051` allocation). |
 | `admin_users` | Admin user accounts, roles (`noc_admin`, `if_admin`, `ocog_admin`, `ioc_admin`, `ioc_readonly`), and associated NOC/IF code. |
-| `noc_quotas` | Per-NOC / per-IF per-category quota totals set by IOC. Seven independent categories: E, Es, EP, EPs, ET, EC, NocE. `entity_type` distinguishes `'noc'` from `'if'` rows. `IOC_DIRECT` is a valid code. |
-| `org_slot_allocations` | PbN slot allocations per org per NOC/IF. Seven per-category slot counts plus NOC E slots. PbN state machine (`draft` / `noc_submitted` / `ocog_approved` / `sent_to_acr`). |
+| `noc_quotas` | Per-NOC / per-IF per-category quota totals set by IOC. Eight independent categories: E, Es, EP, EPs, ET, EC, NocE, NocEs (NocEs added 2026-04-26). `entity_type` distinguishes `'noc'` from `'if'` rows. `IOC_DIRECT` is a valid code. |
+| `org_slot_allocations` | PbN slot allocations per org per NOC/IF. Eight per-category slot counts (E, Es, EP, EPs, ET, EC, NOC E, NOC Es). PbN state machine (`draft` / `noc_submitted` / `ocog_approved` / `sent_to_acr`). |
 | `noc_eoi_windows` | Per-NOC EoI window state (open/closed) supporting OCOG-controlled global window with per-NOC overrides. |
 | `event_settings` | Per-event configuration: total capacity (default 6000) and IOC holdback. Configurable by IOC admin. |
 | `enr_requests` | NOC ENR nomination records. Priority rank, slot request (must-have + nice-to-have), IOC decision (granted / partial / denied), granted slot count, decision notes. |
@@ -679,8 +685,8 @@ The following capabilities are valuable extensions being tracked but are NOT com
 | Common Codes | Shared organisation registry within the ACR system, maintained by D.TEC. Used across all accreditation categories. |
 | NOC | National Olympic Committee (206 worldwide). Primary owner of the EoI review process and PbN allocation for its territory. |
 | IF | International Federation. Same role as NOC for its sport's media quota management. No public EoI queue — uses invited-org and Direct Entry flows only. |
-| OCOG | Organising Committee (LA28). Primary PbN decision-maker and formal approver; controls the global EoI window and cross-NOC duplicate and summary views. |
-| IOC | International Olympic Committee. Sets per-category quota totals per NOC/IF. Manages the ENR holdback pool and IOC-Direct reserved organisations. Retains ultimate authority and override rights on OCOG PbN approvals. |
+| OCOG | Organising Committee (LA28). PbN coordinator and safety-net reviewer (revised 2026-04-26 per §2 reframe): ingests NOC submissions, marks them "received and clean", coordinates accommodation / rate card / SEAT / ACR enrolment, and flags issues back to the NOC. Controls the global EoI window and cross-NOC duplicate and summary views. Does not approve individual orgs. |
+| IOC | International Olympic Committee. Sets per-category quota totals per NOC/IF (including NOC Es). Manages the ENR holdback pool and IOC-Direct reserved organisations (including the IOC-Direct ENR path). Compliance reviewer of NOC PbN submissions (revised 2026-04-26 per §2 reframe): focused on which orgs are accredited, not per-category counts. Does not approve individual orgs. |
 | IOC-Direct | Reserved list of major international media organisations (e.g. AFP, AP, Reuters, Xinhua) for which the IOC acts as Responsible Organisation, bypassing the normal NOC quota process. |
 | INO | International News Organisation — routed via the IOC-Direct workflow with a distinct `ino` org type label for ACR coding. (Terminology corrected 2026-04-26 per Emma feedback; was previously written as "Non-Governmental".) |
 | IF Staff | IF communications / press staff allocated via the IOC-Direct / INO workflow (`if_staff` org type). |

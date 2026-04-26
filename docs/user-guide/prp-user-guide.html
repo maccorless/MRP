@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Press Registration Portal — User Guide (LA 2028)</title>
+<style>
+  :root {
+    --blue: #0063a6;
+    --blue-dark: #004d80;
+    --ink: #0f172a;
+    --muted: #475569;
+    --line: #e2e8f0;
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --accent: #eef5fb;
+    --amber-bg: #fffbeb;
+    --amber-ink: #92400e;
+    --amber-line: #fde68a;
+    --green-bg: #ecfdf5;
+    --green-ink: #065f46;
+    --green-line: #a7f3d0;
+    --purple-bg: #f5f3ff;
+    --purple-ink: #5b21b6;
+    --purple-line: #ddd6fe;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.55;
+  }
+  header.site {
+    background: var(--blue);
+    color: #fff;
+    padding: 24px 32px;
+  }
+  header.site .wrap { max-width: 1040px; margin: 0 auto; }
+  header.site h1 { margin: 0; font-size: 28px; letter-spacing: -0.01em; }
+  header.site p { margin: 4px 0 0; opacity: 0.9; font-size: 15px; }
+
+  .layout { max-width: 1040px; margin: 0 auto; padding: 0 32px 80px; }
+
+  nav.toc {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 32px 0;
+    box-shadow: 0 1px 2px rgba(15,23,42,0.03);
+  }
+  nav.toc h2 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  nav.toc ol {
+    margin: 0; padding-left: 22px;
+    columns: 2;
+    column-gap: 40px;
+  }
+  nav.toc li { margin: 6px 0; break-inside: avoid; }
+  nav.toc a { color: var(--blue); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+
+  section { margin: 64px 0; }
+  section h2 {
+    font-size: 26px;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 10px;
+    margin-bottom: 8px;
+    scroll-margin-top: 20px;
+  }
+  section h3 {
+    margin-top: 40px;
+    font-size: 20px;
+    scroll-margin-top: 20px;
+  }
+  section h4 { margin-top: 28px; font-size: 16px; }
+  p { margin: 12px 0; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 4px 0; }
+
+  .role-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+  .role-badge.applicant { background: var(--accent); color: var(--blue-dark); }
+  .role-badge.noc       { background: #e0f2fe; color: #075985; }
+  .role-badge.ocog      { background: #fee2e2; color: #991b1b; }
+  .role-badge.ioc       { background: var(--purple-bg); color: var(--purple-ink); }
+
+  .callout {
+    border-left: 4px solid var(--blue);
+    background: var(--accent);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 15px;
+  }
+  .callout.tip    { border-color: #0ea5e9; background: #f0f9ff; }
+  .callout.warn   { border-color: #f59e0b; background: var(--amber-bg); color: var(--amber-ink); }
+  .callout.note   { border-color: #64748b; background: #f8fafc; color: #334155; }
+
+  figure {
+    margin: 24px 0 32px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--panel);
+    box-shadow: 0 2px 6px rgba(15,23,42,0.04);
+  }
+  figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #fff;
+  }
+  figcaption {
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    background: #f8fafc;
+    border-top: 1px solid var(--line);
+  }
+
+  .kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 12px;
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    background: #f1f5f9;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: #334155;
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .pill.draft     { background: #f1f5f9; color: #334155; }
+  .pill.submitted { background: #dbeafe; color: #1e40af; }
+  .pill.review    { background: #fef3c7; color: #92400e; }
+  .pill.candidate { background: #ecfdf5; color: #065f46; }
+  .pill.returned  { background: #fef3c7; color: #92400e; }
+  .pill.rejected  { background: #fee2e2; color: #991b1b; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .two-col .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .two-col .card h4 { margin-top: 0; }
+
+  table.stages {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 0;
+    font-size: 14px;
+  }
+  table.stages th, table.stages td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.stages th {
+    background: #f1f5f9;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .stepbar {
+    display: flex;
+    gap: 0;
+    margin: 24px 0 8px;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .stepbar .step {
+    flex: 1;
+    padding: 14px 16px;
+    border-right: 1px solid var(--line);
+    background: #fff;
+    font-size: 13px;
+    color: #334155;
+  }
+  .stepbar .step:last-child { border-right: none; }
+  .stepbar .step .n {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    background: var(--blue);
+    color: #fff;
+    border-radius: 50%;
+    font-weight: 700;
+    margin-right: 8px;
+    font-size: 12px;
+  }
+
+  footer.site {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--line);
+    margin-top: 40px;
+  }
+  a { color: var(--blue); }
+  a:hover { color: var(--blue-dark); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <h1>Press Registration Portal — User Guide</h1>
+    <p>LA 2028 Olympic &amp; Paralympic Games &middot; Plain-language handbook for every user</p>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" aria-label="Table of contents">
+  <h2>In this guide</h2>
+  <ol>
+    <li><a href="#overview">What is the Press Registration Portal?</a></li>
+    <li><a href="#journey">The end-to-end journey</a></li>
+    <li><a href="#roles">Who does what</a></li>
+    <li><a href="#applicant">Media applicants — apply for accreditation</a></li>
+    <li><a href="#noc">NOC and IF Admins — review and allocate</a></li>
+    <li><a href="#ocog">OCOG Admin — approve and publish</a></li>
+    <li><a href="#ioc">IOC Admin — govern the process</a></li>
+    <li><a href="#terms">Glossary</a></li>
+    <li><a href="#help">Where to get help</a></li>
+  </ol>
+</nav>
+
+<!-- ====================================================================== -->
+<section id="overview">
+  <h2>What is the Press Registration Portal?</h2>
+
+  <p>
+    The <strong>Press Registration Portal (PRP)</strong> is the official
+    web application that handles press and photo accreditation for the
+    LA 2028 Olympic and Paralympic Games. It replaces the email-and-spreadsheet
+    workflow of past Games with a single portal that every organisation in the
+    accreditation chain uses.
+  </p>
+
+  <figure>
+    <img src="screenshots/00-landing.png" alt="PRP landing page — two links: Apply as a media member, Login as an administrator.">
+    <figcaption>The portal has two front doors: one for media organisations (“Apply as a media member”) and one for accreditation administrators (“Login as an administrator”).</figcaption>
+  </figure>
+
+  <p>The portal supports four things end-to-end:</p>
+  <ol>
+    <li><strong>Expression of Interest (EoI)</strong> — the public application form where media organisations tell the Games who they are and what accreditation they need.</li>
+    <li><strong>Review workflow</strong> — NOCs and IFs check each applicant, decide who to accept, return or reject, and then allocate a number of press and photo slots per category.</li>
+    <li><strong>Press by Number (PbN)</strong> — NOCs and IFs submit their allocations to OCOG for formal approval.</li>
+    <li><strong>Governance</strong> — OCOG sets review windows and approves allocations, while the IOC oversees quotas, grants Extended Non-Rights Broadcaster (ENR) slots, and manages cross-organisation visibility.</li>
+  </ol>
+
+  <div class="callout">
+    <strong>Non-technical promise.</strong> If you are an applicant you never need to install anything. Admin users only need a work email and a browser. Every screen has clear actions; every change is logged.
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<section id="journey">
+  <h2>The end-to-end journey</h2>
+
+  <p>
+    Accreditation happens in five stages. Each stage has a clear owner and
+    hands off to the next. You only need to worry about the stage you own —
+    the portal shows you what is waiting for you and hides the rest.
+  </p>
+
+  <div class="stepbar" aria-hidden="true">
+    <div class="step"><span class="n">1</span>Applicant files an EoI</div>
+    <div class="step"><span class="n">2</span>NOC / IF reviews</div>
+    <div class="step"><span class="n">3</span>NOC / IF allocates PbN</div>
+    <div class="step"><span class="n">4</span>OCOG approves</div>
+    <div class="step"><span class="n">5</span>IOC governs &amp; ACR issues badges</div>
+  </div>
+
+  <table class="stages">
+    <thead><tr><th>Stage</th><th>Who acts</th><th>What happens</th></tr></thead>
+    <tbody>
+      <tr><td>1. EoI submission</td><td>Media organisation</td><td>Fills out the five-tab application form. Gets an emailed access code, submits, receives a 90-day status link.</td></tr>
+      <tr><td>2. Territory review</td><td>NOC Admin (or IF Admin)</td><td>Reads each EoI, accepts the organisation as a candidate, returns it for more information, or rejects it.</td></tr>
+      <tr><td>3. Press by Number</td><td>NOC / IF Admin</td><td>Decides how many press, photo and extended-category slots each approved organisation should get — within the quota set by the IOC.</td></tr>
+      <tr><td>4. OCOG approval</td><td>OCOG Admin (LA28)</td><td>Reviews the NOC/IF allocations, approves or adjusts, then publishes results and pushes the roster to ACR (the card-production system).</td></tr>
+      <tr><td>5. Governance</td><td>IOC Admin</td><td>Sets quotas, grants ENR slots for news broadcasters without rights deals, manages IOC-Direct organisations (wire services, etc.), and audits the whole process.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ====================================================================== -->
+<section id="roles">
+  <h2>Who does what</h2>
+
+  <div class="two-col">
+    <div class="card">
+      <h4>Media applicant <span class="role-badge applicant">Applicant</span></h4>
+      <p>Journalist, photographer, editor or media executive applying on behalf of a newsroom. No account — access is by emailed code.</p>
+    </div>
+    <div class="card">
+      <h4>NOC Admin <span class="role-badge noc">NOC</span></h4>
+      <p>National Olympic Committee representative. Reviews applications from their country’s press, allocates slots, submits ENR nominations.</p>
+    </div>
+    <div class="card">
+      <h4>IF Admin <span class="role-badge noc">IF</span></h4>
+      <p>International Federation representative for a single sport. Handles sport-specific press organisations via invitation or direct entry.</p>
+    </div>
+    <div class="card">
+      <h4>OCOG Admin <span class="role-badge ocog">OCOG</span></h4>
+      <p>LA28 Organising Committee. Approves the NOC/IF allocations, manages review windows, publishes results to applicants.</p>
+    </div>
+    <div class="card">
+      <h4>IOC Admin <span class="role-badge ioc">IOC</span></h4>
+      <p>International Olympic Committee. Sets quotas, manages ENR and IOC-Direct organisations, configures event settings, oversees the whole system.</p>
+    </div>
+    <div class="card">
+      <h4>IOC Readonly <span class="role-badge ioc">IOC · Read only</span></h4>
+      <p>Same visibility as an IOC Admin but cannot change anything. Used for observers and auditors.</p>
+    </div>
+  </div>
+
+  <h3>Signing in</h3>
+  <p>
+    Admin users sign in with email and password at <span class="kbd">/admin/login</span>.
+    A session lasts 8 hours, after which you are asked to sign in again. Applicants
+    never sign in — they receive a short access code by email when they start, and a
+    90-day status link after they submit.
+  </p>
+  <figure>
+    <img src="screenshots/admin-login.png" alt="Administrator sign-in screen.">
+    <figcaption>Admin sign-in. Enter your work email and password. If you don’t know which role you have, ask your NOC / IF / OCOG / IOC lead.</figcaption>
+  </figure>
+</section>
+
+<!-- ====================================================================== -->
+<section id="applicant">
+  <h2>Media applicants — apply for accreditation <span class="role-badge applicant">Applicant</span></h2>
+
+  <p>
+    If you work for a newspaper, magazine, broadcaster, wire service, online publication,
+    news agency or freelance team and need access to the LA 2028 Games, you will file an
+    <strong>Expression of Interest</strong> here. The process takes most applicants
+    20–30 minutes end-to-end.
+  </p>
+
+  <h3>Step 1 — Start the application</h3>
+  <p>
+    Open the portal and choose <strong>Apply as a media member</strong>, or go straight
+    to <span class="kbd">/apply</span>. Enter your work email address (not a personal
+    Gmail or Yahoo account — the system uses your email domain to recognise your
+    organisation).
+  </p>
+  <figure>
+    <img src="screenshots/apply-01-landing.png" alt="Apply page asking for a work email address.">
+    <figcaption>Start page for applicants. The work email domain is how the portal identifies your newsroom.</figcaption>
+  </figure>
+
+  <p>
+    The first time you use the portal you can read a short explainer of how the
+    process works from the <strong>How does this work?</strong> link.
+  </p>
+  <figure>
+    <img src="screenshots/apply-02-how-it-works.png" alt="How does this work explainer page.">
+    <figcaption>“How does this work?” walks through what you are about to do and how long each step takes.</figcaption>
+  </figure>
+
+  <h3>Step 2 — Get your access code</h3>
+  <p>
+    After you submit your email, the portal sends you a four-character access code
+    (for example, <span class="kbd">K7M2</span>). The code is valid for 24 hours and
+    is used only once. Copy it or keep the email open while you fill in the form.
+  </p>
+  <figure>
+    <img src="screenshots/apply-04-verify-token.png" alt="Your access code screen with a four-character code K7M2.">
+    <figcaption>Your access code is displayed so you can continue straight to the form. In production the same code is also emailed to you.</figcaption>
+  </figure>
+
+  <div class="callout tip">
+    <strong>Tip.</strong> If you close the tab, you can come back at any time using
+    <strong>Check status</strong> in the header — the portal will email you a new
+    status link.
+  </div>
+
+  <h3>Step 3 — Fill in the five-tab form</h3>
+  <p>
+    The Expression of Interest is split into five tabs. You can move between tabs in
+    any order, and the portal saves your progress automatically. Tabs with a green
+    check are complete; tabs with a grey dot still need attention.
+  </p>
+
+  <h4>Tab 1 — Organisation</h4>
+  <p>
+    Who you are: legal name, type of organisation, website, office address, phone
+    and the email address the accreditation team should use. Only the fields marked
+    with a red asterisk are strictly required, but the stronger your answers the
+    stronger your application.
+  </p>
+  <figure>
+    <img src="screenshots/apply-05-tab-organisation.png" alt="Organisation tab of the EoI form.">
+    <figcaption>Tab 1 — Organisation. Picking the correct NOC country here is important: that is who will review your application.</figcaption>
+  </figure>
+
+  <h4>Tab 2 — Contacts</h4>
+  <p>
+    The primary contact is the person who will receive every update from the NOC and
+    OCOG. Add a secondary contact as a backup — it avoids problems if your primary
+    contact goes on holiday during the review window.
+  </p>
+  <figure>
+    <img src="screenshots/apply-06-tab-contacts.png" alt="Contacts tab with primary and secondary contact fields.">
+    <figcaption>Tab 2 — Contacts.</figcaption>
+  </figure>
+
+  <h4>Tab 3 — Accreditation</h4>
+  <p>
+    Tick every category your organisation needs and enter how many slots you are
+    requesting for each. The categories follow the IOC codes (E, Es, Ep, Eps, Et, Ec).
+    If you are a sport-specific outlet, name the sport you primarily cover.
+  </p>
+  <figure>
+    <img src="screenshots/apply-08-tab-accreditation.png" alt="Accreditation tab with category checkboxes.">
+    <figcaption>Tab 3 — Accreditation. Only ask for the numbers you truly need; inflated requests slow down the NOC review.</figcaption>
+  </figure>
+
+  <h4>Tab 4 — Publication</h4>
+  <p>
+    Tell the reviewer what you publish: what kind of outlet, how often, how big the
+    audience is, what sports you cover, and where your readers are. This is where
+    the NOC assesses whether your outlet has legitimate reach.
+  </p>
+  <figure>
+    <img src="screenshots/apply-07-tab-publication.png" alt="Publication tab.">
+    <figcaption>Tab 4 — Publication. Be concrete: circulation numbers, monthly unique visitors, geographic coverage.</figcaption>
+  </figure>
+
+  <h4>Tab 5 — History</h4>
+  <p>
+    Prior Games coverage (Olympic and Paralympic), examples of past work, and any
+    accessibility needs your team may have for LA 2028. This is your chance to
+    demonstrate you are a returning outlet, or to point to recent work if you are new.
+  </p>
+  <figure>
+    <img src="screenshots/apply-09-tab-history.png" alt="History tab with prior Olympic and Paralympic checkboxes.">
+    <figcaption>Tab 5 — History. Previous Olympic / Paralympic years, past coverage samples, accessibility needs.</figcaption>
+  </figure>
+
+  <h3>Step 4 — Submit</h3>
+  <p>
+    When every required field is filled and each tab shows a green check, press
+    <strong>Submit</strong>. You will see a confirmation and an emailed status link
+    that is good for 90 days.
+  </p>
+
+  <h3>Step 5 — Check your status</h3>
+  <p>
+    Come back at any time through the <strong>Check status</strong> link in the
+    header. Enter the same email you applied with and the portal emails you a link
+    to see where you are in the process.
+  </p>
+  <figure>
+    <img src="screenshots/apply-11-status.png" alt="Check Application Status screen.">
+    <figcaption>Status page. The 90-day link is refreshed on every request so you never lose access.</figcaption>
+  </figure>
+
+  <p>
+    Your application moves through these states as the review progresses:
+    <span class="pill draft">Draft</span>
+    <span class="pill submitted">Submitted</span>
+    <span class="pill review">Under Review</span>
+    <span class="pill candidate">Candidate</span>
+    <span class="pill returned">Returned</span>
+    <span class="pill rejected">Rejected</span>.
+    Only <em>Returned</em> requires action from you — the NOC will tell you exactly
+    what to fix and will re-open your form.
+  </p>
+</section>
+
+<!-- ====================================================================== -->
+<section id="noc">
+  <h2>NOC and IF Admins — review and allocate <span class="role-badge noc">NOC · IF</span></h2>
+
+  <p>
+    NOC Admins work through every media application from their country; IF Admins
+    handle their sport’s invited organisations. The two surfaces look almost
+    identical, so this section covers both. Throughout the screenshots we use the
+    <strong>USOPC</strong> NOC as an example.
+  </p>
+
+  <h3>Home dashboard</h3>
+  <p>
+    Your home page shows the three things that matter most: how many EoIs still
+    need your review, how much of your press and photo quota you have allocated,
+    and the status of your ENR nominations.
+  </p>
+  <figure>
+    <img src="screenshots/noc-01-home.png" alt="NOC home dashboard for USOPC.">
+    <figcaption>NOC home. The yellow banner flags applications that are waiting for you. The three cards below link to EoI, PbN and ENR work queues.</figcaption>
+  </figure>
+
+  <h3>EoI Queue — review applications</h3>
+  <p>
+    The EoI Queue is the main workflow. Each row is one media organisation’s
+    application. Click a row to open the detail drawer on the right.
+  </p>
+  <figure>
+    <img src="screenshots/noc-02-queue.png" alt="NOC EoI Queue listing applications for USA.">
+    <figcaption>EoI Queue. Filters across the top let you focus on Pending, Candidate, Returned, Rejected or All. The badges on the right flag possible duplicates.</figcaption>
+  </figure>
+
+  <p>On each application you can:</p>
+  <ul>
+    <li><strong>Accept as Candidate</strong> — the application moves to <span class="pill candidate">Candidate</span> and is eligible for PbN allocation.</li>
+    <li><strong>Return</strong> — send it back to the applicant with a note explaining what is missing.</li>
+    <li><strong>Reject</strong> — decline the application; the organisation will see a rejected status.</li>
+    <li><strong>Unapprove / Unreturn / Unreject</strong> — reverse any decision while the review window is still open.</li>
+  </ul>
+
+  <div class="callout warn">
+    <strong>Heads up.</strong> Once OCOG closes the review window, decisions are frozen.
+    Make sure your EoI Queue shows zero pending rows before the deadline.
+  </div>
+
+  <h3>Press by Number — allocate slots</h3>
+  <p>
+    After the review window closes for EoIs, move to <strong>PbN Allocations</strong>.
+    Each candidate organisation gets a row with one number per category (E, Es, Ep, Eps, Et, Ec).
+    The total of each column cannot exceed the quota the IOC has allocated to you.
+  </p>
+  <figure>
+    <img src="screenshots/noc-03-pbn.png" alt="PbN Allocations page for USA.">
+    <figcaption>PbN Allocations. You can edit numbers inline, export a CSV for offline work, re-import the CSV, and finally submit the allocation for OCOG approval.</figcaption>
+  </figure>
+
+  <div class="callout tip">
+    <strong>Offline working.</strong> If you prefer Excel, press <strong>Export CSV</strong>,
+    complete the numbers, and <strong>Import CSV</strong> back in. The portal replaces your
+    previous allocation wholesale — no merging surprises.
+  </div>
+
+  <h3>ENR Nominations <span class="role-badge noc">NOC only</span></h3>
+  <p>
+    Some media organisations apply as <em>Extended Non-Rights Broadcasters</em> (ENR).
+    These are news broadcasters without a formal Olympic rights deal. They need IOC
+    approval rather than NOC approval, but the NOC proposes a ranked shortlist.
+  </p>
+  <figure>
+    <img src="screenshots/noc-04-enr.png" alt="ENR nominations page for USA.">
+    <figcaption>ENR Nominations. Drag rows to set priority 1–99, confirm the list, and submit to IOC. You can unlock and re-submit until IOC closes the window.</figcaption>
+  </figure>
+
+  <h3>Direct Entry</h3>
+  <p>
+    Sometimes an organisation needs to be on the roster but never filed a public EoI —
+    for example, a long-standing outlet invited directly by the NOC. Use <strong>Direct Entry</strong>
+    to add them, fill in the minimum required information yourself, and they appear as
+    if they had applied.
+  </p>
+  <figure>
+    <img src="screenshots/noc-05-direct-entry.png" alt="Direct Entry screen.">
+    <figcaption>Direct Entry. Useful for wire services, tier-1 outlets, or any pre-approved organisation you already know.</figcaption>
+  </figure>
+
+  <h3>Invite Org</h3>
+  <p>
+    The opposite of Direct Entry: generate a pre-filled invitation link and send it
+    to a newsroom so they can complete the application themselves. Helpful for
+    clearing name, country and contact details up front.
+  </p>
+  <figure>
+    <img src="screenshots/noc-06-invite.png" alt="Invite Org screen.">
+    <figcaption>Invite Org. Copy the generated link into your own email template and send it.</figcaption>
+  </figure>
+
+  <h3>Fast-Track</h3>
+  <p>
+    Fast-Track is a shortcut path for applications where the outcome is obvious
+    and you want to move several rows through approval with one action.
+  </p>
+  <figure>
+    <img src="screenshots/noc-07-fast-track.png" alt="Fast-Track screen.">
+    <figcaption>Fast-Track. Check the boxes of obviously approvable applications, pick an outcome, confirm.</figcaption>
+  </figure>
+
+  <h3>Audit Trail &amp; Help</h3>
+  <p>
+    Every change you make is logged in <strong>Audit Trail</strong> with who, what
+    and when. Use it to answer “when did we return X?” or “who rejected Y?”.
+    The <strong>Help</strong> tab has a role-specific refresher you can bookmark.
+  </p>
+  <div class="two-col">
+    <figure>
+      <img src="screenshots/noc-08-audit.png" alt="NOC audit trail.">
+      <figcaption>Audit Trail — who, what, when.</figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/noc-09-help.png" alt="NOC help and guide page.">
+      <figcaption>Help &amp; Guide — role-specific reference.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<section id="ocog">
+  <h2>OCOG Admin — approve and publish <span class="role-badge ocog">OCOG · LA28</span></h2>
+
+  <p>
+    OCOG is the LA 2028 Organising Committee — the “middle tier” between NOC/IF
+    territory decisions and the IOC’s global oversight. OCOG sets the review
+    windows, approves PbN allocations, handles cross-NOC duplicates, and publishes
+    results to applicants.
+  </p>
+
+  <h3>Home dashboard</h3>
+  <figure>
+    <img src="screenshots/ocog-01-home.png" alt="OCOG home dashboard.">
+    <figcaption>OCOG home. Two cards: PbN approvals outstanding, and the control for publishing results to applicants.</figcaption>
+  </figure>
+
+  <h3>PbN Approvals — sign off territory allocations</h3>
+  <p>
+    The PbN Approvals page lists every NOC and IF that has submitted allocations.
+    For each row you can:
+  </p>
+  <ul>
+    <li><strong>Approve</strong> — locks the allocation and makes it eligible for ACR.</li>
+    <li><strong>Adjust</strong> — edit individual numbers, then approve.</li>
+    <li><strong>Return</strong> — send it back to the NOC/IF for another pass.</li>
+  </ul>
+  <figure>
+    <img src="screenshots/ocog-03-pbn.png" alt="OCOG PbN Approvals page.">
+    <figcaption>PbN Approvals. Green rows are ready to send to ACR.</figcaption>
+  </figure>
+
+  <h3>EoI Summary — pivot view across NOCs</h3>
+  <p>
+    A read-only pivot of every EoI across every NOC. Use it to answer questions
+    like “how many applications are pending across the world?” or “which NOCs
+    haven’t started?”.
+  </p>
+  <figure>
+    <img src="screenshots/ocog-02-eoi.png" alt="OCOG EoI Summary.">
+    <figcaption>EoI Summary. No write actions — pure visibility.</figcaption>
+  </figure>
+
+  <h3>Duplicates — cross-NOC duplicate detection</h3>
+  <p>
+    Sometimes a single organisation applies through two different NOCs, or a single
+    journalist appears in two different organisations. The Duplicates panel surfaces
+    suspicious pairs; you can dismiss false matches and escalate real ones.
+  </p>
+  <figure>
+    <img src="screenshots/ocog-04-duplicates.png" alt="OCOG duplicates panel.">
+    <figcaption>Duplicates. Each row is a pair of candidate records; the portal explains why it thinks they might be the same.</figcaption>
+  </figure>
+
+  <h3>Master Allocations</h3>
+  <p>
+    A dashboard of the full picture — every NOC, every IF, every category. Use it
+    to spot imbalances before you approve.
+  </p>
+  <figure>
+    <img src="screenshots/ocog-05-master.png" alt="OCOG master allocations dashboard.">
+    <figcaption>Master Allocations. All rows across all territories, filterable by category.</figcaption>
+  </figure>
+
+  <h3>EoI Windows — open and close the review cycle</h3>
+  <p>
+    Set the global EoI window open and close date. You can also grant per-NOC
+    overrides — for example, extending a particular NOC by 48 hours.
+  </p>
+  <figure>
+    <img src="screenshots/ocog-06-windows.png" alt="EoI windows management.">
+    <figcaption>EoI Windows. Global dates at the top, per-NOC overrides below.</figcaption>
+  </figure>
+
+  <h3>Publishing results</h3>
+  <p>
+    The <strong>Publish Results</strong> button on the home page is the moment applicants
+    see their outcome. Before you publish, make sure:
+  </p>
+  <ul>
+    <li>Every NOC/IF allocation you intend to use is <strong>Approved</strong>.</li>
+    <li>ACR has been notified out-of-band (the portal does not email ACR automatically).</li>
+    <li>You are ready for the inbound questions that will follow.</li>
+  </ul>
+  <div class="callout warn">
+    <strong>Irreversible in feel, not in code.</strong> You can technically unpublish
+    by toggling the switch again, but applicants will have seen their result. Only do
+    it in response to a clear incident.
+  </div>
+
+  <h3>Audit Trail &amp; Help</h3>
+  <div class="two-col">
+    <figure>
+      <img src="screenshots/ocog-07-audit.png" alt="OCOG audit trail.">
+      <figcaption>Audit Trail — cross-NOC view.</figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/ocog-08-help.png" alt="OCOG help and guide page.">
+      <figcaption>Help &amp; Guide for OCOG workflow.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<section id="ioc">
+  <h2>IOC Admin — govern the process <span class="role-badge ioc">IOC</span></h2>
+
+  <p>
+    The IOC surface is where the rules get set. NOCs and OCOG execute inside the
+    boundaries the IOC defines here: quotas, event settings, feature flags,
+    IOC-Direct organisations, and ENR grants.
+  </p>
+
+  <h3>IOC Overview</h3>
+  <p>
+    The overview page shows every application in the system, grouped by NOC and
+    status. Click any row to see the full detail. The filters at the top let you
+    drill down to specific NOCs or continents.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-01-home.png" alt="IOC overview dashboard.">
+    <figcaption>IOC Overview. The reference data for every number a NOC sees.</figcaption>
+  </figure>
+
+  <h3>Master Allocations</h3>
+  <p>
+    The full pivot of every NOC × category, side by side with IOC-set quotas.
+    Over-quota cells are highlighted so you can spot them at a glance.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-02-master.png" alt="IOC master allocations dashboard.">
+    <figcaption>Master Allocations. Quota vs. allocated, per NOC, per category.</figcaption>
+  </figure>
+
+  <h3>ENR grants</h3>
+  <p>
+    Each NOC submits a ranked list of ENR applicants. IOC then grants, partial-grants
+    or denies each one, using the combined cross-NOC view.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-03-enr.png" alt="IOC ENR review page.">
+    <figcaption>ENR grants. Inline number fields let you edit the exact number of slots granted per organisation.</figcaption>
+  </figure>
+
+  <h3>Quotas</h3>
+  <p>
+    Upload per-NOC / per-IF quota totals via CSV, or edit individual cells
+    directly. These numbers are the caps every NOC sees in their PbN screen.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-04-quotas.png" alt="IOC quotas page.">
+    <figcaption>Quotas. Master CSV upload at the top; per-cell inline editing below.</figcaption>
+  </figure>
+
+  <h3>IOC-Direct</h3>
+  <p>
+    The reserved list — wire services, agencies and other organisations that are
+    not tied to a single NOC. You add and remove organisations here, and you do
+    the NOC-equivalent review and PbN allocation for them yourself.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-05-direct.png" alt="IOC direct page.">
+    <figcaption>IOC-Direct. Think of this as the “IOC’s own NOC” for organisations without a territory home.</figcaption>
+  </figure>
+
+  <h3>Org Directory</h3>
+  <p>
+    A cross-NOC directory of every organisation the portal knows about. Useful for
+    looking up an outlet by name, sanity-checking duplicates, or verifying that a
+    newsroom has been correctly assigned to a NOC.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-06-orgs.png" alt="IOC org directory.">
+    <figcaption>Org Directory. Search and filter across every NOC.</figcaption>
+  </figure>
+
+  <h3>Export</h3>
+  <p>
+    Download the full PbN roster as CSV — the file ACR uses to issue accreditation
+    cards. The export respects whatever state the data is in at export time, so
+    only run it when OCOG has approved everything.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-07-export.png" alt="IOC export page.">
+    <figcaption>PbN Export. One button, one file, one timestamped download.</figcaption>
+  </figure>
+
+  <h3>Feature flags</h3>
+  <p>
+    Lets the IOC turn new features on or off without a redeploy. Normal users will
+    never touch this — it exists for safe staged rollouts.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-08-flags.png" alt="IOC feature flags.">
+    <figcaption>Feature flags. Rarely used in production; leave everything at default unless instructed.</figcaption>
+  </figure>
+
+  <h3>Audit Trail</h3>
+  <p>
+    The master audit log: every write by every admin, across every NOC, IF and
+    OCOG, is visible here. This is the record of truth for compliance questions.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-09-audit.png" alt="IOC audit trail.">
+    <figcaption>Audit Trail. Filter by actor, action, or date range.</figcaption>
+  </figure>
+
+  <h3>Sudo — troubleshoot as another user</h3>
+  <p>
+    When a NOC reports a problem, you can open a read-only <strong>sudo</strong>
+    session that shows the portal exactly as that user sees it. Sudo sessions
+    cannot make any changes — every write button is disabled for the duration.
+  </p>
+  <figure>
+    <img src="screenshots/ioc-10-sudo.png" alt="IOC sudo page.">
+    <figcaption>Sudo. Pick a user, enter a reason, get a one-hour read-only session.</figcaption>
+  </figure>
+  <div class="callout note">
+    <strong>Rule.</strong> Sudo sessions are audit-logged and cannot target another IOC Admin.
+  </div>
+
+  <h3>Help</h3>
+  <figure>
+    <img src="screenshots/ioc-11-help.png" alt="IOC help page.">
+    <figcaption>Help &amp; Guide — IOC-specific reference.</figcaption>
+  </figure>
+</section>
+
+<!-- ====================================================================== -->
+<section id="terms">
+  <h2>Glossary</h2>
+  <dl>
+    <dt><strong>ACR</strong></dt>
+    <dd>Accreditation Card Registration — the downstream system that prints and issues physical press cards.</dd>
+    <dt><strong>Candidate</strong></dt>
+    <dd>An application that has been accepted by a NOC and is eligible for PbN slot allocation.</dd>
+    <dt><strong>EoI</strong></dt>
+    <dd>Expression of Interest — the public application form submitted by media organisations.</dd>
+    <dt><strong>ENR</strong></dt>
+    <dd>Extended Non-Rights Broadcaster — a news broadcaster without an Olympic rights deal, granted accreditation by IOC.</dd>
+    <dt><strong>IF</strong></dt>
+    <dd>International Federation — the governing body of a single sport (e.g., World Athletics).</dd>
+    <dt><strong>IOC</strong></dt>
+    <dd>International Olympic Committee.</dd>
+    <dt><strong>IOC-Direct</strong></dt>
+    <dd>Organisations that the IOC accredits directly rather than through a NOC — typically wire services.</dd>
+    <dt><strong>NOC</strong></dt>
+    <dd>National Olympic Committee — the country-level body (e.g., USOPC for the USA).</dd>
+    <dt><strong>OCOG</strong></dt>
+    <dd>Organising Committee for the Olympic Games — for LA 2028, this is LA28.</dd>
+    <dt><strong>PbN</strong></dt>
+    <dd>Press by Number — the numeric allocation of press/photo slots per organisation per category.</dd>
+    <dt><strong>Sudo</strong></dt>
+    <dd>A read-only session where an IOC Admin views the portal as another user to troubleshoot.</dd>
+  </dl>
+</section>
+
+<!-- ====================================================================== -->
+<section id="help">
+  <h2>Where to get help</h2>
+  <ul>
+    <li>Every admin role has a built-in <strong>Help</strong> tab with a role-specific reference.</li>
+    <li>Applicants can reach back through the <strong>Check status</strong> link at any time.</li>
+    <li>For unresolved problems, contact your NOC, IF or OCOG liaison — the portal is not a support channel.</li>
+    <li>IOC Admins can use <strong>Sudo</strong> to investigate user reports directly.</li>
+  </ul>
+</section>
+
+</div>
+
+<footer class="site">
+  <div>© 2028 International Olympic Committee · Press Accreditation · Press Registration Portal</div>
+  <div style="margin-top:6px;">User guide generated from the live portal.</div>
+</footer>
+
+</body>
+</html>

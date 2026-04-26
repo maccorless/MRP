@@ -435,7 +435,7 @@ The EoI CSV export now includes eight additional columns: Org Email, Org Type Ot
 ## T7. Documentation
 
 - Release notes (this document) consolidated into a single file; the prior dated files (`release-notes-2026-04-17.md`, `release-notes-2026-04-19.md`) are preserved under `docs/archive/`
-- PRP-rq (requirements) reflects current state of the solution; open questions moved to `docs/input and feedback/stakeholder-questions-21-April-2026.md`
+- PRP-rq (requirements) reflects current state of the solution; open questions moved to `docs/stakeholder-questions-updated-26-April-2026.md`
 - PRP-design-confirmation regenerated with April 17 decisions
 - Role-permissions documented (`docs/role-permissions.md`)
 - Stakeholder materials reorganised

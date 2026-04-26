@@ -1,9 +1,9 @@
-**Last updated: 17-Apr-2026 21:00 CDT**
+**Last updated: 26-Apr-2026 19:00 CEST**
 
 # LA28 Press Registration Portal — Design Confirmation
 
 **Status:** ACTIVE
-**Last updated:** 2026-04-17 (decisions confirmed 17-Apr-2026: ENR self-application, OCOG-controlled global EoI window, new org types ino/if_staff, un-reject action, Accept as Candidate label, PbN offline workflow, post-handoff Model A, session TTL, additional information field, French localisation, IF tracks, duplicate detection; prior update 2026-04-17 16:00 CEST — build status table, EoI form new fields, Direct Entry rename + sport picker, OCOG EoI Windows, Master Allocation redesign, Help & Guide pages, duplicate comparison modal, application drawer)
+**Last updated:** 2026-04-26 (decisions confirmed 26-Apr-2026 — Strategic Plan alignment + Emma feedback: §2 three-role reframe (NOC arbitrates within quota; OCOG and IOC are co-reviewers for compliance/flags only — neither approves individual orgs unless an issue is found); OCOG publish-gate REMOVED (NOC controls applicant communication timing per §6.7 hybrid); NOC read-only post IOC-grant; new NOC Es quota category; IOC-Direct ENR path at `/admin/ioc/enr/direct`; ENR slot soft warning (>3 informational, not blocking; hard cap 100); Direct Entry category access scopes shown inline (E/Es/EP/EPs/ET/Ec); Cancel PbN entry Danger zone (only while editable); Government `.gov` soft-warn flag + checkbox; IOC suggested priority sort per Strategic Plan §1.6; INO = "International News Organisation"; EoI window opens 31 August 2026; sender-domain decision = OCOG/LA28 (config of email service, not PRP code); localisation = symmetric FR/ES scope; admin localisation demoted to v2.0; ACR export includes NOC Es slot count + ENR records. Prior update 2026-04-17: ENR self-application, OCOG-controlled global EoI window, new org types ino/if_staff, un-reject action, Accept as Candidate label, PbN offline workflow, post-handoff Model A, session TTL, additional information field, French localisation, IF tracks, duplicate detection.)
 **Covers:** prototype phase through v1.0 launch (August 2026) and v2.0 (October 2026)
 
 ---
@@ -131,7 +131,7 @@ For LA28 2028, the IOC has committed to launching a dedicated Press Registration
 |------|----------------|-------------|
 | **NOC admin** | EoI (primary owner) + PbN allocation + ENR request submission | See own territory only. Approve/return/reject EoI applications. Invite known orgs. Allocate per-category slots per org in PbN. Submit prioritised ENR request list. Nominate own communications staff (NOC E press attachés) via Fast-Track Entry — create a single 'NOC Communications Staff' org using fast-track, then allocate NOC E slots to that org during PbN. |
 | **IF admin** | PbN allocation + ENR request submission (NO EoI queue) | Same screens as NOC admin. No public EoI queue — IFs bring orgs in via the invited-org flow only. Allocate per-category slots per org in PbN. Submit ENR list. |
-| **OCOG admin** | PbN (formal approval + adjustment) | Cross-NOC access. Same PbN screens as NOC but across all territories. Formally approve or adjust NOC PbN submissions. Visibility only on EoI. |
+| **OCOG admin** | PbN (co-reviewer — compliance/flags only) | Cross-NOC access. Same PbN screens as NOC but across all territories. **Per the §2 three-role reframe (2026-04-26):** OCOG ingests NOC submissions, coordinates downstream services (accommodation, rate card, SEAT, ACR enrolment), and flags issues back to the NOC if anomalies are found. **OCOG does not approve individual orgs.** Visibility only on EoI. |
 | **IOC admin** | ENR (grants from holdback) + visibility + IOC-Direct org management + sudo | Visibility only on EoI and PbN for all NOC territories. Reviews NOC ENR request lists; grants or denies ENR allocations from holdback pool. Sets total per-category quota per NOC via Excel import. **Additionally acts as the NOC-equivalent for IOC-Direct organisations**: manages the reserved org list, reviews EoI applications from IOC-Direct orgs, and submits PbN allocations for those orgs (subject to OCOG approval, same state machine as any NOC). Can use sudo mode to open a read-only session as any non-IOC admin user (see IOC Sudo Feature section). |
 | **IOC readonly** (`ioc_readonly`) | Visibility only | Same read-only visibility as IOC admin but cannot write any data. Cannot use sudo mode. |
 | **Applicant** | EoI submission | Submits their own application. Views own status. No other access. |
@@ -240,7 +240,15 @@ The following features are built and working in the prototype codebase. Items ma
 | Help & Guide pages for NOC (`/admin/noc/help`), OCOG (`/admin/ocog/help`), IOC (`/admin/ioc/help`) — sticky TOC, context-sensitive from header link | Built |
 | EoI CSV export with 8 new columns | Built |
 | PbN improvements — NocE row in OCOG PbN, totals column, all 6 bars always shown | Built |
-| Applicant status masked until OCOG publishes PbN results | Built |
+| ~~Applicant status masked until OCOG publishes PbN results~~ | **REMOVED 2026-04-26** — publish-gate removed per §2 reframe; NOC controls applicant communication timing per §6.7 hybrid comms model |
+| ENR slot soft warning (>3 informational, not blocking; hard cap stays at 100) | Built (2026-04-26) |
+| NOC EoI queue: IOC suggested priority sort (per Strategic Plan §1.6) | Built (2026-04-26) |
+| Government `.gov` soft-warn flag + Accept-as-Candidate confirmation checkbox (per Strategic Plan §1.3) | Built (2026-04-26) |
+| Direct Entry category access scopes shown inline (E / Es / EP / EPs / ET / Ec) | Built (2026-04-26) |
+| Cancel PbN entry — Danger zone, only while editable (`draft` or `noc_submitted`) | Built (2026-04-26) |
+| NOC Es quota category — `noc_es_total` in `noc_quotas`, `noc_es_slots` in `org_slot_allocations` (migration 0027) | Built (2026-04-26) |
+| IOC-Direct ENR path at `/admin/ioc/enr/direct` (`nocCode = IOC_DIRECT`) | Built (2026-04-26) |
+| ACR export includes NOC Es slot count + ENR records (`nocEsSlots` on adapter) | Built (2026-04-26) |
 | Read-only application view for applicants with pending applications | Built |
 | NOC/IF invited-org flow | Not yet built |
 | ENR self-application — ENR selectable as org type on public EoI form; NOC queue shows priority rank panel (1–99) instead of Accept as Candidate | Built |
@@ -617,6 +625,7 @@ noc_quotas
   et_total          integer       -- Technician
   ec_total          integer       -- Support staff
   noc_e_total       integer       -- Press Attaché (formula-based pool)
+  noc_es_total      integer       -- NOC Es (sport-specific NOC staff) — added 2026-04-26 (migration 0027)
   set_by, notes     text
   set_at            timestamp
 
@@ -638,6 +647,7 @@ org_slot_allocations
   -- Per-category slot allocations (NOC-assigned in PbN)
   e_slots, es_slots, ep_slots, eps_slots, et_slots, ec_slots  integer
   noc_e_slots       integer       -- set by NOC via nominated-list (not public EoI)
+  noc_es_slots      integer       -- NOC Es (sport-specific NOC staff) — added 2026-04-26 (migration 0027)
   allocated_by      text
   allocated_at      timestamp
   pbn_state         text          -- 'draft' | 'noc_submitted' | 'ocog_approved' | 'sent_to_acr'
@@ -695,7 +705,7 @@ reserved_organizations           -- IOC-Direct reserved list
 - `org_type`: `media_print_online | media_broadcast | news_agency | enr | ino | if_staff`
 - `application_status`: `pending | approved | returned | resubmitted | rejected`
 - `actor_type`: `applicant | noc_admin | ioc_admin | ocog_admin | if_admin | system`
-- `audit_action`: `application_submitted | application_resubmitted | application_approved | application_returned | application_rejected | email_verified | admin_login | duplicate_flag_raised | export_generated | pbn_submitted | pbn_approved | pbn_sent_to_acr | quota_changed | enr_submitted | enr_decision_made | sudo_initiated | noc_direct_entry | eoi_window_toggled | application_unapproved | application_unreturned | application_unrejected | pbn_unapproved | enr_decision_revised` (25 total)
+- `audit_action`: `application_submitted | application_resubmitted | application_approved | application_returned | application_rejected | email_verified | admin_login | duplicate_flag_raised | export_generated | pbn_submitted | pbn_approved | pbn_sent_to_acr | quota_changed | enr_submitted | enr_decision_made | sudo_initiated | noc_direct_entry | eoi_window_toggled | application_unapproved | application_unreturned | application_unrejected | pbn_unapproved | enr_decision_revised | noc_pbn_cancel` (added 2026-04-26 via migration 0028)
 - `pbn_state`: `draft | noc_submitted | ocog_approved | sent_to_acr`
 - `enr_decision`: `granted | partial | denied`
 - `org_status`: `active | inactive | banned | pending_review`
@@ -714,9 +724,9 @@ When setting quotas in July 2026, the IOC should be able to compare against prio
 | 2 | Auth for NOC/OCOG/IOC admins | Admin-provisioned accounts only (v1). Three distinct roles: NOC, OCOG, IOC — different logins, different permission sets. v1.0: D.TEC/DGP SSO. | 2026-03-28 / updated 2026-03-30 |
 | 3 | Public form spam/abuse | Email verification + CAPTCHA (hCaptcha) + rate limiting (max 10 submissions/IP/day, 3/email/day). | 2026-03-28 |
 | 4 | Document uploads | Deferred to v2.0. v1.0 form collects org name, contact details, category, free-text "About" field only. | 2026-03-28 |
-| 5 | Localisation | Public EoI form (`/apply`) in English and French via EN\|FR toggle for v1.0. Admin portal English-only for v1.0. French admin in v2.0. | 2026-03-28 / updated 2026-04-17 |
+| 5 | Localisation | **Symmetric FR/ES scope (updated 2026-04-26).** Public EoI form (`/apply`) + applicant emails: French at v1.0 (31 Aug 2026); Spanish at v0.9 per Strategic Plan §4.2. OCOG and IOC admin: English-only (Emma #33). NOC admin localisation **demoted to v2.0** and conditional on validation with smaller French/Spanish-speaking NOCs (meta-question still open). | 2026-03-28 / updated 2026-04-17 / 2026-04-26 |
 | 6 | Org identity model | Flat model. Same domain + same NOC = true duplicate (block). Same domain + different NOC = multi-territory flag (allow, IOC informed). Parent-child model deferred. | 2026-03-29 |
-| 7 | PbN IOC approval | IOC does not approve PbN. OCOG owns formal PbN approval and adjustment. IOC has visibility only. | 2026-03-30 |
+| 7 | PbN IOC approval | **REFRAMED 2026-04-26 (Emma #2/#23/#73/#77/#78):** Three-role model — **NOC = arbiter** within their quota; **OCOG = coordinator + safety-net reviewer** (ingests submissions, coordinates downstream services, flags anomalies back to NOC, does NOT approve individual orgs); **IOC = compliance reviewer** (reviews which orgs the NOC has accredited against eligibility rules; does NOT adjust quotas or approve individual orgs). Both OCOG and IOC contact the NOC only if issues are found. NOC remains read-only POST IOC-grant. Original (2026-03-30) framing of OCOG-as-formal-approver superseded. | 2026-03-30 / reframed 2026-04-26 |
 | 8 | ENR undertaking signature | External process (Adobe Acrobat) continues for v1. In-system in v2.0 pending legal review. | 2026-03-28 |
 | 9 | Deduplication algorithm | Name + domain matching with IOC review queue. Over-flag preferred. Cross-Games matching enabled. Freelancers: name + country only. | 2026-03-28 |
 | 10 | Quota model — structure | Press quota and photo quota tracked separately per NOC. ENR quota is a completely separate holdback pool managed by IOC. Not a single integer per NOC. | 2026-03-30 |
@@ -724,7 +734,7 @@ When setting quotas in July 2026, the IOC should be able to compare against prio
 | 12 | EoI category options | ~~Press / Photo / Both.~~ **Superseded by Decision #27 (2026-03-31).** See Decision #27 for full E-category set. ENR is not an EoI category. | 2026-03-30 / superseded 2026-03-31 |
 | 13 | ENR process model | ENR is EoI inverted: NOC submits a prioritised ENR request list to IOC. IOC reviews and grants from a separate holdback pool. Media orgs do not self-apply as ENR. | 2026-03-30 |
 | 14 | EoI ownership | EoI is owned and driven by the NOC. OCOG and IOC have visibility only during EoI phase — no approve/return/reject actions. | 2026-03-30 |
-| 15 | PbN approval states | NOC submitted → OCOG approved. OCOG can adjust allocations. IOC visibility only. | 2026-03-30 |
+| 15 | PbN approval states | **Reframed 2026-04-26 — see Decision #7.** State machine `draft → noc_submitted → ocog_approved → sent_to_acr` remains in code as the operational pipeline, but `ocog_approved` semantics are now "OCOG has ingested and not flagged" rather than "OCOG has approved each individual org". OCOG contacts the NOC only if anomalies are found; OCOG does not adjust per-org slot allocations. NOC arbitrates within quota. Publish/unpublish gate removed. | 2026-03-30 / reframed 2026-04-26 |
 | 16 | PBN system boundary | PbN module lives in PRP (System 1). Data handoff to ACR via adapter. June 1, 2026 gate determines live API vs. CSV fallback. | 2026-03-28 |
 | 17 | Common Codes ownership | Common Codes is D.TEC (Ken's team). Both PRP and ACR are peer consumers. PRP exports org data; Common Codes assigns codes through a separate workflow. | 2026-03-29 |
 | 18 | Anomaly detection thresholds | NOC inactivity: 7-day default (configurable). Concentration risk: >30% of quota to one org (configurable). | 2026-03-28 |
@@ -949,7 +959,8 @@ OrgExportRecord {
   etSlots:  number;
   ecSlots:  number;
   nocESlots: number;               -- NOC press attaché slots (separate quota pool)
-  enrSlotsGranted: number | null;  -- null for regular EoI orgs; set for ENR orgs
+  nocEsSlots: number;              -- NOC Es (sport-specific NOC staff) — added 2026-04-26 (migration 0027)
+  enrSlotsGranted: number | null;  -- null for regular EoI orgs; set for ENR orgs (incl. IOC-Direct ENR with nocCode = IOC_DIRECT)
   commonCodesId: string | null;
   eventId:  string;                -- 'LA28'
 }
@@ -1017,7 +1028,7 @@ Jun 1         ACR integration go/no-go gate.
 Jul 1–Aug 10  Production deployment, final QA, NOC onboarding.
               IOC imports quota totals from Excel.
 
-Aug 24        Portal goes live — EoI window opens.
+Aug 31        Portal goes live — EoI window opens (date revised 2026-04-24 per Emma).
               PbN + ENR software live; PbN process launches Oct 5.
 
 Sep 1–25      v2.0: ACR real-time sync + ENR undertaking in-system.
@@ -1576,7 +1587,7 @@ These are the authoritative IOC dates from the **Press Accreditation Strategic P
 | 12 May 2026 | IOC Press Accreditation Allocation Working Group meets (Lausanne) to establish per-NOC E quotas |
 | July 2026 | IOC notifies each NOC of its press accreditation allocation |
 | April 2026 | PRP systems ready and tested (internal milestone) |
-| TBC August 2026 | Portal goes live — EoI (Media Registration Page) window opens |
+| 31 August 2026 | Portal goes live — EoI (Media Registration Page) window opens (date confirmed 2026-04-24 per Emma) |
 | **30 October 2026** | **Hard IOC-owned deadline — platform closes for new EoI applications** |
 | Week of 5 October 2026 | Press by Number (PbN) process starts — LA28 distributes PbN forms to NOCs; Non-MRH application process also starts |
 | **18 December 2026** | **PbN ends** — NOCs submit completed PbN forms (including Non-MRH long list) to LA28 |

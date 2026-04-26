@@ -24,11 +24,12 @@ build/
 *.avi
 *.mkv
 
-# MD is the master format; generated readable versions stay local only
-docs/*.pdf
-docs/*.docx
-docs/*.xlsx
-docs/*.pptx
+# MD is the master format; generated readable versions stay local only.
+# Recursive so archive/ subdirs are covered too.
+docs/**/*.pdf
+docs/**/*.docx
+docs/**/*.xlsx
+docs/**/*.pptx
 2026-03-12 Media Registration - Request for interest/
 
 # OS
@@ -47,6 +48,14 @@ pnpm-debug.log*
 .idea/
 *.swp
 *.swo
+docs/.obsidian/
+
+# Local tooling state — never tracked
+.claire/
+.claude/
+
+# Static analysis output (CodeQL DB, build logs, raw scan results)
+static_analysis_*/
 
 # Railway
 .railway/
