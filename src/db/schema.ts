@@ -90,6 +90,8 @@ export const auditActionEnum = pgEnum("audit_action", [
   // B1 — rejection reversal
   "rejection_reversed",
   "unreject",
+  // 2026-04-26 — cancel a PbN entry entered by mistake (Emma feedback #9)
+  "noc_pbn_cancel",
 ]);
 
 export const flagStateEnum = pgEnum("flag_state", ["off", "canary", "on"]);
@@ -314,6 +316,7 @@ export const nocQuotas = pgTable("noc_quotas", {
   ecTotal:  integer("ec_total").notNull().default(0),  // Support staff
   nocETotal: integer("noc_e_total").notNull().default(0), // Press attachés quota (IOC-assigned)
   nocERequested: integer("noc_e_requested"),              // NOC's requested NocE count (null = not yet set; defaults to nocETotal on display)
+  nocEsTotal: integer("noc_es_total").notNull().default(0), // Sport-specific press attachés quota (added 2026-04-26 per Emma #197)
   setBy: text("set_by"),                       // IOC admin user id
   setAt: timestamp("set_at", { withTimezone: true }).defaultNow(),
   notes: text("notes"),
@@ -337,6 +340,7 @@ export const orgSlotAllocations = pgTable("org_slot_allocations", {
   etSlots:  integer("et_slots").notNull().default(0),  // Technician
   ecSlots:  integer("ec_slots").notNull().default(0),  // Support staff
   nocESlots: integer("noc_e_slots").notNull().default(0), // Press attachés
+  nocEsSlots: integer("noc_es_slots").notNull().default(0), // Sport-specific press attachés (added 2026-04-26 per Emma #197)
   allocatedBy: text("allocated_by"),           // NOC admin user id
   allocatedAt: timestamp("allocated_at", { withTimezone: true }).defaultNow(),
   pbnState: pbnStateEnum("pbn_state").notNull().default("draft"),

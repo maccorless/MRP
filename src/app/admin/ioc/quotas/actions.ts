@@ -7,7 +7,7 @@ import { nocQuotas, quotaChanges, auditLog, eventSettings } from "@/db/schema";
 import { requireIocAdminSession, requireWritable } from "@/lib/session";
 
 const CAT_LABEL: Record<string, string> = {
-  e: "E", es: "Es", ep: "EP", eps: "EPs", et: "ET", ec: "EC", noc_e: "NocE",
+  e: "E", es: "Es", ep: "EP", eps: "EPs", et: "ET", ec: "EC", noc_e: "NocE", noc_es: "NocEs",
 };
 
 function quotaDiffDetail(nocCode: string, diffs: { quotaType: string; oldValue: number; newValue: number }[], source: "import" | "manual"): string {
@@ -16,7 +16,7 @@ function quotaDiffDetail(nocCode: string, diffs: { quotaType: string; oldValue: 
 }
 
 // All per-category quota keys in column order
-const CAT_KEYS = ["e", "es", "ep", "eps", "et", "ec", "noc_e"] as const;
+const CAT_KEYS = ["e", "es", "ep", "eps", "et", "ec", "noc_e", "noc_es"] as const;
 type CatKey = typeof CAT_KEYS[number];
 
 function deriveRollups(vals: Record<CatKey, number>) {
@@ -51,13 +51,16 @@ export async function importQuotas(formData: FormData) {
     };
 
     const vals: Record<CatKey, number> = {
-      e:     parse(1),
-      es:    parse(2),
-      ep:    parse(3),
-      eps:   parse(4),
-      et:    parse(5),
-      ec:    parse(6),
-      noc_e: parse(7),
+      e:      parse(1),
+      es:     parse(2),
+      ep:     parse(3),
+      eps:    parse(4),
+      et:     parse(5),
+      ec:     parse(6),
+      noc_e:  parse(7),
+      // CSV column 8 (NocEs) is optional — defaults to 0 if absent so legacy
+      // 7-column imports still work.
+      noc_es: parse(8),
     };
     const { pressTotal, photoTotal } = deriveRollups(vals);
 
@@ -68,13 +71,14 @@ export async function importQuotas(formData: FormData) {
 
     if (existing) {
       const prev: Record<CatKey, number> = {
-        e:     existing.eTotal,
-        es:    existing.esTotal,
-        ep:    existing.epTotal,
-        eps:   existing.epsTotal,
-        et:    existing.etTotal,
-        ec:    existing.ecTotal,
-        noc_e: existing.nocETotal,
+        e:      existing.eTotal,
+        es:     existing.esTotal,
+        ep:     existing.epTotal,
+        eps:    existing.epsTotal,
+        et:     existing.etTotal,
+        ec:     existing.ecTotal,
+        noc_e:  existing.nocETotal,
+        noc_es: existing.nocEsTotal,
       };
       const changes = CAT_KEYS
         .filter((k) => prev[k] !== vals[k])
@@ -86,6 +90,7 @@ export async function importQuotas(formData: FormData) {
           epTotal: vals.ep, epsTotal: vals.eps,
           etTotal: vals.et, ecTotal: vals.ec,
           nocETotal: vals.noc_e,
+          nocEsTotal: vals.noc_es,
           pressTotal, photoTotal,
           setBy: session.userId, setAt: new Date(),
         }).where(eq(nocQuotas.id, existing.id));
@@ -113,6 +118,7 @@ export async function importQuotas(formData: FormData) {
         epTotal: vals.ep, epsTotal: vals.eps,
         etTotal: vals.et, ecTotal: vals.ec,
         nocETotal: vals.noc_e,
+        nocEsTotal: vals.noc_es,
         pressTotal, photoTotal,
         setBy: session.userId, setAt: new Date(),
       });
@@ -149,7 +155,7 @@ export async function importQuotas(formData: FormData) {
 /**
  * Save manual per-category edits from the edit form.
  * Form fields: e_{nocCode}, es_{nocCode}, ep_{nocCode}, eps_{nocCode},
- *              et_{nocCode}, ec_{nocCode}, noc_e_{nocCode}
+ *              et_{nocCode}, ec_{nocCode}, noc_e_{nocCode}, noc_es_{nocCode}
  */
 export async function saveQuotaEdits(formData: FormData) {
   await requireWritable();
@@ -158,7 +164,9 @@ export async function saveQuotaEdits(formData: FormData) {
   const entries = [...formData.entries()];
   const nocCodes = new Set<string>();
   for (const [key] of entries) {
-    const m = key.match(/^(?:e|es|ep|eps|et|ec|noc_e)_(.+)$/);
+    // Match longest prefix first so "noc_es_USA" doesn't accidentally land
+    // on the shorter "es" or "noc_e" keys.
+    const m = key.match(/^(?:noc_es|noc_e|eps|es|ep|et|ec|e)_(.+)$/);
     if (m) nocCodes.add(m[1]);
   }
 
@@ -169,13 +177,14 @@ export async function saveQuotaEdits(formData: FormData) {
     };
 
     const vals: Record<CatKey, number> = {
-      e:     parse("e"),
-      es:    parse("es"),
-      ep:    parse("ep"),
-      eps:   parse("eps"),
-      et:    parse("et"),
-      ec:    parse("ec"),
-      noc_e: parse("noc_e"),
+      e:      parse("e"),
+      es:     parse("es"),
+      ep:     parse("ep"),
+      eps:    parse("eps"),
+      et:     parse("et"),
+      ec:     parse("ec"),
+      noc_e:  parse("noc_e"),
+      noc_es: parse("noc_es"),
     };
     const { pressTotal, photoTotal } = deriveRollups(vals);
 
@@ -187,13 +196,14 @@ export async function saveQuotaEdits(formData: FormData) {
     if (!existing) continue;
 
     const prev: Record<CatKey, number> = {
-      e:     existing.eTotal,
-      es:    existing.esTotal,
-      ep:    existing.epTotal,
-      eps:   existing.epsTotal,
-      et:    existing.etTotal,
-      ec:    existing.ecTotal,
-      noc_e: existing.nocETotal,
+      e:      existing.eTotal,
+      es:     existing.esTotal,
+      ep:     existing.epTotal,
+      eps:    existing.epsTotal,
+      et:     existing.etTotal,
+      ec:     existing.ecTotal,
+      noc_e:  existing.nocETotal,
+      noc_es: existing.nocEsTotal,
     };
     const changes = CAT_KEYS
       .filter((k) => prev[k] !== vals[k])
@@ -206,6 +216,7 @@ export async function saveQuotaEdits(formData: FormData) {
       epTotal: vals.ep, epsTotal: vals.eps,
       etTotal: vals.et, ecTotal: vals.ec,
       nocETotal: vals.noc_e,
+      nocEsTotal: vals.noc_es,
       pressTotal, photoTotal,
       setBy: session.userId, setAt: new Date(),
     }).where(eq(nocQuotas.id, existing.id));

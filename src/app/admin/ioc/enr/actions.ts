@@ -1,9 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { eq, and, isNotNull } from "drizzle-orm";
+import { eq, and, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { enrRequests, auditLog, eventSettings } from "@/db/schema";
+import { enrRequests, organizations, auditLog, eventSettings } from "@/db/schema";
 import { requireIocAdminSession, requireWritable } from "@/lib/session";
 
 /**
@@ -173,4 +173,94 @@ export async function reviseEnrDecision(formData: FormData) {
   });
 
   redirect(`/admin/ioc/enr/${req.nocCode}?success=revised`);
+}
+
+/**
+ * Add an IOC-Direct ENR organisation.
+ * Per Strategic Plan re-review item 7 + Emma feedback #226: the IOC also grants
+ * ENR accreditations directly to international-focus non-MRH organisations
+ * (CNN, Al Jazeera, BBC World, etc.) that don't fall under any NOC's
+ * jurisdiction. These are recorded under the `IOC_DIRECT` pseudo-NOC code so
+ * they sit in the same ENR review surface as NOC-nominated requests.
+ *
+ * Fields per Emma #226: ENR org, first name, last name, email, address, tel.
+ */
+export async function addIocDirectEnrOrg(formData: FormData) {
+  await requireWritable();
+  const session = await requireIocAdminSession();
+
+  const orgName        = ((formData.get("org_name") as string | null) ?? "").trim();
+  const firstName      = ((formData.get("first_name") as string | null) ?? "").trim();
+  const lastName       = ((formData.get("last_name") as string | null) ?? "").trim();
+  const email          = ((formData.get("email") as string | null) ?? "").trim();
+  const address        = ((formData.get("address") as string | null) ?? "").trim();
+  const phone          = ((formData.get("phone") as string | null) ?? "").trim();
+  const slotsRequested = Math.max(1, parseInt((formData.get("slots_requested") as string | null) ?? "3", 10) || 3);
+  const justification  = ((formData.get("justification") as string | null) ?? "").trim() || null;
+
+  if (!orgName || !email) {
+    redirect("/admin/ioc/enr/direct?error=missing_fields");
+  }
+
+  // Compute the next priority rank within the IOC_DIRECT bucket so the new
+  // entry lands at the bottom of the IOC-Direct ENR list.
+  const [{ maxRank }] = await db
+    .select({ maxRank: sql<number>`coalesce(max(${enrRequests.priorityRank}), 0)` })
+    .from(enrRequests)
+    .where(and(eq(enrRequests.nocCode, "IOC_DIRECT"), eq(enrRequests.eventId, "LA28")));
+  const nextRank = (maxRank ?? 0) + 1;
+
+  const contactName = [firstName, lastName].filter(Boolean).join(" ") || null;
+  const emailDomain = email.includes("@") ? email.split("@")[1].toLowerCase() : null;
+  // Bundle Emma's #226 contact fields into the enrJustification so they
+  // surface in the IOC ENR review screen and flow into ACR via the existing
+  // ENR export path. (Organisations table doesn't carry per-contact name /
+  // phone / address; those normally live on the application record. For
+  // IOC-Direct there is no application step, so we stash them here.)
+  const contactBlock = [
+    contactName ? `Contact: ${contactName}` : null,
+    email ? `Email: ${email}` : null,
+    phone ? `Phone: ${phone}` : null,
+    address ? `Address: ${address}` : null,
+  ].filter(Boolean).join("\n");
+  const justificationFull = [justification, contactBlock].filter(Boolean).join("\n\n") || null;
+
+  await db.transaction(async (tx) => {
+    const [org] = await tx
+      .insert(organizations)
+      .values({
+        name: orgName,
+        nocCode: "IOC_DIRECT",
+        orgType: "enr",
+        country: null,
+        emailDomain,
+        orgEmail: email,
+        address: address || null,
+        status: "active",
+      })
+      .returning({ id: organizations.id });
+
+    await tx.insert(enrRequests).values({
+      nocCode: "IOC_DIRECT",
+      organizationId: org.id,
+      priorityRank: nextRank,
+      slotsRequested,
+      mustHaveSlots: slotsRequested,
+      niceToHaveSlots: 0,
+      enrJustification: justificationFull,
+      // Mark as already-submitted: there is no NOC step in the IOC-Direct path.
+      submittedAt: new Date(),
+    });
+
+    await tx.insert(auditLog).values({
+      actorType: "ioc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "enr_submitted",
+      organizationId: org.id,
+      detail: `IOC-Direct ENR added: ${orgName}${contactName ? ` (${contactName})` : ""}`,
+    });
+  });
+
+  redirect("/admin/ioc/enr/direct?success=added");
 }

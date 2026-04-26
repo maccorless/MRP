@@ -253,3 +253,95 @@ export async function submitPbnToOcog(formData: FormData) {
 
   redirect("/admin/noc/pbn?success=submitted");
 }
+
+/**
+ * Cancel a PbN entry the NOC entered by mistake.
+ * Per Emma 2026-04-24 #9: NOCs need a way to remove an org from their PbN
+ * allocation table without using a workaround (setting all categories to 0
+ * leaves a stranded row in the audit trail).
+ *
+ * Behaviour:
+ * - Only permitted from `draft` and `noc_submitted` states. After
+ *   `ocog_approved`, the OCOG must reverse the approval first; after
+ *   `sent_to_acr`, cancellation is impossible in PRP (Model A handoff,
+ *   subject to §4.3 master-status re-open).
+ * - The allocation row is deleted.
+ * - If the org was added via Direct Entry / Inline PbN Entry (no prior
+ *   approved EoI application), the application record is also marked
+ *   `cancelled` so it doesn't reappear as a stranded candidate.
+ *   Org records persist per PRP-FR-029 (cross-Games persistence).
+ * - Audit logged as `noc_pbn_cancel` with optional reason note.
+ */
+export async function cancelPbnEntry(formData: FormData) {
+  await requireWritable();
+  const session = await requireNocSession();
+  const nocCode = session.nocCode;
+
+  const orgId = (formData.get("organizationId") as string | null)?.trim();
+  const reason = (formData.get("reason") as string | null)?.trim() || null;
+  if (!orgId) redirect("/admin/noc/pbn?error=missing_org");
+
+  const [alloc] = await db
+    .select()
+    .from(orgSlotAllocations)
+    .where(
+      and(
+        eq(orgSlotAllocations.organizationId, orgId),
+        eq(orgSlotAllocations.nocCode, nocCode),
+        eq(orgSlotAllocations.eventId, "LA28"),
+      ),
+    );
+
+  if (!alloc) redirect("/admin/noc/pbn?error=alloc_not_found");
+
+  // Permission gate: only draft and noc_submitted are cancellable by the NOC.
+  if (alloc.pbnState !== "draft" && alloc.pbnState !== "noc_submitted") {
+    redirect("/admin/noc/pbn?error=cancel_not_allowed");
+  }
+
+  const [org] = await db
+    .select({ id: organizations.id, name: organizations.name })
+    .from(organizations)
+    .where(eq(organizations.id, orgId));
+
+  // Was there a prior EoI application? If so, leave the application record
+  // alone; the NOC may want to re-allocate later. If not, the org came from
+  // Direct Entry / Inline PbN Entry — mark its application(s) as cancelled
+  // to prevent stranded candidate-list entries.
+  const apps = await db
+    .select({ id: applications.id, status: applications.status, entrySource: applications.entrySource })
+    .from(applications)
+    .where(
+      and(
+        eq(applications.organizationId, orgId),
+        eq(applications.nocCode, nocCode),
+        eq(applications.eventId, "LA28"),
+      ),
+    );
+
+  const directEntryAppIds = apps
+    .filter((a) => a.entrySource && a.entrySource !== "public_eoi")
+    .map((a) => a.id);
+
+  await db.transaction(async (tx) => {
+    await tx.delete(orgSlotAllocations).where(eq(orgSlotAllocations.id, alloc.id));
+
+    if (directEntryAppIds.length > 0) {
+      await tx
+        .update(applications)
+        .set({ status: "rejected", reviewNote: reason ?? "PbN entry cancelled by NOC", updatedAt: new Date() })
+        .where(inArray(applications.id, directEntryAppIds));
+    }
+
+    await tx.insert(auditLog).values({
+      actorType: "noc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "noc_pbn_cancel",
+      organizationId: orgId,
+      detail: `${org?.name ?? orgId}${reason ? ` — ${reason}` : ""}`,
+    });
+  });
+
+  redirect("/admin/noc/pbn?success=entry_cancelled");
+}

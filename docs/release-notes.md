@@ -301,7 +301,7 @@ Each page has a sticky table-of-contents sidebar; the Help link opens at the sec
 
 ## 10. New Organisation Types
 
-- **INO** (`ino`) — International Non-Governmental Organisation
+- **INO** (`ino`) — International News Organisation
 - **IF Staff** (`if_staff`) — International Federation Staff
 
 Selectable in IOC Direct Entry and surfaced in relevant admin views.

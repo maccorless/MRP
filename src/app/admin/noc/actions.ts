@@ -5,6 +5,7 @@ import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, auditLog, orgSlotAllocations, dismissedDuplicatePairs, organizations } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
+import { ineligibilityFlags } from "@/lib/eligibility";
 
 async function getApplicationForNoc(id: string, nocCode: string) {
   const [app] = await db
@@ -22,6 +23,25 @@ export async function approveApplication(formData: FormData) {
   const app = await getApplicationForNoc(id, session.nocCode);
   if (!app || (app.status !== "pending" && app.status !== "resubmitted")) {
     redirect("/admin/noc/queue");
+  }
+
+  // Server-side eligibility-flag enforcement: if the application has any
+  // soft-warn flag (currently: government .gov email domain), the NOC must
+  // tick the acknowledgement checkbox in the drawer before we accept the
+  // approval. The drawer's `required` attribute handles the happy path; this
+  // is the defence-in-depth check.
+  const [org] = await db
+    .select({ orgEmail: organizations.orgEmail })
+    .from(organizations)
+    .where(eq(organizations.id, app.organizationId));
+  const flags = ineligibilityFlags({
+    contactEmail: app.contactEmail,
+    orgEmail: org?.orgEmail ?? null,
+    secondaryContactEmail: app.secondaryEmail,
+  });
+  if (flags.length > 0) {
+    const ack = formData.get("ack_eligibility_flag");
+    if (ack !== "1") redirect(`/admin/noc/${id}?error=eligibility_ack_required`);
   }
 
   const internalNote = (formData.get("internal_note") as string)?.trim() || null;

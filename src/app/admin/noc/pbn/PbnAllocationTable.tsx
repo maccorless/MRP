@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Icon } from "@/components/Icon";
-import { saveSlotAllocations, submitPbnToOcog } from "./actions";
+import { saveSlotAllocations, submitPbnToOcog, cancelPbnEntry } from "./actions";
 import { ACCRED_CATEGORIES, type AccredCategory } from "@/lib/category";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
 import { progressWidthClass } from "@/lib/progress";
@@ -93,7 +93,7 @@ const CAT_ENABLED_FIELD: Record<AccredCategory, keyof PbnRow> = {
 
 type SlotValues = Record<AccredCategory, number>;
 
-function OrgDetailModal({ row, onClose }: { row: PbnRow; onClose: () => void }) {
+function OrgDetailModal({ row, isEditable, onClose }: { row: PbnRow; isEditable: boolean; onClose: () => void }) {
   const cats = ACCRED_CATEGORIES.filter((c) => row[CAT_ENABLED_FIELD[c.value]] as boolean);
   const rowTotal = (row.eSlots ?? 0) + (row.esSlots ?? 0) + (row.epSlots ?? 0) +
     (row.epsSlots ?? 0) + (row.etSlots ?? 0) + (row.ecSlots ?? 0);
@@ -209,6 +209,42 @@ function OrgDetailModal({ row, onClose }: { row: PbnRow; onClose: () => void }) 
                 {row.publicationFrequency && <div><span className="text-gray-500 w-24 inline-block">Frequency</span>{row.publicationFrequency}</div>}
                 {row.sportsToCover && <div><span className="text-gray-500 w-24 inline-block">Sports</span>{row.sportsToCover}</div>}
               </div>
+            </section>
+          )}
+
+          {/* Cancel entry — only available while the allocation is editable
+              (i.e. PbN state is `draft` or `noc_submitted`). After OCOG
+              approval, OCOG must reverse first; after sent_to_acr, cancel
+              is impossible in PRP. */}
+          {isEditable && (
+            <section className="pt-3 border-t border-gray-100">
+              <div className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-2">Danger zone</div>
+              <form
+                action={cancelPbnEntry}
+                onSubmit={(e) => {
+                  if (!confirm(`Cancel ${row.orgName} from your PbN allocation? This removes the row and any slots assigned to this organisation. The organisation record itself is preserved for future Games.`)) {
+                    e.preventDefault();
+                  }
+                }}
+                className="space-y-2"
+              >
+                <input type="hidden" name="organizationId" value={row.orgId} />
+                <input
+                  type="text"
+                  name="reason"
+                  placeholder="Reason for cancelling (optional)"
+                  className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 text-xs font-medium text-red-700 bg-white border border-red-300 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                  Cancel PbN entry
+                </button>
+                <p className="text-[11px] text-gray-500 leading-relaxed">
+                  Use this if you added the organisation by mistake. The action is audit-logged. After OCOG has approved, contact OCOG to reverse the approval before cancelling.
+                </p>
+              </form>
             </section>
           )}
         </div>
@@ -573,7 +609,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
 
       {/* Org detail modal */}
       {modalOrg && (
-        <OrgDetailModal row={modalOrg} onClose={() => setModalOrg(null)} />
+        <OrgDetailModal row={modalOrg} isEditable={isEditable} onClose={() => setModalOrg(null)} />
       )}
     </div>
   );

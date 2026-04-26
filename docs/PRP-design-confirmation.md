@@ -14,7 +14,7 @@
 |------|------------|
 | **EoI** | Expression of Interest — public-facing form where media orgs apply to their NOC for press accreditation consideration |
 | **ENR** | Extended Non-Rights Broadcaster — broadcasters without Olympic media rights. ENR orgs self-apply via the public EoI form (selecting ENR as org type); the NOC then prioritises them and submits a ranked list to the IOC, who grants from the holdback pool. |
-| **INO** | International Non-Governmental Organisation — follows the IOC-Direct workflow with a distinct `ino` org type label for OCOG ACR coding. |
+| **INO** | International News Organisation — follows the IOC-Direct workflow with a distinct `ino` org type label for OCOG ACR coding. (Terminology corrected 2026-04-26 per Emma feedback.) |
 | **PbN** | Press by Number — the phase where NOCs formally allocate their IOC-assigned per-category quotas (E, Es, EP, EPs, ET, EC, NOC E) to specific media organisations, subject to OCOG approval |
 | **ACR** | Accreditation system (LA28's system, built on ACR system platform) |
 | **Common Codes** | Shared organisation registry within the ACR system; used across all accreditation categories |
@@ -48,7 +48,7 @@ The IOC's press accreditation process for the Olympic Games is managed through E
 
 3. **OCOG ACR staff (LA28)** — they receive submissions from 206 NOCs, manually reconcile them, check for duplicates, coordinate corrections. Entirely manual, no tooling.
 
-For LA28 2028, the IOC has committed to launching a dedicated Press Registration Portal. This has been announced to all NOCs. There is no backup plan. The portal must be live by August 24, 2026.
+For LA28 2028, the IOC has committed to launching a dedicated Press Registration Portal. This has been announced to all NOCs. There is no backup plan. The portal must be live by 31 August 2026.
 
 ---
 
@@ -263,9 +263,9 @@ The following features are built and working in the prototype codebase. Items ma
 | ACR real-time sync | Planned v2.0 |
 | D.TEC/DGP SSO | Planned v1.0 |
 
-### V0.1 (prototype) and V1 — ships August 24, 2026
+### V0.1 (prototype) and V1 — ships 31 August 2026
 
-PbN is in prototype scope alongside EoI. All of PbN ships August 24 except ACR real-time sync (which is v2.0). The v2.0 column contains only ACR integration and ENR undertaking in-system.
+PbN is in prototype scope alongside EoI. All of PbN ships 31 August except ACR real-time sync (which is v2.0). The v2.0 column contains only ACR integration and ENR undertaking in-system.
 
 **EoI process:**
 1. Public media organisation EoI form — E-category multi-select (E, Es, EP, EPs, ET, EC)
@@ -296,7 +296,7 @@ PbN is in prototype scope alongside EoI. All of PbN ships August 24 except ACR r
 
 ### V1.1 — ships late September 2026 (before October 5 PbN process launch)
 
-Note: The PbN **software** ships August 24 in v1. The PbN **process** (NOCs allocating quotas) launches October 5. V1.1 ships in between to add ACR real-time sync before the process starts.
+Note: The PbN **software** ships 31 August in v1. The PbN **process** (NOCs allocating quotas) launches October 5. V1.1 ships in between to add ACR real-time sync before the process starts.
 
 - ACR real-time quota sync (v1.0 uses batch export)
 - ENR undertaking digital signature (pending legal review — see ENR Undertaking section)
@@ -1041,7 +1041,7 @@ Summer 2028   LA28 Olympic Games.
 
 ## Success Criteria
 
-- Portal live at www.olympics.com by August 24, 2026
+- Portal live at www.olympics.com by 31 August 2026
 - 206 NOCs can log in, review EoI applications, and manage their PbN allocations
 - OCOG can formally approve PbN allocations across all NOCs
 - IOC has real-time read-only visibility on EoI and PbN; manages ENR from holdback pool
@@ -1509,7 +1509,7 @@ Playwright end-to-end tests are **not yet added** (referenced in original design
 ### SCR-22: Quota assignees — INOs confirmed (17-Apr-2026)
 
 **Status:** RESOLVED
-**Confirmed decision:** INOs (International Non-Governmental Organisations) follow the **IOC-Direct workflow** with a distinct `ino` org type label. This gives OCOG a clear signal for ACR coding. The `ino` org type is added to the schema alongside `if_staff` (IF Staff, for the IF staff quota via IOC-Direct/INO workflow).
+**Confirmed decision:** INOs (International News Organisations — terminology corrected 2026-04-26 per Emma feedback; was previously "Non-Governmental") follow the **IOC-Direct workflow** with a distinct `ino` org type label. This gives OCOG a clear signal for ACR coding. The `ino` org type is added to the schema alongside `if_staff` (IF Staff, for the IF staff quota via IOC-Direct/INO workflow).
 - NOCs, IFs: resolved (Decision #19 — same screens, IFs have no public EoI queue)
 - IOC-Direct: resolved (Decision #26)
 - INOs: follow IOC-Direct workflow; `ino` org type in schema

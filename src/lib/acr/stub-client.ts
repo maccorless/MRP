@@ -8,9 +8,9 @@ export class AcrStubClient implements AcrAdapter {
   async pushOrgData(orgs: OrgExportRecord[]): Promise<{ pushed: number }> {
     console.log(`[ACR STUB] pushOrgData called with ${orgs.length} records`);
     for (const org of orgs) {
-      const total = org.eSlots + org.esSlots + org.epSlots + org.epsSlots + org.etSlots + org.ecSlots + org.nocESlots + (org.enrSlotsGranted ?? 0);
+      const total = org.eSlots + org.esSlots + org.epSlots + org.epsSlots + org.etSlots + org.ecSlots + org.nocESlots + org.nocEsSlots + (org.enrSlotsGranted ?? 0);
       const enrTag = org.enrSlotsGranted != null ? ` ENR:${org.enrSlotsGranted}` : "";
-      console.log(`[ACR STUB]  ${org.nocCode} / ${org.orgName} — E:${org.eSlots} Es:${org.esSlots} EP:${org.epSlots} EPs:${org.epsSlots} ET:${org.etSlots} EC:${org.ecSlots} NocE:${org.nocESlots}${enrTag} (total:${total})`);
+      console.log(`[ACR STUB]  ${org.nocCode} / ${org.orgName} — E:${org.eSlots} Es:${org.esSlots} EP:${org.epSlots} EPs:${org.epsSlots} ET:${org.etSlots} EC:${org.ecSlots} NocE:${org.nocESlots} NocEs:${org.nocEsSlots}${enrTag} (total:${total})`);
     }
     return { pushed: orgs.length };
   }

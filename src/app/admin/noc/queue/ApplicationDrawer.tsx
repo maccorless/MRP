@@ -9,6 +9,7 @@ import { ORG_TYPE_LABEL, GEO_COVERAGE_LABEL, PUB_TYPE_LABEL } from "@/lib/labels
 import { ACTION_LABEL } from "@/lib/audit-query";
 import { formatAddress } from "@/lib/format";
 import { progressWidthClass } from "@/lib/progress";
+import { ineligibilityFlags } from "@/lib/eligibility";
 import {
   approveApplication,
   returnApplication,
@@ -832,16 +833,61 @@ export function ApplicationDrawer({
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
                           <strong>Approving this application</strong> confirms the organisation is eligible to apply — it does not commit any accreditation slots. Slot quantities are negotiated in the Press by Number (PbN) phase after all applications are reviewed.
                         </div>
+                        {(() => {
+                          const flags = ineligibilityFlags({
+                            contactEmail: app.contactEmail as string | null | undefined,
+                            orgEmail: org.orgEmail as string | null | undefined,
+                            secondaryContactEmail: app.secondaryEmail as string | null | undefined,
+                          });
+                          if (flags.length === 0) return null;
+                          return (
+                            <div className="p-3 bg-amber-50 border-2 border-amber-300 rounded-lg text-xs text-amber-900 space-y-1.5">
+                              <div className="font-semibold uppercase tracking-wide text-[11px] flex items-center gap-1.5">
+                                <span aria-hidden>⚠</span> Eligibility flag
+                              </div>
+                              {flags.map((f) => (
+                                <p key={f.code} className="leading-relaxed">{f.label}</p>
+                              ))}
+                              <p className="leading-relaxed pt-1">
+                                You must explicitly confirm before accepting this application as a candidate.
+                              </p>
+                            </div>
+                          );
+                        })()}
                         <div className="bg-white rounded-lg border border-gray-200 p-4">
                           <h3 className="text-sm font-semibold text-gray-900 mb-1">Accept as Candidate</h3>
                           <p className="text-xs text-gray-500 mb-3">
                             Marks this organisation as a <strong>candidate</strong>{" "}for press accreditation. Slot allocation happens separately in Press by Number.
                           </p>
-                          <form action={approveApplication} className="space-y-3">
-                            <input type="hidden" name="id" value={app.id} />
-                            <textarea name="internal_note" rows={2} placeholder="Internal note (optional, NOC only)" className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none" />
-                            <button type="submit" className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer">Accept as Candidate</button>
-                          </form>
+                          {(() => {
+                            const flags = ineligibilityFlags({
+                              contactEmail: app.contactEmail as string | null | undefined,
+                              orgEmail: org.orgEmail as string | null | undefined,
+                              secondaryContactEmail: app.secondaryEmail as string | null | undefined,
+                            });
+                            const hasFlags = flags.length > 0;
+                            return (
+                              <form action={approveApplication} className="space-y-3">
+                                <input type="hidden" name="id" value={app.id} />
+                                <textarea name="internal_note" rows={2} placeholder="Internal note (optional, NOC only)" className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none" />
+                                {hasFlags && (
+                                  <label className="flex items-start gap-2 text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                                    <input
+                                      type="checkbox"
+                                      name="ack_eligibility_flag"
+                                      value="1"
+                                      required
+                                      className="mt-0.5 rounded border-amber-300 text-amber-700 focus:ring-amber-400"
+                                    />
+                                    <span>
+                                      I have reviewed the eligibility flag above and confirm this organisation is <strong>not</strong> a government ministry, official, or other ineligible entity per IOC Strategic Plan §1.3.
+                                    </span>
+                                  </label>
+                                )}
+                                <button type="submit" className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer">Accept as Candidate</button>
+                              </form>
+                            );
+                          })()}
                         </div>
                         <div className="bg-white rounded-lg border border-gray-200 p-4">
                           <h3 className="text-sm font-semibold text-gray-900 mb-1">Return for Corrections</h3>

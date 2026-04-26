@@ -1,9 +1,11 @@
 **Created: 13-Apr-2026 21:30 CEST**
-**Last updated: 16-Apr-2026 14:00 CEST**
+**Last updated: 26-Apr-2026 14:00 CEST**
 
 # Strategic Plan Gap Analysis
 
-Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditation Strategic Plan (Feb 2026 FINAL)** and the **Paris Master Allocation Table**. This report cross-references our `docs/stakeholder-questions.md` against the Strategic Plan to identify what's already answered, what conflicts, what we missed, and what's still genuinely open.
+Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditation Strategic Plan (Feb 2026 FINAL)** and the **Paris Master Allocation Table**. This report cross-references our stakeholder-questions document against the Strategic Plan to identify what's already answered, what conflicts, what we missed, and what's still genuinely open.
+
+Refreshed on 2026-04-26: a re-audit of the codebase against the plan produced a "resolved since 13 April" inventory and twelve newly-decided items, captured below in §5 and §6. The original §1–§4 are preserved as a historical record of the 2026-04-13 reading.
 
 > Source of truth: the Strategic Plan is the authoritative IOC document on the accreditation process for LA28, jointly agreed between IOC and LA28.
 
@@ -74,7 +76,7 @@ Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditat
 
 ---
 
-## Highest-priority takeaways for Thursday meeting
+## Highest-priority takeaways for Thursday meeting (historical, 2026-04-13)
 
 - **Our PbN approval model (OCOG-approves) is inverted** from what the plan says. R-2 needs to be re-opened.
 - **Our EoI "approve as candidate" step has no basis in the plan** — EoI is pure intake.
@@ -82,3 +84,65 @@ Produced on 2026-04-13 after Emma Morris (IOC) shared the **IOC Press Accreditat
 - Design blind spots: **Sport Specialists (co-host cities)**, **Ex/EPx local press**, **gender equality set-aside**, **Master E weekly reporting**, **NOC allocation hierarchy**, **government-officials auto-reject rule**, **three-week IOC approval lead time**.
 - **Spanish** is a missing language requirement alongside French.
 - **USOPC's Excel reality** is likely the IOC Master E database itself (PbN tabs) — understanding that document is key to the "Excel import/sync" question.
+
+---
+
+## 5. Resolved since 13 April (audit confirmed 2026-04-26)
+
+The 2026-04-13 → 2026-04-26 commits and decisions resolved the following plan items. They no longer require action from this gap analysis.
+
+- **Two-stage architecture (EoI as intake only, PbN as authoritative allocation).** EoI "approve as candidate" reframed across `/apply` copy and the NOC review drawer. PRP-FR-006 + PRP-FR-009 reflect the model.
+- **PbN approval inversion.** IOC sets quotas; OCOG formally approves PbN; IOC retains override authority. PRP-FR-013 and PRP-FR-019.
+- **ENR is part of PbN, same 18 Dec 2026 deadline.** ENR self-application via the EoI form, NOC prioritisation, IOC grant from holdback. PRP-FR-022 to PRP-FR-025.
+- **6,000 hard cap (§2.1).** `event_settings.capacity` defaults to 6000 in `src/db/schema.ts`. Excludes Ex/EPx as required by the plan.
+- **Responsible Organisation terminology.** Adopted in PbN, IOC-Direct, and ENR UI. Remaining sweep tracked under v0.9 "UI copy finalisation pass".
+- **Org type taxonomy (`non_mrh`, `ino`, `if_staff`).** Shipped in commit `b1f2697`.
+- **30 Oct 2026 hard EoI window close.** OCOG-controlled, plan-aligned (PRP-FR-005).
+- **French localisation of `/apply`.** Shipped in commit `982ff55`.
+- **EoI deadline as IOC-owned, not per-NOC.** Reflected in PRP-FR-005.
+- **NOC reversal model.** Plan: amendments must route through IOC. PRP supports OCOG reversal (`ocog_approved` → `noc_submitted`) and IOC override path (PRP-FR-019).
+
+## 6. Decisions taken 2026-04-26 against remaining plan items
+
+A re-audit of `main` against the Strategic Plan on 2026-04-26 surfaced twelve items either not in code or worth re-flagging. Each was reviewed with the user and resolved into one of four buckets. The full discussion lives in `~/.claude/plans/please-review-docs-input-and-optimized-tome.md`; this section captures the conclusions.
+
+### Bucket A — Committed v0.9 PRP code work
+
+| Item | Plan ref | Decision |
+|---|---|---|
+| Government / ineligibility soft-warn | §1.3 | Flag `.gov` email domains at NOC review with NOC-acknowledge override. Other ineligible categories (PR, athlete management, etc.) handled as guidance copy in NOC help, not auto-detection — they aren't reliably inferable from EoI fields. |
+| NOC allocation hierarchy soft-sort | §1.6 | Add an "IOC suggested priority" sort option to NOC EoI queue and PbN allocation table, ordering rows by `org_type` priority. Plus add the hierarchy to `/admin/noc/help` and in-form NOC reviewer copy. No hard enforcement (plan says "should consider"). |
+| ENR >3 slot soft warning | §Non-MRH allocation reminders | Soft informational warning on the ENR EoI section when `slots_requested > 3`. No hard cap, no schema change. IOC's existing free-integer grant flow handles CNN-class exceptions organically. |
+| IOC-Direct ENR path | §Non-MRH allocation reminders | Extend the `IOC_DIRECT` pseudo-NOC pattern to ENR. Relax `enr_requests.noc_code` FK to allow `IOC_DIRECT`; mirror the NOC ENR prioritisation screen at `/admin/ioc/enr/direct`. Reuses FR-026 + FR-024 patterns. |
+| Spanish localisation | §4.2 | **Promoted from `TODOS.md` "pending" to committed v0.9 scope.** Minimum surfaces: `/apply` form pack, applicant emails, NOC-facing admin screens (EoI queue / PbN / ENR prioritisation), NOC user manual. OCOG and IOC admin screens stay English-only per plan §4.2. Sequence after the v0.9 UI copy finalisation pass. |
+| OIAC visa caveated copy | §Other Key Points | Add a caveated paragraph to `/apply/how-it-works` describing the OIAC's intended visa/entry function with an explicit "subject to LA28 + US authority confirmation closer to the Games" qualifier. Mirror in EN / FR / ES. Gate ship on Emma's blessing of the wording. |
+
+### Bucket B — Committed v0.9 process / docs work
+
+| Item | Plan ref | Decision |
+|---|---|---|
+| Three-week IOC document approval lead time | §2.3 | Document the rule in a release-process artifact and a per-release "≥3 weeks with IOC? Yes / N/A" checklist item. No code feature. Scope: IOC-reviewable surfaces (EoI form fields, applicant copy, applicant emails, NOC manual). |
+
+### Bucket C — Open questions for Emma / Martyn (added to `stakeholder-questions-21-April-2026.md`)
+
+| Item | Plan ref | Decision / D.TEC prior |
+|---|---|---|
+| Multinational org country/NOC assignment | §1.4 (eligibility) | Cross-cutting: for CNN, Reuters, AFP, AP, Xinhua, Getty, Bloomberg etc., what country/NOC do we record on the application — HQ country, journalist's home base, or `IOC_DIRECT`? Affects all flows, not just ENR. Needs a clear rule before launch. |
+| Gender equality set-aside pool | §1.6 Gender Equality | D.TEC prior: out-of-PRP for LA28 (set-aside is journalist-level, reads as Press by Name / ACR territory). May live in a future IOC quota-management system. Awaiting Emma's confirmation. |
+| IF Sport Specialists flow + co-host city Ex/EPx flow + timing | §2.6, §3.1 | Largest single design gap remaining. Needs flow + timing design before code. Open: (a) does IF flow run as a parallel process reusing NOC screens with body-scoped `pbn_deadline`? (b) is co-host city Ex/EPx a third process distinct from NOC EoI→PbN and IF Sport Specialists? (c) how do all three sequence and overlap? (d) does USOPC Ex/EPx flow through PRP at all, or is it ACR-imported only? |
+| Capture applicant's preferred language on EoI | §4.2 | Companion to the Spanish v0.9 commitment. Should EoI capture a `preferred_language` so we serve the right pack on return visits, or stick with browser-locale? Default today is browser-locale-only. |
+
+### Bucket D — Out of scope / parked
+
+| Item | Plan ref | Decision |
+|---|---|---|
+| NOC E quota formula | §1.6 | Out of PRP scope for LA28. IOC computes the formula on its side and uploads/enters `noc_e_total`. PRP is the recording surface, not the calculator. Re-evaluate for LA2030+ if PRP grows into a quota-creation system. |
+| NOC E individual transferability | §1.6 NEW! | ACR / Press by Name scope. PRP allocates the slot to an org during PbN; person-to-person transfer happens downstream. |
+| Photographers Undertaking + NOC E Conditions of Participation | §1.6, §1.3, Annexes | Both individual-level, both Press by Name (ACR, 2027) territory. Add a sentence to PRP-FR-025 noting these are intentionally out of scope. ENR News Access Rules undertaking remains the only PRP undertaking concern. |
+| Admin-side free-text translation for cross-NOC viewers | (not in plan) | **Future Ideas only**, not v0.9 / v1.0. Backed by a D.TEC API wrapper around AWS Translate so credentials, rate limiting, audit, and prompt sanitisation stay inside D.TEC infrastructure. |
+
+### Cross-references
+
+- Bucket A and B items land in `TODOS.md` v0.9 / v1.0 sections.
+- Bucket C items land in `docs/input and feedback/stakeholder-questions-21-April-2026.md` Part 1.
+- Bucket D items land in `TODOS.md` Future Ideas (translation only) or are non-actions documented here.

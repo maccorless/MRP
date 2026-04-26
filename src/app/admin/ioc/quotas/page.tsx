@@ -26,6 +26,7 @@ export default async function QuotasPage({
   const totalPress = quotas.reduce((s, q) => s + q.pressTotal, 0);
   const totalPhoto = quotas.reduce((s, q) => s + q.photoTotal, 0);
   const totalNocE  = quotas.reduce((s, q) => s + q.nocETotal,  0);
+  const totalNocEs = quotas.reduce((s, q) => s + q.nocEsTotal, 0);
   const totalE     = quotas.reduce((s, q) => s + q.eTotal,     0);
   const totalEs    = quotas.reduce((s, q) => s + q.esTotal,    0);
   const totalEp    = quotas.reduce((s, q) => s + q.epTotal,    0);
@@ -195,7 +196,7 @@ export default async function QuotasPage({
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide sticky left-0 bg-gray-50">NOC</th>
-                  {(["E","Es","EP","EPs","ET","EC","NocE"] as const).map((h) => (
+                  {(["E","Es","EP","EPs","ET","EC","NocE","NocEs"] as const).map((h) => (
                     <th key={h} className="text-right px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
                   ))}
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
@@ -205,13 +206,14 @@ export default async function QuotasPage({
               <tbody className="divide-y divide-gray-100">
                 {quotas.map((q) => {
                   const cats = [
-                    { key: "e",     val: q.eTotal   },
-                    { key: "es",    val: q.esTotal   },
-                    { key: "ep",    val: q.epTotal   },
-                    { key: "eps",   val: q.epsTotal  },
-                    { key: "et",    val: q.etTotal   },
-                    { key: "ec",    val: q.ecTotal   },
-                    { key: "noc_e", val: q.nocETotal },
+                    { key: "e",      val: q.eTotal    },
+                    { key: "es",     val: q.esTotal   },
+                    { key: "ep",     val: q.epTotal   },
+                    { key: "eps",    val: q.epsTotal  },
+                    { key: "et",     val: q.etTotal   },
+                    { key: "ec",     val: q.ecTotal   },
+                    { key: "noc_e",  val: q.nocETotal },
+                    { key: "noc_es", val: q.nocEsTotal },
                   ];
                   return (
                   <tr key={q.id}>
@@ -227,7 +229,7 @@ export default async function QuotasPage({
                         />
                       </td>
                     ))}
-                    <td className="px-4 py-2 text-right text-gray-500">{q.pressTotal + q.photoTotal + q.nocETotal}</td>
+                    <td className="px-4 py-2 text-right text-gray-500">{q.pressTotal + q.photoTotal + q.nocETotal + q.nocEsTotal}</td>
                     <td className="px-4 py-2 text-xs text-gray-400">
                       {q.setAt
                         ? new Date(q.setAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -281,7 +283,8 @@ export default async function QuotasPage({
                   <td className="px-3 py-2.5 text-right text-gray-700">{q.etTotal}</td>
                   <td className="px-3 py-2.5 text-right text-gray-700">{q.ecTotal}</td>
                   <td className="px-3 py-2.5 text-right text-gray-700">{q.nocETotal}</td>
-                  <td className="px-4 py-2.5 text-right font-semibold text-gray-900">{q.eTotal + q.esTotal + q.epTotal + q.epsTotal + q.etTotal + q.ecTotal + q.nocETotal}</td>
+                  <td className="px-3 py-2.5 text-right text-gray-700">{q.nocEsTotal}</td>
+                  <td className="px-4 py-2.5 text-right font-semibold text-gray-900">{q.eTotal + q.esTotal + q.epTotal + q.epsTotal + q.etTotal + q.ecTotal + q.nocETotal + q.nocEsTotal}</td>
                   <td className="px-4 py-2.5 text-xs text-gray-400">
                     {q.setAt
                       ? new Date(q.setAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -300,7 +303,8 @@ export default async function QuotasPage({
                 <td className="px-3 py-2.5 text-right font-semibold text-gray-900">{totalEt}</td>
                 <td className="px-3 py-2.5 text-right font-semibold text-gray-900">{totalEc}</td>
                 <td className="px-3 py-2.5 text-right font-semibold text-gray-900">{totalNocE}</td>
-                <td className="px-4 py-2.5 text-right font-semibold text-gray-900">{totalPress + totalPhoto + totalNocE}</td>
+                <td className="px-3 py-2.5 text-right font-semibold text-gray-900">{totalNocEs}</td>
+                <td className="px-4 py-2.5 text-right font-semibold text-gray-900">{totalPress + totalPhoto + totalNocE + totalNocEs}</td>
                 <td />
               </tr>
             </tfoot>

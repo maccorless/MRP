@@ -5,7 +5,7 @@ export const ORG_TYPE_LABEL: Record<string, string> = {
   news_agency:        "News Agency",
   freelancer:         "Freelancer / Independent",
   enr:                "ENR (Non-Rights Broadcaster)",
-  ino:                "INO (Intl Non-Gov Organisation)",
+  ino:                "INO (International News Organisation)",
   if_staff:           "IF Staff",
 
   // Excel-aligned values (LA28 Apr 2026 spec)
@@ -47,6 +47,54 @@ export const FREELANCE_ORG_TYPES = new Set([
   // legacy
   "freelancer",
 ]);
+
+// IOC suggested allocation priority per Strategic Plan §1.6:
+// "national news agency → national sports agency → general daily →
+//  sports daily → specialist magazine → general magazine".
+//
+// Lower number = higher priority. Used as a soft-sort signal in the
+// NOC EoI queue and PbN allocation table; NOC retains discretion (the
+// plan says "should consider", not "must enforce").
+export const ORG_TYPE_PRIORITY: Record<string, number> = {
+  // Tier 1: news agencies (national news / sports agencies)
+  press_agency:                   10,
+  news_agency:                    10, // legacy
+  photo_agency:                   15,
+
+  // Tier 2: daily newspapers (general + sports)
+  print_media:                    20, // covers both daily newspaper and magazine; sub-tier handled by sport_specialist_print
+  sport_specialist_print:         25,
+
+  // Tier 3: specialist outlets (sport-specific magazines / websites)
+  sport_specialist_website:       30,
+  sport_specialist_photographer:  30,
+
+  // Tier 4: general magazines + editorial websites
+  editorial_website:              40,
+  media_print_online:             40, // legacy
+
+  // Tier 5: photographers + broadcasters
+  photographer:                   50,
+  media_broadcast:                50, // legacy
+
+  // Tier 6: freelancers + IF staff + Non-MRH
+  freelance_journalist:           60,
+  freelance_photographer:         60,
+  freelancer:                     60, // legacy
+  if_staff:                       65,
+  non_mrh:                        70,
+  enr:                            70,
+  ino:                            75,
+
+  // Catch-all
+  other:                          90,
+};
+
+// Convenience: get the priority for an org type, defaulting to 99 (lowest).
+export function getOrgTypePriority(orgType: string | null | undefined): number {
+  if (!orgType) return 99;
+  return ORG_TYPE_PRIORITY[orgType] ?? 99;
+}
 
 export const GEO_COVERAGE_LABEL: Record<string, string> = {
   international: "International",

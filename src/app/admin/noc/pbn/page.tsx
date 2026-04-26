@@ -19,6 +19,9 @@ const ERROR_MSG: Record<string, string> = {
   over_et_quota:  "ET (Technician) slot total exceeds your quota.",
   over_ec_quota:  "EC (Support Staff) slot total exceeds your quota.",
   invalid_org:    "Organisation name and type are required.",
+  missing_org:    "Could not identify the organisation to cancel. Please refresh and try again.",
+  alloc_not_found: "Allocation row not found. It may have already been cancelled or removed.",
+  cancel_not_allowed: "Cancellation is only available before OCOG approval. Contact OCOG to reverse the approval first.",
 };
 
 export default async function NocPbnPage({
@@ -246,6 +249,11 @@ export default async function NocPbnPage({
       {success === "saved" && (
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm">
           Draft allocations saved.
+        </div>
+      )}
+      {success === "entry_cancelled" && (
+        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded text-orange-800 text-sm">
+          PbN entry cancelled.
         </div>
       )}
       {error && (

@@ -12,7 +12,8 @@ type Cat = {
   code: string;        // display code, e.g. "E", "Es", "ENR"
   title: string;       // short title
   description: string; // longer description
-  max: number;         // 100 or 3
+  max: number;         // hard upper bound enforced by the input
+  softMax?: number;    // optional soft cap; values above this trigger an informational warning, not a validation error
 };
 
 // All 7 categories from the Excel spec, in order. Copy aligned to IOC wording
@@ -64,8 +65,9 @@ const CATEGORIES: Cat[] = [
     key: "ENR",
     code: "ENR",
     title: "Non-Media Rights-Holding Organisation",
-    description: "Non-media rights holding radio and/or television organisation. ENR accreditations are granted by the National Olympic Committees but in close consultation with the IOC. Please refer to the exact process on www.olympics.com. The numbers of ENR accreditations are very limited. ENR accreditations are allocated only by the IOC in consultation with the NOC. Max 3.",
-    max: 3,
+    description: "Non-media rights holding radio and/or television organisation. ENR accreditations are granted by the National Olympic Committees but in close consultation with the IOC. Please refer to the exact process on www.olympics.com. The numbers of ENR accreditations are very limited. ENR accreditations are allocated only by the IOC in consultation with the NOC. Typically up to 3 per organisation; the IOC may grant more for certain international-focus organisations.",
+    max: 100,
+    softMax: 3,
   },
 ];
 
@@ -156,6 +158,11 @@ export function AccreditationStep({
                 {parseInt(values[cat.key], 10) > cat.max && (
                   <p className="text-xs text-red-600 mt-1">
                     The value must be less than or equal to {cat.max}.
+                  </p>
+                )}
+                {cat.softMax !== undefined && parseInt(values[cat.key], 10) > cat.softMax && parseInt(values[cat.key], 10) <= cat.max && (
+                  <p className="text-xs text-amber-700 mt-1 max-w-xs text-right">
+                    The IOC only approves more than {cat.softMax} ENR slots for certain press organisations.
                   </p>
                 )}
                 {/* Hidden boolean that mirrors "is this requested" for backend compat */}

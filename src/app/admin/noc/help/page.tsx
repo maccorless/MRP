@@ -31,6 +31,8 @@ export default async function NocHelpPage() {
               </ul>
             </li>
             <li className="mt-2"><a href="#direct-entry-explained" className="text-brand-blue hover:underline">Direct Entry Explained</a></li>
+            <li><a href="#allocation-hierarchy" className="text-brand-blue hover:underline">Allocation Hierarchy</a></li>
+            <li><a href="#ineligible-orgs" className="text-brand-blue hover:underline">Ineligible Organisations</a></li>
             <li><a href="#faq" className="text-brand-blue hover:underline">FAQ</a></li>
           </ul>
         </nav>
@@ -153,6 +155,42 @@ export default async function NocHelpPage() {
               <li>Optional: website, requested slot counts, internal notes (not shown to the organisation).</li>
               <li>To credential your own communications staff: create a direct entry for your NOC communications team and select category E.</li>
             </ul>
+          </div>
+
+          <div id="allocation-hierarchy" className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-5">
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">IOC suggested allocation hierarchy</h2>
+            <p className="text-sm text-gray-600 mb-3">
+              The IOC Press Accreditation Strategic Plan (§1.6) recommends NOCs consider the following priority order when allocating their quota across affiliated organisations. This is <span className="font-medium text-gray-800">guidance, not a hard rule</span> — your NOC retains full discretion over its allocations, but the hierarchy reflects the IOC&apos;s expectation of how a fair and balanced quota should be distributed.
+            </p>
+            <ol className="text-sm text-gray-700 space-y-1.5 list-decimal pl-5">
+              <li>National news agency</li>
+              <li>National sports agency</li>
+              <li>General daily newspaper</li>
+              <li>Sports daily</li>
+              <li>Single sport or multi-sport specialist magazine, sports internet site</li>
+              <li>General information magazine and general news internet sites</li>
+            </ol>
+            <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+              The NOC EoI Queue includes a <span className="font-medium">Sort by IOC suggested priority</span> option that orders applications using this hierarchy as a tie-breaker. You are free to allocate against any other order that fits your territory&apos;s needs.
+            </p>
+          </div>
+
+          <div id="ineligible-orgs" className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-5">
+            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Ineligible organisations</h2>
+            <p className="text-sm text-gray-600 mb-3">
+              The IOC Strategic Plan (§1.3) lists categories of applicants who do <span className="font-semibold text-gray-800">not</span> qualify for press accreditation. Please reject any EoI that falls into one of these categories:
+            </p>
+            <ul className="text-sm text-gray-700 space-y-1.5 list-disc pl-5">
+              <li>Government ministries or organisations (including officials acting on behalf of governments — applications from <span className="font-mono">.gov</span> email domains will be flagged automatically; you must acknowledge before accepting)</li>
+              <li>Publishers and marketing personnel</li>
+              <li>Athlete management companies</li>
+              <li>Individuals representing athletes</li>
+              <li>Advertising, public relations and promotion agencies</li>
+              <li>Commercial partners associated with NOCs</li>
+            </ul>
+            <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+              If your NOC mistakenly allocates to one of these categories, the IOC may reject the accreditation at PbN review without re-allocation. When rejecting an ineligible application, briefly note the reason in the rejection note so the audit trail is clear.
+            </p>
           </div>
 
           <div id="faq" className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">

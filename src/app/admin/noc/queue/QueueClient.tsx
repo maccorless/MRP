@@ -24,6 +24,7 @@ type Row = {
   contactName: string | null;
   submittedAt: Date | string;
   orgName: string;
+  orgType?: string | null;
 };
 
 type CompareTarget = {

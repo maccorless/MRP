@@ -24,6 +24,7 @@ export type OrgExportRecord = {
   etSlots:  number;
   ecSlots:  number;
   nocESlots: number;        // NOC-attached press attachés (separate quota pool)
+  nocEsSlots: number;       // Sport-specific NOC press attachés (added 2026-04-26 per Emma #197)
   // ENR (Extended Non-Rights Broadcaster) — null for regular EoI orgs
   enrSlotsGranted: number | null;
   commonCodesId: string | null;

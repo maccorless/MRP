@@ -10,13 +10,16 @@ const ORG_TYPE_OPTIONS = [
   { value: "news_agency",        label: "News Agency" },
 ];
 
-const CATEGORIES: { key: string; label: string; sub: string }[] = [
-  { key: "e",   label: "E",   sub: "Journalist" },
-  { key: "es",  label: "Es",  sub: "Sport-Specific Journalist" },
-  { key: "ep",  label: "EP",  sub: "Photographer" },
-  { key: "eps", label: "EPs", sub: "Sport-Specific Photographer" },
-  { key: "et",  label: "ET",  sub: "Technician" },
-  { key: "ec",  label: "EC",  sub: "Support Staff" },
+// Access scopes per Emma feedback 2026-04-24 (comment #71). Surfaced
+// inline so NOC admins see what each category's accreditation actually
+// grants without leaving the form.
+const CATEGORIES: { key: string; label: string; sub: string; access: string }[] = [
+  { key: "e",   label: "E",   sub: "Journalist",                      access: "ALL competition venues" },
+  { key: "es",  label: "Es",  sub: "Sport-specific journalist",       access: "Own sport venues only" },
+  { key: "ep",  label: "EP",  sub: "Photographer",                    access: "ALL competition venues" },
+  { key: "eps", label: "EPs", sub: "Sport-specific photographer",     access: "Own sport venues only" },
+  { key: "et",  label: "ET",  sub: "Technician",                      access: "ALL venues, no seating" },
+  { key: "ec",  label: "EC",  sub: "Support staff",                   access: "MPC only" },
 ];
 
 interface Props {
@@ -189,25 +192,31 @@ export default function DirectEntryForm({ action }: Props) {
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Accreditation Categories</h2>
         <p className="text-xs text-gray-500">Select all that apply and enter requested slot quantities.</p>
         <div className="space-y-3">
-          {CATEGORIES.map(({ key, label, sub }) => (
-            <div key={key} className="flex items-center gap-4">
-              <label className="flex items-center gap-2 w-56 cursor-pointer">
+          {CATEGORIES.map(({ key, label, sub, access }) => (
+            <div key={key} className="flex items-start gap-4">
+              <label className="flex items-start gap-2 w-72 cursor-pointer">
                 <input
                   type="checkbox" name={`category_${key}`}
-                  className="rounded border-gray-300 text-blue-600"
+                  className="rounded border-gray-300 text-blue-600 mt-0.5"
                   onChange={(e) => toggleCategory(key, e.target.checked)}
                 />
-                <span className="text-sm font-medium text-gray-900">{label}</span>
-                <span className="text-xs text-gray-500">{sub}</span>
+                <span className="flex-1">
+                  <span className="text-sm font-medium text-gray-900">{label}</span>
+                  <span className="text-xs text-gray-500 ml-2">{sub}</span>
+                  <span className="block text-[11px] text-gray-400 leading-snug mt-0.5">Access: {access}</span>
+                </span>
               </label>
               <input
                 type="number" name={`requested_${key}`}
                 min={0} placeholder="slots"
                 aria-label={`${label} (${sub}) — requested slots`}
-                className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue mt-0.5"
               />
             </div>
           ))}
+        </div>
+        <div className="text-xs text-gray-500 border-t border-gray-100 pt-3 leading-relaxed">
+          <span className="font-medium text-gray-700">NOC E and NOC Es</span> (press attaché categories) are allocated to your own NOC Communications Staff record on the Press by Number screen, not selected here. Press attachés can <em>only</em> hold NOC E / NOC Es accreditation; do not allocate E, EP, or other categories to your own staff.
         </div>
 
         {showSportPicker && (

@@ -85,6 +85,17 @@ export default async function HowItWorksPage({
         </dl>
       </div>
 
+      {/* OIAC visa note (caveated; subject to LA28 + US authority confirmation) */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 text-sm text-blue-900">
+        <h2 className="text-sm font-semibold uppercase tracking-wide mb-2">About the Olympic Identity and Accreditation Card (OIAC)</h2>
+        <p className="leading-relaxed">
+          Per Rule 52 of the Olympic Charter and the Host City Contract, the OIAC issued at the Games — together with a valid passport or other travel document — is intended to allow the holder to enter and remain in the Host Country and carry out professional duties related to the Olympic Games for at least one month before and one month after the Games, without the need of a separate visa or work permit.
+        </p>
+        <p className="mt-2 leading-relaxed text-xs italic text-blue-800">
+          Subject to LA28 and the relevant US authorities confirming Games-time visa arrangements closer to the Games. Final entitlements will be communicated through your NOC and on the LA28 press accreditation portal nearer to 2028.
+        </p>
+      </div>
+
       <div className="text-center">
         <Link
           href={`/apply/form${langSuffix}`}
