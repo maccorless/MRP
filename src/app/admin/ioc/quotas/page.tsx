@@ -265,7 +265,7 @@ export default async function QuotasPage({
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide sticky left-0 bg-gray-50">NOC</th>
-                {(["E","Es","EP","EPs","ET","EC","NocE"] as const).map((h) => (
+                {(["E","Es","EP","EPs","ET","EC","NocE","NocEs"] as const).map((h) => (
                   <th key={h} className="text-right px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
                 <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
