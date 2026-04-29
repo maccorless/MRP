@@ -3,8 +3,8 @@ import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations, enrRequests, eventSettings, organizations } from "@/db/schema";
 import { requireIocSession } from "@/lib/session";
 import { derivePbnStatus } from "@/lib/quota-calc";
+import { MasterAllocationClient } from "./MasterAllocationClient";
 import {
-  MasterAllocationClient,
   addSlots,
   ZERO_SLOTS,
   type CategorySlots,
@@ -14,7 +14,7 @@ import {
   type OrgAllocRow,
   type EventCapacity,
   type GrandTotals,
-} from "./MasterAllocationClient";
+} from "./allocation-utils";
 
 const EVENT_ID = "LA28";
 const IOC_DIRECT = "IOC_DIRECT";
