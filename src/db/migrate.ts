@@ -112,10 +112,20 @@ async function run() {
     const content = await readFile(join(migrationsDir, file), "utf-8");
     console.log(`  apply ${file}`);
 
-    await sql.begin(async (tx) => {
-      await tx.unsafe(content);
-      await tx.unsafe(`INSERT INTO _migrations (filename) VALUES ($1)`, [file]);
-    });
+    // ALTER TYPE ... ADD VALUE cannot run inside a transaction in PostgreSQL < 12.
+    // Detect these migrations and run them without a transaction wrapper so the
+    // runner doesn't abort on older Postgres versions.
+    const needsNoTx = /ALTER\s+TYPE\s+\S+\s+ADD\s+VALUE/i.test(content);
+
+    if (needsNoTx) {
+      await sql.unsafe(content);
+      await sql`INSERT INTO _migrations (filename) VALUES (${file})`;
+    } else {
+      await sql.begin(async (tx) => {
+        await tx.unsafe(content);
+        await tx.unsafe(`INSERT INTO _migrations (filename) VALUES ($1)`, [file]);
+      });
+    }
 
     count++;
   }
