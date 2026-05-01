@@ -184,9 +184,9 @@ export const en = {
   "org.noc.label": "Responsible NOC",
   "org.noc.placeholder": "USA — United States of America",
   "org.noc.autoSelected": "Auto-selected:",
-  "org.noc.autoSelectedSuffix": "based on your country. Change this if your organisation is reviewed by a different NOC.",
+  "org.noc.autoSelectedSuffix": "based on your country.",
   "org.noc.help":
-    "The National Olympic Committee responsible for reviewing your application. Usually matches your country — select your country above to auto-fill.",
+    "Apply to the NOC of the country where your organisation is based. Select your country above to auto-fill.",
 
   "org.address.heading": "Mailing Address",
   "org.address.optional": "(optional)",

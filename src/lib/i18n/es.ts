@@ -184,9 +184,9 @@ export const es = {
   "org.noc.label": "CON responsable",
   "org.noc.placeholder": "ESP — España",
   "org.noc.autoSelected": "Seleccionado automáticamente:",
-  "org.noc.autoSelectedSuffix": "según su país. Cámbielo si su organización es revisada por un CON diferente.",
+  "org.noc.autoSelectedSuffix": "según su país.",
   "org.noc.help":
-    "El Comité Olímpico Nacional responsable de revisar su solicitud. Normalmente coincide con su país — seleccione su país arriba para autocompletar.",
+    "Presente su solicitud al CON del país donde está basada su organización. Seleccione su país arriba para autocompletar.",
 
   "org.address.heading": "Dirección postal",
   "org.address.optional": "(opcional)",

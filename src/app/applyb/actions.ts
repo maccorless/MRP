@@ -8,7 +8,6 @@ import {
   organizations,
   applications,
   auditLog,
-  reservedOrganizations,
   nocEoiWindows,
   invitations,
 } from "@/db/schema";
@@ -326,20 +325,6 @@ export async function submitApplication(formData: FormData) {
   const website = websiteRaw && /^https?:\/\/.+\..+/.test(websiteRaw) ? websiteRaw : null;
 
   const emailDomain = email.split("@")[1];
-
-  // Block reserved IOC-direct organizations (AFP, AP, Reuters, Xinhua, etc.)
-  const [reservedMatch] = await db
-    .select({ name: reservedOrganizations.name })
-    .from(reservedOrganizations)
-    .where(
-      and(
-        eq(reservedOrganizations.eventId, "LA28"),
-        eq(reservedOrganizations.emailDomain, emailDomain)
-      )
-    );
-  if (reservedMatch) {
-    redirect("/applyb?error=reserved_org");
-  }
 
   const [existingOrg] = await db
     .select()

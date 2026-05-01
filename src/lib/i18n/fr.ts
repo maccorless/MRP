@@ -191,10 +191,9 @@ export const fr: Record<TranslationKey, string> = {
   "org.noc.label": "CNO responsable",
   "org.noc.placeholder": "FRA — France",
   "org.noc.autoSelected": "Sélection automatique :",
-  "org.noc.autoSelectedSuffix":
-    "basée sur votre pays. Modifiez si votre organisation est examinée par un CNO différent.",
+  "org.noc.autoSelectedSuffix": "basée sur votre pays.",
   "org.noc.help":
-    "Le Comité National Olympique responsable de l'examen de votre demande. Correspond généralement à votre pays — sélectionnez votre pays ci-dessus pour le remplir automatiquement.",
+    "Postulez auprès du CNO du pays où votre organisation est basée. Sélectionnez votre pays ci-dessus pour le remplir automatiquement.",
 
   "org.address.heading": "Adresse postale",
   "org.address.optional": "(facultatif)",
