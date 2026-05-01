@@ -19,7 +19,7 @@ export function StoryStep({
         <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
           Your publication / media
         </h3>
-        <PublicationFields prefill={prefill} />
+        <PublicationFields prefill={prefill} orgType={orgType} />
       </section>
 
       <section className="border-t border-gray-100 pt-6">
