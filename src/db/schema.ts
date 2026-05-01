@@ -92,6 +92,10 @@ export const auditActionEnum = pgEnum("audit_action", [
   "unreject",
   // 2026-04-26 — cancel a PbN entry entered by mistake (Emma feedback #9)
   "noc_pbn_cancel",
+  // 2026-04-30 — email receipt sent to applicant on submission
+  "eoi_receipt_sent",
+  // 2026-04-30 — Excel PbN re-import overwrote allocation values
+  "excel_reimport",
 ]);
 
 export const flagStateEnum = pgEnum("flag_state", ["off", "canary", "on"]);

@@ -6,6 +6,7 @@ import { NOC_CODES } from "@/lib/codes";
 import { requireBaseUrl } from "@/lib/env";
 import { requireNocSession, requireWritable } from "@/lib/session";
 import { generateToken, hashToken } from "@/lib/tokens";
+import { sendEmail } from "@/lib/email";
 
 export type InviteActionState = {
   inviteUrl: string | null;
@@ -13,6 +14,7 @@ export type InviteActionState = {
   emailTo: string | null;
   emailSubject: string | null;
   emailBody: string | null;
+  emailSent: boolean;
   error: string | null;
 };
 
@@ -48,17 +50,18 @@ export async function createInvitation(
   _prev: InviteActionState,
   formData: FormData
 ): Promise<InviteActionState> {
+  const blank = { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, emailSent: false };
   try {
     await requireWritable();
   } catch {
-    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "You do not have permission to perform this action." };
+    return { ...blank, error: "You do not have permission to perform this action." };
   }
 
   let session: Awaited<ReturnType<typeof requireNocSession>>;
   try {
     session = await requireNocSession();
   } catch {
-    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "Session expired. Please log in again." };
+    return { ...blank, error: "Session expired. Please log in again." };
   }
 
   const orgName        = (formData.get("org_name") as string)?.trim() || null;
@@ -69,12 +72,12 @@ export async function createInvitation(
   const recipientEmail = (formData.get("recipient_email") as string)?.trim().toLowerCase() || null;
 
   if (recipientEmail && (!recipientEmail.includes("@") || !recipientEmail.includes("."))) {
-    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "Please enter a valid email address." };
+    return { ...blank, error: "Please enter a valid email address." };
   }
 
   const VALID_ORG_TYPES = ["media_print_online", "media_broadcast", "news_agency", "freelancer"];
   if (orgType && !VALID_ORG_TYPES.includes(orgType)) {
-    return { inviteUrl: null, inviteId: null, emailTo: null, emailSubject: null, emailBody: null, error: "Invalid organisation type selected." };
+    return { ...blank, error: "Invalid organisation type selected." };
   }
 
   const rawToken = generateToken();
@@ -121,12 +124,24 @@ export async function createInvitation(
     expiryDays,
   });
 
+  let emailSent = false;
+  if (recipientEmail) {
+    const result = await sendEmail("invite", {
+      to: recipientEmail,
+      inviteUrl,
+      nocCode: session.nocCode,
+      senderName: session.displayName,
+    });
+    emailSent = result.ok;
+  }
+
   return {
     inviteUrl,
     inviteId: row.id,
     emailTo: recipientEmail,
     emailSubject,
     emailBody,
+    emailSent,
     error: null,
   };
 }

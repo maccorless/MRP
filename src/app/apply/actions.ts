@@ -12,6 +12,7 @@ import {
   invitations,
 } from "@/db/schema";
 import { isPersonalEmailDomain } from "@/lib/anomaly-detect";
+import { sendEmail } from "@/lib/email";
 
 export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean }> {
   const [row] = await db
@@ -63,6 +64,12 @@ export async function requestToken(formData: FormData) {
   const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
 
   await db.insert(magicLinkTokens).values({ email, tokenHash, expiresAt, ipAddress: ip });
+
+  const langValApply = (formData.get("lang") as string | null)?.toLowerCase();
+  const magicLinkLang: "EN" | "FR" | "ES" =
+    langValApply === "fr" ? "FR" : langValApply === "es" ? "ES" : "EN";
+
+  void sendEmail("magic_link", { to: email, token, lang: magicLinkLang });
 
   redirect(`/apply/verify?token=${token}&email=${encodeURIComponent(email)}`);
 }

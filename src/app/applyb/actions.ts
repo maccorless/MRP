@@ -12,6 +12,7 @@ import {
   invitations,
 } from "@/db/schema";
 import { isPersonalEmailDomain } from "@/lib/anomaly-detect";
+import { sendEmail } from "@/lib/email";
 
 export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean }> {
   const [row] = await db
@@ -63,6 +64,13 @@ export async function requestToken(formData: FormData) {
   const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
 
   await db.insert(magicLinkTokens).values({ email, tokenHash, expiresAt, ipAddress: ip });
+
+  const langVal = (formData.get("lang") as string | null)?.toLowerCase();
+  const magicLinkLang: "EN" | "FR" | "ES" =
+    langVal === "fr" ? "FR" : langVal === "es" ? "ES" : "EN";
+
+  // Send magic link email (fire-and-forget; redirect happens regardless)
+  void sendEmail("magic_link", { to: email, token, lang: magicLinkLang });
 
   redirect(`/applyb/verify?token=${token}&email=${encodeURIComponent(email)}`);
 }
@@ -488,6 +496,25 @@ export async function submitApplication(formData: FormData) {
         organizationId: org.id,
       },
     ]);
+  });
+
+  // Send EoI receipt email (fire-and-forget; failure is non-blocking)
+  void sendEmail("eoi_receipt", {
+    to: email,
+    contactName,
+    referenceNumber,
+    nocCode,
+    lang: preferredLanguage as "EN" | "FR" | "ES",
+  }).then(async (result) => {
+    if (result.ok) {
+      await db.insert(auditLog).values({
+        actorType: "system",
+        actorId: "system",
+        actorLabel: "Email service",
+        action: "eoi_receipt_sent",
+        organizationId: null,
+      }).catch(() => {});
+    }
   });
 
   redirect(`/applyb/submitted?ref=${referenceNumber}&email=${encodeURIComponent(email)}`);

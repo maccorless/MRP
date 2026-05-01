@@ -16,6 +16,7 @@ const INITIAL_STATE: InviteActionState = {
   emailTo: null,
   emailSubject: null,
   emailBody: null,
+  emailSent: false,
   error: null,
 };
 
@@ -59,9 +60,16 @@ export function InviteForm({
     return (
       <div className="space-y-4">
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm font-semibold text-green-800 mb-1">
-            Invite link created
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm font-semibold text-green-800 mb-1">
+              Invite link created
+            </p>
+            {state.emailSent && (
+              <span className="shrink-0 text-xs font-medium text-green-700 bg-green-100 border border-green-300 rounded-full px-2 py-0.5">
+                Email sent
+              </span>
+            )}
+          </div>
           <p className="text-sm text-green-700">
             Share this link with the organisation. It expires in 7 days and can
             only be used once.
@@ -89,8 +97,9 @@ export function InviteForm({
               <div>
                 <p className="text-sm font-semibold text-gray-800">Invitation email preview</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Email delivery isn&apos;t wired up yet. Copy the text below or open it in your
-                  mail client, then send it from your own inbox.
+                  {state.emailSent
+                    ? "The email was sent automatically. Copy the link above as a backup."
+                    : "Email could not be sent automatically. Copy the text below or open it in your mail client."}
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
