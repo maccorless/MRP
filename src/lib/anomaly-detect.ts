@@ -151,6 +151,16 @@ export function detectCrossNocDuplicates(appRows: AppRowForDuplicates[]): string
 
 // ─── Within-NOC duplicate detection ──────────────────────────────────────────
 
+const PERSONAL_EMAIL_DOMAINS = new Set([
+  "gmail.com", "outlook.com", "hotmail.com", "yahoo.com",
+  "icloud.com", "aol.com", "proton.me", "protonmail.com",
+  "gmx.com", "mail.com", "live.com", "msn.com",
+]);
+
+export function isPersonalEmailDomain(domain: string | null | undefined): boolean {
+  return !!domain && PERSONAL_EMAIL_DOMAINS.has(domain.toLowerCase());
+}
+
 const LEGAL_SUFFIX_RE = /\b(ltd|limited|inc|corp|corporation|llc|gmbh|pty|plc|bv|nv|sa|ag)\b\.?/gi;
 
 function normalizeOrgName(name: string): string {
@@ -179,6 +189,7 @@ interface OrgRow {
   name: string;
   country: string | null;
   contactEmail: string;
+  orgType: string | null;
 }
 
 function buildBucket(rows: OrgRow[], keyFn: (r: OrgRow) => string | null): Map<string, string[]> {
@@ -213,7 +224,15 @@ function addBucketSignal(
 function computeRawPairSignals(rows: OrgRow[]): Map<string, Set<DuplicateSignal>> {
   const pairSignals = new Map<string, Set<DuplicateSignal>>();
 
-  addBucketSignal(pairSignals, buildBucket(rows, (r) => r.emailDomain), "email_domain");
+  // Skip email_domain signal for personal email providers and freelancers —
+  // shared gmail/outlook domains are coincidental, not indicative of duplicates.
+  addBucketSignal(
+    pairSignals,
+    buildBucket(rows, (r) =>
+      isPersonalEmailDomain(r.emailDomain) || r.orgType === "freelancer" ? null : r.emailDomain,
+    ),
+    "email_domain",
+  );
   addBucketSignal(pairSignals, buildBucket(rows, (r) => r.contactEmail.toLowerCase()), "contact_email");
   addBucketSignal(pairSignals, buildBucket(rows, (r) => extractWebsiteHost(r.website)), "website_domain");
   addBucketSignal(
@@ -255,6 +274,7 @@ async function fetchDuplicatePairMap(
         name: organizations.name,
         country: organizations.country,
         contactEmail: applications.contactEmail,
+        orgType: organizations.orgType,
       })
       .from(applications)
       .innerJoin(organizations, eq(applications.organizationId, organizations.id))

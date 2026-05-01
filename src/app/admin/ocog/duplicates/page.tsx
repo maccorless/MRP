@@ -2,6 +2,7 @@ import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, applications } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { isPersonalEmailDomain } from "@/lib/anomaly-detect";
 
 export const metadata = { title: "Potential Duplicates — OCOG" };
 
@@ -39,6 +40,7 @@ export default async function OcogDuplicatesPage() {
   const crossNocByDomain = new Map<string, CrossNocGroup>();
   for (const row of crossNocRows) {
     if (!row.emailDomain) continue; // skip orgs without a domain
+    if (isPersonalEmailDomain(row.emailDomain)) continue; // personal domains are not meaningful cross-NOC signals
     const domain = row.emailDomain;
     let group = crossNocByDomain.get(domain);
     if (!group) {
@@ -84,6 +86,7 @@ export default async function OcogDuplicatesPage() {
   const withinNocMap = new Map<string, WithinNocGroup>();
   for (const row of withinNocRows) {
     if (!row.emailDomain) continue; // skip orgs without a domain
+    if (isPersonalEmailDomain(row.emailDomain)) continue; // personal domains are not meaningful within-NOC signals
     const key = `${row.nocCode}::${row.emailDomain}`;
     let group = withinNocMap.get(key);
     if (!group) {

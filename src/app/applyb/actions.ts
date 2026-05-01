@@ -11,6 +11,7 @@ import {
   nocEoiWindows,
   invitations,
 } from "@/db/schema";
+import { isPersonalEmailDomain } from "@/lib/anomaly-detect";
 
 export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean }> {
   const [row] = await db
@@ -370,8 +371,11 @@ export async function submitApplication(formData: FormData) {
     } else {
       // CRIT-04: detect multi-territory but do NOT surface it in UI.
       // Flag is stored for future IOC analysis (Open Question #16).
-      const samedomainOrgs = await tx
-        .select()
+      // Skip domain check for personal email providers and freelancers — shared
+      // gmail/outlook etc. are coincidental and not meaningful cross-NOC signals.
+      const skipDomainCheck = isPersonalEmailDomain(emailDomain) || orgType === "freelancer";
+      const samedomainOrgs = skipDomainCheck ? [] : await tx
+        .select({ id: organizations.id })
         .from(organizations)
         .where(eq(organizations.emailDomain, emailDomain));
 
