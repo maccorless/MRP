@@ -22,6 +22,7 @@ export default async function OcogNocEoiPage({
       orgName: organizations.name,
       orgType: organizations.orgType,
       country: organizations.country,
+      countryFlagged: organizations.countryFlagged,
       submittedAt: applications.submittedAt,
       categoryE: applications.categoryE,
       categoryEs: applications.categoryEs,
@@ -96,6 +97,11 @@ export default async function OcogNocEoiPage({
                     <span className="font-medium text-gray-900">{row.orgName}</span>
                     {row.country && (
                       <span className="ml-1.5 text-xs text-gray-400">{row.country}</span>
+                    )}
+                    {row.countryFlagged && (
+                      <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold bg-amber-100 text-amber-800 rounded">
+                        Country Flag
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-gray-600 text-xs">

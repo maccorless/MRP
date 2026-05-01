@@ -163,6 +163,7 @@ export const organizations = pgTable("organizations", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   contactInfoUpdatedAt: timestamp("contact_info_updated_at", { withTimezone: true }),
+  countryFlagged: boolean("country_flagged").notNull().default(false),
 });
 
 // ─── Applications ─────────────────────────────────────────────────────────────

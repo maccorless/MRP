@@ -14,6 +14,10 @@ import {
 import { isPersonalEmailDomain } from "@/lib/anomaly-detect";
 import { sendEmail } from "@/lib/email";
 
+// ISO 3166-1 alpha-2 codes for countries subject to Olympic eligibility review.
+// Provisional: provisional Ken Corless 2026-05-01 — subject to IOC business confirmation.
+const FLAGGED_COUNTRY_CODES = new Set(["RU", "BY"]);
+
 export async function checkNocWindow(nocCode: string): Promise<{ closed: boolean }> {
   const [row] = await db
     .select({ isOpen: nocEoiWindows.isOpen })
@@ -415,6 +419,7 @@ export async function submitApplication(formData: FormData) {
           city: orgCity,
           stateProvince: orgStateProvince,
           postalCode: orgPostalCode,
+          countryFlagged: nocCode !== "EOR" && FLAGGED_COUNTRY_CODES.has(country),
         })
         .returning();
     }
