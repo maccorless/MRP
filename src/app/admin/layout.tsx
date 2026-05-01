@@ -1,5 +1,6 @@
 import { exitSudo } from "./ioc/sudo/actions";
 import { getSession } from "@/lib/session";
+import { PrpAdminBarServer } from "@/components/prp/PrpAdminBarServer";
 
 const ROLE_LABELS: Record<string, string> = {
   ioc_admin:    "IOC Admin",
@@ -42,7 +43,9 @@ export default async function AdminLayout({
         </div>
       )}
 
-      <main id="main-content" className="flex-1">{children}</main>
+      <PrpAdminBarServer section="portal">
+        <main id="main-content" className="flex-1">{children}</main>
+      </PrpAdminBarServer>
     </div>
   );
 }
