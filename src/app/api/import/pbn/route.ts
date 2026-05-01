@@ -355,7 +355,15 @@ export async function POST(request: NextRequest) {
 
     // Upsert the allocation
     const [existing] = await db
-      .select({ id: orgSlotAllocations.id })
+      .select({
+        id: orgSlotAllocations.id,
+        eSlots: orgSlotAllocations.eSlots,
+        esSlots: orgSlotAllocations.esSlots,
+        epSlots: orgSlotAllocations.epSlots,
+        epsSlots: orgSlotAllocations.epsSlots,
+        etSlots: orgSlotAllocations.etSlots,
+        ecSlots: orgSlotAllocations.ecSlots,
+      })
       .from(orgSlotAllocations)
       .where(
         and(
@@ -383,6 +391,21 @@ export async function POST(request: NextRequest) {
         .update(orgSlotAllocations)
         .set(slots)
         .where(eq(orgSlotAllocations.id, existing.id));
+
+      // Log per-field changes for audit trail
+      const fieldKeys = ["eSlots", "esSlots", "epSlots", "epsSlots", "etSlots", "ecSlots"] as const;
+      const changedEntries = fieldKeys
+        .filter((k) => existing[k] !== row[k])
+        .map((k) => ({
+          actorType: "noc_admin" as const,
+          actorId: session.userId,
+          actorLabel: session.displayName,
+          action: "excel_reimport" as const,
+          detail: `PbN re-import: ${row.orgName} — ${k} ${existing[k]} → ${row[k]}`,
+        }));
+      if (changedEntries.length > 0) {
+        await db.insert(auditLog).values(changedEntries);
+      }
     } else {
       await db.insert(orgSlotAllocations).values({
         organizationId: orgId,
@@ -399,8 +422,8 @@ export async function POST(request: NextRequest) {
     actorType: "noc_admin",
     actorId: session.userId,
     actorLabel: session.displayName,
-    action: "export_generated", // closest available action; import is logged here
-    detail: `PbN import — ${imported} rows imported, ${skipped} skipped — ${nocCode}`,
+    action: "excel_reimport",
+    detail: `PbN re-import: ${imported} rows imported, ${skipped} skipped — ${nocCode}`,
   });
 
   return NextResponse.json({
