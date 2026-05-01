@@ -78,6 +78,16 @@ export default async function ApplyPage({
         </form>
       </div>
 
+      {/* TODO(A12): Replace with final copy from OCOG/legal before go-live */}
+      <div className="mt-5 p-4 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-500 leading-relaxed">
+        <span className="font-medium text-gray-600">Data protection notice:</span>{" "}
+        Personal data submitted via this form will be processed by the LA 2028 Organising Committee,
+        the International Olympic Committee, and your National Olympic Committee for the purpose of
+        evaluating press accreditation applications for the Olympic Games Los Angeles 2028.
+        Data will be retained in accordance with applicable law and the IOC data-protection policy.
+        [<span className="italic">Final wording pending OCOG/legal review — placeholder copy only.</span>]
+      </div>
+
       <p className="mt-4 text-xs text-gray-500 text-center">
         {t("apply.alreadyHaveRef")}{" "}
         <Link
