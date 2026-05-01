@@ -3,10 +3,12 @@
 import { redirect } from "next/navigation";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, auditLog, orgSlotAllocations, dismissedDuplicatePairs, organizations } from "@/db/schema";
+import { applications, auditLog, magicLinkTokens, orgSlotAllocations, dismissedDuplicatePairs, organizations } from "@/db/schema";
 import { requireNocSession, requireWritable } from "@/lib/session";
 import { ineligibilityFlags } from "@/lib/eligibility";
 import { approveEoiDb, returnEoiDb, rejectEoiDb } from "@/lib/agent/noc-ops";
+import { generateToken, hashToken } from "@/lib/tokens";
+import { sendEmail } from "@/lib/email";
 
 async function getApplicationForNoc(id: string, nocCode: string) {
   const [app] = await db
@@ -355,6 +357,60 @@ export async function setEnrRank(
     .update(applications)
     .set({ enrRank: rank, updatedAt: now })
     .where(and(eq(applications.id, appId), eq(applications.nocCode, session.nocCode)));
+
+  return {};
+}
+
+export async function updateContactInfo(
+  applicationId: string,
+  data: { contactName: string; contactEmail: string; contactPhone: string },
+): Promise<{ error?: string }> {
+  await requireWritable();
+  const session = await requireNocSession();
+
+  const app = await getApplicationForNoc(applicationId, session.nocCode);
+  if (!app) return { error: "Application not found." };
+
+  const emailChanged = app.contactEmail.toLowerCase() !== data.contactEmail.toLowerCase();
+
+  await db
+    .update(applications)
+    .set({
+      contactName: data.contactName,
+      contactEmail: data.contactEmail.toLowerCase(),
+      contactPhone: data.contactPhone,
+      updatedAt: new Date(),
+      ...(emailChanged && { previousContactEmail: app.contactEmail }),
+    })
+    .where(eq(applications.id, applicationId));
+
+  await db
+    .update(organizations)
+    .set({ contactInfoUpdatedAt: new Date() })
+    .where(eq(organizations.id, app.organizationId));
+
+  await db.insert(auditLog).values({
+    actorType: "noc_admin",
+    actorId: session.userId,
+    actorLabel: session.displayName,
+    action: "contact_info_updated",
+    applicationId,
+    organizationId: app.organizationId,
+    detail: emailChanged
+      ? `Contact email changed from ${app.contactEmail} to ${data.contactEmail}`
+      : "Contact info updated (no email change)",
+  });
+
+  if (emailChanged) {
+    const rawToken = generateToken(12);
+    const tokenHash = hashToken(rawToken);
+    await db.insert(magicLinkTokens).values({
+      email: data.contactEmail.toLowerCase(),
+      tokenHash,
+      expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+    });
+    await sendEmail("magic_link", { to: data.contactEmail, token: rawToken });
+  }
 
   return {};
 }

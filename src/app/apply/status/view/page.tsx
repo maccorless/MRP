@@ -152,6 +152,11 @@ export default async function StatusViewPage({
 
             return (
               <div key={app.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                {app.previousContactEmail && app.previousContactEmail.toLowerCase() === email.toLowerCase() && (
+                  <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-900">
+                    This application has been transferred to a new contact within your organisation. If you need assistance, please contact your NOC accreditation team directly.
+                  </div>
+                )}
                 {/* Header row */}
                 <div className="flex items-start justify-between mb-3">
                   <div>

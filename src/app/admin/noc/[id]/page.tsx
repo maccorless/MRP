@@ -19,6 +19,7 @@ import {
   unReturnApplication,
   unRejectApplication,
 } from "../actions";
+import { ContactInfoEditor } from "./ContactInfoEditor";
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (!value && value !== 0) return null;
@@ -235,6 +236,14 @@ export default async function ApplicationDetailPage({
               </div>
             )}
           </dl>
+          <ContactInfoEditor
+            applicationId={app.id}
+            initial={{
+              contactName: app.contactName ?? "",
+              contactEmail: app.contactEmail ?? "",
+              contactPhone: app.contactPhone ?? "",
+            }}
+          />
         </section>
 
         {/* Accreditation */}
