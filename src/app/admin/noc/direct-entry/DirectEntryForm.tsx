@@ -8,6 +8,7 @@ const ORG_TYPE_OPTIONS = [
   { value: "media_print_online", label: "Print / Online" },
   { value: "media_broadcast",    label: "Broadcast" },
   { value: "news_agency",        label: "News Agency" },
+  { value: "enr",                label: "Non-Media Rights-Holder (ENR)" },
 ];
 
 // Access scopes per Emma feedback 2026-04-24 (comment #71). Surfaced
@@ -30,6 +31,7 @@ interface Props {
 export default function DirectEntryForm({ action }: Props) {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [showSecondary, setShowSecondary] = useState(false);
+  const [selectedOrgType, setSelectedOrgType] = useState("");
 
   const toggleCategory = (key: string, checked: boolean) => {
     setSelectedCategories((prev) => {
@@ -63,6 +65,7 @@ export default function DirectEntryForm({ action }: Props) {
             <select
               name="org_type" required
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
+              onChange={(e) => setSelectedOrgType(e.target.value)}
             >
               <option value="">— Select —</option>
               {ORG_TYPE_OPTIONS.map((o) => (
@@ -72,10 +75,15 @@ export default function DirectEntryForm({ action }: Props) {
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              Country <span className="text-red-500">*</span>
+              Country{" "}
+              {selectedOrgType === "enr"
+                ? <span className="text-gray-400">(optional — ENR orgs are non-geographic)</span>
+                : <span className="text-red-500">*</span>
+              }
             </label>
             <input
-              name="country" type="text" list="country-list" required
+              name="country" type="text" list="country-list"
+              required={selectedOrgType !== "enr"}
               placeholder="e.g. US"
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             />

@@ -154,6 +154,7 @@ Items blocked on external content and revisited once the inputs land. Updated 20
 - **NOC E nomination tip text on §1.5 / Direct Entry UI** — IOC to provide replacement copy (per Emma #70). Substance: NOC press attachés can ONLY have NOC E; quota arrives bundled with E/EP/etc. allocation.
 - **Post-submit confirmation message review** — IOC to review the applicant-facing success page text + email body (per Emma #59).
 - **IOC ENR review screen — EoI fields list** — Emma to provide via Discus the list of EoI fields needed for ENR allocation decisions (per #224); D.TEC then surfaces those fields on `/admin/ioc/enr`.
+- **RUS/BLR country eligibility handling (A11)** — Confirm whether EoI submissions from organisations in Russia (RUS) or Belarus (BLR) should be hard-blocked at submission, or soft-flagged for OCOG review. EOR (Refugee Olympic Team) is country-less and must bypass any country validation. Implementation blocked pending this decision.
 
 ### [v0.9] PbN mandatory field set (interim, per MiCo26 reference)
 Per Emma 2026-04-24 #8, PbN submission to OCOG (the `draft → noc_submitted` transition) must enforce the full Martyn field set populated for each org. **Interim mandatory set**: first name, last name, company, email, website, address, phone. Server-side validation at the state transition, not at row creation. Direct Entry / Inline PbN Entry stay lightweight at create-time (org name, type, country, category). Replace interim list with Martyn's official LA28 form when delivered. Bundles with §4.4b Option C resolution in stakeholder-questions.

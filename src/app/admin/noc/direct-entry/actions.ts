@@ -30,8 +30,9 @@ export async function submitDirectEntryApplication(formData: FormData) {
   const secondaryPhone           = (formData.get("secondary_phone") as string)?.trim() || null;
   const secondaryCell            = (formData.get("secondary_cell") as string)?.trim() || null;
 
-  const VALID_ORG_TYPES = ["media_print_online", "media_broadcast", "news_agency"];
-  if (!orgName || !orgType || !VALID_ORG_TYPES.includes(orgType) || !country || !contactName || !contactEmail) {
+  const VALID_ORG_TYPES = ["media_print_online", "media_broadcast", "news_agency", "enr"];
+  const countryRequired = orgType !== "enr";
+  if (!orgName || !orgType || !VALID_ORG_TYPES.includes(orgType) || (countryRequired && !country) || !contactName || !contactEmail) {
     redirect("/admin/noc/direct-entry?error=missing_fields");
   }
 
@@ -93,7 +94,7 @@ export async function submitDirectEntryApplication(formData: FormData) {
         name: orgName,
         country,
         nocCode,
-        orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency",
+        orgType: orgType as "media_print_online" | "media_broadcast" | "news_agency" | "enr",
         website,
         emailDomain: contactEmail.split("@")[1] ?? null,
       })

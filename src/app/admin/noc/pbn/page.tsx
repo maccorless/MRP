@@ -303,6 +303,13 @@ export default async function NocPbnPage({
         <div className="mt-6 space-y-4">
           <PbnImportPanel />
           <AddOrgToPbnPanel />
+          <a
+            href="/admin/noc/direct-entry"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:text-gray-800 transition-colors"
+          >
+            <span className="text-lg leading-none">+</span>
+            Add organisation via Direct Entry (full EoI application)
+          </a>
         </div>
       )}
     </div>
