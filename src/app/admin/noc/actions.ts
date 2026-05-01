@@ -35,6 +35,7 @@ export async function approveApplication(formData: FormData) {
   if (result.error === "not_found_or_invalid_status") redirect("/admin/noc/queue");
   if (result.error?.startsWith("eligibility_ack_required:")) redirect(`/admin/noc/${id}?error=eligibility_ack_required`);
   if (result.error === "stale") redirect(`/admin/noc/${id}?error=stale`);
+  if (result.error) redirect(`/admin/noc/${id}?error=unexpected`);
   redirect("/admin/noc/queue?success=approved");
 }
 

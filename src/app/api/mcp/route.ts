@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
 import { buildContextFromApiKey } from "@/lib/agent/context";
+import { extractBearerToken } from "@/lib/agent/auth";
 import {
   getQueueSummary,
   listEois,
@@ -13,12 +14,6 @@ import {
   getAuditLog,
 } from "@/lib/agent/queries";
 import { approveEoi, returnEoi, rejectEoi } from "@/lib/agent/commands";
-
-function extractBearerToken(req: Request): string | null {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) return null;
-  return auth.slice(7).trim() || null;
-}
 
 export async function POST(req: Request): Promise<Response> {
   const rawKey = extractBearerToken(req);
@@ -214,4 +209,20 @@ export async function POST(req: Request): Promise<Response> {
 
   await server.connect(transport);
   return transport.handleRequest(req);
+}
+
+// SSE not supported in stateless mode — return explicit 405 rather than letting
+// Next.js silently return 405, so MCP clients get an actionable response.
+export function GET() {
+  return Response.json(
+    { error: "SSE streams are not supported in stateless mode. Use POST." },
+    { status: 405, headers: { Allow: "POST" } },
+  );
+}
+
+export function DELETE() {
+  return Response.json(
+    { error: "Session termination is not supported in stateless mode." },
+    { status: 405, headers: { Allow: "POST" } },
+  );
 }

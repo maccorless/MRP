@@ -144,10 +144,8 @@ export async function getEoi(ctx: SessionPayload, id: string) {
 
   // NOC admin can only see their own NOC
   if (ctx.role === "noc_admin" && app.nocCode !== ctx.nocCode) return null;
-  // IF admin can only see their own IF (ENR orgs are associated with an IF)
-  if (ctx.role === "if_admin" && ctx.ifCode) {
-    // IF access control is more complex; for now allow if nocCode matches or skip
-  }
+  // IF admin: no cross-IF scoping implemented yet — block until it is
+  if (ctx.role === "if_admin") return null;
 
   const [[org], [quota], [allocation], recentAudit] = await Promise.all([
     db.select().from(organizations).where(eq(organizations.id, app.organizationId)),

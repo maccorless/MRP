@@ -42,7 +42,7 @@ export async function buildContextFromApiKey(rawKey: string): Promise<SessionPay
     .update(apiKeys)
     .set({ lastUsedAt: now })
     .where(eq(apiKeys.id, row.keyId))
-    .catch(() => {});
+    .catch((err) => console.warn("[agent] lastUsedAt update failed", { keyId: row.keyId, err }));
 
   return {
     userId: row.userId,

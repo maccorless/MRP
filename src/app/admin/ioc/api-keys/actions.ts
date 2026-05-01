@@ -58,7 +58,7 @@ export async function revokeApiKey(formData: FormData): Promise<void> {
     .update(apiKeys)
     .set({ revokedAt: now })
     .where(and(eq(apiKeys.id, keyId), isNull(apiKeys.revokedAt)))
-    .returning({ id: apiKeys.id });
+    .returning({ id: apiKeys.id, label: apiKeys.label });
 
   if (!updated) redirect("/admin/ioc/api-keys?error=not_found");
 
@@ -67,7 +67,7 @@ export async function revokeApiKey(formData: FormData): Promise<void> {
     actorId: session.userId,
     actorLabel: session.displayName,
     action: "api_key_revoked",
-    detail: `API key ${keyId} revoked`,
+    detail: `API key "${updated.label}" revoked`,
   });
 
   redirect("/admin/ioc/api-keys?success=revoked");

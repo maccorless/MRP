@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { buildContextFromApiKey } from "@/lib/agent/context";
+import { extractBearerToken } from "@/lib/agent/auth";
 import {
   getQueueSummary,
   listEois,
@@ -11,12 +12,6 @@ import {
   getAuditLog,
 } from "@/lib/agent/queries";
 import { approveEoi, returnEoi, rejectEoi } from "@/lib/agent/commands";
-
-function extractBearerToken(req: NextRequest): string | null {
-  const auth = req.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) return null;
-  return auth.slice(7).trim() || null;
-}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ tool: string }> }) {
   const rawKey = extractBearerToken(req);
@@ -30,7 +25,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ too
   }
 
   const { tool } = await params;
-  const body = await req.json().catch(() => ({}));
+  const body = await req.json().catch(() => null);
+  if (body === null) {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
   try {
     switch (tool) {
@@ -82,7 +80,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ too
 
       case "approve_eoi": {
         if (!body.id) return Response.json({ error: "id is required" }, { status: 400 });
-        const result = await approveEoi(ctx, body.id, body.overrideFlags ? { overrideFlags: true } : undefined);
+        const result = await approveEoi(ctx, body.id, body.overrideFlags === true ? { overrideFlags: true } : undefined);
         if (result.error) return Response.json(result, { status: 422 });
         return Response.json({ success: true });
       }

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createApiKey } from "./actions";
 
 export function CreateKeyModal() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [rawKey, setRawKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function CreateKeyModal() {
     setOpen(false);
     setRawKey(null);
     setError(null);
-    window.location.reload();
+    router.refresh();
   }
 
   return (
