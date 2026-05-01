@@ -97,6 +97,8 @@ export const auditActionEnum = pgEnum("audit_action", [
   "eoi_receipt_sent",
   // 2026-04-30 — Excel PbN re-import overwrote allocation values
   "excel_reimport",
+  // 2026-05-01 — Contact info updated by NOC admin
+  "contact_info_updated",
 ]);
 
 export const flagStateEnum = pgEnum("flag_state", ["off", "canary", "on"]);

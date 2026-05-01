@@ -106,6 +106,7 @@ describe("NOC Direct Entry EoI", () => {
     const fd = makeFormData({
       org_name: name,
       org_type: "media_broadcast",
+      country: "US",
       contact_name: "Audit Test",
       contact_email: "audit@testorg.invalid",
       category_ep: "on",
@@ -134,6 +135,7 @@ describe("NOC Direct Entry EoI", () => {
     const fd = makeFormData({
       org_name: name,
       org_type: "media_print_online",
+      country: "US",
       contact_name: "Ref Test",
       contact_email: "ref@testorg.invalid",
       category_et: "on",
@@ -158,6 +160,7 @@ describe("NOC Direct Entry EoI", () => {
     const fd = makeFormData({
       org_name: "No Category Org",
       org_type: "news_agency",
+      country: "US",
       contact_name: "Test",
       contact_email: "test@test.invalid",
       about: "No category.",
