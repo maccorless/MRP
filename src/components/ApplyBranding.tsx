@@ -9,7 +9,7 @@ export function ApplyHeader({ basePath = "/apply" }: { basePath?: string } = {})
   const sp = useSearchParams();
   const lang = parseLang(sp.get("lang") ?? undefined);
   const t = makeT(lang);
-  const statusHref = lang === "fr" ? `${basePath}/status?lang=fr` : `${basePath}/status`;
+  const statusHref = lang !== "en" ? `${basePath}/status?lang=${lang}` : `${basePath}/status`;
 
   return (
     <header className="bg-brand-blue text-white px-6 py-4">
