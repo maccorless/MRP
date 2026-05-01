@@ -13,12 +13,13 @@ const NAV = [
   { href: "/admin/noc/audit",       label: "Audit Trail" },
 ];
 
-export function NocNavTabs() {
+export function NocNavTabs({ showPrpAdmin = false }: { showPrpAdmin?: boolean }) {
   const pathname = usePathname();
+  const fullNav = showPrpAdmin ? [...NAV, { href: "/admin/prp", label: "PRP Admin" }] : NAV;
   return (
     <nav className="bg-white border-b border-gray-200 px-6">
       <div className="max-w-5xl mx-auto flex gap-0">
-        {NAV.map(({ href, label }) => {
+        {fullNav.map(({ href, label }) => {
           const active = pathname === href || (href !== "/admin/noc/home" && pathname.startsWith(href));
           return (
             <Link

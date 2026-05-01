@@ -18,6 +18,7 @@ export default async function IocLayout({
   children: React.ReactNode;
 }) {
   const session = await requireIocSession();
+  const showPrpAdmin = session.additionalRoles?.includes("prp_admin") ?? false;
   return (
     <div>
       <AppHeader
@@ -27,7 +28,7 @@ export default async function IocLayout({
         helpAnchors={HELP_ANCHORS}
         actions={<SudoModal />}
       />
-      <IocNav />
+      <IocNav showPrpAdmin={showPrpAdmin} />
       <div className="max-w-6xl mx-auto p-6">{children}</div>
     </div>
   );

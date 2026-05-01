@@ -14,6 +14,7 @@ const HELP_ANCHORS: Record<string, string> = {
 
 export default async function NocLayout({ children }: { children: React.ReactNode }) {
   const session = await requireNocSession();
+  const showPrpAdmin = session.additionalRoles?.includes("prp_admin") ?? false;
   return (
     <div className="min-h-screen">
       <AppHeader
@@ -22,7 +23,7 @@ export default async function NocLayout({ children }: { children: React.ReactNod
         helpPath="/admin/noc/help"
         helpAnchors={HELP_ANCHORS}
       />
-      <NocNavTabs />
+      <NocNavTabs showPrpAdmin={showPrpAdmin} />
       <div>{children}</div>
     </div>
   );
