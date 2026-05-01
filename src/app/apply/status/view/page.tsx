@@ -64,9 +64,6 @@ export default async function StatusViewPage({
 
   if (!token || !email) redirect("/apply/status");
 
-  const t = makeT(parseLang(langParam));
-  const langSuffix = langParam ? `&lang=${langParam}` : "";
-
   const CATEGORY_LABEL: Record<string, string> = {
     E: "E — Journalist", Es: "Es — Sport Journalist",
     EP: "EP — Photographer", EPs: "EPs — Sport Photographer",
@@ -82,6 +79,21 @@ export default async function StatusViewPage({
   if (!tokenRecord || tokenRecord.usedAt !== null || tokenRecord.expiresAt < new Date()) {
     redirect("/apply?error=invalid_token");
   }
+
+  // Resolve language: URL param takes priority; fall back to DB preferredLanguage
+  let resolvedLang = langParam;
+  if (!resolvedLang) {
+    const [appForLang] = await db
+      .select({ preferredLanguage: applications.preferredLanguage })
+      .from(applications)
+      .where(eq(applications.contactEmail, email.toLowerCase()))
+      .limit(1);
+    if (appForLang?.preferredLanguage) {
+      resolvedLang = appForLang.preferredLanguage.toLowerCase();
+    }
+  }
+  const t = makeT(parseLang(resolvedLang));
+  const langSuffix = resolvedLang ? `&lang=${resolvedLang}` : "";
 
   const pbnPublished = await isPbnResultsPublished();
 
