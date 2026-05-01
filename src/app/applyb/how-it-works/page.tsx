@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { makeT, parseLang } from "@/lib/i18n";
+import { makeServerT as makeT, parseLang } from "@/lib/i18n/server";
 
 export default async function HowItWorksPage({
   searchParams,

@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { magicLinkTokens } from "@/db/schema";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { requestStatusToken } from "./actions";
-import { makeT, parseLang } from "@/lib/i18n";
+import { makeServerT as makeT, parseLang } from "@/lib/i18n/server";
 
 export default async function StatusPage({
   searchParams,

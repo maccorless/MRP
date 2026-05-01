@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requestToken } from "./actions";
-import { makeT, parseLang } from "@/lib/i18n";
+import { makeServerT as makeT, parseLang } from "@/lib/i18n/server";
 
 export default async function ApplyBPage({
   searchParams,
