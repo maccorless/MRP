@@ -98,6 +98,8 @@ export const auditActionEnum = pgEnum("audit_action", [
   "eoi_receipt_sent",
   // 2026-04-30 — Excel PbN re-import overwrote allocation values
   "excel_reimport",
+  // 2026-04-30 — contact info edits (A14)
+  "contact_info_updated",
   // 2026-05-01 — agent interface API key management
   "api_key_created",
   "api_key_revoked",
