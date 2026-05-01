@@ -47,20 +47,15 @@ export default async function IocDirectPage({
     .from(nocQuotas)
     .where(and(eq(nocQuotas.nocCode, IOC_DIRECT), eq(nocQuotas.eventId, EVENT_ID)));
 
-  const hasSubmitted = allocs.some((a) => a.pbnState === "noc_submitted");
   const hasApproved  = allocs.some((a) => a.pbnState === "ocog_approved");
-  const isEditable   = !hasSubmitted && !hasApproved;
+  const isEditable   = !hasApproved;
 
   const overallState = hasApproved
-    ? "OCOG Approved"
-    : hasSubmitted
-    ? "Submitted to OCOG"
+    ? "Submitted"
     : orgs.length > 0 ? "Draft" : "Not Started";
 
   const stateBadgeClass = hasApproved
     ? "bg-green-100 text-green-800"
-    : hasSubmitted
-    ? "bg-yellow-100 text-yellow-800"
     : "bg-gray-100 text-gray-600";
 
   const tableRows = orgs.map((org) => {
@@ -121,16 +116,15 @@ export default async function IocDirectPage({
         <p>
           Organisations listed here (e.g. AFP, AP, Reuters, Xinhua) bypass the standard NOC EoI
           process. The IOC acts as the Responsible Organisation and allocates press slots directly.
-          Allocations are submitted to OCOG for approval through the same PbN state machine as
-          NOC submissions. Adding an org here also adds it to the reserved list — NOCs will be
-          blocked from submitting a duplicate EoI for any org in this list.
+          OCOG is a read-only coordinator — the IOC self-approves and transfers directly to ACR.
+          Adding an org here also adds it to the reserved list for cross-NOC deduplication.
         </p>
       </div>
 
       {/* Banners */}
       {success === "org_added"  && <Banner color="green">Organisation added and reserved.</Banner>}
       {success === "saved"      && <Banner color="blue">Draft allocations saved.</Banner>}
-      {success === "submitted"  && <Banner color="green">Allocation submitted to OCOG for approval.</Banner>}
+      {success === "submitted"  && <Banner color="green">Allocation submitted and approved. Ready for ACR transfer.</Banner>}
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           {ERROR_MSG[error] ?? "An error occurred."}
@@ -190,16 +184,11 @@ export default async function IocDirectPage({
             isEditable={isEditable}
             saveAction={saveIocDirectAllocations}
             submitAction={submitIocDirectToOcog}
-            submitLabel="Submit to OCOG"
+            submitLabel="Submit"
           />
-          {hasSubmitted && !hasApproved && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-              Allocation submitted to OCOG. Awaiting approval.
-            </div>
-          )}
           {hasApproved && (
             <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded text-sm text-green-800">
-              Allocation approved by OCOG.
+              Allocation submitted and approved. Ready for ACR transfer.
             </div>
           )}
         </>

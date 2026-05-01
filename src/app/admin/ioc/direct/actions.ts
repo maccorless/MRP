@@ -181,12 +181,12 @@ export async function submitIocDirectToOcog(formData: FormData) {
     }
   }
 
-  // Save first, then transition draft → noc_submitted (IOC acts as the NOC here)
+  // Save first, then transition draft → ocog_approved (IOC self-approves; OCOG is read-only coordinator)
   await saveIocDirectAllocations(formData);
 
   await db.transaction(async (tx) => {
     await tx.update(orgSlotAllocations)
-      .set({ pbnState: "noc_submitted" })
+      .set({ pbnState: "ocog_approved" })
       .where(
         and(
           eq(orgSlotAllocations.nocCode, IOC_DIRECT),
@@ -195,13 +195,22 @@ export async function submitIocDirectToOcog(formData: FormData) {
         )
       );
 
-    await tx.insert(auditLog).values({
-      actorType: "ioc_admin",
-      actorId:    session.userId,
-      actorLabel: session.displayName,
-      action:     "pbn_submitted",
-      detail:     "IOC-Direct allocation submitted to OCOG",
-    });
+    await tx.insert(auditLog).values([
+      {
+        actorType: "ioc_admin",
+        actorId:    session.userId,
+        actorLabel: session.displayName,
+        action:     "pbn_submitted",
+        detail:     "IOC-Direct allocation submitted",
+      },
+      {
+        actorType: "ioc_admin",
+        actorId:    session.userId,
+        actorLabel: session.displayName,
+        action:     "pbn_approved",
+        detail:     "IOC-Direct allocation self-approved (IOC retains final authority)",
+      },
+    ]);
   });
 
   redirect("/admin/ioc/direct?success=submitted");

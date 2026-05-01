@@ -1,6 +1,6 @@
-import { eq, count } from "drizzle-orm";
+import { eq, count, and } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, nocQuotas } from "@/db/schema";
+import { applications, nocQuotas, organizations, orgSlotAllocations } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
 import { OcogEoiClient } from "./OcogEoiClient";
 
@@ -15,8 +15,24 @@ interface NocRow {
   total: number;
 }
 
+const IOC_DIRECT = "IOC_DIRECT";
+
 export default async function OcogEoiPage() {
   await requireOcogSession();
+
+  // IOC-Direct summary for read-only display
+  const iocDirectOrgs = await db
+    .select({ id: organizations.id })
+    .from(organizations)
+    .where(and(eq(organizations.nocCode, IOC_DIRECT), eq(organizations.eventId, "LA28")));
+
+  const iocDirectAllocs = await db
+    .select({ pbnState: orgSlotAllocations.pbnState })
+    .from(orgSlotAllocations)
+    .where(and(eq(orgSlotAllocations.nocCode, IOC_DIRECT), eq(orgSlotAllocations.eventId, "LA28")));
+
+  const iocDirectApproved = iocDirectAllocs.some((a) => a.pbnState === "ocog_approved");
+  const iocDirectCount = iocDirectOrgs.length;
 
   // All registered NOCs (so NOCs with zero applications still appear)
   const allNocs = await db
@@ -99,6 +115,25 @@ export default async function OcogEoiPage() {
           Application counts per NOC by status — LA 2028
         </p>
       </div>
+
+      {/* IOC-Direct summary — read-only for OCOG */}
+      {iocDirectCount > 0 && (
+        <div className="mb-5 flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg">
+          <span className="px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded-full whitespace-nowrap">
+            IOC-Direct
+          </span>
+          <p className="text-sm text-gray-700 flex-1">
+            {iocDirectCount} organisation{iocDirectCount !== 1 ? "s" : ""} accredited directly by the IOC.
+          </p>
+          <span className={`px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ${
+            iocDirectApproved
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-600"
+          }`}>
+            {iocDirectApproved ? "Submitted" : "Draft"}
+          </span>
+        </div>
+      )}
 
       <OcogEoiClient rows={rows} totals={totals} />
 
