@@ -2,6 +2,7 @@
 
 import { FREELANCE_ORG_TYPES } from "@/lib/labels";
 import type { PrefillData, FormErrors } from "../EoiFormWizard";
+import { PhoneInput } from "@/components/PhoneInput";
 
 const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
@@ -97,8 +98,8 @@ export function ContactsStep({
             <label htmlFor="contact_cell" className={LABEL}>
               Phone (mobile) <span className="text-red-500">*</span>
             </label>
-            <input
-              id="contact_cell" name="contact_cell" type="tel" required data-tab="1"
+            <PhoneInput
+              id="contact_cell" name="contact_cell" required data-tab="1"
               defaultValue={prefill?.contactCell ?? ""}
               placeholder="+1 555 123 4567"
               className={`${INPUT} ${errBorder("contact_cell", errors)}`}
