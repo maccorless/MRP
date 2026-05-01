@@ -175,10 +175,7 @@ export function EoiFormWizard({
           return v > 0;
         });
         if (!anyPositive) return false;
-        // ENR max 3
-        const enr = parseInt((fd.get("requested_ENR") as string) ?? "0", 10) || 0;
-        if (enr > 3) return false;
-        // Others max 100
+        // Others max 100 (ENR > 3 is a soft warning only — see AccreditationStep)
         for (const k of ["E", "Es", "EP", "EPs", "ET", "EC"]) {
           const v = parseInt((fd.get(`requested_${k}`) as string) ?? "0", 10) || 0;
           if (v > 100) return false;
@@ -437,9 +434,7 @@ export function EoiFormWizard({
     const anyPositive = catKeys.some((k) => (parseInt((fd.get(`requested_${k}`) as string) ?? "0", 10) || 0) > 0);
     if (!anyPositive) errs["category"] = "Please request at least one accreditation category.";
 
-    // Max limits
-    const enr = parseInt((fd.get("requested_ENR") as string) ?? "0", 10) || 0;
-    if (enr > 3) errs["requested_ENR"] = "ENR is limited to a maximum of 3 accreditations.";
+    // Max limits (ENR > 3 triggers amber warning in AccreditationStep, not a validation error)
     for (const k of ["E", "Es", "EP", "EPs", "ET", "EC"]) {
       const v = parseInt((fd.get(`requested_${k}`) as string) ?? "0", 10) || 0;
       if (v > 100) errs[`requested_${k}`] = "The value must be less than or equal to 100.";
