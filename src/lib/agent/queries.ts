@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   applications,
@@ -169,6 +169,11 @@ export async function getEoi(ctx: SessionPayload, id: string) {
       .orderBy(desc(auditLog.createdAt))
       .limit(10),
   ]);
+
+  // internalNote is NOC-only — strip it for IOC/OCOG callers
+  if (ctx.role !== "noc_admin") {
+    app.internalNote = null;
+  }
 
   return { app, org: org ?? null, quota: quota ?? null, allocation: allocation ?? null, recentAudit };
 }
@@ -374,7 +379,8 @@ export async function getAuditLog(ctx: SessionPayload, filters: AuditLogFilters 
     filters.toDate ? lte(auditLog.createdAt, filters.toDate) : undefined,
   ].filter(Boolean);
 
-  // NOC admins are scoped: join to applications and filter by nocCode
+  // NOC admins are scoped to their own NOC's applications, plus their own non-application
+  // entries (e.g. api_key_created where applicationId IS NULL).
   if (ctx.role === "noc_admin" && ctx.nocCode) {
     return db
       .select({
@@ -388,10 +394,10 @@ export async function getAuditLog(ctx: SessionPayload, filters: AuditLogFilters 
         createdAt: auditLog.createdAt,
       })
       .from(auditLog)
-      .innerJoin(applications, eq(auditLog.applicationId, applications.id))
+      .leftJoin(applications, eq(auditLog.applicationId, applications.id))
       .where(
         and(
-          eq(applications.nocCode, ctx.nocCode),
+          or(isNull(auditLog.applicationId), eq(applications.nocCode, ctx.nocCode)),
           ...(conditions as Parameters<typeof and>),
         ),
       )
