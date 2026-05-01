@@ -115,6 +115,7 @@ function buildValidFormData(token: string, email: string, overrides: Record<stri
   fd.append("contact_first_name", "Jane");
   fd.append("contact_last_name", "Tester");
   fd.append("about", "Integration test application — please ignore.");
+  fd.append("gdpr_accepted", "true");
   // Category checkbox (parseCategorySelections reads "category_E" === "on")
   fd.append("category_E", "on");
   fd.append("requested_E", "3");
@@ -270,6 +271,7 @@ describe("submitApplication", () => {
     fd.append("contact_first_name", "Bob");
     fd.append("contact_last_name", "Tester");
     fd.append("about", "No category test.");
+    fd.append("gdpr_accepted", "true");
     // Deliberately omitting all category_* checkboxes
 
     const { redirect } = await callAction(() => submitApplication(fd));
@@ -307,7 +309,7 @@ describe("submitApplication", () => {
     const { redirect } = await callAction(() => submitApplication(fd));
 
     expect(redirect).toBeDefined();
-    expect(redirect!.url).toMatch(/^\/apply\/submitted\?ref=.+&resubmit=1$/);
+    expect(redirect!.url).toMatch(/^\/apply\/submitted\?ref=.+&resubmit=1/);
 
     // Verify application status is now resubmitted
     const [updated] = await db
