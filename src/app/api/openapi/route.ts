@@ -152,6 +152,10 @@ const spec = createDocument({
   },
 });
 
+// Intentionally unauthenticated: ChatGPT Custom GPT Actions and Copilot Extensions
+// require the spec to be publicly reachable to configure the integration.
+// The spec describes shape only — no data is returned, and all agent endpoints
+// require a valid Bearer API key.
 export function GET() {
   return Response.json(spec);
 }
