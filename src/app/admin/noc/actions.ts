@@ -364,7 +364,7 @@ export async function setEnrRank(
 export async function updateContactInfo(
   applicationId: string,
   data: { contactName: string; contactEmail: string; contactPhone: string },
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; emailPreview?: { to: string; subject: string; body: string } }> {
   await requireWritable();
   const session = await requireNocSession();
 
@@ -409,7 +409,8 @@ export async function updateContactInfo(
       tokenHash,
       expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
     });
-    await sendEmail("magic_link", { to: data.contactEmail, token: rawToken });
+    const { preview } = await sendEmail("magic_link", { to: data.contactEmail, token: rawToken });
+    return { emailPreview: preview };
   }
 
   return {};
