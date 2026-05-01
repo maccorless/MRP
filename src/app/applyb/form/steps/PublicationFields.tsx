@@ -6,7 +6,8 @@ const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 
 /** Media Questions section of the LA28 Apr 2026 EoI spec — all optional. */
-export function PublicationFields({ prefill }: { prefill: PrefillData | null }) {
+export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillData | null; orgType?: string }) {
+  const isNonMrh = orgType === "non_mrh";
   return (
     <div className="space-y-4">
       <p className="text-xs text-gray-500">
@@ -67,20 +68,22 @@ export function PublicationFields({ prefill }: { prefill: PrefillData | null }) 
         </div>
       </div>
 
-      <div>
-        <p className="text-xs font-medium text-red-600 mb-1">
-          If applying for ENR accreditation, please select the type of programming.
-        </p>
-        <label htmlFor="enr_programming_type" className={LABEL}>
-          Type of programming <span className="text-gray-400 font-normal">(optional)</span>
-        </label>
-        <textarea
-          id="enr_programming_type" name="enr_programming_type" rows={2} data-tab="3"
-          defaultValue={prefill?.enrProgrammingType ?? ""}
-          placeholder="e.g. news programme / sports programme"
-          className={`${INPUT} resize-none`}
-        />
-      </div>
+      {isNonMrh && (
+        <div>
+          <p className="text-xs font-medium text-red-600 mb-1">
+            If applying for ENR accreditation, please select the type of programming.
+          </p>
+          <label htmlFor="enr_programming_type" className={LABEL}>
+            Type of programming <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+          <textarea
+            id="enr_programming_type" name="enr_programming_type" rows={2} data-tab="3"
+            defaultValue={prefill?.enrProgrammingType ?? ""}
+            placeholder="e.g. news programme / sports programme"
+            className={`${INPUT} resize-none`}
+          />
+        </div>
+      )}
 
       <div>
         <label htmlFor="social_media_accounts" className={LABEL}>

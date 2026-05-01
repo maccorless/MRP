@@ -873,7 +873,7 @@ export function EoiFormTabs({
           <AccreditationTab prefill={prefill} errors={fieldErrors} orgType={currentOrgType} lang={lang} />
         </div>
         <div id="eoi-panel-3" role="tabpanel" aria-labelledby="eoi-tab-3" hidden={activeTab !== 3}>
-          <PublicationTab prefill={prefill} lang={lang} />
+          <PublicationTab prefill={prefill} lang={lang} orgType={currentOrgType} />
         </div>
         <div id="eoi-panel-4" role="tabpanel" aria-labelledby="eoi-tab-4" hidden={activeTab !== 4}>
           <HistoryTab prefill={prefill} lang={lang} />
