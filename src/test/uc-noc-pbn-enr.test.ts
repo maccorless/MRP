@@ -65,7 +65,29 @@ function clearSession() {
 
 const createdEnrIds: string[] = [];
 
-// ─── afterAll ─────────────────────────────────────────────────────────────────
+// ─── beforeAll / afterAll ─────────────────────────────────────────────────────
+
+beforeAll(async () => {
+  // Remove stale draft USA ENR records left from previous failed test runs to
+  // avoid duplicate-key violations on enr_unique_draft_rank.
+  const { isNull } = await import("drizzle-orm");
+  const stale = await db
+    .select({ id: enrRequests.id, orgId: enrRequests.organizationId })
+    .from(enrRequests)
+    .where(and(eq(enrRequests.nocCode, "USA"), eq(enrRequests.eventId, "LA28"), isNull(enrRequests.submittedAt)));
+  const staleIds = stale.map((r) => r.id);
+  if (staleIds.length > 0) {
+    await db.delete(enrRequests).where(inArray(enrRequests.id, staleIds));
+    const orphanOrgIds = stale.map((r) => r.orgId).filter(Boolean) as string[];
+    for (const orgId of orphanOrgIds) {
+      const remaining = await db.select({ id: organizations.id }).from(organizations).where(eq(organizations.id, orgId));
+      if (remaining.length > 0) {
+        await db.delete(organizations).where(eq(organizations.id, orgId)).catch(() => {/* may have apps referencing it */});
+      }
+    }
+  }
+  await cleanupTestData();
+});
 
 afterAll(async () => {
   // Clean up ENR rows created under "USA" (cleanupTestData only handles T_* codes)
@@ -293,7 +315,7 @@ describe("ENR Nomination", () => {
         nocCode: "USA",
         eventId: "LA28",
         organizationId: orgId1,
-        priorityRank: 1,
+        priorityRank: 10,
         slotsRequested: 2,
         enrDescription: "Test org A",
         enrJustification: "Rank test A",
@@ -309,7 +331,7 @@ describe("ENR Nomination", () => {
         nocCode: "USA",
         eventId: "LA28",
         organizationId: orgId2,
-        priorityRank: 2,
+        priorityRank: 11,
         slotsRequested: 1,
         enrDescription: "Test org B",
         enrJustification: "Rank test B",
@@ -323,10 +345,10 @@ describe("ENR Nomination", () => {
 
     await setSession(SESSIONS.nocUSA);
 
-    // Swap ranks: req1 → rank 2, req2 → rank 1
+    // Move to non-overlapping ranks (unique constraint prevents simple swap in sequential updates)
     const ranksJson = JSON.stringify([
-      { id: req1.id, rank: 2 },
-      { id: req2.id, rank: 1 },
+      { id: req1.id, rank: 20 },
+      { id: req2.id, rank: 30 },
     ]);
 
     const fd = makeFormData({ ranks: ranksJson });
@@ -345,8 +367,8 @@ describe("ENR Nomination", () => {
       .from(enrRequests)
       .where(eq(enrRequests.id, req2.id));
 
-    expect(updated1.priorityRank).toBe(2);
-    expect(updated2.priorityRank).toBe(1);
+    expect(updated1.priorityRank).toBe(20);
+    expect(updated2.priorityRank).toBe(30);
 
     clearSession();
   });

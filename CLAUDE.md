@@ -10,7 +10,8 @@ LA 2028 Press Registration Portal. A Next.js 16 app managing media organisation 
 
 ```
 bun dev           # start dev server
-bun test          # run test suite
+bun run test      # run unit/integration tests (Vitest — excludes e2e)
+bun test:e2e      # run end-to-end tests (Playwright — requires running dev server)
 bun db:generate   # generate migration from schema changes
 bun db:migrate    # apply pending migrations
 bun db:studio     # open Drizzle Studio

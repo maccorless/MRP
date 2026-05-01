@@ -27,7 +27,7 @@ vi.mock("next/navigation", () => ({
 
 import { submitApplication } from "@/app/apply/actions";
 import { db } from "@/db";
-import { nocEoiWindows, auditLog, organizations, applications, orgSlotAllocations } from "@/db/schema";
+import { nocEoiWindows, auditLog, organizations, applications, orgSlotAllocations, enrRequests } from "@/db/schema";
 import { eq, like } from "drizzle-orm";
 import { callAction, makeFormData, cleanupTestData } from "./helpers";
 import { magicLinkTokens } from "@/db/schema";
@@ -80,6 +80,7 @@ async function cleanupBbcTestData() {
   const orphanGbrOrgs = await db.select({ id: organizations.id })
     .from(organizations).where(eq(organizations.nocCode, "GBR"));
   for (const org of orphanGbrOrgs) {
+    await db.delete(enrRequests).where(eq(enrRequests.organizationId, org.id));
     await db.delete(auditLog).where(eq(auditLog.organizationId, org.id));
     await db.delete(organizations).where(eq(organizations.id, org.id));
   }
@@ -130,6 +131,7 @@ describe("EoI window check on application submit", () => {
       category_E: "on",
       requested_E: 2,
       about: "Window open test.",
+      gdpr_accepted: "true",
     });
 
     const result = await callAction(() => submitApplication(fd));
@@ -167,6 +169,7 @@ describe("EoI window check on application submit", () => {
       org_type: "media_broadcast",
       category_E: "on",
       about: "Window closed test.",
+      gdpr_accepted: "true",
     });
 
     const { redirect } = await callAction(() => submitApplication(fd));
