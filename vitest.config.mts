@@ -31,6 +31,7 @@ export default defineConfig({
     // is isolated. Files run sequentially (fileParallelism: false) because they share a real DB
     // and concurrent cleanup hooks (beforeAll/afterAll) cause TOCTOU audit log failures.
     include: ["src/test/**/*.test.ts"],
+    exclude: ["e2e/**"],
     testTimeout: 15000,
     pool: "forks",
     fileParallelism: false,

@@ -17,7 +17,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
-    "sync": "bash scripts/sync-fixes.sh"
+    "sync": "bash scripts/sync-fixes.sh",
+    "create-api-key": "bun --env-file=.env.local src/scripts/create-api-key.ts"
   },
   "engines": {
     "node": ">=20.9.0"
@@ -28,7 +29,8 @@
     "next": "^16.2.1",
     "postgres": "^3.4.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "zod": "^4.4.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",

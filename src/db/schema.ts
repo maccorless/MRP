@@ -53,6 +53,7 @@ export const actorTypeEnum = pgEnum("actor_type", [
   "if_admin",
   "system",
   "prp_admin",
+  "api_key",
 ]);
 
 export const auditActionEnum = pgEnum("audit_action", [
@@ -559,4 +560,20 @@ export const invitations = pgTable("invitations", {
   usedAt:         timestamp("used_at", { withTimezone: true }),           // null = unused
   acceptedAppId:  uuid("accepted_app_id"),            // FK to applications.id on conversion
   createdAt:      timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ─── Agent API Keys ───────────────────────────────────────────────────────────
+// Bearer token authentication for AI agent clients (Claude Desktop, ChatGPT, etc.)
+// Keys are hashed (SHA-256) at rest. The raw key is shown exactly once on creation.
+
+export const apiKeys = pgTable("api_keys", {
+  id:          uuid("id").primaryKey().defaultRandom(),
+  keyHash:     text("key_hash").notNull().unique(),       // SHA-256 of raw key; never store raw
+  keyPrefix:   text("key_prefix").notNull(),              // first 8 chars for display ("prp_xxxx")
+  userId:      uuid("user_id").references(() => adminUsers.id).notNull(),
+  label:       text("label").notNull(),                   // human-readable name, e.g. "Claude Desktop"
+  createdAt:   timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  lastUsedAt:  timestamp("last_used_at", { withTimezone: true }),
+  revokedAt:   timestamp("revoked_at", { withTimezone: true }),
+  expiresAt:   timestamp("expires_at", { withTimezone: true }),  // null = never expires
 });
