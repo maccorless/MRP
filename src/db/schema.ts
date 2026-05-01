@@ -52,6 +52,7 @@ export const actorTypeEnum = pgEnum("actor_type", [
   "ocog_admin",
   "if_admin",
   "system",
+  "prp_admin",
 ]);
 
 export const auditActionEnum = pgEnum("audit_action", [
@@ -305,6 +306,43 @@ export const adminUsers = pgTable("admin_users", {
   passwordHash: text("password_hash"),         // prototype only
   canaryFlags: jsonb("canary_flags"),          // string[] of feature flag names; null = no canary memberships
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Many-to-many additional roles for admin users (beyond their primary role).
+// Foundational for PRP Admin role (B1). At v1.0 replaced by SSO group memberships.
+export const userRoles = pgTable("user_roles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => adminUsers.id).notNull(),
+  role: text("role").notNull(),                   // e.g. "prp_admin"
+  grantedAt: timestamp("granted_at", { withTimezone: true }).defaultNow().notNull(),
+  grantedBy: uuid("granted_by").references(() => adminUsers.id),
+});
+
+// ─── Content Management (B2) ───────────────────────────────────────────────────
+
+export const contentStatusEnum = pgEnum("content_status", ["draft", "published"]);
+
+// Per-key draft/published content strings, keyed by (section, key, language).
+// At runtime, published strings are merged on top of the bundled i18n fallback.
+export const contentStrings = pgTable("content_strings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  section: text("section").notNull(),
+  key: text("key").notNull(),
+  language: text("language").notNull(),           // "EN" | "FR" | "ES"
+  value: text("value").notNull(),
+  status: contentStatusEnum("status").notNull().default("draft"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedBy: uuid("updated_by").references(() => adminUsers.id),
+});
+
+// Publish state per (section, language). Drives language toggle visibility for users.
+export const sectionPublishState = pgTable("section_publish_state", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  section: text("section").notNull(),
+  language: text("language").notNull(),           // "EN" | "FR" | "ES"
+  status: contentStatusEnum("status").notNull().default("draft"),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  publishedBy: uuid("published_by").references(() => adminUsers.id),
 });
 
 // ─── NOC Quotas (IOC-assigned press/photo totals per NOC) ─────────────────────

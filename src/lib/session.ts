@@ -23,7 +23,8 @@ export type SessionPayload = {
   nocCode: string | null;  // set for noc_admin
   ifCode: string | null;   // set for if_admin
   displayName: string;
-  canaryFlags?: string[];  // feature flags this user is enrolled in for canary testing
+  canaryFlags?: string[];       // feature flags this user is enrolled in for canary testing
+  additionalRoles?: string[];   // extra roles from user_roles table (e.g. "prp_admin")
   // Sudo fields — present only when an IOC admin is acting as another user
   isSudo?: boolean;
   sudoActorLabel?: string; // display name of the IOC admin who initiated the sudo
@@ -205,5 +206,12 @@ export async function requireIocSession(): Promise<SessionPayload> {
 export async function requireIocAdminSession(): Promise<SessionPayload> {
   const session = await requireSession();
   if (session.role !== "ioc_admin") redirect("/admin/login");
+  return session;
+}
+
+/** Use in PRP Admin-only pages (any primary role + prp_admin additional role). */
+export async function requirePrpAdminSession(): Promise<SessionPayload> {
+  const session = await requireSession();
+  if (!session.additionalRoles?.includes("prp_admin")) redirect("/admin/login");
   return session;
 }

@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { adminUsers, auditLog } from "@/db/schema";
+import { adminUsers, auditLog, userRoles } from "@/db/schema";
 import { setSession } from "@/lib/session";
 
 // Prototype only — replaced by D.TEC/DGP SSO at v1.0
@@ -27,6 +27,11 @@ export async function login(formData: FormData) {
     redirect("/admin/login?error=invalid_credentials");
   }
 
+  const extraRoles = await db
+    .select({ role: userRoles.role })
+    .from(userRoles)
+    .where(eq(userRoles.userId, user.id));
+
   await setSession({
     userId: user.id,
     email: user.email,
@@ -35,6 +40,7 @@ export async function login(formData: FormData) {
     ifCode: user.ifCode ?? null,
     displayName: user.displayName,
     canaryFlags: Array.isArray(user.canaryFlags) ? (user.canaryFlags as string[]) : [],
+    additionalRoles: extraRoles.map((r) => r.role),
   });
 
   // Audit log
