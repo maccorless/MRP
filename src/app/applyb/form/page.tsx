@@ -6,7 +6,7 @@ import { magicLinkTokens, applications, organizations } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 import { COUNTRY_CODES_WITH_NOC, NOC_CODES } from "@/lib/codes";
 import { EoiFormWizard, type PrefillData } from "./EoiFormWizard";
-import { makeT, parseLang } from "@/lib/i18n";
+import { makeServerT as makeT, parseLang } from "@/lib/i18n/server";
 
 export default async function FormPage({
   searchParams,

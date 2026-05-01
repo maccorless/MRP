@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { magicLinkTokens, applications, orgSlotAllocations, organizations, featureFlags } from "@/db/schema";
 import { hashToken } from "@/lib/tokens";
 import { STATUS_BADGE } from "@/components/StatusBadge";
-import { makeT, parseLang, type TranslationKey } from "@/lib/i18n";
+import { makeServerT as makeT, parseLang, type TranslationKey } from "@/lib/i18n/server";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
 import { formatAddress } from "@/lib/format";
 

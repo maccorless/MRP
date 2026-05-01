@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
-import { makeT, parseLang } from "@/lib/i18n";
+import { makeServerT as makeT, parseLang } from "@/lib/i18n/server";
 
 const CATEGORY_LABEL: Record<string, string> = {
   E: "E — Journalist", Es: "Es — Sport Journalist",
