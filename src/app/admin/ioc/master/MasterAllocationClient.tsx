@@ -592,7 +592,7 @@ export function MasterAllocationClient({
             )}
 
             {/* ENR */}
-            <SectionHeader title="Extended Non-Rights (ENR)" colSpan={colCount} />
+            <SectionHeader title="Non-Media Rights-Holders (ENR)" colSpan={colCount} />
             <tr className="hover:bg-gray-50">
               <td colSpan={colCount} className="px-3 py-3 text-sm text-gray-700">
                 <div className="flex flex-wrap gap-x-8 gap-y-1 ml-5">

@@ -183,7 +183,7 @@ export const fr: Record<TranslationKey, string> = {
   "org.type.other.label": "Veuillez préciser le type",
   "org.type.other.placeholder": "Décrivez le type de votre organisation",
   "org.enr.info":
-    "À propos des diffuseurs ENR (Extended Non-Rights) : les diffuseurs ENR demandent des accréditations dans un quota séparé. Votre CNO examinera et classera votre demande. Les accréditations ENR sont attribuées par le CIO à partir d'un quota ENR dédié, distinct du quota presse standard.",
+    "À propos des titulaires ENR (Non-Media Rights-Holders) : les titulaires ENR demandent des accréditations dans un quota séparé. Votre CNO examinera et classera votre demande. Les accréditations ENR sont attribuées par le CIO à partir d'un quota ENR dédié, distinct du quota presse standard.",
 
   "org.country.label": "Pays",
   "org.country.placeholder": "FR — France",

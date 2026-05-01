@@ -176,7 +176,7 @@ export const en = {
   "org.type.other.label": "Please specify type",
   "org.type.other.placeholder": "Please describe your organisation type",
   "org.enr.info":
-    "About ENR (Extended Non-Rights) broadcasters: ENR broadcasters apply for credentials from a separate pool. Your NOC will review and rank your request. ENR credentials are allocated by the IOC from a dedicated ENR pool, separate from the standard press quota.",
+    "About ENR (Non-Media Rights-Holders): Non-Media Rights-Holders apply for credentials from a separate pool. Your NOC will review and rank your request. ENR credentials are allocated by the IOC from a dedicated ENR pool, separate from the standard press quota.",
 
   "org.country.label": "Country",
   "org.country.placeholder": "US — United States",

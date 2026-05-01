@@ -70,7 +70,7 @@ export default async function NocHelpPage() {
                 {
                   date: "Oct – Dec 2026",
                   title: "ENR requests",
-                  body: "If applicable, nominate Extended Non-Rights Broadcasters from your territory. Submitted alongside PbN with the same 18 Dec 2026 deadline. IOC notifies of approved ENRs week commencing 1 Feb 2027.",
+                  body: "If applicable, nominate Non-Media Rights-Holders from your territory. Submitted alongside PbN with the same 18 Dec 2026 deadline. IOC notifies of approved ENRs week commencing 1 Feb 2027.",
                 },
                 {
                   date: "Oct 2027 – Feb 2028",
@@ -121,7 +121,7 @@ export default async function NocHelpPage() {
                   id: "enr",
                   label: "ENR Requests",
                   href: "/admin/noc/enr",
-                  desc: "Submit your prioritised list of Extended Non-Rights Broadcaster nominations to the IOC.",
+                  desc: "Submit your prioritised list of Non-Media Rights-Holder (ENR) nominations to the IOC.",
                 },
                 {
                   id: "audit",
@@ -215,7 +215,7 @@ export default async function NocHelpPage() {
                 },
                 {
                   q: "What is ENR?",
-                  a: "Extended Non-Rights Broadcasters (ENR) are broadcasters who don't hold Olympic media rights but may receive limited accreditation from the IOC's holdback pool. ENR nominations are separate from the EoI/PbN process and submitted directly to the IOC.",
+                  a: "Non-Media Rights-Holders (ENR) are broadcasters who don't hold Olympic media rights but may receive limited accreditation from the IOC's holdback pool. ENR nominations are separate from the EoI/PbN process and submitted directly to the IOC.",
                 },
               ].map(({ q, a }) => (
                 <div key={q}>

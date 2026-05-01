@@ -191,6 +191,11 @@ export function AccreditationStep({
         <label htmlFor="about" className={LABEL}>
           Brief description of your coverage plans for Los Angeles 2028 <span className="text-red-500">*</span>
         </label>
+        {(parseInt(values.Es ?? "0", 10) > 0 || parseInt(values.EPs ?? "0", 10) > 0) && (
+          <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-2">
+            You have requested Es or EPs accreditations. If you plan to cover more than one Olympic sport, enter the breakdown here — e.g. &quot;2 EPs Athletics + 2 EPs Swimming&quot;.
+          </p>
+        )}
         <textarea
           id="about" name="about" required rows={5} maxLength={500} data-tab="2"
           defaultValue={prefill?.about ?? ""}

@@ -38,7 +38,7 @@ export default async function IocHelpPage() {
               As an IOC admin, you hold final authority over the accreditation quota framework for
               LA 2028. You set the per-NOC per-category quotas that govern how many accreditation
               slots each territory receives, review and approve OCOG's master allocations, manage
-              IOC direct entries, and review Extended Non-Rights Broadcaster (ENR) nominations.
+              IOC direct entries, and review Non-Media Rights-Holder (ENR) nominations.
             </p>
             <p className="text-sm text-gray-600">
               You have read access to the full system and write authority over quotas, IOC direct
@@ -72,7 +72,7 @@ export default async function IocHelpPage() {
                   id: "enr-review",
                   label: "ENR Review",
                   href: "/admin/ioc/enr",
-                  desc: "Review Extended Non-Rights Broadcaster nominations submitted by NOCs. Approve or decline each nomination from the IOC holdback pool.",
+                  desc: "Review Non-Media Rights-Holder (ENR) nominations submitted by NOCs. Approve or decline each nomination from the IOC holdback pool.",
                 },
                 {
                   id: "audit",
@@ -117,7 +117,7 @@ export default async function IocHelpPage() {
                 },
                 {
                   q: "What is ENR?",
-                  a: "Extended Non-Rights Broadcasters (ENR) are broadcasters that do not hold Olympic media rights but may receive limited accreditation from the IOC's separate holdback pool. NOCs nominate candidates; IOC admins review and approve from this screen.",
+                  a: "Non-Media Rights-Holders (ENR) are broadcasters that do not hold Olympic media rights but may receive limited accreditation from the IOC's separate holdback pool. NOCs nominate candidates; IOC admins review and approve from this screen.",
                 },
                 {
                   q: "Can I see what NOC admins have done?",
