@@ -15,11 +15,15 @@ const HELP_ANCHORS: Record<string, string> = {
 export default async function OcogLayout({ children }: { children: React.ReactNode }) {
   const session = await requireOcogSession();
   const showPrpAdmin = session.additionalRoles?.includes("prp_admin") ?? false;
+  const additionalRoleLabels = (session.additionalRoles ?? []).map((r) =>
+    r === "prp_admin" ? "PRP Admin" : r
+  );
   return (
     <div className="min-h-screen">
       <AppHeader
         displayName={session.displayName}
         roleLabel="OCOG Admin"
+        additionalRoleLabels={additionalRoleLabels}
         helpPath="/admin/ocog/help"
         helpAnchors={HELP_ANCHORS}
       />

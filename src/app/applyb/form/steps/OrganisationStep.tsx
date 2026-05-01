@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { APPLYB_ORG_TYPES, FREELANCE_ORG_TYPES } from "@/lib/labels";
 import type { PrefillData, FormErrors } from "../EoiFormWizard";
+import { PhoneInput } from "@/components/PhoneInput";
 
 // Small helpers — keep styles self-contained in this file to avoid coupling
 // to the /apply form-styles module while Emma's review is still churning.
@@ -251,8 +252,8 @@ export function OrganisationStep({
           <label htmlFor="org_phone" className={LABEL}>
             Phone Number (office) <span className="text-red-500">*</span>
           </label>
-          <input
-            id="org_phone" name="org_phone" type="tel" required data-tab="0"
+          <PhoneInput
+            id="org_phone" name="org_phone" required data-tab="0"
             placeholder="+1 555 123 4567"
             className={`${INPUT} ${errBorder("org_phone", errors)}`}
           />

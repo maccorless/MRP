@@ -19,11 +19,15 @@ export default async function IocLayout({
 }) {
   const session = await requireIocSession();
   const showPrpAdmin = session.additionalRoles?.includes("prp_admin") ?? false;
+  const additionalRoleLabels = (session.additionalRoles ?? []).map((r) =>
+    r === "prp_admin" ? "PRP Admin" : r
+  );
   return (
     <div>
       <AppHeader
         displayName={session.displayName}
         roleLabel="IOC Admin"
+        additionalRoleLabels={additionalRoleLabels}
         helpPath="/admin/ioc/help"
         helpAnchors={HELP_ANCHORS}
         actions={<SudoModal />}

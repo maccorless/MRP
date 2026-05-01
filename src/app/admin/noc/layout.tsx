@@ -15,11 +15,15 @@ const HELP_ANCHORS: Record<string, string> = {
 export default async function NocLayout({ children }: { children: React.ReactNode }) {
   const session = await requireNocSession();
   const showPrpAdmin = session.additionalRoles?.includes("prp_admin") ?? false;
+  const additionalRoleLabels = (session.additionalRoles ?? []).map((r) =>
+    r === "prp_admin" ? "PRP Admin" : r
+  );
   return (
     <div className="min-h-screen">
       <AppHeader
         displayName={session.displayName}
         roleLabel={`NOC Admin · ${session.nocCode}`}
+        additionalRoleLabels={additionalRoleLabels}
         helpPath="/admin/noc/help"
         helpAnchors={HELP_ANCHORS}
       />
