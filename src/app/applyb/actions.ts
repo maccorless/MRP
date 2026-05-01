@@ -125,6 +125,11 @@ export async function submitApplication(formData: FormData) {
   const pastCoverageExamples = (formData.get("past_coverage_examples") as string)?.trim() || null;
   const additionalComments = (formData.get("additional_comments") as string)?.trim() || null;
 
+  // Language — persist URL lang param to DB for email localisation
+  const langParam = (formData.get("lang") as string | null)?.toLowerCase();
+  const preferredLanguage =
+    langParam === "fr" ? "FR" : langParam === "es" ? "ES" : "EN";
+
   // GDPR
   const gdprAccepted = formData.get("gdpr_accepted") === "true";
   if (!gdprAccepted) {
@@ -432,6 +437,7 @@ export async function submitApplication(formData: FormData) {
         categoryPhoto,
         about,
         ...expandedFields,
+        preferredLanguage,
         status: "pending",
         entrySource: linkedInvite ? "invited" : "self_submitted",
       })

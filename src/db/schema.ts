@@ -96,6 +96,8 @@ export const auditActionEnum = pgEnum("audit_action", [
 
 export const flagStateEnum = pgEnum("flag_state", ["off", "canary", "on"]);
 
+export const preferredLangEnum = pgEnum("preferred_lang", ["EN", "FR", "ES"]);
+
 export const pbnStateEnum = pgEnum("pbn_state", [
   "draft",
   "noc_submitted",
@@ -245,6 +247,9 @@ export const applications = pgTable("applications", {
   // ENR as 7th accreditation category (LA28 Apr 2026 spec; max 3)
   categoryEnr: boolean("category_enr").notNull().default(false),
   requestedEnr: integer("requested_enr"),
+
+  // Preferred language of the applicant (persisted from URL lang param at submission)
+  preferredLanguage: preferredLangEnum("preferred_language"),
 
   // GDPR / privacy disclaimer acceptance (required)
   gdprAcceptedAt: timestamp("gdpr_accepted_at", { withTimezone: true }),

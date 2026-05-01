@@ -84,6 +84,7 @@ export function EoiFormWizard({
   isFromInvite = false,
   countryCodes,
   nocCodes,
+  lang = "en",
 }: {
   token: string;
   email: string;
@@ -585,6 +586,7 @@ export function EoiFormWizard({
       >
         <input type="hidden" name="token" value={token} />
         <input type="hidden" name="email" value={email} />
+        <input type="hidden" name="lang" value={lang} />
         {resubmitId && <input type="hidden" name="resubmit_id" value={resubmitId} />}
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">{errorAnnouncement}</div>
