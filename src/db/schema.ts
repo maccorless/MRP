@@ -269,6 +269,9 @@ export const applications = pgTable("applications", {
   resubmissionCount: integer("resubmission_count").default(0).notNull(),
   enrRank: integer("enr_rank"),
 
+  // Contact email transfer — set when NOC admin updates contactEmail
+  previousContactEmail: text("previous_contact_email"),
+
   // NOC review
   reviewNote: text("review_note"),             // latest return/rejection reason
   internalNote: text("internal_note"),         // NOC-only, never shown to applicant
