@@ -264,3 +264,37 @@ export async function addIocDirectEnrOrg(formData: FormData) {
 
   redirect("/admin/ioc/enr/direct?success=added");
 }
+
+/**
+ * Unlock (reset to draft) all submitted ENR nominations for a specific NOC.
+ * Used by IOC admins to let a NOC re-edit their list after accidental early submission.
+ */
+export async function unlockEnrSubmissions(formData: FormData) {
+  await requireWritable();
+  const session = await requireIocAdminSession();
+  const nocCode = formData.get("noc_code") as string;
+  if (!nocCode) redirect("/admin/ioc/enr");
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(enrRequests)
+      .set({ submittedAt: null })
+      .where(
+        and(
+          eq(enrRequests.nocCode, nocCode),
+          eq(enrRequests.eventId, "LA28"),
+          isNotNull(enrRequests.submittedAt)
+        )
+      );
+
+    await tx.insert(auditLog).values({
+      actorType: "ioc_admin",
+      actorId: session.userId,
+      actorLabel: session.displayName,
+      action: "enr_submitted",
+      detail: `IOC unlocked ENR submissions for NOC ${nocCode} — reset to draft for re-editing`,
+    });
+  });
+
+  redirect(`/admin/ioc/enr/${nocCode}?success=unlocked`);
+}

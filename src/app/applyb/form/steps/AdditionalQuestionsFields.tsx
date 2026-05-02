@@ -190,7 +190,7 @@ export function AdditionalQuestionsFields({
 
       <div>
         <label htmlFor="additional_comments" className={LABEL}>
-          Are there any additional comments you would like your NOC to be aware of? <span className="text-gray-400 font-normal">(optional)</span>
+          Are there any additional comments you would like your NOC to be aware of?
         </label>
         <textarea
           id="additional_comments" name="additional_comments" rows={3} maxLength={500} data-tab="4"

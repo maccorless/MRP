@@ -69,7 +69,11 @@ export async function GET(req: NextRequest) {
     sudoActorLabel: row.actorLabel,
   };
 
-  const response = NextResponse.redirect(new URL("/admin", req.url));
+  const home =
+    target.role === "noc_admin" || target.role === "if_admin" ? "/admin/noc/home" :
+    target.role === "ocog_admin" ? "/admin/ocog" :
+    "/admin/ioc";
+  const response = NextResponse.redirect(new URL(home, req.url));
 
   // Set the sudo cookie on the redirect response
   const encoded = await encodeSudoSession(sudoPayload);

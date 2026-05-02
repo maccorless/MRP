@@ -4,7 +4,7 @@ import { eq, and, asc, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { enrRequests, organizations } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
-import { saveEnrDecisions, reviseEnrDecision } from "../actions";
+import { saveEnrDecisions, reviseEnrDecision, unlockEnrSubmissions } from "../actions";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
 
 export default async function IocEnrNocPage({
@@ -69,6 +69,16 @@ export default async function IocEnrNocPage({
       {success === "saved" && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
           Decisions saved.
+        </div>
+      )}
+      {success === "unlocked" && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
+          ENR list unlocked — NOC can now re-edit and re-submit.
+        </div>
+      )}
+      {success === "revised" && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
+          Decision cleared — re-enter a decision and save.
         </div>
       )}
 
@@ -175,6 +185,25 @@ export default async function IocEnrNocPage({
           </div>
         </div>
       )}
+
+      {/* Unlock — lets NOC re-edit a list they accidentally submitted too early */}
+      <div className="mt-4 border border-dashed border-gray-300 rounded-lg p-4">
+        <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">IOC Controls</h2>
+        <div className="flex items-center gap-4">
+          <form action={unlockEnrSubmissions}>
+            <input type="hidden" name="noc_code" value={nocCode} />
+            <button
+              type="submit"
+              className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-semibold rounded hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              Unlock submissions for re-editing
+            </button>
+          </form>
+          <span className="text-xs text-gray-400">
+            Resets this NOC&apos;s list to draft so they can add, remove, or reorder before resubmitting.
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

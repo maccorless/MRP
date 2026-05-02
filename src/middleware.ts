@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { decodeSession } from "@/lib/session";
 
 const COOKIE_NAME = "prp_session";
+const SUDO_COOKIE_NAME = "prp_sudo_session";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -27,10 +28,21 @@ export async function middleware(req: NextRequest) {
 
   // Auth guard — only admin routes (not login itself)
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
-    const cookie = req.cookies.get(COOKIE_NAME);
-    if (!cookie) return NextResponse.redirect(new URL("/admin/login", req.url));
-    const session = await decodeSession(cookie.value);
-    if (!session) return NextResponse.redirect(new URL("/admin/login", req.url));
+    // Accept either a valid sudo session or a valid base session
+    const sudoCookie = req.cookies.get(SUDO_COOKIE_NAME);
+    if (sudoCookie) {
+      const sudoSession = await decodeSession(sudoCookie.value);
+      if (sudoSession) {
+        // Valid sudo session — skip base session check
+      } else {
+        return NextResponse.redirect(new URL("/admin/login", req.url));
+      }
+    } else {
+      const cookie = req.cookies.get(COOKIE_NAME);
+      if (!cookie) return NextResponse.redirect(new URL("/admin/login", req.url));
+      const session = await decodeSession(cookie.value);
+      if (!session) return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
   }
 
   // Propagate nonce to App Router RSC renderer (x-nonce) and browser (CSP header)

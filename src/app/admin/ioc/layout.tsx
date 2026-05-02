@@ -31,7 +31,7 @@ export default async function IocLayout({
         roleLabel="IOC Admin"
         additionalRoleLabels={additionalRoleLabels}
         lang={lang}
-        showLangToggle={true}
+        showLangToggle={false}
         helpPath="/admin/ioc/help"
         helpAnchors={HELP_ANCHORS}
         actions={<SudoModal />}

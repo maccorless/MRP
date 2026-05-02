@@ -4,12 +4,15 @@ import { useState } from "react";
 import { AsYouType } from "libphonenumber-js";
 
 function formatAsYouType(value: string): string {
+  // Strip formatting chars (spaces, dashes, parens) before re-processing — keep digits and leading +
+  const raw = value.replace(/[^\d+]/g, "");
+  if (!raw) return "";
   const ayt = new AsYouType();
   let formatted = "";
-  for (const ch of value) {
+  for (const ch of raw) {
     formatted = ayt.input(ch);
   }
-  return formatted || value;
+  return formatted;
 }
 
 export function PhoneInput({

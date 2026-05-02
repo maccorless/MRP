@@ -5,7 +5,7 @@ import type { PrefillData } from "../EoiFormWizard";
 const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 
-/** Media Questions section of the LA28 Apr 2026 EoI spec — all optional. */
+/** Media Questions section of the LA28 Apr 2026 EoI spec. */
 export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillData | null; orgType?: string }) {
   const isNonMrh = orgType === "non_mrh";
   return (
@@ -17,7 +17,7 @@ export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillD
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="circulation" className={LABEL}>
-            Publication circulation per month <span className="text-gray-400 font-normal">(optional)</span>
+            Publication circulation per month
           </label>
           <input
             id="circulation" name="circulation" type="text" data-tab="3"
@@ -28,7 +28,7 @@ export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillD
         </div>
         <div>
           <label htmlFor="publication_frequency" className={LABEL}>
-            Frequency of publication <span className="text-gray-400 font-normal">(optional)</span>
+            Frequency of publication
           </label>
           <input
             id="publication_frequency" name="publication_frequency" type="text" data-tab="3"
@@ -42,7 +42,7 @@ export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillD
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="online_unique_visitors" className={LABEL}>
-            Online unique visitors per month <span className="text-gray-400 font-normal">(optional)</span>
+            Online unique visitors per month
           </label>
           <input
             id="online_unique_visitors" name="online_unique_visitors" type="text" data-tab="3"
@@ -53,7 +53,7 @@ export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillD
         </div>
         <div>
           <label htmlFor="geographical_coverage" className={LABEL}>
-            Geographical coverage <span className="text-gray-400 font-normal">(optional)</span>
+            Geographical coverage
           </label>
           <select
             id="geographical_coverage" name="geographical_coverage" data-tab="3"
@@ -71,13 +71,14 @@ export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillD
       {isNonMrh && (
         <div>
           <p className="text-xs font-medium text-red-600 mb-1">
-            If applying for ENR accreditation, please select the type of programming.
+            If applying for ENR accreditation, please enter the type of programming.
           </p>
           <label htmlFor="enr_programming_type" className={LABEL}>
-            Type of programming <span className="text-gray-400 font-normal">(optional)</span>
+            Type of programming <span className="text-red-500">*</span>
           </label>
           <textarea
             id="enr_programming_type" name="enr_programming_type" rows={2} data-tab="3"
+            required
             defaultValue={prefill?.enrProgrammingType ?? ""}
             placeholder="e.g. news programme / sports programme"
             className={`${INPUT} resize-none`}
@@ -87,7 +88,7 @@ export function PublicationFields({ prefill, orgType = "" }: { prefill: PrefillD
 
       <div>
         <label htmlFor="social_media_accounts" className={LABEL}>
-          Please list the social media accounts of the organisation <span className="text-gray-400 font-normal">(optional)</span>
+          Social media accounts
         </label>
         <textarea
           id="social_media_accounts" name="social_media_accounts" rows={2} data-tab="3"

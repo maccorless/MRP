@@ -381,7 +381,7 @@ export function EoiFormTabs({
 
       const required = REQUIRED_FIELDS[tabIndex] ?? [];
 
-      // Check required fields
+      // Check required fields from the static list
       const allRequired = required.every((name) => {
         const el = form.elements.namedItem(name);
         if (!el) return false;
@@ -400,6 +400,15 @@ export function EoiFormTabs({
         return false;
       });
 
+      // Also check any dynamically required fields (e.g. enr_programming_type for non_mrh)
+      const dynEls = Array.from(
+        form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          `input[required][data-tab="${tabIndex}"]:not([type='checkbox']):not([type='radio']), ` +
+          `select[required][data-tab="${tabIndex}"], textarea[required][data-tab="${tabIndex}"]`
+        )
+      ).filter((el) => !required.includes(el.name));
+      const allDynRequired = dynEls.every((el) => el.value.trim() !== "");
+
       // Accreditation: at least one requested_* > 0 (ENR included)
       if (tabIndex === 2) {
         const catKeys = ["E", "Es", "EP", "EPs", "ET", "EC", "ENR"];
@@ -407,8 +416,8 @@ export function EoiFormTabs({
           const el = form.elements.namedItem(`requested_${k}`) as HTMLInputElement | null;
           return (parseInt(el?.value ?? "0", 10) || 0) > 0;
         });
-        if (!anyPositive || !allRequired) return "empty";
-      } else if (!allRequired) {
+        if (!anyPositive || !allRequired || !allDynRequired) return "empty";
+      } else if (!allRequired || !allDynRequired) {
         return "empty";
       }
 

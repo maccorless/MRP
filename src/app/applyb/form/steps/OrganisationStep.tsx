@@ -167,11 +167,11 @@ export function OrganisationStep({
         </div>
         <div>
           <label htmlFor="address2" className={LABEL}>
-            Suite / Floor <span className="text-gray-400 font-normal">(optional)</span>
+            Suite / Floor
           </label>
           <input id="address2" name="address2" type="text" data-tab="0" className={INPUT} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:items-end">
           <div>
             <label htmlFor="city" className={LABEL}>
               City <span className="text-red-500">*</span>
@@ -184,7 +184,7 @@ export function OrganisationStep({
           </div>
           <div>
             <label htmlFor="state_province" className={LABEL}>
-              County / State / Province <span className="text-gray-400 font-normal">(optional)</span>
+              County / State / Province
             </label>
             <input id="state_province" name="state_province" type="text" data-tab="0" className={INPUT} />
           </div>

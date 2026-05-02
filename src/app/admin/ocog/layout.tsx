@@ -27,7 +27,7 @@ export default async function OcogLayout({ children }: { children: React.ReactNo
         roleLabel="OCOG Admin"
         additionalRoleLabels={additionalRoleLabels}
         lang={lang}
-        showLangToggle={true}
+        showLangToggle={false}
         helpPath="/admin/ocog/help"
         helpAnchors={HELP_ANCHORS}
       />
