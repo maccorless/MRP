@@ -4,7 +4,7 @@ export const ORG_TYPE_LABEL: Record<string, string> = {
   media_broadcast:    "Broadcast",
   news_agency:        "News Agency",
   freelancer:         "Freelancer / Independent",
-  enr:                "ENR (Non-Rights Broadcaster)",
+  enr:                "ENR (Non-Media Rights-Holder)",
   ino:                "INO (International News Organisation)",
   if_staff:           "IF Staff",
 

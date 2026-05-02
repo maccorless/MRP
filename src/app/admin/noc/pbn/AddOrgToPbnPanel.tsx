@@ -7,7 +7,7 @@ const ORG_TYPES = [
   { value: "news_agency",        label: "News Agency" },
   { value: "media_broadcast",    label: "Broadcast" },
   { value: "media_print_online", label: "Print / Online Media" },
-  { value: "enr",                label: "ENR (Non-Rights Broadcaster)" },
+  { value: "enr",                label: "ENR (Non-Media Rights-Holder)" },
 ];
 
 export function AddOrgToPbnPanel() {

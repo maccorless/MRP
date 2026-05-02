@@ -185,7 +185,7 @@ export default async function NocHomePage() {
                   ENR Nominations
                 </h2>
               </div>
-              <p className="text-xs text-gray-500 ml-10">Submit non-rights broadcaster nominations to IOC</p>
+              <p className="text-xs text-gray-500 ml-10">Submit Non-Media Rights-Holder nominations to IOC</p>
             </div>
             <EnrStatusBadge status={enrStatus} />
           </div>

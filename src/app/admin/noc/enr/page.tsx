@@ -61,7 +61,7 @@ export default async function NocEnrPage({
         <div>
           <h1 className="text-xl font-bold text-gray-900">{s.enr.title} — {nocCode}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Nominate non-rights broadcaster organisations for IOC accreditation
+            Nominate Non-Media Rights-Holder organisations for IOC accreditation
           </p>
         </div>
         {requests.length > 0 && (
@@ -103,7 +103,7 @@ export default async function NocEnrPage({
 
       {/* Info banner */}
       <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded text-sm text-blue-800">
-        <strong>ENR (Non-Rights Broadcaster)</strong> nominations are independent of the EoI process.
+        <strong>ENR (Non-Media Rights-Holder)</strong> nominations are independent of the EoI process.
         Add any broadcaster organisation your NOC wants to nominate, in priority order. IOC decides how many slots to grant per organisation.
       </div>
 
@@ -127,6 +127,13 @@ export default async function NocEnrPage({
           <div className="text-xs text-gray-500 mt-0.5 font-medium">Slots granted</div>
         </div>
       </div>
+
+      {/* Soft limit warning */}
+      {requests.length >= 3 && !isSubmitted && (
+        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+          {s.enr.soft_limit_reached}
+        </div>
+      )}
 
       {/* Priority list */}
       {requests.length === 0 ? (

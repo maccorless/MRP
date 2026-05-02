@@ -171,7 +171,7 @@ export const en = {
   "org.type.broadcast": "Broadcast",
   "org.type.newsAgency": "News Agency",
   "org.type.freelancer": "Freelancer / Independent",
-  "org.type.enr": "ENR Broadcaster (Non-Rights)",
+  "org.type.enr": "Non-Media Rights-Holder (ENR)",
   "org.type.other": "Other (please specify)",
   "org.type.other.label": "Please specify type",
   "org.type.other.placeholder": "Please describe your organisation type",
