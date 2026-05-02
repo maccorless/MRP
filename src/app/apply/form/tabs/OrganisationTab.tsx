@@ -28,8 +28,6 @@ export function OrganisationTab({
   lang?: Lang;
 }) {
   const [orgType, setOrgType] = useState<string>(prefill?.orgType ?? "");
-  void lang;
-
   if (isResubmission && prefill) {
     return (
       <div className="space-y-6">
@@ -56,6 +54,7 @@ export function OrganisationTab({
       orgType={orgType}
       onOrgTypeChange={setOrgType}
       nocAutoSuggestedName={nocAutoSuggestedName ?? null}
+      lang={lang}
     />
   );
 }

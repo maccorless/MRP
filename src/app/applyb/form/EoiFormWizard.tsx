@@ -675,10 +675,10 @@ export function EoiFormWizard({
 
             {/* All steps rendered once; inactive hidden via CSS so their fields remain in the DOM for submission */}
             <div style={{ display: activeStep === 0 ? undefined : "none" }}>
-              <StoryStep prefill={prefill} errors={fieldErrors} orgType={currentOrgType} />
+              <StoryStep prefill={prefill} errors={fieldErrors} orgType={currentOrgType} lang={lang} />
             </div>
             <div style={{ display: activeStep === 1 ? undefined : "none" }}>
-              <AccreditationStep prefill={prefill} errors={fieldErrors} orgType={currentOrgType} />
+              <AccreditationStep prefill={prefill} errors={fieldErrors} orgType={currentOrgType} lang={lang} />
             </div>
             <div style={{ display: activeStep === 2 ? undefined : "none" }}>
               <OrganisationStep
@@ -689,9 +689,10 @@ export function EoiFormWizard({
                 orgType={currentOrgType}
                 onOrgTypeChange={(v) => { setCurrentOrgType(v); setTimeout(recomputeStepStatus, 0); }}
                 nocAutoSuggestedName={nocAutoSuggestedName}
+                lang={lang}
               />
               <div className="mt-6 pt-6 border-t border-gray-100">
-                <ContactsStep prefill={prefill} email={email} errors={fieldErrors} orgType={currentOrgType} />
+                <ContactsStep prefill={prefill} email={email} errors={fieldErrors} orgType={currentOrgType} lang={lang} />
               </div>
             </div>
 

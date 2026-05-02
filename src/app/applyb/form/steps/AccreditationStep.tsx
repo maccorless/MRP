@@ -2,73 +2,30 @@
 
 import { useState } from "react";
 import type { PrefillData, FormErrors } from "../EoiFormWizard";
+import { makeT } from "@/lib/i18n";
+import type { Lang } from "@/lib/i18n";
 
 const INPUT = "w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent";
 const LABEL = "block text-sm font-medium text-gray-700 mb-1";
 const HELP  = "text-xs text-gray-500 mt-1";
 
+type CatKey = "E" | "Es" | "EP" | "EPs" | "EC" | "ET" | "ENR";
+
 type Cat = {
-  key: string;         // form field suffix, e.g. "E", "Es", "ENR"
-  code: string;        // display code, e.g. "E", "Es", "ENR"
-  title: string;       // short title
-  description: string; // longer description
-  max: number;         // hard upper bound enforced by the input
-  softMax?: number;    // optional soft cap; values above this trigger an informational warning, not a validation error
+  key: CatKey;
+  code: string;
+  max: number;
+  softMax?: number;
 };
 
-// All 7 categories from the Excel spec, in order. Copy aligned to IOC wording
-// supplied by Emma Morris on 2026-04-21.
 const CATEGORIES: Cat[] = [
-  {
-    key: "E",
-    code: "E",
-    title: "Journalist",
-    description: "Reporter, editor or photographic editor employed or contracted by a world news agency, national news agency, daily newspaper, sports daily, magazine, website or independent/freelance journalist.",
-    max: 100,
-  },
-  {
-    key: "Es",
-    code: "Es",
-    title: "Sport-Specific Journalist",
-    description: "Journalist specialising in a sport on the Olympic Games programme meeting the same criteria as defined for category 'E'. Es accreditations include access to all disciplines of that sport.",
-    max: 100,
-  },
-  {
-    key: "EP",
-    code: "EP",
-    title: "Photographer",
-    description: "Photographer, meeting the same criteria as defined for category 'E'.",
-    max: 100,
-  },
-  {
-    key: "EPs",
-    code: "EPs",
-    title: "Sport-Specific Photographer",
-    description: "Photographer specialising in a sport on the Olympic Games programme meeting the same criteria as defined for category 'EP'. EPs accreditations include access to all disciplines of that sport.",
-    max: 100,
-  },
-  {
-    key: "EC",
-    code: "Ec",
-    title: "Support Staff",
-    description: "Support staff of an accredited press organisation. (Office assistant, secretary, interpreter, etc). Access to the Main Press Centre only. Assigned only to an accredited press organisation or NOC with a private MPC office.",
-    max: 100,
-  },
-  {
-    key: "ET",
-    code: "ET",
-    title: "Technician",
-    description: "Technician meeting the same criteria as defined for category 'E'. ET accreditations are limited to technical support personnel of major news agencies, organisations and/or photo agencies only and are generally identified by those organisations that rent Rate Card and telecommunications equipment at the MPC and competition venues.",
-    max: 100,
-  },
-  {
-    key: "ENR",
-    code: "ENR",
-    title: "Non-Media Rights-Holding Organisation",
-    description: "Non-media rights holding radio and/or television organisation. ENR accreditations are granted by the National Olympic Committees but in close consultation with the IOC. Please refer to the exact process on www.olympics.com. The numbers of ENR accreditations are very limited. ENR accreditations are allocated only by the IOC in consultation with the NOC. Typically up to 3 per organisation; the IOC may grant more for certain international-focus organisations.",
-    max: 100,
-    softMax: 3,
-  },
+  { key: "E",   code: "E",   max: 100 },
+  { key: "Es",  code: "Es",  max: 100 },
+  { key: "EP",  code: "EP",  max: 100 },
+  { key: "EPs", code: "EPs", max: 100 },
+  { key: "EC",  code: "Ec",  max: 100 },
+  { key: "ET",  code: "ET",  max: 100 },
+  { key: "ENR", code: "ENR", max: 100, softMax: 3 },
 ];
 
 function initialValue(key: string, prefill: PrefillData | null): string {
@@ -80,7 +37,6 @@ function initialValue(key: string, prefill: PrefillData | null): string {
     EPs: prefill.requestedEps,
     ET: prefill.requestedEt,
     EC: prefill.requestedEc,
-    // ENR prefill is new; may not exist on older prefill shapes
   };
   const v = map[key];
   return typeof v === "number" ? String(v) : "0";
@@ -90,11 +46,14 @@ export function AccreditationStep({
   prefill,
   errors,
   orgType = "",
+  lang = "en",
 }: {
   prefill: PrefillData | null;
   errors?: FormErrors;
   orgType?: string;
+  lang?: Lang;
 }) {
+  const t = makeT(lang);
   const [values, setValues] = useState<Record<string, string>>(
     Object.fromEntries(CATEGORIES.map((c) => [c.key, initialValue(c.key, prefill)]))
   );
@@ -106,18 +65,19 @@ export function AccreditationStep({
   return (
     <div className="space-y-6">
       <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800 leading-relaxed">
-        Please complete the information below regarding the number / type of accreditations per
-        category that your organisation wishes to receive. Be as accurate as possible — demand is
-        high and each NOC receives a limited number of accreditations from the IOC.
+        {t("applyb.acr.intro1")}
         <br /><br />
-        Each person can only hold one accreditation type at the Games (e.g. not both E and EP).
-        Enter <b>0</b> for any category you are not requesting.
+        {t("applyb.acr.intro2").split("0").map((part, i, arr) =>
+          i < arr.length - 1 ? <span key={i}>{part}<b>0</b></span> : <span key={i}>{part}</span>
+        )}
       </div>
 
       <div className="space-y-3">
         {CATEGORIES.map((cat) => {
           const enrLocked = cat.key === "ENR" && !isNonMrh;
           const numericValue = enrLocked ? "0" : values[cat.key];
+          const titleKey = `applyb.acr.cat.${cat.key}.title` as Parameters<typeof t>[0];
+          const descKey  = `applyb.acr.cat.${cat.key}.desc`  as Parameters<typeof t>[0];
           return (
             <div
               key={cat.key}
@@ -126,18 +86,18 @@ export function AccreditationStep({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-brand-blue text-sm">{cat.code}</span>
-                  <span className="font-medium text-gray-900">{cat.title}</span>
+                  <span className="font-medium text-gray-900">{t(titleKey)}</span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1 leading-relaxed">{cat.description}</p>
+                <p className="text-xs text-gray-600 mt-1 leading-relaxed">{t(descKey)}</p>
                 {enrLocked && (
                   <p className="text-xs text-gray-500 mt-2 italic">
-                    Only available to Non-MRH organisations. Set the organisation type to Non-MRH on the Organisation step to enable this category.
+                    {t("applyb.acr.enr.locked")}
                   </p>
                 )}
               </div>
               <div className="flex-shrink-0">
                 <label htmlFor={`requested_${cat.key}`} className="block text-xs text-gray-500 mb-1 text-right">
-                  Requested
+                  {t("applyb.acr.requested")}
                 </label>
                 <input
                   id={`requested_${cat.key}`}
@@ -165,7 +125,6 @@ export function AccreditationStep({
                     The IOC only approves more than {cat.softMax} ENR slots for certain press organisations.
                   </p>
                 )}
-                {/* Hidden boolean that mirrors "is this requested" for backend compat */}
                 <input
                   type="hidden"
                   name={`category_${cat.key}`}
@@ -179,7 +138,7 @@ export function AccreditationStep({
 
       {totalRequested === 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-          Please request at least one accreditation category (enter a value &gt; 0 for at least one row).
+          {t("applyb.acr.no.category")}
         </div>
       )}
       {errors?.category && (
@@ -189,22 +148,22 @@ export function AccreditationStep({
       {/* Brief description — "about" */}
       <div className="border-t border-gray-100 pt-6">
         <label htmlFor="about" className={LABEL}>
-          Brief description of your coverage plans for Los Angeles 2028 <span className="text-red-500">*</span>
+          {t("applyb.acr.about.label")} <span className="text-red-500">*</span>
         </label>
         {(parseInt(values.Es ?? "0", 10) > 0 || parseInt(values.EPs ?? "0", 10) > 0) && (
           <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-3 py-2 mb-2">
-            You have requested Es or EPs accreditations. If you plan to cover more than one Olympic sport, enter the breakdown here — e.g. &quot;2 EPs Athletics + 2 EPs Swimming&quot;.
+            {t("applyb.acr.about.multi_sport")}
           </p>
         )}
         <textarea
           id="about" name="about" required rows={5} maxLength={500} data-tab="2"
           defaultValue={prefill?.about ?? ""}
           onChange={(e) => setAboutLength(e.target.value.length)}
-          placeholder="Tell us how your organisation plans to cover LA 2028 — formats, platforms, audiences, standout angles."
+          placeholder={t("applyb.acr.about.placeholder")}
           className={`${INPUT} resize-none ${errors?.about ? "border-red-500" : ""}`}
         />
         <p className="text-right text-xs text-gray-400 mt-1">{aboutLength} / 500</p>
-        <p className={HELP}>500 characters max.</p>
+        <p className={HELP}>{t("applyb.acr.about.help")}</p>
         {errors?.about && <p className="text-xs text-red-500 mt-1" role="alert">{errors.about}</p>}
       </div>
     </div>

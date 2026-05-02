@@ -17,7 +17,6 @@ export function ContactsTab({
   errors?: FormErrors;
   lang?: Lang;
 }) {
-  void lang;
   const orgType = prefill?.orgType ?? "";
-  return <ContactsStep prefill={prefill} email={email} errors={errors} orgType={orgType} />;
+  return <ContactsStep prefill={prefill} email={email} errors={errors} orgType={orgType} lang={lang} />;
 }
