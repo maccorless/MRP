@@ -11,18 +11,6 @@ const ORG_TYPE_OPTIONS = [
   { value: "enr",                label: "Non-Media Rights-Holder (ENR)" },
 ];
 
-// Access scopes per Emma feedback 2026-04-24 (comment #71). Surfaced
-// inline so NOC admins see what each category's accreditation actually
-// grants without leaving the form.
-const CATEGORIES: { key: string; label: string; sub: string; access: string }[] = [
-  { key: "e",   label: "E",   sub: "Journalist",                      access: "ALL competition venues" },
-  { key: "es",  label: "Es",  sub: "Sport-specific journalist",       access: "Own sport venues only" },
-  { key: "ep",  label: "EP",  sub: "Photographer",                    access: "ALL competition venues" },
-  { key: "eps", label: "EPs", sub: "Sport-specific photographer",     access: "Own sport venues only" },
-  { key: "et",  label: "ET",  sub: "Technician",                      access: "ALL venues, no seating" },
-  { key: "ec",  label: "EC",  sub: "Support staff",                   access: "MPC only" },
-];
-
 export type DirectEntryStrings = {
   org_section: string;
   contact_section: string;
@@ -33,6 +21,7 @@ export type DirectEntryStrings = {
   type: string;
   country: string;
   website: string;
+  email_field: string;
   full_name: string;
   first_name: string;
   last_name: string;
@@ -48,6 +37,23 @@ export type DirectEntryStrings = {
   select_sport: string;
   sport_field: string;
   access_label: string;
+  // Category sub-labels and access descriptions
+  cat_e_sub: string;
+  cat_es_sub: string;
+  cat_ep_sub: string;
+  cat_eps_sub: string;
+  cat_et_sub: string;
+  cat_ec_sub: string;
+  cat_e_access: string;
+  cat_es_access: string;
+  cat_ep_access: string;
+  cat_eps_access: string;
+  cat_et_access: string;
+  cat_ec_access: string;
+  slots_placeholder: string;
+  accred_instructions: string;
+  noc_e_footer: string;
+  submit_footnote: string;
 };
 
 interface Props {
@@ -57,6 +63,17 @@ interface Props {
 }
 
 export default function DirectEntryForm({ action, strings: s }: Props) {
+  // Access scopes per Emma feedback 2026-04-24 (comment #71). Defined inside
+  // the component so labels can use translated strings.
+  const CATEGORIES = [
+    { key: "e",   label: "E",   sub: s.cat_e_sub,   access: s.cat_e_access },
+    { key: "es",  label: "Es",  sub: s.cat_es_sub,  access: s.cat_es_access },
+    { key: "ep",  label: "EP",  sub: s.cat_ep_sub,  access: s.cat_ep_access },
+    { key: "eps", label: "EPs", sub: s.cat_eps_sub, access: s.cat_eps_access },
+    { key: "et",  label: "ET",  sub: s.cat_et_sub,  access: s.cat_et_access },
+    { key: "ec",  label: "EC",  sub: s.cat_ec_sub,  access: s.cat_ec_access },
+  ];
+
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [showSecondary, setShowSecondary] = useState(false);
   const [selectedOrgType, setSelectedOrgType] = useState("");
@@ -145,7 +162,7 @@ export default function DirectEntryForm({ action, strings: s }: Props) {
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              Email <span className="text-red-500">*</span>
+              {s.email_field} <span className="text-red-500">*</span>
             </label>
             <input
               name="contact_email" type="email" required
@@ -199,7 +216,7 @@ export default function DirectEntryForm({ action, strings: s }: Props) {
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs text-gray-500 mb-1">Email</label>
+                <label className="block text-xs text-gray-500 mb-1">{s.email_field}</label>
                 <input
                   name="secondary_email" type="email"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
@@ -226,7 +243,7 @@ export default function DirectEntryForm({ action, strings: s }: Props) {
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{s.accreditation_section}</h2>
-        <p className="text-xs text-gray-500">Select all that apply and enter requested slot quantities.</p>
+        <p className="text-xs text-gray-500">{s.accred_instructions}</p>
         <div className="space-y-3">
           {CATEGORIES.map(({ key, label, sub, access }) => (
             <div key={key} className="flex items-start gap-4">
@@ -244,15 +261,15 @@ export default function DirectEntryForm({ action, strings: s }: Props) {
               </label>
               <input
                 type="number" name={`requested_${key}`}
-                min={0} placeholder="slots"
-                aria-label={`${label} (${sub}) — requested slots`}
+                min={0} placeholder={s.slots_placeholder}
+                aria-label={`${label} (${sub}) — ${s.slots_placeholder}`}
                 className="w-24 border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue mt-0.5"
               />
             </div>
           ))}
         </div>
         <div className="text-xs text-gray-500 border-t border-gray-100 pt-3 leading-relaxed">
-          <span className="font-medium text-gray-700">NOC E and NOC Es</span> (press attaché categories) are allocated to your own NOC Communications Staff record on the Press by Number screen, not selected here. Press attachés can <em>only</em> hold NOC E / NOC Es accreditation; do not allocate E, EP, or other categories to your own staff.
+          {s.noc_e_footer}
         </div>
 
         {showSportPicker && (
@@ -295,7 +312,7 @@ export default function DirectEntryForm({ action, strings: s }: Props) {
           {s.submit_accept}
         </button>
         <span className="text-xs text-gray-400">
-          This application will be immediately accepted as a candidate and added to the PbN queue.
+          {s.submit_footnote}
         </span>
       </div>
     </form>

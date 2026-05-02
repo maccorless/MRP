@@ -324,7 +324,10 @@ export default async function NocPbnPage({
               import_button:          s.common.upload,
               cancel_button:          s.common.cancel,
               importing_label:        s.common.loading,
-              rows_imported:          (count, skipped) => `${count} row${count !== 1 ? "s" : ""} imported${skipped > 0 ? `, ${skipped} skipped` : ""}`,
+              row_singular:           s.pbn.import_row,
+              row_plural:             s.pbn.import_rows,
+              imported_label:         s.pbn.import_imported,
+              skipped_label:          s.pbn.import_skipped,
               allocations_updated:    s.pbn.allocations_saved,
               network_error:          s.error.generic,
             }}

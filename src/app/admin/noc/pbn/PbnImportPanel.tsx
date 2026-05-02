@@ -26,7 +26,13 @@ export type PbnImportStrings = {
   import_button: string;
   cancel_button: string;
   importing_label: string;
-  rows_imported: (count: number, skipped: number) => string;
+  // rows_imported is intentionally omitted — functions cannot cross the
+  // server/client boundary in Next.js App Router. Pluralization is handled
+  // inline by the component using row_singular / row_plural / skipped_label.
+  row_singular: string;
+  row_plural: string;
+  imported_label: string;
+  skipped_label: string;
   allocations_updated: string;
   network_error: string;
 };
@@ -37,10 +43,19 @@ const DEFAULT_STRINGS: PbnImportStrings = {
   import_button:          "Import",
   cancel_button:          "Cancel",
   importing_label:        "Importing…",
-  rows_imported:          (count, skipped) => `${count} row${count !== 1 ? "s" : ""} imported${skipped > 0 ? `, ${skipped} skipped` : ""}`,
+  row_singular:           "row",
+  row_plural:             "rows",
+  imported_label:         "imported",
+  skipped_label:          "skipped",
   allocations_updated:    "Allocations updated. The page will refresh automatically.",
   network_error:          "Network error — please try again.",
 };
+
+function formatRowsImported(count: number, skipped: number, s: PbnImportStrings): string {
+  const rowWord = count === 1 ? s.row_singular : s.row_plural;
+  const base = `${count} ${rowWord} ${s.imported_label}`;
+  return skipped > 0 ? `${base}, ${skipped} ${s.skipped_label}` : base;
+}
 
 export function PbnImportPanel({ strings = DEFAULT_STRINGS }: { strings?: PbnImportStrings }) {
   const s = strings;
@@ -200,7 +215,7 @@ export function PbnImportPanel({ strings = DEFAULT_STRINGS }: { strings?: PbnImp
             <div>
               {result && (
                 <p className={`text-sm font-semibold ${allGood ? "text-green-800" : "text-amber-800"}`}>
-                  {s.rows_imported(result.imported, result.skipped)}
+                  {formatRowsImported(result.imported, result.skipped, s)}
                 </p>
               )}
               {fileError && (

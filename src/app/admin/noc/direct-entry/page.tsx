@@ -23,21 +23,13 @@ export default async function DirectEntryPage({
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">{s.direct.title} — {session.nocCode}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Submit an EoI on behalf of a known organisation. The application is auto-approved immediately.
-        </p>
+        <p className="text-sm text-gray-500 mt-0.5">{s.direct.description}</p>
       </div>
 
       {/* NOC E guidance */}
       <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
-        <p className="font-semibold mb-1">Tip: Nominating your own communications staff (NOC E slots)</p>
-        <p>
-          Your IOC quota includes <strong>E (Journalist)</strong> slots that can be used for your NOC&apos;s own
-          communications and media staff — not just external media organisations. To use these, create an entry
-          here for your NOC communications team (e.g. &ldquo;USA Olympic &amp; Paralympic Committee — Communications&rdquo;),
-          select category E, and enter the number of staff you wish to credential. This will be allocated from
-          your E quota during Press by Number.
-        </p>
+        <p className="font-semibold mb-1">{s.direct.noc_e_tip_title}</p>
+        <p>{s.direct.noc_e_tip_body}</p>
       </div>
 
       {error && (
@@ -59,6 +51,7 @@ export default async function DirectEntryPage({
           type:                  s.form.type,
           country:               s.form.country,
           website:               s.form.website,
+          email_field:           s.form.email_field,
           full_name:             s.form.full_name,
           first_name:            s.form.first_name,
           last_name:             s.form.last_name,
@@ -74,6 +67,22 @@ export default async function DirectEntryPage({
           select_sport:          s.form.select_sport,
           sport_field:           s.form.sport_field,
           access_label:          s.form.access_label,
+          cat_e_sub:             s.form.cat_e_sub,
+          cat_es_sub:            s.form.cat_es_sub,
+          cat_ep_sub:            s.form.cat_ep_sub,
+          cat_eps_sub:           s.form.cat_eps_sub,
+          cat_et_sub:            s.form.cat_et_sub,
+          cat_ec_sub:            s.form.cat_ec_sub,
+          cat_e_access:          s.form.cat_e_access,
+          cat_es_access:         s.form.cat_es_access,
+          cat_ep_access:         s.form.cat_ep_access,
+          cat_eps_access:        s.form.cat_eps_access,
+          cat_et_access:         s.form.cat_et_access,
+          cat_ec_access:         s.form.cat_ec_access,
+          slots_placeholder:     s.form.slots_placeholder,
+          accred_instructions:   s.form.accred_instructions,
+          noc_e_footer:          s.form.noc_e_footer,
+          submit_footnote:       s.form.submit_footnote,
         }}
       />
     </div>
