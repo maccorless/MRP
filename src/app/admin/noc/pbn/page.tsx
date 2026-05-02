@@ -3,6 +3,8 @@ import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { applications, organizations, orgSlotAllocations, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { ACCRED_CATEGORIES } from "@/lib/category";
 import { formatAddress } from "@/lib/format";
 import { PbnAllocationTable } from "./PbnAllocationTable";
@@ -31,6 +33,8 @@ export default async function NocPbnPage({
 }) {
   const session = await requireNocSession();
   const nocCode = session.nocCode;
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { success, error } = await searchParams;
 
   const [quota] = await db
@@ -106,9 +110,9 @@ export default async function NocPbnPage({
   const overallState = hasApproved
     ? "OCOG Approved"
     : hasSubmitted
-    ? "Submitted to OCOG"
+    ? `${s.status.submitted} to OCOG`
     : rows.some((r) => r.alloc)
-    ? "Draft"
+    ? s.status.draft
     : "Not Started";
 
   const stateBadgeClass = hasApproved
@@ -218,7 +222,7 @@ export default async function NocPbnPage({
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Press by Number — {nocCode}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.pbn.title} — {nocCode}</h1>
           <p className="text-sm text-gray-500 mt-0.5">Assign accreditation slots per category to your approved organisations</p>
         </div>
         <div className="flex items-center gap-2">
@@ -248,7 +252,7 @@ export default async function NocPbnPage({
       )}
       {success === "saved" && (
         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm">
-          Draft allocations saved.
+          {s.pbn.allocations_saved}
         </div>
       )}
       {success === "entry_cancelled" && (
@@ -271,7 +275,7 @@ export default async function NocPbnPage({
 
       {allTableRows.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-600">
-          No organisations in your PbN yet. Approve applications in the EoI Queue, or add an organisation directly below.
+          {s.pbn.no_records} Approve applications in the EoI Queue, or add an organisation directly below.
         </div>
       ) : (
         <>

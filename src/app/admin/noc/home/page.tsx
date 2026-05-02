@@ -4,6 +4,8 @@ import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { applications, orgSlotAllocations, enrRequests, nocQuotas } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 // LA28 — Key Milestones for the NOC role.
 // Source of truth: docs/process-timeline-2026-04-26.md +
@@ -40,6 +42,8 @@ function milestoneState(m: Milestone, now: Date): MilestoneState {
 export default async function NocHomePage() {
   const session = await requireNocSession();
   const nocCode = session.nocCode;
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   // EoI stats
   const apps = await db
@@ -93,7 +97,7 @@ export default async function NocHomePage() {
     <div className="p-6 max-w-4xl mx-auto">
       {/* Welcome */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome, {session.displayName}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{s.dashboard.welcome}, {session.displayName}</h1>
         <p className="text-sm text-gray-500 mt-1">NOC Admin · {nocCode} · LA 2028</p>
       </div>
 

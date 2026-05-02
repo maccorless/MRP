@@ -35,18 +35,38 @@ type CompareTarget = {
   signals: DuplicateSignal[];
 };
 
+type QueueStrings = {
+  search_placeholder: string;
+  col_org: string;
+  col_status: string;
+  col_submitted: string;
+  col_actions: string;
+  empty_queue: string;
+};
+
+const DEFAULT_STRINGS: QueueStrings = {
+  search_placeholder: "Search by organisation name…",
+  col_org:       "Organisation",
+  col_status:    "Status",
+  col_submitted: "Submitted",
+  col_actions:   "Actions",
+  empty_queue:   "The queue is empty.",
+};
+
 export function QueueClient({
   rows,
   allIds,
   duplicateOrgIds = [],
   duplicatePairs = {},
   orgIdToAppId = {},
+  strings = DEFAULT_STRINGS,
 }: {
   rows: Row[];
   allIds: string[];
   duplicateOrgIds?: string[];
   duplicatePairs?: Record<string, DuplicatePairInfo[]>;
   orgIdToAppId?: Record<string, string>;
+  strings?: QueueStrings;
 }) {
   const duplicateSet = new Set(duplicateOrgIds);
   const router = useRouter();
@@ -65,7 +85,7 @@ export function QueueClient({
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by organisation name…"
+          placeholder={strings.search_placeholder}
           className="w-full sm:w-72 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-transparent"
           aria-label="Search organisations"
         />
@@ -77,25 +97,25 @@ export function QueueClient({
               Reference
             </th>
             <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
-              Organization
+              {strings.col_org}
             </th>
             <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
               Category
             </th>
             <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
-              Status
+              {strings.col_status}
             </th>
             <th className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">
-              Submitted
+              {strings.col_submitted}
             </th>
-            <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
+            <th className="px-4 py-3"><span className="sr-only">{strings.col_actions}</span></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {visibleRows.length === 0 && (
             <tr>
               <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">
-                No organisations match &ldquo;{search}&rdquo;.
+                {search.trim() ? <>No organisations match &ldquo;{search}&rdquo;.</> : strings.empty_queue}
               </td>
             </tr>
           )}

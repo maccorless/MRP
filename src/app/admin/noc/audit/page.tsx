@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { auditLog, organizations, adminUsers } from "@/db/schema";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { parseAuditQuery, buildAuditConditions, describeAuditQuery } from "@/lib/audit-query";
 import { AuditTrailView } from "@/components/AuditTrailView";
 
@@ -17,6 +19,8 @@ export default async function NocAuditPage({
   if (!session || session.role !== "noc_admin" || !session.nocCode) {
     redirect("/admin/login");
   }
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   const { q: rawQ, page: rawPage } = await searchParams;
 
@@ -82,6 +86,8 @@ export default async function NocAuditPage({
         filterDescription={describeAuditQuery(parsed)}
         basePath="/admin/noc/audit"
         exportHref={exportHref}
+        title={s.audit.title}
+        exportLabel={s.audit.export}
       />
     </div>
   );

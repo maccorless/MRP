@@ -4,6 +4,8 @@ import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { Paginator } from "@/components/Paginator";
 import { QueueClient } from "./QueueClient";
 import { detectWithinNocDuplicates, detectWithinNocDuplicatePairs, type DuplicatePairInfo } from "@/lib/anomaly-detect";
@@ -31,6 +33,8 @@ export default async function NocQueuePage({
   searchParams: Promise<{ status?: string; page?: string; success?: string; sort?: string }>;
 }) {
   const session = await requireNocSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { status: statusParam, page: pageParam, success, sort: sortParam } = await searchParams;
   const activeFilter = (statusParam ?? "all") as StatusFilter;
   const activeSort: SortKey = sortParam === "priority" ? "priority" : "submitted";
@@ -133,12 +137,12 @@ export default async function NocQueuePage({
   const actionableCount = (counts.pending ?? 0) + (counts.resubmitted ?? 0);
 
   const filters: { key: StatusFilter; label: string }[] = [
-    { key: "all",         label: `All (${totalAll})` },
-    { key: "pending",     label: `Pending (${counts.pending ?? 0})` },
+    { key: "all",         label: `${s.queue.all_statuses} (${totalAll})` },
+    { key: "pending",     label: `${s.status.pending} (${counts.pending ?? 0})` },
     { key: "resubmitted", label: `Resubmitted (${counts.resubmitted ?? 0})` },
     { key: "approved",    label: `Candidate (${counts.approved ?? 0})` },
-    { key: "returned",    label: `Returned (${counts.returned ?? 0})` },
-    { key: "rejected",    label: `Rejected (${counts.rejected ?? 0})` },
+    { key: "returned",    label: `${s.status.returned} (${counts.returned ?? 0})` },
+    { key: "rejected",    label: `${s.status.rejected} (${counts.rejected ?? 0})` },
   ];
 
   function pageHref(p: number): string {
@@ -163,7 +167,7 @@ export default async function NocQueuePage({
       {/* Page header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">
-          NOC Review Queue — {session.nocCode}
+          {s.queue.title} — {session.nocCode}
         </h1>
         <p className="text-sm text-gray-600 mt-0.5">
           {actionableCount > 0
@@ -266,6 +270,14 @@ export default async function NocQueuePage({
             duplicateOrgIds={duplicateOrgIds}
             duplicatePairs={duplicatePairs}
             orgIdToAppId={orgIdToAppId}
+            strings={{
+              search_placeholder: s.queue.search_placeholder,
+              col_org:    s.queue.col_org,
+              col_status: s.queue.col_status,
+              col_submitted: s.queue.col_submitted,
+              col_actions: s.queue.col_actions,
+              empty_queue: s.queue.empty_queue,
+            }}
           />
         )}
       </div>

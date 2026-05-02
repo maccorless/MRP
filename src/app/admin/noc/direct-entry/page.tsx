@@ -1,4 +1,6 @@
 import { requireNocSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { submitDirectEntryApplication } from "./actions";
 import DirectEntryForm from "./DirectEntryForm";
 
@@ -13,12 +15,14 @@ export default async function DirectEntryPage({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const session = await requireNocSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { error } = await searchParams;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Direct Entry — {session.nocCode}</h1>
+        <h1 className="text-xl font-bold text-gray-900">{s.direct.title} — {session.nocCode}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           Submit an EoI on behalf of a known organisation. The application is auto-approved immediately.
         </p>

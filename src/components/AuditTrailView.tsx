@@ -13,6 +13,8 @@ type Props = {
   filterDescription: string;
   basePath: string;   // e.g. "/admin/ioc/audit"
   exportHref: string;
+  title?: string;
+  exportLabel?: string;
 };
 
 function pageHref(basePath: string, q: string, p: number): string {
@@ -32,6 +34,8 @@ export function AuditTrailView({
   filterDescription,
   basePath,
   exportHref,
+  title = "Audit Trail",
+  exportLabel = "Export CSV",
 }: Props) {
   const rowStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const rowEnd = Math.min(page * PAGE_SIZE, total);
@@ -41,7 +45,7 @@ export function AuditTrailView({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Audit Trail</h1>
+          <h1 className="text-xl font-bold text-gray-900">{title}</h1>
           <p className="text-sm text-gray-600 mt-0.5">
             {total.toLocaleString()} {total === 1 ? "entry" : "entries"}{" "}
             {filterDescription}
@@ -51,7 +55,7 @@ export function AuditTrailView({
           href={exportHref}
           className="shrink-0 px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
         >
-          Export CSV <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
+          {exportLabel} <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
         </a>
       </div>
 

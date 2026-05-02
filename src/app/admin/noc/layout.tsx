@@ -1,6 +1,7 @@
 import AppHeader from "@/components/AppHeader";
 import { requireNocSession } from "@/lib/session";
 import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { NocNavTabs } from "./NocNavTabs";
 
 const HELP_ANCHORS: Record<string, string> = {
@@ -16,6 +17,7 @@ const HELP_ANCHORS: Record<string, string> = {
 export default async function NocLayout({ children }: { children: React.ReactNode }) {
   const session = await requireNocSession();
   const lang = await getAdminLang();
+  const s = t(lang);
   const showPrpAdmin = session.additionalRoles?.includes("prp_admin") ?? false;
   const additionalRoleLabels = (session.additionalRoles ?? []).map((r) =>
     r === "prp_admin" ? "PRP Admin" : r
@@ -31,7 +33,7 @@ export default async function NocLayout({ children }: { children: React.ReactNod
         helpPath="/admin/noc/help"
         helpAnchors={HELP_ANCHORS}
       />
-      <NocNavTabs showPrpAdmin={showPrpAdmin} />
+      <NocNavTabs showPrpAdmin={showPrpAdmin} nav={s.nav} />
       <div>{children}</div>
     </div>
   );

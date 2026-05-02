@@ -3,6 +3,8 @@ import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { enrRequests, organizations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { addEnrNomination, submitEnrToIoc } from "./actions";
 import { EnrPriorityList } from "./EnrPriorityList";
 
@@ -20,6 +22,8 @@ export default async function NocEnrPage({
 }) {
   const session = await requireNocSession();
   const nocCode = session.nocCode;
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { success, error } = await searchParams;
 
   const requests = await db
@@ -55,7 +59,7 @@ export default async function NocEnrPage({
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">ENR Nominations — {nocCode}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.enr.title} — {nocCode}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Nominate non-rights broadcaster organisations for IOC accreditation
           </p>
@@ -127,7 +131,7 @@ export default async function NocEnrPage({
       {/* Priority list */}
       {requests.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center text-sm text-gray-600 mb-6">
-          No organisations nominated yet. Use the form below to add your first nomination.
+          {s.enr.no_records}
         </div>
       ) : (
         <div className="mb-6">
