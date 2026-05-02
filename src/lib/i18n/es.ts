@@ -553,7 +553,7 @@ export const es = {
   "applyb.org.noc.help": "*Por favor, asegúrese de seleccionar el país correcto de su CON. El país debe ser aquel donde está establecida su organización de prensa. Esta información es muy importante ya que los CON (no el COI) gestionarán todas las expresiones de interés y toda la información sobre el estado de su solicitud provendrá de su CON.",
   "applyb.org.phone.label": "Número de teléfono (oficina)",
   "applyb.org.phone.placeholder": "+34 91 234 56 78",
-  "applyb.org.phone.help": "Incluya el prefijo del país.",
+  "applyb.org.phone.help": "Empiece con + y el prefijo (p. ej. +34, +1) para el formato automático.",
   "applyb.org.email.label": "Dirección de correo electrónico de la organización",
   "applyb.org.email.placeholder": "info@sunewsroom.com",
 
@@ -568,7 +568,7 @@ export const es = {
   "applyb.contact.email.locked": "Este es el correo electrónico que utilizó para iniciar su solicitud. Para cambiarlo, inicie una nueva solicitud.",
   "applyb.contact.cell": "Teléfono (móvil)",
   "applyb.contact.phone.placeholder": "+34 612 345 678",
-  "applyb.contact.phone.help": "Incluya el prefijo del país.",
+  "applyb.contact.phone.help": "Empiece con + y el prefijo (p. ej. +34, +1) para el formato automático.",
   "applyb.contact.eic.heading": "Redactor Jefe / Responsable de la organización mediática",
   "applyb.contact.eic.optional": "Opcional para autónomos",
   "applyb.contact.eic.help.optional": "Si tiene un redactor jefe o editor comisionado, por favor indíquelo. De lo contrario, déjelo en blanco.",

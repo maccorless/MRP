@@ -575,7 +575,7 @@ export const fr: Record<TranslationKey, string> = {
   "applyb.org.noc.help": "*Veuillez vous assurer de sélectionner le pays correct de votre CNO. Le pays doit être celui où votre organisation de presse est établie. Cette information est très importante car les CNO (et non le CIO) traiteront toutes les expressions d'intérêt et toutes les informations concernant le statut de votre demande proviendront de votre CNO.",
   "applyb.org.phone.label": "Numéro de téléphone (bureau)",
   "applyb.org.phone.placeholder": "+33 1 23 45 67 89",
-  "applyb.org.phone.help": "Inclure l'indicatif pays.",
+  "applyb.org.phone.help": "Commencez par + et l'indicatif (ex. +33, +1) pour le formatage automatique.",
   "applyb.org.email.label": "Adresse e-mail de l'organisation",
   "applyb.org.email.placeholder": "info@votresallederedaction.com",
 
@@ -590,7 +590,7 @@ export const fr: Record<TranslationKey, string> = {
   "applyb.contact.email.locked": "C'est l'adresse e-mail que vous avez utilisée pour démarrer votre demande. Pour la modifier, démarrez une nouvelle demande.",
   "applyb.contact.cell": "Téléphone (mobile)",
   "applyb.contact.phone.placeholder": "+33 6 12 34 56 78",
-  "applyb.contact.phone.help": "Inclure l'indicatif pays.",
+  "applyb.contact.phone.help": "Commencez par + et l'indicatif (ex. +33, +1) pour le formatage automatique.",
   "applyb.contact.eic.heading": "Rédacteur en chef / Responsable de l'organisation médiatique",
   "applyb.contact.eic.optional": "Facultatif pour les indépendants",
   "applyb.contact.eic.help.optional": "Si vous avez un rédacteur en chef ou un éditeur commanditaire, veuillez le mentionner. Sinon, laissez vide.",

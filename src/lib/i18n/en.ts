@@ -553,7 +553,7 @@ export const en = {
   "applyb.org.noc.help": "*Please make sure that you select the correct country of your NOC. The country should be where your press organisation is based. This information is very important as the NOCs (not the IOC) will be handling all expressions of interest and all information concerning the status of your submission will be from your NOC.",
   "applyb.org.phone.label": "Phone Number (office)",
   "applyb.org.phone.placeholder": "+1 555 123 4567",
-  "applyb.org.phone.help": "Include country code.",
+  "applyb.org.phone.help": "Start with + and country code (e.g. +1, +44) to auto-format.",
   "applyb.org.email.label": "Email Address of the Organisation",
   "applyb.org.email.placeholder": "info@yournewsroom.com",
 
@@ -568,7 +568,7 @@ export const en = {
   "applyb.contact.email.locked": "This is the email you used to start your application. To change it, start a new application.",
   "applyb.contact.cell": "Phone (mobile)",
   "applyb.contact.phone.placeholder": "+1 555 123 4567",
-  "applyb.contact.phone.help": "Include country code.",
+  "applyb.contact.phone.help": "Start with + and country code (e.g. +1, +44) to auto-format.",
   "applyb.contact.eic.heading": "Editor-in-Chief / Media Organisation Manager",
   "applyb.contact.eic.optional": "Optional for freelancers",
   "applyb.contact.eic.help.optional": "If you have an Editor-in-Chief or commissioning editor, please list them. Otherwise leave blank.",
