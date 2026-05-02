@@ -111,16 +111,50 @@ function QuotaBar({
   );
 }
 
+export type DrawerStrings = {
+  section_org: string;
+  section_contact: string;
+  section_accreditation: string;
+  section_history: string;
+  action_approve: string;
+  action_return: string;
+  action_reject: string;
+  note_placeholder: string;
+  return_reason: string;
+  reject_reason: string;
+  back_label: string;
+  close_label: string;
+  loading_label: string;
+};
+
+const DEFAULT_DRAWER_STRINGS: DrawerStrings = {
+  section_org:           "Organisation",
+  section_contact:       "Contacts",
+  section_accreditation: "Accreditation Request",
+  section_history:       "History",
+  action_approve:        "Accept as Candidate",
+  action_return:         "Return for Corrections",
+  action_reject:         "Reject",
+  note_placeholder:      "Add a note…",
+  return_reason:         "Reason for return",
+  reject_reason:         "Reason for rejection",
+  back_label:            "Back",
+  close_label:           "Close",
+  loading_label:         "Loading application…",
+};
+
 export function ApplicationDrawer({
   appId,
   allIds,
   onClose,
   onNavigate,
+  strings = DEFAULT_DRAWER_STRINGS,
 }: {
   appId: string;
   allIds: string[];
   onClose: () => void;
   onNavigate: (newId: string) => void;
+  strings?: DrawerStrings;
 }) {
   const [data, setData] = useState<AppDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -178,6 +212,7 @@ export function ApplicationDrawer({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, onNavigate, allIds, currentIndex, hasPrev, hasNext]);
 
+  const s = strings;
   const app = data?.app;
   const org = data?.org;
   const pubTypes = ((app?.publicationTypes as string[] | null) ?? []) as string[];
@@ -270,7 +305,7 @@ export function ApplicationDrawer({
         <div className="p-5">
           {loading && (
             <div className="py-12 text-center text-sm text-gray-400">
-              Loading application…
+              {s.loading_label}
             </div>
           )}
 
@@ -324,7 +359,7 @@ export function ApplicationDrawer({
                 {/* Organisation */}
                 <section className="bg-white rounded-lg border border-gray-200 p-4">
                   <h2 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
-                    Organisation
+                    {s.section_org}
                   </h2>
                   <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                     <Field label="Name" value={org.name} />
@@ -395,7 +430,7 @@ export function ApplicationDrawer({
                 {/* Contacts */}
                 <section className="bg-white rounded-lg border border-gray-200 p-4">
                   <h2 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
-                    Contacts
+                    {s.section_contact}
                   </h2>
                   <dl className="text-sm space-y-3">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -461,7 +496,7 @@ export function ApplicationDrawer({
                 {/* Accreditation */}
                 <section className="bg-white rounded-lg border border-gray-200 p-4">
                   <h2 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
-                    Accreditation Request
+                    {s.section_accreditation}
                   </h2>
                   <dl className="space-y-3 text-sm">
                     <div className="grid grid-cols-2 gap-x-4">
@@ -741,7 +776,7 @@ export function ApplicationDrawer({
                 {data.logs.length > 0 && (
                   <section className="bg-white rounded-lg border border-gray-200 p-4">
                     <h2 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
-                      History
+                      {s.section_history}
                     </h2>
                     <ol className="space-y-2">
                       {data.logs.map((log) => (
@@ -855,7 +890,7 @@ export function ApplicationDrawer({
                           );
                         })()}
                         <div className="bg-white rounded-lg border border-gray-200 p-4">
-                          <h3 className="text-sm font-semibold text-gray-900 mb-1">Accept as Candidate</h3>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-1">{s.action_approve}</h3>
                           <p className="text-xs text-gray-500 mb-3">
                             Marks this organisation as a <strong>candidate</strong>{" "}for press accreditation. Slot allocation happens separately in Press by Number.
                           </p>
@@ -869,7 +904,7 @@ export function ApplicationDrawer({
                             return (
                               <form action={approveApplication} className="space-y-3">
                                 <input type="hidden" name="id" value={app.id} />
-                                <textarea name="internal_note" rows={2} placeholder="Internal note (optional, NOC only)" className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none" />
+                                <textarea name="internal_note" rows={2} placeholder={s.note_placeholder} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none" />
                                 {hasFlags && (
                                   <label className="flex items-start gap-2 text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
                                     <input
@@ -884,29 +919,29 @@ export function ApplicationDrawer({
                                     </span>
                                   </label>
                                 )}
-                                <button type="submit" className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer">Accept as Candidate</button>
+                                <button type="submit" className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer">{s.action_approve}</button>
                               </form>
                             );
                           })()}
                         </div>
                         <div className="bg-white rounded-lg border border-gray-200 p-4">
-                          <h3 className="text-sm font-semibold text-gray-900 mb-1">Return for Corrections</h3>
-                          <p className="text-xs text-gray-500 mb-3">Send back to the applicant with a note explaining what needs to be corrected.</p>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-1">{s.action_return}</h3>
+                          <p className="text-xs text-gray-500 mb-3">{s.return_reason}</p>
                           <form action={returnApplication} className="space-y-3">
                             <input type="hidden" name="id" value={app.id} />
-                            <textarea name="note" required rows={3} placeholder="Explain what the applicant needs to correct..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none" />
-                            <button type="submit" className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded hover:bg-orange-600 transition-colors cursor-pointer">Return for Corrections</button>
+                            <textarea name="note" required rows={3} placeholder={s.return_reason} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none" />
+                            <button type="submit" className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded hover:bg-orange-600 transition-colors cursor-pointer">{s.action_return}</button>
                           </form>
                         </div>
                       </>
                     )}
                     <div className="bg-white rounded-lg border border-red-200 p-4">
-                      <h3 className="text-sm font-semibold text-red-700 mb-1">Reject</h3>
-                      <p className="text-xs text-gray-500 mb-3">Reject this application. Rejections can be reversed before the batch release date.</p>
+                      <h3 className="text-sm font-semibold text-red-700 mb-1">{s.action_reject}</h3>
+                      <p className="text-xs text-gray-500 mb-3">{s.reject_reason}</p>
                       <form action={rejectApplication} className="space-y-3">
                         <input type="hidden" name="id" value={app.id} />
-                        <textarea name="note" required rows={3} placeholder="Provide the reason for rejection..." className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent resize-none" />
-                        <button type="submit" className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition-colors cursor-pointer">Reject Application</button>
+                        <textarea name="note" required rows={3} placeholder={s.reject_reason} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent resize-none" />
+                        <button type="submit" className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 transition-colors cursor-pointer">{s.action_reject}</button>
                       </form>
                     </div>
                   </section>

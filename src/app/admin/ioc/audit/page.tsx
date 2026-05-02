@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { auditLog } from "@/db/schema";
 import { parseAuditQuery, buildAuditConditions, describeAuditQuery } from "@/lib/audit-query";
 import { AuditTrailView } from "@/components/AuditTrailView";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 const PAGE_SIZE = 200;
 
@@ -11,6 +13,8 @@ export default async function IocAuditPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { q: rawQ, page: rawPage } = await searchParams;
 
   const q = rawQ ?? "";
@@ -66,6 +70,8 @@ export default async function IocAuditPage({
       filterDescription={describeAuditQuery(parsed)}
       basePath="/admin/ioc/audit"
       exportHref={exportHref}
+      title={s.audit.title}
+      exportLabel={s.audit.export}
     />
   );
 }

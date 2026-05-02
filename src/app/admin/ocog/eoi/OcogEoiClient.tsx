@@ -20,12 +20,34 @@ interface Totals {
   total: number;
 }
 
+type EoiClientStrings = {
+  col_noc:       string;
+  col_pending:   string;
+  col_candidate: string;
+  col_returned:  string;
+  col_rejected:  string;
+  col_total:     string;
+  totals_row:    string;
+};
+
+const DEFAULT_STRINGS: EoiClientStrings = {
+  col_noc:       "NOC",
+  col_pending:   "Pending",
+  col_candidate: "Candidate",
+  col_returned:  "Returned",
+  col_rejected:  "Rejected",
+  col_total:     "Total",
+  totals_row:    "Totals",
+};
+
 export function OcogEoiClient({
   rows,
   totals,
+  strings = DEFAULT_STRINGS,
 }: {
   rows: NocRow[];
   totals: Totals;
+  strings?: EoiClientStrings;
 }) {
   const [search, setSearch] = useState("");
 
@@ -61,22 +83,22 @@ export function OcogEoiClient({
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  NOC
+                  {strings.col_noc}
                 </th>
                 <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Pending
+                  {strings.col_pending}
                 </th>
                 <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Candidate
+                  {strings.col_candidate}
                 </th>
                 <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Returned
+                  {strings.col_returned}
                 </th>
                 <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Rejected
+                  {strings.col_rejected}
                 </th>
                 <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Total
+                  {strings.col_total}
                 </th>
               </tr>
             </thead>
@@ -133,7 +155,7 @@ export function OcogEoiClient({
               <tfoot className="border-t-2 border-gray-200 bg-gray-50">
                 <tr>
                   <td className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Total ({rows.length} NOCs)
+                    {strings.totals_row} ({rows.length} NOCs)
                   </td>
                   <td className="px-5 py-3 text-right font-bold text-yellow-700">
                     {totals.pending || <span className="text-gray-400">0</span>}

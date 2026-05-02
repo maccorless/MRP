@@ -4,6 +4,8 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations, organizations, applications } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { ACCRED_CATEGORIES, categoryDisplayLabel } from "@/lib/category";
 import { approvePbn, sendToAcr, reversePbnApproval } from "../actions";
 import { progressWidthClass } from "@/lib/progress";
@@ -16,6 +18,8 @@ export default async function OcogPbnNocPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { nocCode } = await params;
   const { error } = await searchParams;
 
@@ -87,7 +91,7 @@ export default async function OcogPbnNocPage({
           href="/admin/ocog/pbn"
           className="text-xs text-gray-500 hover:text-gray-700 mb-3 inline-block"
         >
-          ← Back to PbN list
+          ← {s.nav.pbn_approvals}
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -101,7 +105,7 @@ export default async function OcogPbnNocPage({
             isSubmitted ? "bg-yellow-100 text-yellow-800" :
             "bg-gray-100 text-gray-600"
           }`}>
-            {isApproved ? "Approved" : isSubmitted ? "Submitted" : "Draft"}
+            {isApproved ? s.status.approved : isSubmitted ? s.status.submitted : s.status.draft}
           </span>
         </div>
       </div>
@@ -156,15 +160,15 @@ export default async function OcogPbnNocPage({
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {isSubmitted && (
               <div className="px-5 py-3 bg-blue-50 border-b border-blue-100 text-xs text-blue-800 font-medium">
-                Edit mode — adjust slot counts if needed, then approve
+                {s.action.take_review}
               </div>
             )}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">Responsible Organisation</th>
-                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Categories</th>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">{s.pbn.col_org}</th>
+                    <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.eoi.section_accreditation}</th>
                     {activeCategories.map((cat) => (
                       <th
                         key={cat.value}
@@ -173,7 +177,7 @@ export default async function OcogPbnNocPage({
                         {cat.shortLabel}
                       </th>
                     ))}
-                    <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
+                    <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ocog.col_total}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -244,7 +248,7 @@ export default async function OcogPbnNocPage({
                 )}
                 <tfoot className="bg-gray-50 border-t border-gray-200">
                   <tr>
-                    <td colSpan={2} className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
+                    <td colSpan={2} className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">{s.ocog.col_total}</td>
                     {activeCategories.map((cat) => (
                       <td key={cat.value} className="px-4 py-2.5 text-right font-semibold text-gray-900">
                         {catTotals[cat.value]}
@@ -263,9 +267,9 @@ export default async function OcogPbnNocPage({
                 type="submit"
                 className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer"
               >
-                Approve Allocation
+                {s.action.approve}
               </button>
-              <span className="text-xs text-gray-400">Any adjusted values above will be saved on approval.</span>
+              <span className="text-xs text-gray-400">{s.pbn.save_allocations}</span>
             </div>
           )}
         </form>
@@ -274,7 +278,7 @@ export default async function OcogPbnNocPage({
       {isApproved && (
         <div className="mt-6 space-y-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">Send to ACR</h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">{s.pbn.export_pbn}</h2>
             <p className="text-xs text-gray-500 mb-4">
               Push the approved allocation for {nocCode} to the Accreditation system.
               {rows.length} RO{rows.length !== 1 ? "s" : ""} · {grandTotal} total slots{nocEQuota > 0 ? ` (incl. ${nocERequested} NocE)` : ""}.
@@ -285,12 +289,12 @@ export default async function OcogPbnNocPage({
                 type="submit"
                 className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
               >
-                Send to ACR
+                {s.pbn.export_pbn}
               </button>
             </form>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">Reverse Approval</h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">{s.action.release_review}</h2>
             <p className="text-xs text-gray-500 mb-4">
               Move this allocation back to NOC-submitted if you need to revise your decision.
             </p>
@@ -300,7 +304,7 @@ export default async function OcogPbnNocPage({
                 type="submit"
                 className="px-4 py-2 bg-yellow-500 text-white text-sm font-semibold rounded hover:bg-yellow-600 transition-colors cursor-pointer"
               >
-                Reverse Approval
+                {s.action.release_review}
               </button>
             </form>
           </div>

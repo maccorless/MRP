@@ -3,6 +3,8 @@ import { db } from "@/db";
 import { auditLog } from "@/db/schema";
 import { parseAuditQuery, buildAuditConditions, describeAuditQuery } from "@/lib/audit-query";
 import { AuditTrailView } from "@/components/AuditTrailView";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 const PAGE_SIZE = 200;
 
@@ -11,6 +13,9 @@ export default async function OcogAuditPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
+  const lang = await getAdminLang();
+  const s = t(lang);
+
   const { q: rawQ, page: rawPage } = await searchParams;
 
   const q = rawQ ?? "";
@@ -67,6 +72,8 @@ export default async function OcogAuditPage({
         filterDescription={describeAuditQuery(parsed)}
         basePath="/admin/ocog/audit"
         exportHref={exportHref}
+        title={s.audit.title}
+        exportLabel={s.audit.export}
       />
     </div>
   );

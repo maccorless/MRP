@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { enrRequests, organizations } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
 import { addIocDirectEnrOrg } from "../actions";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 // IOC-Direct ENR organisations.
 // Per IOC Strategic Plan §Non-MRH allocation reminders + Emma 2026-04-24
@@ -18,6 +20,8 @@ export default async function IocDirectEnrPage({
   searchParams: Promise<{ success?: string; error?: string }>;
 }) {
   await requireIocAdminSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { success, error } = await searchParams;
 
   const rows = await db
@@ -42,7 +46,7 @@ export default async function IocDirectEnrPage({
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">IOC-Direct ENR organisations</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.ioc.enr_combined_title} — {s.nav.ioc_direct}</h1>
           <p className="text-sm text-gray-500 mt-0.5 max-w-2xl">
             Non-MRH organisations with international focus that the IOC accredits directly,
             without NOC mediation (CNN, Al Jazeera, BBC World, ESPN, etc.). Records here flow
@@ -140,11 +144,11 @@ export default async function IocDirectEnrPage({
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">#</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organisation</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Contact email</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Requested</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Granted</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Decision</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_organisation}</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.eoi.contact_email}</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_requested}</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_granted}</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_status}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -159,7 +163,7 @@ export default async function IocDirectEnrPage({
                       {req.decision ? (
                         <span className="text-xs font-medium text-gray-700">{req.decision}</span>
                       ) : (
-                        <span className="text-xs text-gray-400 italic">pending</span>
+                        <span className="text-xs text-gray-400 italic">{s.ioc.decision_pending}</span>
                       )}
                     </td>
                   </tr>

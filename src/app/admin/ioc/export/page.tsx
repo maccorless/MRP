@@ -4,8 +4,13 @@ import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { categoryDisplayLabel } from "@/lib/category";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 export default async function ExportPage() {
+  const lang = await getAdminLang();
+  const s = t(lang);
+
   const rows = await db
     .select({
       referenceNumber: applications.referenceNumber,
@@ -32,7 +37,7 @@ export default async function ExportPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">PBN Export</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.ioc.export_title}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {rows.length} approved application{rows.length !== 1 ? "s" : ""} ready for Common Codes handoff
           </p>
@@ -45,7 +50,7 @@ export default async function ExportPage() {
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Download CSV
+            {s.common.download}
           </Link>
         )}
       </div>
@@ -66,11 +71,11 @@ export default async function ExportPage() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Reference</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organization</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_noc}</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_organisation}</th>
                   <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Category</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Contact</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Candidate</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.eoi.contact_name}</th>
+                  <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.status.approved}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">

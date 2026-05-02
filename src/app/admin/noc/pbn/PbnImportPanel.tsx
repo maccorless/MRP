@@ -20,7 +20,30 @@ type ImportResult = {
   errors: string[];
 };
 
-export function PbnImportPanel() {
+export type PbnImportStrings = {
+  import_csv_label: string;
+  paste_from_spreadsheet: string;
+  import_button: string;
+  cancel_button: string;
+  importing_label: string;
+  rows_imported: (count: number, skipped: number) => string;
+  allocations_updated: string;
+  network_error: string;
+};
+
+const DEFAULT_STRINGS: PbnImportStrings = {
+  import_csv_label:       "Import CSV",
+  paste_from_spreadsheet: "Paste from spreadsheet",
+  import_button:          "Import",
+  cancel_button:          "Cancel",
+  importing_label:        "Importing…",
+  rows_imported:          (count, skipped) => `${count} row${count !== 1 ? "s" : ""} imported${skipped > 0 ? `, ${skipped} skipped` : ""}`,
+  allocations_updated:    "Allocations updated. The page will refresh automatically.",
+  network_error:          "Network error — please try again.",
+};
+
+export function PbnImportPanel({ strings = DEFAULT_STRINGS }: { strings?: PbnImportStrings }) {
+  const s = strings;
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,7 +74,7 @@ export function PbnImportPanel() {
         }
       }
     } catch {
-      setFileError("Network error — please try again.");
+      setFileError(s.network_error);
     } finally {
       setLoading(false);
     }
@@ -106,7 +129,7 @@ export function PbnImportPanel() {
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:text-gray-800 transition-colors disabled:opacity-50"
           >
             <Icon name="upload" className="w-4 h-4" />
-            Import CSV
+            {s.import_csv_label}
           </button>
           <button
             type="button"
@@ -115,7 +138,7 @@ export function PbnImportPanel() {
             className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:text-gray-800 transition-colors disabled:opacity-50"
           >
             <span className="text-base leading-none">⎘</span>
-            Paste from spreadsheet
+            {s.paste_from_spreadsheet}
           </button>
         </div>
       )}
@@ -157,14 +180,14 @@ export function PbnImportPanel() {
               onClick={handlePasteSubmit}
               className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Importing…" : "Import"}
+              {loading ? s.importing_label : s.import_button}
             </button>
             <button
               type="button"
               onClick={resetAll}
               className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {s.cancel_button}
             </button>
           </div>
         </div>
@@ -177,8 +200,7 @@ export function PbnImportPanel() {
             <div>
               {result && (
                 <p className={`text-sm font-semibold ${allGood ? "text-green-800" : "text-amber-800"}`}>
-                  {result.imported} row{result.imported !== 1 ? "s" : ""} imported
-                  {result.skipped > 0 && `, ${result.skipped} skipped`}
+                  {s.rows_imported(result.imported, result.skipped)}
                 </p>
               )}
               {fileError && (
@@ -205,14 +227,14 @@ export function PbnImportPanel() {
 
           {allGood && (
             <p className="text-xs text-green-700">
-              Allocations updated. The page will refresh automatically.
+              {s.allocations_updated}
             </p>
           )}
         </div>
       )}
 
       {loading && mode !== "paste" && (
-        <p className="text-xs text-gray-500 animate-pulse">Importing…</p>
+        <p className="text-xs text-gray-500 animate-pulse">{s.importing_label}</p>
       )}
     </div>
   );

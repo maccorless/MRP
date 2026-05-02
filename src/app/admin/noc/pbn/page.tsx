@@ -287,6 +287,18 @@ export default async function NocPbnPage({
             nocCode={nocCode}
             nocEQuota={quota?.nocETotal ?? 0}
             nocERequested={quota?.nocERequested ?? quota?.nocETotal ?? 0}
+            strings={{
+              col_org:            s.pbn.col_org,
+              col_total:          s.common.results,
+              req_header:         "Req.",
+              alloc_header:       "Alloc.",
+              no_quota_set:       s.ioc.no_quotas,
+              remaining_label:    s.ioc.slots_remaining,
+              search_placeholder: s.pbn.search_placeholder,
+              save_draft:         s.common.save,
+              submit_to_ocog:     `${s.common.submit} to OCOG`,
+              no_slots_yet:       s.pbn.no_records,
+            }}
           />
 
           {hasSubmitted && !hasApproved && (
@@ -305,7 +317,18 @@ export default async function NocPbnPage({
 
       {isEditable && (
         <div className="mt-6 space-y-4">
-          <PbnImportPanel />
+          <PbnImportPanel
+            strings={{
+              import_csv_label:       s.action.import_excel,
+              paste_from_spreadsheet: "Paste from spreadsheet",
+              import_button:          s.common.upload,
+              cancel_button:          s.common.cancel,
+              importing_label:        s.common.loading,
+              rows_imported:          (count, skipped) => `${count} row${count !== 1 ? "s" : ""} imported${skipped > 0 ? `, ${skipped} skipped` : ""}`,
+              allocations_updated:    s.pbn.allocations_saved,
+              network_error:          s.error.generic,
+            }}
+          />
           <AddOrgToPbnPanel />
           <a
             href="/admin/noc/direct-entry"

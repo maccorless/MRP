@@ -142,7 +142,26 @@ export default async function NocEnrPage({
         </div>
       ) : (
         <div className="mb-6">
-          <EnrPriorityList initialRows={listRows} isSubmitted={isSubmitted} />
+          <EnrPriorityList
+            initialRows={listRows}
+            isSubmitted={isSubmitted}
+            strings={{
+              col_org:                s.enr.col_org,
+              col_rank:               s.enr.col_rank,
+              col_status:             s.enr.col_status,
+              col_actions:            s.common.actions,
+              nomination_list_title:  s.enr.title,
+              decided_label:          s.home.decided,
+              submitted_to_ioc_label: s.home.awaiting_ioc,
+              draft_label:            s.status.draft,
+              awaiting_ioc_label:     s.home.awaiting_ioc,
+              granted_label:          s.ioc.decision_granted,
+              partial_label:          s.ioc.decision_partial,
+              denied_label:           s.ioc.decision_denied,
+              remove_label:           s.common.delete,
+              save_order_label:       s.common.save,
+            }}
+          />
         </div>
       )}
 

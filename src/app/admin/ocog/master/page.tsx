@@ -2,8 +2,10 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations, enrRequests, eventSettings, organizations } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { derivePbnStatus } from "@/lib/quota-calc";
-import { MasterAllocationClient } from "@/app/admin/ioc/master/MasterAllocationClient";
+import { MasterAllocationClient, type MasterStrings } from "@/app/admin/ioc/master/MasterAllocationClient";
 import {
   addSlots,
   ZERO_SLOTS,
@@ -36,6 +38,8 @@ function allocRowToSlots(row: {
 
 export default async function OcogMasterAllocationPage() {
   await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   const [quotas, allocs, enrs, settingsRows, orgAllocData] = await Promise.all([
     db.select().from(nocQuotas).where(eq(nocQuotas.eventId, EVENT_ID)).orderBy(nocQuotas.nocCode),
@@ -142,6 +146,11 @@ export default async function OcogMasterAllocationPage() {
         grandTotals={grandTotals}
         eventCapacity={eventCapacity}
         orgAllocRows={orgAllocRows}
+        strings={{
+          master_title:       s.ocog.master_title,
+          search_placeholder: s.queue.search_placeholder,
+          all_statuses:       s.queue.all_statuses,
+        } satisfies MasterStrings}
       />
     </div>
   );

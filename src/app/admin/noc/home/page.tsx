@@ -6,6 +6,7 @@ import { applications, orgSlotAllocations, enrRequests, nocQuotas } from "@/db/s
 import { requireNocSession } from "@/lib/session";
 import { getAdminLang } from "@/lib/admin-lang";
 import { t } from "@/lib/i18n/admin";
+import type { AdminStrings } from "@/lib/i18n/admin/en";
 
 // LA28 — Key Milestones for the NOC role.
 // Source of truth: docs/process-timeline-2026-04-26.md +
@@ -122,26 +123,26 @@ export default async function NocHomePage() {
                   <span className="text-white text-xs font-bold">EoI</span>
                 </div>
                 <h2 className="font-semibold text-gray-900 group-hover:text-brand-blue transition-colors">
-                  Expression of Interest Queue
+                  {s.home.eoi_card_title}
                 </h2>
               </div>
-              <p className="text-xs text-gray-500 ml-10">Review and action media org applications</p>
+              <p className="text-xs text-gray-500 ml-10">{s.home.eoi_card_desc}</p>
             </div>
             {pendingReview > 0 ? (
               <span className="shrink-0 inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-yellow-100 text-yellow-800">
-                {pendingReview} to review
+                {pendingReview} {s.home.to_review}
               </span>
             ) : (
               <span className="shrink-0 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                All clear
+                {s.home.all_clear}
               </span>
             )}
           </div>
           <div className="mt-4 ml-10 flex gap-6 text-xs text-gray-500">
-            <span><strong className="text-gray-900">{appCounts.approved ?? 0}</strong> approved</span>
-            <span><strong className="text-yellow-700">{appCounts.pending ?? 0}</strong> pending</span>
+            <span><strong className="text-gray-900">{appCounts.approved ?? 0}</strong> {s.status.approved.toLowerCase()}</span>
+            <span><strong className="text-yellow-700">{appCounts.pending ?? 0}</strong> {s.status.pending.toLowerCase()}</span>
             <span><strong className="text-blue-700">{appCounts.resubmitted ?? 0}</strong> resubmitted</span>
-            <span><strong className="text-orange-600">{appCounts.returned ?? 0}</strong> returned</span>
+            <span><strong className="text-orange-600">{appCounts.returned ?? 0}</strong> {s.status.returned.toLowerCase()}</span>
           </div>
         </Link>
 
@@ -154,12 +155,12 @@ export default async function NocHomePage() {
                   <span className="text-white text-xs font-bold">PbN</span>
                 </div>
                 <h2 className="font-semibold text-gray-900 group-hover:text-brand-blue transition-colors">
-                  Press by Number — Slot Allocations
+                  {s.home.pbn_card_title}
                 </h2>
               </div>
-              <p className="text-xs text-gray-500 ml-10">Assign press and photo slots to approved orgs</p>
+              <p className="text-xs text-gray-500 ml-10">{s.home.pbn_card_desc}</p>
             </div>
-            <PbnStatusBadge status={pbnStatus} />
+            <PbnStatusBadge status={pbnStatus} s={s} />
           </div>
           <div className="mt-4 ml-10 flex gap-6 text-xs text-gray-500">
             {quota ? (
@@ -168,7 +169,7 @@ export default async function NocHomePage() {
                 <span><strong className="text-gray-900">{pbnAllocatedPhoto}</strong> / {quota.photoTotal} photo allocated</span>
               </>
             ) : (
-              <span className="text-yellow-600">No quota assigned yet — contact IOC</span>
+              <span className="text-yellow-600">{s.home.no_quota}</span>
             )}
           </div>
         </Link>
@@ -182,12 +183,12 @@ export default async function NocHomePage() {
                   <span className="text-white text-xs font-bold">ENR</span>
                 </div>
                 <h2 className="font-semibold text-gray-900 group-hover:text-brand-blue transition-colors">
-                  ENR Nominations
+                  {s.home.enr_card_title}
                 </h2>
               </div>
-              <p className="text-xs text-gray-500 ml-10">Submit Non-Media Rights-Holder nominations to IOC</p>
+              <p className="text-xs text-gray-500 ml-10">{s.home.enr_card_desc}</p>
             </div>
-            <EnrStatusBadge status={enrStatus} />
+            <EnrStatusBadge status={enrStatus} s={s} />
           </div>
           <div className="mt-4 ml-10 flex gap-6 text-xs text-gray-500">
             {enrList.length > 0 ? (
@@ -207,7 +208,7 @@ export default async function NocHomePage() {
 
       {/* Phase timeline */}
       <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">LA 2028 — Key Milestones</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">{s.home.milestones_title}</h2>
         <div className="flex flex-col gap-3">
           {MILESTONES.map((m) => {
             const state = milestoneState(m, new Date());
@@ -237,20 +238,20 @@ export default async function NocHomePage() {
   );
 }
 
-function PbnStatusBadge({ status }: { status: string }) {
+function PbnStatusBadge({ status, s }: { status: string; s: AdminStrings }) {
   switch (status) {
-    case "approved":    return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Approved</span>;
-    case "submitted":   return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">Submitted to OCOG</span>;
-    case "draft":       return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">Draft</span>;
-    default:            return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400">Not started</span>;
+    case "approved":    return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">{s.status.approved}</span>;
+    case "submitted":   return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">{s.home.submitted_to_ocog}</span>;
+    case "draft":       return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">{s.status.draft}</span>;
+    default:            return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400">{s.home.not_started}</span>;
   }
 }
 
-function EnrStatusBadge({ status }: { status: string }) {
+function EnrStatusBadge({ status, s }: { status: string; s: AdminStrings }) {
   switch (status) {
-    case "decided":     return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">Decided</span>;
-    case "submitted":   return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">Awaiting IOC</span>;
-    case "draft":       return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">Draft</span>;
-    default:            return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400">Not started</span>;
+    case "decided":     return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">{s.home.decided}</span>;
+    case "submitted":   return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">{s.home.awaiting_ioc}</span>;
+    case "draft":       return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">{s.status.draft}</span>;
+    default:            return <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-400">{s.home.not_started}</span>;
   }
 }

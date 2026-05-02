@@ -7,6 +7,8 @@ import { PbnAllocationTable } from "@/app/admin/noc/pbn/PbnAllocationTable";
 import { IocDirectAddPanel } from "./IocDirectAddPanel";
 import { saveIocDirectAllocations, submitIocDirectToOcog } from "./actions";
 import { progressWidthClass } from "@/lib/progress";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 const IOC_DIRECT = "IOC_DIRECT";
 const EVENT_ID   = "LA28";
@@ -27,6 +29,8 @@ export default async function IocDirectPage({
   searchParams: Promise<{ success?: string; error?: string }>;
 }) {
   await requireIocSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { success, error } = await searchParams;
 
   const orgs = await db
@@ -99,7 +103,7 @@ export default async function IocDirectPage({
       {/* Header */}
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">IOC-Direct Organisations</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.nav.ioc_direct}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Major international wire services and agencies accredited directly by the IOC —
             bypassing the NOC quota process.
@@ -122,9 +126,9 @@ export default async function IocDirectPage({
       </div>
 
       {/* Banners */}
-      {success === "org_added"  && <Banner color="green">Organisation added and reserved.</Banner>}
-      {success === "saved"      && <Banner color="blue">Draft allocations saved.</Banner>}
-      {success === "submitted"  && <Banner color="green">Allocation submitted and approved. Ready for ACR transfer.</Banner>}
+      {success === "org_added"  && <Banner color="green">{s.direct.add_org} — {s.status.approved}.</Banner>}
+      {success === "saved"      && <Banner color="blue">{s.common.save} — {s.status.draft}.</Banner>}
+      {success === "submitted"  && <Banner color="green">{s.status.approved}. Ready for ACR transfer.</Banner>}
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
           {ERROR_MSG[error] ?? "An error occurred."}

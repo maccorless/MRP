@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { nocQuotas, quotaChanges, eventSettings } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
 import { importQuotas, saveQuotaEdits, saveEventSettings } from "./actions";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 export default async function QuotasPage({
   searchParams,
@@ -11,6 +13,8 @@ export default async function QuotasPage({
   searchParams: Promise<{ edit?: string; success?: string; error?: string; count?: string }>;
 }) {
   await requireIocAdminSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { edit, success, error, count } = await searchParams;
   const isEditing = edit === "1";
 
@@ -41,7 +45,7 @@ export default async function QuotasPage({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">NOC Quotas</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.ioc.quotas_title}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {quotas.length} NOCs · {totalPress} press slots · {totalPhoto} photo slots
           </p>
@@ -52,14 +56,14 @@ export default async function QuotasPage({
               href="/admin/ioc/quotas"
               className="px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
             >
-              Cancel
+              {s.common.cancel}
             </Link>
           ) : (
             <Link
               href="/admin/ioc/quotas?edit=1"
               className="px-3 py-1.5 text-xs font-medium text-white bg-brand-blue rounded hover:bg-blue-800 transition-colors"
             >
-              ✎ Edit Quotas
+              ✎ {s.ioc.edit_quotas}
             </Link>
           )}
         </div>
@@ -91,19 +95,19 @@ export default async function QuotasPage({
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-2xl font-bold text-gray-900">{quotas.length}</div>
-          <div className="text-xs text-gray-500 mt-0.5 font-medium">NOCs with quotas</div>
+          <div className="text-xs text-gray-500 mt-0.5 font-medium">{s.ioc.nocs_with_quotas}</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-2xl font-bold text-gray-900">{totalPress + totalPhoto + totalNocE}</div>
-          <div className="text-xs text-gray-500 mt-0.5 font-medium">Total slots ({totalPress}P + {totalPhoto}Ph + {totalNocE}NocE)</div>
+          <div className="text-xs text-gray-500 mt-0.5 font-medium">{s.ioc.total_slots} ({totalPress}P + {totalPhoto}Ph + {totalNocE}NocE)</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-2xl font-bold text-gray-900">{manualEditCount}</div>
           <div className="text-xs text-gray-500 mt-0.5 font-medium">
-            Manual edits
+            {s.ioc.manual_edits_label}
             {lastImport && (
               <span className="block text-gray-400 font-normal">
-                Last import {lastImport.changedAt ? new Date(lastImport.changedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
+                {s.ioc.last_import} {lastImport.changedAt ? new Date(lastImport.changedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
               </span>
             )}
           </div>
@@ -113,7 +117,7 @@ export default async function QuotasPage({
       {/* Event Settings */}
       <div className="bg-white rounded-lg shadow-sm border border-blue-200">
         <div className="px-5 py-3 border-b border-blue-100 bg-blue-50">
-          <h2 className="text-sm font-semibold text-blue-900">Event Settings — LA 2028</h2>
+          <h2 className="text-sm font-semibold text-blue-900">{s.ioc.event_settings_title}</h2>
           <p className="text-xs text-blue-700 mt-0.5">
             Set the total accreditation capacity target and IOC holdback pool. The master dashboard tracks distributed quotas against this capacity.
           </p>
@@ -121,7 +125,7 @@ export default async function QuotasPage({
         <form action={saveEventSettings} className="px-5 py-4 flex flex-wrap items-end gap-6">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              Event Capacity (total target)
+              {s.ioc.event_capacity_label}
             </label>
             <input
               type="number"
@@ -133,7 +137,7 @@ export default async function QuotasPage({
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
-              IOC Holdback (slots not distributed)
+              {s.ioc.ioc_holdback_label}
             </label>
             <input
               type="number"
@@ -147,7 +151,7 @@ export default async function QuotasPage({
             type="submit"
             className="px-4 py-1.5 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors"
           >
-            Save Settings
+            {s.ioc.save_settings}
           </button>
         </form>
       </div>
@@ -155,7 +159,7 @@ export default async function QuotasPage({
       {/* Import section (always visible, not gated on edit mode) */}
       <details className="bg-white rounded-lg shadow-sm border border-gray-200">
         <summary className="px-5 py-3 text-sm font-semibold text-gray-700 cursor-pointer select-none">
-          Import from CSV
+          {s.ioc.import_csv_title}
         </summary>
         <div className="px-5 pb-5 pt-2 border-t border-gray-100">
           <p className="text-xs text-gray-500 mb-3">
@@ -174,7 +178,7 @@ export default async function QuotasPage({
               type="submit"
               className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
             >
-              Import Quotas
+              {s.ioc.import_quotas_btn}
             </button>
           </form>
         </div>
@@ -183,7 +187,7 @@ export default async function QuotasPage({
       {/* Quota table */}
       {quotas.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-sm text-gray-600">
-          No quotas loaded yet. Use the import tool above to add NOC quotas.
+          {s.ioc.no_quotas}
         </div>
       ) : isEditing ? (
         <form action={saveQuotaEdits}>
@@ -200,7 +204,7 @@ export default async function QuotasPage({
                     <th key={h} className="text-right px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
                   ))}
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Updated</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_when}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -246,13 +250,13 @@ export default async function QuotasPage({
                 type="submit"
                 className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded hover:bg-green-700 transition-colors cursor-pointer"
               >
-                Save Edits
+                {s.common.save}
               </button>
               <Link
                 href="/admin/ioc/quotas"
                 className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
               >
-                Cancel
+                {s.common.cancel}
               </Link>
               <span className="text-xs text-gray-400 ml-2">All changes are logged in the audit trail.</span>
             </div>
@@ -269,7 +273,7 @@ export default async function QuotasPage({
                   <th key={h} className="text-right px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
                 ))}
                 <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Last Updated</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.last_import}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -317,17 +321,17 @@ export default async function QuotasPage({
       {recentChanges.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-5 py-3 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-700">Recent Changes</h2>
+            <h2 className="text-sm font-semibold text-gray-700">{s.ioc.recent_changes}</h2>
           </div>
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
-                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
-                <th className="text-right px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Old</th>
-                <th className="text-right px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">New</th>
-                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Source</th>
-                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">When</th>
+                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_noc}</th>
+                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_type}</th>
+                <th className="text-right px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_old}</th>
+                <th className="text-right px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_new}</th>
+                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_source}</th>
+                <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_when}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -343,7 +347,7 @@ export default async function QuotasPage({
                         ? "bg-blue-100 text-blue-700"
                         : "bg-orange-100 text-orange-700"
                     }`}>
-                      {c.changeSource === "import" ? "Import" : "Manual edit"}
+                      {c.changeSource === "import" ? s.ioc.source_import : s.ioc.source_manual_edit}
                     </span>
                   </td>
                   <td className="px-5 py-2 text-xs text-gray-400">

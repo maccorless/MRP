@@ -7,6 +7,8 @@ import { requireIocAdminSession } from "@/lib/session";
 import { saveAllEnrDecisions, saveEnrPoolSize } from "./actions";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
 import { progressWidthClass } from "@/lib/progress";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 type SortKey = "noc" | "priority" | "granted" | "requested";
 
@@ -16,6 +18,8 @@ export default async function IocEnrPage({
   searchParams: Promise<{ sort?: string; success?: string }>;
 }) {
   await requireIocAdminSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { sort: sortParam, success } = await searchParams;
   const sortKey = (sortParam ?? "noc") as SortKey;
 
@@ -71,7 +75,7 @@ export default async function IocEnrPage({
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">ENR Review — Combined View</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.ioc.enr_combined_title}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {allRows.length} organisation{allRows.length !== 1 ? "s" : ""} across all NOCs
           </p>
@@ -80,12 +84,12 @@ export default async function IocEnrPage({
 
       {success === "saved" && (
         <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
-          ENR slot grants saved.
+          {s.ioc.save_grants} — saved.
         </div>
       )}
       {success === "pool_saved" && (
         <div role="alert" className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
-          ENR pool size updated.
+          {s.ioc.enr_pool} — updated.
         </div>
       )}
 
@@ -93,14 +97,14 @@ export default async function IocEnrPage({
       <div className="bg-brand-enr-hero rounded-xl p-5 text-white">
         <div className="flex items-start justify-between gap-8 flex-wrap">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide opacity-80">ENR Pool</div>
+            <div className="text-xs font-semibold uppercase tracking-wide opacity-80">{s.ioc.enr_pool}</div>
             <div className={`text-4xl font-extrabold mt-1 ${overPool ? "text-red-300" : ""}`}>
               {totalGranted} <span className="text-2xl font-bold opacity-70">/ {enrPoolSize}</span>
             </div>
             <div className="text-sm opacity-75 mt-1">
               {overPool
-                ? `Over pool by ${totalGranted - enrPoolSize} slot${totalGranted - enrPoolSize !== 1 ? "s" : ""}`
-                : `${enrPoolSize - totalGranted} slots remaining`}
+                ? `${s.ioc.over_pool_by} ${totalGranted - enrPoolSize} slot${totalGranted - enrPoolSize !== 1 ? "s" : ""}`
+                : `${enrPoolSize - totalGranted} ${s.ioc.slots_remaining}`}
             </div>
           </div>
           <div className="flex-1 min-w-[180px] max-w-xs">
@@ -117,7 +121,7 @@ export default async function IocEnrPage({
           <div className="shrink-0">
             <form action={saveEnrPoolSize} className="flex items-end gap-2">
               <div>
-                <label htmlFor="enr_pool_size" className="block text-xs opacity-80 mb-1 font-medium">Pool size</label>
+                <label htmlFor="enr_pool_size" className="block text-xs opacity-80 mb-1 font-medium">{s.ioc.pool_size_label}</label>
                 <input
                   id="enr_pool_size"
                   name="enr_pool_size"
@@ -131,7 +135,7 @@ export default async function IocEnrPage({
                 type="submit"
                 className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded border border-white/30 transition-colors cursor-pointer"
               >
-                Update
+                {s.ioc.update}
               </button>
             </form>
           </div>
@@ -143,20 +147,20 @@ export default async function IocEnrPage({
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           {allRows.length === 0 ? (
             <div className="p-8 text-center text-sm text-gray-600">
-              No ENR submissions received yet.
+              {s.ioc.no_enr_submissions}
             </div>
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <SortTh label="NOC" k="noc" />
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organisation</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Country</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
-                  <SortTh label="Priority" k="priority" />
-                  <SortTh label="Requested" k="requested" />
-                  <SortTh label="Granted" k="granted" />
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+                  <SortTh label={s.ioc.col_noc} k="noc" />
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_organisation}</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_country}</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_type}</th>
+                  <SortTh label={s.ioc.col_priority} k="priority" />
+                  <SortTh label={s.ioc.col_requested} k="requested" />
+                  <SortTh label={s.ioc.col_granted} k="granted" />
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_status}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -210,11 +214,11 @@ export default async function IocEnrPage({
                             req.decision === "partial"  ? "bg-yellow-100 text-yellow-800" :
                                                          "bg-red-100 text-red-700"
                           }`}>
-                            {req.decision === "granted" ? "Granted" : req.decision === "partial" ? "Partial" : "Denied"}
+                            {req.decision === "granted" ? s.ioc.decision_granted : req.decision === "partial" ? s.ioc.decision_partial : s.ioc.decision_denied}
                           </span>
                         ) : (
                           <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-                            Pending
+                            {s.ioc.decision_pending}
                           </span>
                         )}
                       </td>
@@ -224,7 +228,7 @@ export default async function IocEnrPage({
               </tbody>
               <tfoot className="bg-gray-50 border-t border-gray-200">
                 <tr>
-                  <td colSpan={5} className="px-4 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
+                  <td colSpan={5} className="px-4 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>{/* common.total not in dict; kept as literal */}
                   <td className="px-4 py-2.5 text-right font-semibold text-gray-900 tabular-nums">{totalRequested}</td>
                   <td className="px-4 py-2.5 text-right font-semibold tabular-nums">
                     <span className={overPool ? "text-red-600" : "text-gray-900"}>{totalGranted}</span>
@@ -243,7 +247,7 @@ export default async function IocEnrPage({
               type="submit"
               className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
             >
-              Save Grants
+              {s.ioc.save_grants}
             </button>
             <span className="text-xs text-gray-400">
               Saving updates granted slots and auto-sets decision status (granted / partial / denied based on slot count).

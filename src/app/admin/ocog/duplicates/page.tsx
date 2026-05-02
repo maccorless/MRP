@@ -2,12 +2,16 @@ import { and, eq, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations, applications } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { isPersonalEmailDomain } from "@/lib/anomaly-detect";
 
 export const metadata = { title: "Potential Duplicates — OCOG" };
 
 export default async function OcogDuplicatesPage() {
   await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   // ── Type 1: Cross-NOC duplicates ──────────────────────────────────────────
   // Orgs with isMultiTerritoryFlag = true joined to their applications
@@ -100,7 +104,7 @@ export default async function OcogDuplicatesPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Potential Duplicates</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{s.ocog.duplicates_title}</h1>
         <p className="text-sm text-gray-500 mt-1">
           Organisations that appear under multiple NOCs or share an email domain within a single NOC.
         </p>
@@ -155,7 +159,7 @@ export default async function OcogDuplicatesPage() {
                       <td className="px-4 py-3 text-gray-900 font-medium">{org.orgName}</td>
                       <td className="px-4 py-3 text-gray-600">{org.nocCode}</td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={org.status} />
+                        <StatusBadge status={org.status} strings={s} />
                       </td>
                     </tr>
                   )),
@@ -217,7 +221,7 @@ export default async function OcogDuplicatesPage() {
                       </td>
                       <td className="px-4 py-3 text-gray-900 font-medium">{org.orgName}</td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={org.status} />
+                        <StatusBadge status={org.status} strings={s} />
                       </td>
                     </tr>
                   )),
@@ -231,7 +235,7 @@ export default async function OcogDuplicatesPage() {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, strings }: { status: string; strings: ReturnType<typeof t> }) {
   const styles: Record<string, string> = {
     pending:      "bg-yellow-100 text-yellow-800",
     approved:     "bg-green-100 text-green-800",
@@ -240,11 +244,11 @@ function StatusBadge({ status }: { status: string }) {
     rejected:     "bg-red-100 text-red-800",
   };
   const label: Record<string, string> = {
-    pending:     "Pending",
-    approved:    "Approved",
-    returned:    "Returned",
-    resubmitted: "Resubmitted",
-    rejected:    "Rejected",
+    pending:     strings.status.pending,
+    approved:    strings.status.approved,
+    returned:    strings.status.returned,
+    resubmitted: strings.status.pending,
+    rejected:    strings.status.rejected,
   };
   const cls = styles[status] ?? "bg-gray-100 text-gray-700";
   return (

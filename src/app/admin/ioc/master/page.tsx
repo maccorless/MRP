@@ -4,6 +4,8 @@ import { nocQuotas, orgSlotAllocations, enrRequests, eventSettings, organization
 import { requireIocSession } from "@/lib/session";
 import { derivePbnStatus } from "@/lib/quota-calc";
 import { MasterAllocationClient } from "./MasterAllocationClient";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import {
   addSlots,
   ZERO_SLOTS,
@@ -36,6 +38,8 @@ function allocRowToSlots(row: {
 
 export default async function MasterAllocationPage() {
   await requireIocSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   const [quotas, allocs, enrs, settingsRows, orgAllocData] = await Promise.all([
     db.select().from(nocQuotas).where(eq(nocQuotas.eventId, EVENT_ID)).orderBy(nocQuotas.nocCode),
@@ -152,6 +156,11 @@ export default async function MasterAllocationPage() {
       grandTotals={grandTotals}
       eventCapacity={eventCapacity}
       orgAllocRows={orgAllocRows}
+      strings={{
+        master_title: s.ioc.master_title,
+        search_placeholder: s.common.search,
+        all_statuses: s.queue.all_statuses,
+      }}
     />
   );
 }

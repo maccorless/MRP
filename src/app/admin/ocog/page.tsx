@@ -4,6 +4,8 @@ import { Icon } from "@/components/Icon";
 import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations, featureFlags } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { PbnPublishToggle } from "./PbnPublishToggle";
 
 // LA28 — Key Milestones for the OCOG (LA28) coordinator role.
@@ -40,6 +42,8 @@ function milestoneState(m: Milestone, now: Date): MilestoneState {
 
 export default async function OcogHomePage() {
   const session = await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   const quotas = await db.select({ nocCode: nocQuotas.nocCode }).from(nocQuotas).where(eq(nocQuotas.eventId, "LA28"));
 
@@ -70,7 +74,7 @@ export default async function OcogHomePage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome, {session.displayName}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{s.dashboard.welcome}, {session.displayName}</h1>
         <p className="text-sm text-gray-500 mt-1">OCOG Admin · LA 2028</p>
       </div>
 
@@ -95,7 +99,7 @@ export default async function OcogHomePage() {
                   <span className="text-white text-xs font-bold">PbN</span>
                 </div>
                 <h2 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
-                  Press by Number Approvals
+                  {s.ocog.pbn_title}
                 </h2>
               </div>
               <p className="text-xs text-gray-500 ml-10">
@@ -108,7 +112,7 @@ export default async function OcogHomePage() {
               </span>
             ) : (
               <span className="shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                All clear
+                {s.home.all_clear}
               </span>
             )}
           </div>
@@ -125,7 +129,7 @@ export default async function OcogHomePage() {
 
       {/* Phase timeline */}
       <div className="mt-6 bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">LA 2028 — Key Milestones</h2>
+        <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">{s.home.milestones_title}</h2>
         <div className="flex flex-col gap-3">
           {MILESTONES.map((m) => {
             const state = milestoneState(m, new Date());

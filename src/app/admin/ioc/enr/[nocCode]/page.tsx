@@ -6,6 +6,8 @@ import { enrRequests, organizations } from "@/db/schema";
 import { requireIocAdminSession } from "@/lib/session";
 import { saveEnrDecisions, reviseEnrDecision, unlockEnrSubmissions } from "../actions";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 export default async function IocEnrNocPage({
   params,
@@ -15,6 +17,8 @@ export default async function IocEnrNocPage({
   searchParams: Promise<{ success?: string }>;
 }) {
   await requireIocAdminSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { nocCode } = await params;
   const { success } = await searchParams;
 
@@ -52,7 +56,7 @@ export default async function IocEnrNocPage({
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 font-mono">{nocCode}</h1>
+            <h1 className="text-xl font-bold text-gray-900 font-mono">{s.ioc.enr_combined_title} — {nocCode}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               {rows.length} org{rows.length !== 1 ? "s" : ""} · {totalRequested} slots requested
               {isFullyDecided && ` · ${totalGranted} granted`}
@@ -61,7 +65,7 @@ export default async function IocEnrNocPage({
           <span className={`shrink-0 inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
             isFullyDecided ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
           }`}>
-            {isFullyDecided ? "Decided" : "Awaiting decision"}
+            {isFullyDecided ? s.home.decided : s.home.awaiting_ioc}
           </span>
         </div>
       </div>
@@ -90,10 +94,10 @@ export default async function IocEnrNocPage({
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-12">#</th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organisation</th>
-                <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Requested</th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Decision</th>
-                <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Slots granted</th>
+                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_organisation}</th>
+                <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_requested}</th>
+                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_status}</th>
+                <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_granted}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -120,9 +124,9 @@ export default async function IocEnrNocPage({
                       className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                     >
                       <option value="">— Select —</option>
-                      <option value="granted">Granted</option>
-                      <option value="partial">Partial</option>
-                      <option value="denied">Denied</option>
+                      <option value="granted">{s.ioc.decision_granted}</option>
+                      <option value="partial">{s.ioc.decision_partial}</option>
+                      <option value="denied">{s.ioc.decision_denied}</option>
                     </select>
                   </td>
                   <td className="px-5 py-3 text-right">
@@ -139,7 +143,7 @@ export default async function IocEnrNocPage({
             </tbody>
             <tfoot className="bg-gray-50 border-t border-gray-200">
               <tr>
-                <td colSpan={2} className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
+                <td colSpan={2} className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>{/* no common.total key */}
                 <td className="px-5 py-2.5 text-right font-semibold text-gray-900">{totalRequested}</td>
                 <td />
                 <td className="px-5 py-2.5 text-right font-semibold text-gray-900">
@@ -155,7 +159,7 @@ export default async function IocEnrNocPage({
             type="submit"
             className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
           >
-            Save Decisions
+            {s.ioc.save_grants}
           </button>
           <span className="text-xs text-gray-400">Decisions are saved immediately and visible to the NOC.</span>
         </div>

@@ -3,6 +3,8 @@ import { eq, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { nocQuotas, orgSlotAllocations } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 type PbnStatus = "not_started" | "draft" | "submitted" | "approved";
 
@@ -12,13 +14,6 @@ const STATUS_BADGE: Record<PbnStatus, string> = {
   submitted:   "bg-yellow-100 text-yellow-800",
   approved:    "bg-green-100 text-green-800",
 };
-const STATUS_LABEL: Record<PbnStatus, string> = {
-  not_started: "Not started",
-  draft:       "Draft",
-  submitted:   "Submitted",
-  approved:    "Approved",
-};
-
 type StatusFilter = "all" | PbnStatus;
 
 export default async function OcogPbnPage({
@@ -27,6 +22,15 @@ export default async function OcogPbnPage({
   searchParams: Promise<{ status?: string; success?: string; noc?: string; count?: string }>;
 }) {
   await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
+
+  const STATUS_LABEL: Record<PbnStatus, string> = {
+    not_started: s.home.not_started,
+    draft:       s.status.draft,
+    submitted:   s.status.submitted,
+    approved:    s.status.approved,
+  };
   const { status: statusParam, success, noc, count } = await searchParams;
   const activeFilter = (statusParam ?? "all") as StatusFilter;
 
@@ -96,7 +100,7 @@ export default async function OcogPbnPage({
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">PbN Approvals</h1>
+        <h1 className="text-xl font-bold text-gray-900">{s.ocog.pbn_title}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           {counts.submitted ?? 0} NOC{(counts.submitted ?? 0) !== 1 ? "s" : ""} awaiting approval
         </p>
@@ -141,10 +145,10 @@ export default async function OcogPbnPage({
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
+                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ocog.col_noc}</th>
                 <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Press (alloc / quota)</th>
                 <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Photo (alloc / quota)</th>
-                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ocog.col_status}</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>

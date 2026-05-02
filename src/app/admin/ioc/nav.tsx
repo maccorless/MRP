@@ -2,23 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { AdminStrings } from "@/lib/i18n/admin";
 
-const NAV = [
-  { href: "/admin/ioc", label: "Dashboard" },
-  { href: "/admin/ioc/master", label: "Master Allocations" },
-  { href: "/admin/ioc/quotas", label: "Quotas" },
-  { href: "/admin/ioc/direct", label: "IOC Direct" },
-  { href: "/admin/ioc/enr", label: "ENR Review" },
-  { href: "/admin/ioc/orgs", label: "Org Directory" },
-  { href: "/admin/ioc/audit", label: "Audit Trail" },
-  { href: "/admin/ioc/export", label: "PBN Export" },
-  // Feature flags deferred — re-add behind DTEC.SYSADMIN gate when ready:
-  // { href: "/admin/ioc/flags", label: "Flags" },
-];
+type NavStrings = AdminStrings["nav"];
 
-export function IocNav({ showPrpAdmin = false }: { showPrpAdmin?: boolean }) {
+export function IocNav({ showPrpAdmin = false, nav }: { showPrpAdmin?: boolean; nav: NavStrings }) {
   const pathname = usePathname();
-  const fullNav = showPrpAdmin ? [...NAV, { href: "/admin/prp", label: "PRP Admin" }] : NAV;
+  const NAV = [
+    { href: "/admin/ioc",        label: nav.dashboard },
+    { href: "/admin/ioc/master", label: nav.master_alloc },
+    { href: "/admin/ioc/quotas", label: nav.quotas },
+    { href: "/admin/ioc/direct", label: nav.ioc_direct },
+    { href: "/admin/ioc/enr",    label: nav.enr },
+    { href: "/admin/ioc/orgs",   label: nav.org_directory },
+    { href: "/admin/ioc/audit",  label: nav.audit_trail },
+    { href: "/admin/ioc/export", label: nav.pbn_export },
+  ];
+  const fullNav = showPrpAdmin ? [...NAV, { href: "/admin/prp", label: nav.prp_admin }] : NAV;
   return (
     <nav className="bg-white border-b border-gray-200 px-6">
       <div className="max-w-6xl mx-auto flex gap-0">

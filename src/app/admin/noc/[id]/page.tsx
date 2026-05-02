@@ -4,6 +4,8 @@ import { eq, and, asc } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations, auditLog, nocQuotas, orgSlotAllocations } from "@/db/schema";
 import { requireNocSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { categoryDisplayLabel } from "@/lib/category";
 import { sumAllocations } from "@/lib/quota-calc";
 import { StatusBadge, STATUS_LABEL } from "@/components/StatusBadge";
@@ -31,8 +33,8 @@ function Field({ label, value }: { label: string; value: string | number | null 
   );
 }
 
-function QuotaBar({ label, requested, allocated, total }: {
-  label: string; requested: number; allocated: number; total: number;
+function QuotaBar({ label, requested, allocated, total, overQuotaLabel }: {
+  label: string; requested: number; allocated: number; total: number; overQuotaLabel: string;
 }) {
   const afterApproval = allocated + requested;
   const pctAllocated = Math.min((allocated / total) * 100, 100);
@@ -49,7 +51,7 @@ function QuotaBar({ label, requested, allocated, total }: {
       <span className={`tabular-nums ${overQuota ? "text-red-600 font-semibold" : "text-gray-600"}`}>
         {allocated}+{requested}/{total}
       </span>
-      {overQuota && <span className="text-red-600 font-semibold">over quota</span>}
+      {overQuota && <span className="text-red-600 font-semibold">{overQuotaLabel}</span>}
     </div>
   );
 }
@@ -62,6 +64,8 @@ export default async function ApplicationDetailPage({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const session = await requireNocSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { id } = await params;
   const { error, success } = await searchParams;
 
@@ -124,7 +128,7 @@ export default async function ApplicationDetailPage({
           href="/admin/noc/queue"
           className="text-xs text-gray-500 hover:text-gray-700 mb-3 inline-block"
         >
-          ← Back to queue
+          ← {s.common.back}
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -166,12 +170,12 @@ export default async function ApplicationDetailPage({
         {/* Organisation */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-            Organisation
+            {s.eoi.section_org}
           </h2>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <Field label="Name" value={org.name} />
-            <Field label="Type" value={ORG_TYPE_LABEL[org.orgType] ?? org.orgType} />
-            <Field label="Country" value={org.country} />
+            <Field label={s.eoi.org_name} value={org.name} />
+            <Field label={s.eoi.org_type} value={ORG_TYPE_LABEL[org.orgType] ?? org.orgType} />
+            <Field label={s.eoi.org_country} value={org.country} />
             <Field label="NOC" value={org.nocCode} />
             <Field label="Email domain" value={org.emailDomain} />
             {org.website && (
@@ -213,7 +217,7 @@ export default async function ApplicationDetailPage({
         {/* Contacts */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-            Contacts
+            {s.eoi.section_contact}
           </h2>
           <dl className="text-sm space-y-3">
             <div className="grid grid-cols-2 gap-x-6 gap-y-3">
@@ -249,7 +253,7 @@ export default async function ApplicationDetailPage({
         {/* Accreditation */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-            Accreditation Request
+            {s.eoi.section_accreditation}
           </h2>
           <dl className="space-y-3 text-sm">
             <div className="grid grid-cols-2 gap-x-6">
@@ -278,22 +282,22 @@ export default async function ApplicationDetailPage({
                 <p className="text-xs font-semibold text-amber-900 mb-2">Quota impact if approved</p>
                 <div className="space-y-1.5">
                   {app.categoryE && quota.eTotal > 0 && (
-                    <QuotaBar label="E" requested={app.requestedE ?? 0} allocated={allocated.E} total={quota.eTotal} />
+                    <QuotaBar label="E" requested={app.requestedE ?? 0} allocated={allocated.E} total={quota.eTotal} overQuotaLabel={s.error.quota_exceeded} />
                   )}
                   {app.categoryEs && quota.esTotal > 0 && (
-                    <QuotaBar label="Es" requested={app.requestedEs ?? 0} allocated={allocated.Es} total={quota.esTotal} />
+                    <QuotaBar label="Es" requested={app.requestedEs ?? 0} allocated={allocated.Es} total={quota.esTotal} overQuotaLabel={s.error.quota_exceeded} />
                   )}
                   {app.categoryEp && quota.epTotal > 0 && (
-                    <QuotaBar label="EP" requested={app.requestedEp ?? 0} allocated={allocated.EP} total={quota.epTotal} />
+                    <QuotaBar label="EP" requested={app.requestedEp ?? 0} allocated={allocated.EP} total={quota.epTotal} overQuotaLabel={s.error.quota_exceeded} />
                   )}
                   {app.categoryEps && quota.epsTotal > 0 && (
-                    <QuotaBar label="EPs" requested={app.requestedEps ?? 0} allocated={allocated.EPs} total={quota.epsTotal} />
+                    <QuotaBar label="EPs" requested={app.requestedEps ?? 0} allocated={allocated.EPs} total={quota.epsTotal} overQuotaLabel={s.error.quota_exceeded} />
                   )}
                   {app.categoryEt && quota.etTotal > 0 && (
-                    <QuotaBar label="ET" requested={app.requestedEt ?? 0} allocated={allocated.ET} total={quota.etTotal} />
+                    <QuotaBar label="ET" requested={app.requestedEt ?? 0} allocated={allocated.ET} total={quota.etTotal} overQuotaLabel={s.error.quota_exceeded} />
                   )}
                   {app.categoryEc && quota.ecTotal > 0 && (
-                    <QuotaBar label="EC" requested={app.requestedEc ?? 0} allocated={allocated.EC} total={quota.ecTotal} />
+                    <QuotaBar label="EC" requested={app.requestedEc ?? 0} allocated={allocated.EC} total={quota.ecTotal} overQuotaLabel={s.error.quota_exceeded} />
                   )}
                 </div>
               </div>
@@ -412,7 +416,7 @@ export default async function ApplicationDetailPage({
         {logs.length > 0 && (
           <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-              History
+              {s.eoi.section_history}
             </h2>
             <ol className="space-y-3">
               {logs.map((log) => (

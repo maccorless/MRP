@@ -21,18 +21,32 @@ const DECISION_BADGE: Record<string, string> = {
   partial: "bg-yellow-100 text-yellow-800",
   denied:  "bg-red-100 text-red-800",
 };
-const DECISION_LABEL: Record<string, string> = {
-  granted: "Granted",
-  partial: "Partial",
-  denied:  "Denied",
+
+export type EnrStrings = {
+  col_org: string;
+  col_rank: string;
+  col_status: string;
+  col_actions: string;
+  nomination_list_title: string;
+  decided_label: string;
+  submitted_to_ioc_label: string;
+  draft_label: string;
+  awaiting_ioc_label: string;
+  granted_label: string;
+  partial_label: string;
+  denied_label: string;
+  remove_label: string;
+  save_order_label: string;
 };
 
 export function EnrPriorityList({
   initialRows,
   isSubmitted,
+  strings: s,
 }: {
   initialRows: EnrRow[];
   isSubmitted: boolean;
+  strings: EnrStrings;
 }) {
   const [rows, setRows] = useState(initialRows);
   const [dirty, setDirty] = useState(false);
@@ -60,25 +74,25 @@ export function EnrPriorityList({
     <div className="space-y-3">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">ENR Nomination List</h2>
+          <h2 className="text-sm font-semibold text-gray-700">{s.nomination_list_title}</h2>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
             rows.some((r) => r.decision) ? "bg-green-100 text-green-700" :
             isSubmitted ? "bg-yellow-100 text-yellow-700" :
             "bg-gray-100 text-gray-600"
           }`}>
-            {rows.some((r) => r.decision) ? "Decided" : isSubmitted ? "Submitted to IOC" : "Draft"}
+            {rows.some((r) => r.decision) ? s.decided_label : isSubmitted ? s.submitted_to_ioc_label : s.draft_label}
           </span>
         </div>
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-16">#</th>
-              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organisation</th>
+              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-16">{s.col_rank}</th>
+              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.col_org}</th>
               <th scope="col" className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Must-have</th>
               <th scope="col" className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Nice-to-have</th>
               <th scope="col" className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Granted</th>
-              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Decision</th>
-              {!isSubmitted && <th scope="col" className="px-5 py-3 w-16"><span className="sr-only">Actions</span></th>}
+              <th scope="col" className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.col_status}</th>
+              {!isSubmitted && <th scope="col" className="px-5 py-3 w-16"><span className="sr-only">{s.col_actions}</span></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -157,11 +171,11 @@ export function EnrPriorityList({
                 <td className="px-5 py-3">
                   {row.decision ? (
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${DECISION_BADGE[row.decision]}`}>
-                      {DECISION_LABEL[row.decision]}
+                      {row.decision === "granted" ? s.granted_label : row.decision === "partial" ? s.partial_label : s.denied_label}
                     </span>
                   ) : (
                     <span className="text-xs text-gray-400">
-                      {row.submittedAt ? "Awaiting IOC" : "Draft"}
+                      {row.submittedAt ? s.awaiting_ioc_label : s.draft_label}
                     </span>
                   )}
                 </td>
@@ -174,7 +188,7 @@ export function EnrPriorityList({
                           type="submit"
                           className="text-xs text-red-500 hover:text-red-700 cursor-pointer"
                         >
-                          Remove
+                          {s.remove_label}
                         </button>
                       </form>
                     )}
@@ -198,7 +212,7 @@ export function EnrPriorityList({
             type="submit"
             className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded hover:bg-gray-50 transition-colors cursor-pointer"
           >
-            Save new order
+            {s.save_order_label}
           </button>
         </form>
       )}

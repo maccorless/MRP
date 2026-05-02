@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { categoryDisplayLabel } from "@/lib/category";
 import { Icon } from "@/components/Icon";
 import { StatusBadge } from "@/components/StatusBadge";
-import { ApplicationDrawer } from "./ApplicationDrawer";
-import { DuplicateCompareModal } from "./DuplicateCompareModal";
+import { ApplicationDrawer, type DrawerStrings } from "./ApplicationDrawer";
+import { DuplicateCompareModal, type DuplicateModalStrings } from "./DuplicateCompareModal";
 import type { DuplicatePairInfo, DuplicateSignal } from "@/lib/anomaly-detect";
 
 type Row = {
@@ -60,6 +60,8 @@ export function QueueClient({
   duplicatePairs = {},
   orgIdToAppId = {},
   strings = DEFAULT_STRINGS,
+  drawerStrings,
+  modalStrings,
 }: {
   rows: Row[];
   allIds: string[];
@@ -67,6 +69,8 @@ export function QueueClient({
   duplicatePairs?: Record<string, DuplicatePairInfo[]>;
   orgIdToAppId?: Record<string, string>;
   strings?: QueueStrings;
+  drawerStrings?: DrawerStrings;
+  modalStrings?: DuplicateModalStrings;
 }) {
   const duplicateSet = new Set(duplicateOrgIds);
   const router = useRouter();
@@ -215,6 +219,7 @@ export function QueueClient({
           allIds={allIds}
           onClose={() => setSelectedId(null)}
           onNavigate={(newId) => setSelectedId(newId)}
+          strings={drawerStrings}
         />
       )}
 
@@ -229,6 +234,7 @@ export function QueueClient({
           onReviewApp1={() => setSelectedId(compareTarget.appId1)}
           onReviewApp2={() => setSelectedId(compareTarget.appId2)}
           onResolved={() => router.refresh()}
+          strings={modalStrings}
         />
       )}
     </>

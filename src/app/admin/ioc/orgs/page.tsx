@@ -2,8 +2,13 @@ import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { organizations } from "@/db/schema";
 import { ORG_TYPE_LABEL } from "@/lib/labels";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 export default async function OrgDirectoryPage() {
+  const lang = await getAdminLang();
+  const s = t(lang);
+
   const orgs = await db
     .select()
     .from(organizations)
@@ -15,7 +20,7 @@ export default async function OrgDirectoryPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Organization Directory</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.ioc.orgs_title}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             {orgs.length} organizations registered
             {multiTerritory.length > 0 && ` · ${multiTerritory.length} multi-territory`}
@@ -34,10 +39,10 @@ export default async function OrgDirectoryPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Organization</th>
-              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
-              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Country</th>
-              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
+              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_organisation}</th>
+              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_noc}</th>
+              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_country}</th>
+              <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_type}</th>
               <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Email domain</th>
               <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Flags</th>
               <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Common Codes ID</th>

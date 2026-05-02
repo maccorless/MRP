@@ -2,20 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { AdminStrings } from "@/lib/i18n/admin";
 
-const NAV = [
-  { href: "/admin/ocog",               label: "Home" },
-  { href: "/admin/ocog/pbn",           label: "PbN Approvals" },
-  { href: "/admin/ocog/eoi",           label: "EoI Summary" },
-  { href: "/admin/ocog/windows",       label: "EoI Windows" },
-  { href: "/admin/ocog/duplicates",    label: "Duplicates" },
-  { href: "/admin/ocog/audit",         label: "Audit Trail" },
-  { href: "/admin/ocog/master",        label: "Master Allocations" },
-];
+type NavStrings = AdminStrings["nav"];
 
-export function OcogNavTabs({ showPrpAdmin = false }: { showPrpAdmin?: boolean }) {
+export function OcogNavTabs({ showPrpAdmin = false, nav }: { showPrpAdmin?: boolean; nav: NavStrings }) {
   const pathname = usePathname();
-  const fullNav = showPrpAdmin ? [...NAV, { href: "/admin/prp", label: "PRP Admin" }] : NAV;
+  const NAV = [
+    { href: "/admin/ocog",            label: nav.dashboard },
+    { href: "/admin/ocog/pbn",        label: nav.pbn_approvals },
+    { href: "/admin/ocog/eoi",        label: nav.eoi_summary },
+    { href: "/admin/ocog/windows",    label: nav.eoi_windows },
+    { href: "/admin/ocog/duplicates", label: nav.duplicates },
+    { href: "/admin/ocog/audit",      label: nav.audit_trail },
+    { href: "/admin/ocog/master",     label: nav.master_alloc },
+  ];
+  const fullNav = showPrpAdmin ? [...NAV, { href: "/admin/prp", label: nav.prp_admin }] : NAV;
   return (
     <nav className="bg-white border-b border-gray-200 px-6">
       <div className="max-w-5xl mx-auto flex gap-0">

@@ -2,6 +2,8 @@ import { eq, count, and } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, nocQuotas, organizations, orgSlotAllocations } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { OcogEoiClient } from "./OcogEoiClient";
 
 type ApplicationStatus = "pending" | "approved" | "returned" | "resubmitted" | "rejected";
@@ -19,6 +21,8 @@ const IOC_DIRECT = "IOC_DIRECT";
 
 export default async function OcogEoiPage() {
   await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   // IOC-Direct summary for read-only display
   const iocDirectOrgs = await db
@@ -110,7 +114,7 @@ export default async function OcogEoiPage() {
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">EoI Application Summary</h1>
+        <h1 className="text-xl font-bold text-gray-900">{s.ocog.eoi_summary_title}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           Application counts per NOC by status — LA 2028
         </p>
@@ -120,7 +124,7 @@ export default async function OcogEoiPage() {
       {iocDirectCount > 0 && (
         <div className="mb-5 flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-lg">
           <span className="px-2 py-0.5 text-xs font-semibold bg-purple-100 text-purple-800 rounded-full whitespace-nowrap">
-            IOC-Direct
+            {s.ocog.ioc_direct_label}
           </span>
           <p className="text-sm text-gray-700 flex-1">
             {iocDirectCount} organisation{iocDirectCount !== 1 ? "s" : ""} accredited directly by the IOC.
@@ -130,12 +134,24 @@ export default async function OcogEoiPage() {
               ? "bg-green-100 text-green-800"
               : "bg-gray-100 text-gray-600"
           }`}>
-            {iocDirectApproved ? "Submitted" : "Draft"}
+            {iocDirectApproved ? s.status.submitted : s.status.draft}
           </span>
         </div>
       )}
 
-      <OcogEoiClient rows={rows} totals={totals} />
+      <OcogEoiClient
+        rows={rows}
+        totals={totals}
+        strings={{
+          col_noc:       s.ocog.col_noc,
+          col_pending:   s.ocog.col_pending,
+          col_candidate: s.ocog.col_candidate,
+          col_returned:  s.ocog.col_returned,
+          col_rejected:  s.ocog.col_rejected,
+          col_total:     s.ocog.col_total,
+          totals_row:    s.ocog.totals_row,
+        }}
+      />
 
       <p className="mt-3 text-xs text-gray-400">
         "Pending" includes resubmitted applications awaiting re-review. "Candidate" = NOC-approved,

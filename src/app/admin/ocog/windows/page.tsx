@@ -2,10 +2,14 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { nocEoiWindows, applications } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { toggleNocWindow, toggleAllWindows } from "./actions";
 
 export default async function OcogWindowsPage() {
   await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
 
   const windowRows = await db
     .select()
@@ -52,7 +56,7 @@ export default async function OcogWindowsPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">EoI Windows</h1>
+          <h1 className="text-xl font-bold text-gray-900">{s.ocog.windows_title}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Manage EoI acceptance windows — LA 2028. OCOG-only control; NOC admins cannot modify these settings.
           </p>
@@ -64,7 +68,7 @@ export default async function OcogWindowsPage() {
               type="submit"
               className="px-3 py-1.5 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
             >
-              Open All
+              {s.ocog.open_all}
             </button>
           </form>
           <form action={toggleAllWindows}>
@@ -73,7 +77,7 @@ export default async function OcogWindowsPage() {
               type="submit"
               className="px-3 py-1.5 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors"
             >
-              Close All
+              {s.ocog.close_all}
             </button>
           </form>
         </div>
@@ -81,10 +85,10 @@ export default async function OcogWindowsPage() {
 
       <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
         <span>
-          <span className="font-semibold text-green-700">{openCount}</span> open
+          <span className="font-semibold text-green-700">{openCount}</span> {s.ocog.open_label.toLowerCase()}
         </span>
         <span>
-          <span className="font-semibold text-red-700">{closedCount}</span> closed
+          <span className="font-semibold text-red-700">{closedCount}</span> {s.ocog.closed_label.toLowerCase()}
         </span>
         <span>{rows.length} total NOCs</span>
       </div>
@@ -92,20 +96,20 @@ export default async function OcogWindowsPage() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {rows.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-600">
-            No NOC data found.
+            {s.ocog.no_noc_data}
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  NOC
+                  {s.ocog.col_noc}
                 </th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Status
+                  {s.ocog.col_status}
                 </th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Last Changed
+                  {s.ocog.col_last_changed}
                 </th>
                 <th className="px-5 py-3" />
               </tr>
@@ -120,12 +124,12 @@ export default async function OcogWindowsPage() {
                     {row.isOpen ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                        Open
+                        {s.ocog.open_label}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                        Closed
+                        {s.ocog.closed_label}
                       </span>
                     )}
                   </td>
@@ -156,7 +160,7 @@ export default async function OcogWindowsPage() {
                             : "bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700"
                         }`}
                       >
-                        {row.isOpen ? "Close" : "Open"}
+                        {row.isOpen ? s.ocog.closed_label : s.ocog.open_label}
                       </button>
                     </form>
                   </td>

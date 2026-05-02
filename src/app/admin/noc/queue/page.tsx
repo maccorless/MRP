@@ -171,7 +171,7 @@ export default async function NocQueuePage({
         </h1>
         <p className="text-sm text-gray-600 mt-0.5">
           {actionableCount > 0
-            ? `${actionableCount} application${actionableCount !== 1 ? "s" : ""} awaiting review`
+            ? `${actionableCount} applications awaiting review`
             : "No applications awaiting review"}
         </p>
       </div>
@@ -179,22 +179,22 @@ export default async function NocQueuePage({
       {/* Success banner */}
       {success === "approved" && (
         <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
-          Application approved.
+          {s.eoi.status_changed} {s.status.approved}.
         </div>
       )}
       {success === "returned" && (
         <div role="alert" className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-800 text-sm">
-          Application returned for corrections.
+          {s.eoi.status_changed} {s.status.returned}.
         </div>
       )}
       {success === "rejected" && (
         <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-          Application rejected.
+          {s.eoi.status_changed} {s.status.rejected}.
         </div>
       )}
       {success === "direct_entry_submitted" && (
         <div role="alert" className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-800 text-sm">
-          Direct entry application submitted and approved.
+          {s.status.noc_direct} — {s.eoi.status_changed} {s.status.approved}.
         </div>
       )}
 
@@ -233,7 +233,7 @@ export default async function NocQueuePage({
           The plan says "should consider", not "must enforce" — sort is
           a soft signal; NOCs retain allocation discretion. */}
       <div className="flex items-center gap-3 mb-4 text-xs">
-        <span className="text-gray-500">Sort by:</span>
+        <span className="text-gray-500">{s.common.filter}:</span>
         <Link
           href={sortHref("submitted")}
           className={`px-2.5 py-1 rounded font-medium transition-colors ${
@@ -261,7 +261,7 @@ export default async function NocQueuePage({
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         {rows.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-500">
-            No applications in this category.
+            {s.queue.empty_filtered}
           </div>
         ) : (
           <QueueClient
@@ -277,6 +277,33 @@ export default async function NocQueuePage({
               col_submitted: s.queue.col_submitted,
               col_actions: s.queue.col_actions,
               empty_queue: s.queue.empty_queue,
+            }}
+            drawerStrings={{
+              section_org:           s.eoi.section_org,
+              section_contact:       s.eoi.section_contact,
+              section_accreditation: s.eoi.section_accreditation,
+              section_history:       s.eoi.section_history,
+              action_approve:        s.action.approve,
+              action_return:         s.action.return_to_org,
+              action_reject:         s.action.reject,
+              note_placeholder:      s.eoi.note_placeholder,
+              return_reason:         s.eoi.return_reason,
+              reject_reason:         s.eoi.reject_reason,
+              back_label:            s.common.back,
+              close_label:           s.common.close,
+              loading_label:         s.common.loading,
+            }}
+            modalStrings={{
+              modal_title:           "Possible Duplicate",
+              loading_label:         s.common.loading,
+              action_reject:         s.action.reject,
+              action_return:         s.action.return_to_org,
+              confirm_reject:        s.eoi.confirm_reject,
+              confirm_return:        s.eoi.return_reason,
+              cancel_label:          s.common.cancel,
+              resolve_not_duplicate: "Resolve as not duplicate",
+              resolving_label:       s.common.loading,
+              note_required_label:   (type) => type === "reject" ? s.eoi.reject_reason : s.eoi.return_reason,
             }}
           />
         )}

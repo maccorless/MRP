@@ -59,6 +59,19 @@ type Quota = {
   ecTotal:  number;
 };
 
+export type PbnTableStrings = {
+  col_org: string;
+  col_total: string;
+  req_header: string;
+  alloc_header: string;
+  no_quota_set: string;
+  remaining_label: string;
+  search_placeholder: string;
+  save_draft: string;
+  submit_to_ocog: string;
+  no_slots_yet: string;
+};
+
 type Props = {
   rows: PbnRow[];
   quota: Quota | null;
@@ -70,6 +83,7 @@ type Props = {
   nocCode?: string;
   nocEQuota?: number;
   nocERequested?: number;
+  strings?: PbnTableStrings;
 };
 
 const CAT_FIELDS: Record<AccredCategory, { requested: keyof PbnRow; slots: keyof PbnRow; quotaKey: keyof Quota }> = {
@@ -93,7 +107,7 @@ const CAT_ENABLED_FIELD: Record<AccredCategory, keyof PbnRow> = {
 
 type SlotValues = Record<AccredCategory, number>;
 
-function OrgDetailModal({ row, isEditable, onClose }: { row: PbnRow; isEditable: boolean; onClose: () => void }) {
+function OrgDetailModal({ row, isEditable, onClose, noSlotsLabel }: { row: PbnRow; isEditable: boolean; onClose: () => void; noSlotsLabel?: string }) {
   const cats = ACCRED_CATEGORIES.filter((c) => row[CAT_ENABLED_FIELD[c.value]] as boolean);
   const rowTotal = (row.eSlots ?? 0) + (row.esSlots ?? 0) + (row.epSlots ?? 0) +
     (row.epsSlots ?? 0) + (row.etSlots ?? 0) + (row.ecSlots ?? 0);
@@ -186,7 +200,7 @@ function OrgDetailModal({ row, isEditable, onClose }: { row: PbnRow; isEditable:
                   </div>
                 );
               })}
-              {rowTotal === 0 && <span className="text-xs text-gray-400">No slots allocated yet</span>}
+              {rowTotal === 0 && <span className="text-xs text-gray-400">{noSlotsLabel ?? "No slots allocated yet"}</span>}
             </div>
             {rowTotal > 0 && <div className="text-xs text-gray-500 mt-1.5">Total: <span className="font-semibold text-gray-800">{rowTotal}</span></div>}
           </section>
@@ -253,7 +267,21 @@ function OrgDetailModal({ row, isEditable, onClose }: { row: PbnRow; isEditable:
   );
 }
 
-export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, saveAction, submitAction, submitLabel, nocCode, nocEQuota = 0, nocERequested = 0 }: Props) {
+const DEFAULT_STRINGS: PbnTableStrings = {
+  col_org:            "Responsible Organisation",
+  col_total:          "Total",
+  req_header:         "Req.",
+  alloc_header:       "Alloc.",
+  no_quota_set:       "No quota set",
+  remaining_label:    "remaining",
+  search_placeholder: "Search responsible organisations...",
+  save_draft:         "Save Draft",
+  submit_to_ocog:     "Submit to OCOG",
+  no_slots_yet:       "No slots allocated yet",
+};
+
+export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, saveAction, submitAction, submitLabel, nocCode, nocEQuota = 0, nocERequested = 0, strings = DEFAULT_STRINGS }: Props) {
+  const s = strings;
   const effectiveSave   = saveAction   ?? saveSlotAllocations;
   const effectiveSubmit = submitAction ?? submitPbnToOcog;
   const [nocEValue, setNocEValue] = useState(nocERequested);
@@ -371,7 +399,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                 />
               </div>
               <div className="text-xs text-gray-400 mt-1 truncate">
-                {hasQuota ? `${total - used} remaining` : "No quota set"}
+                {hasQuota ? `${total - used} ${s.remaining_label}` : s.no_quota_set}
               </div>
             </div>
           );
@@ -390,7 +418,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
               <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div className={`h-full rounded-full transition-all ${over ? "bg-red-500" : "bg-teal-500"} ${progressWidthClass(pct)}`} />
               </div>
-              <div className="text-xs text-gray-400 mt-1 truncate">{nocEQuota - nocEValue} remaining</div>
+              <div className="text-xs text-gray-400 mt-1 truncate">{nocEQuota - nocEValue} {s.remaining_label}</div>
             </div>
           );
         })()}
@@ -402,8 +430,8 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search responsible organisations..."
-          aria-label="Search responsible organisations"
+          placeholder={s.search_placeholder}
+          aria-label={s.search_placeholder}
           className="w-full max-w-xs border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         />
       </div>
@@ -423,7 +451,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                     onClick={() => setSortAsc((v) => !v)}
                     onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSortAsc((v) => !v); } }}
                   >
-                    <span className="inline-flex items-center gap-1">Responsible Organisation <Icon name={sortAsc ? "chevron-up" : "chevron-down"} className="w-3 h-3" /></span>
+                    <span className="inline-flex items-center gap-1">{s.col_org} <Icon name={sortAsc ? "chevron-up" : "chevron-down"} className="w-3 h-3" /></span>
                   </th>
                   {activeCategories.map((cat) => (
                     <th
@@ -436,15 +464,15 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
                     </th>
                   ))}
                   <th scope="col" className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap border-l border-gray-200">
-                    Total
+                    {s.col_total}
                   </th>
                 </tr>
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th />
                   {activeCategories.map((cat) => (
                     <>
-                      <th key={`${cat}-req`} className="text-right px-2 py-1 text-xs font-normal text-gray-400 border-l border-gray-200">Req.</th>
-                      <th key={`${cat}-alloc`} className="text-right px-3 py-1 text-xs font-normal text-gray-500">Alloc.</th>
+                      <th key={`${cat}-req`} className="text-right px-2 py-1 text-xs font-normal text-gray-400 border-l border-gray-200">{s.req_header}</th>
+                      <th key={`${cat}-alloc`} className="text-right px-3 py-1 text-xs font-normal text-gray-500">{s.alloc_header}</th>
                     </>
                   ))}
                   <th />
@@ -518,7 +546,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
               </tbody>
               <tfoot className="bg-gray-50 border-t border-gray-200 sticky bottom-0">
                 <tr>
-                  <td className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">Total</td>
+                  <td className="px-5 py-2.5 text-xs font-semibold text-gray-600 uppercase">{s.col_total}</td>
                   {activeCategories.map((cat) => (
                     <>
                       <td key={`total-${cat}-req`} className="border-l border-gray-200" />
@@ -586,7 +614,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
               formAction={effectiveSave}
               className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded hover:bg-gray-50 transition-colors cursor-pointer"
             >
-              Save Draft
+              {s.save_draft}
             </button>
             <button
               type="submit"
@@ -600,7 +628,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
               }}
               className="px-4 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
             >
-              {submitLabel ?? "Submit to OCOG"}
+              {submitLabel ?? s.submit_to_ocog}
             </button>
             <span className="text-xs text-gray-400">Submission locks allocations — OCOG may adjust before final approval.</span>
           </div>
@@ -609,7 +637,7 @@ export function PbnAllocationTable({ rows, quota, activeCategories, isEditable, 
 
       {/* Org detail modal */}
       {modalOrg && (
-        <OrgDetailModal row={modalOrg} isEditable={isEditable} onClose={() => setModalOrg(null)} />
+        <OrgDetailModal row={modalOrg} isEditable={isEditable} onClose={() => setModalOrg(null)} noSlotsLabel={s.no_slots_yet} />
       )}
     </div>
   );

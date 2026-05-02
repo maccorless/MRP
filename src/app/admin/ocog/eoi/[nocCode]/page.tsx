@@ -3,6 +3,8 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications, organizations } from "@/db/schema";
 import { requireOcogSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 import { StatusBadge } from "@/components/StatusBadge";
 import { categoryDisplayLabel } from "@/lib/category";
 
@@ -12,6 +14,8 @@ export default async function OcogNocEoiPage({
   params: Promise<{ nocCode: string }>;
 }) {
   await requireOcogSession();
+  const lang = await getAdminLang();
+  const s = t(lang);
   const { nocCode } = await params;
 
   const rows = await db
@@ -48,10 +52,10 @@ export default async function OcogNocEoiPage({
           href="/admin/ocog/eoi"
           className="text-xs text-brand-blue hover:underline mb-2 inline-block"
         >
-          ← Back to EoI Summary
+          ← {s.nav.eoi_summary}
         </Link>
         <h1 className="text-xl font-bold text-gray-900">
-          EoI Applications — {nocCode}
+          {s.ocog.eoi_summary_title} — {nocCode}
         </h1>
         <p className="text-sm text-gray-500 mt-0.5">
           Read-only view of applications submitted under this NOC — LA 2028
@@ -71,19 +75,19 @@ export default async function OcogNocEoiPage({
                   Reference
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Organisation
+                  {s.eoi.org_name}
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Type
+                  {s.eoi.org_type}
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Categories
+                  {s.eoi.section_accreditation}
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Status
+                  {s.queue.col_status}
                 </th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  Submitted
+                  {s.queue.col_submitted}
                 </th>
               </tr>
             </thead>

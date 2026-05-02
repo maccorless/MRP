@@ -386,6 +386,12 @@ function AllocationRowGroup({
 
 type StatusFilter = "all" | "not_started" | "draft" | "noc_submitted" | "ocog_approved" | "sent_to_acr";
 
+export type MasterStrings = {
+  master_title: string;
+  search_placeholder: string;
+  all_statuses: string;
+};
+
 export function MasterAllocationClient({
   rows,
   iocDirectRow,
@@ -393,6 +399,7 @@ export function MasterAllocationClient({
   grandTotals,
   eventCapacity,
   orgAllocRows,
+  strings,
 }: {
   rows: NocRow[];
   iocDirectRow: IocDirectRow;
@@ -400,7 +407,13 @@ export function MasterAllocationClient({
   grandTotals: GrandTotals;
   eventCapacity: EventCapacity;
   orgAllocRows: OrgAllocRow[];
+  strings?: MasterStrings;
 }) {
+  const s: MasterStrings = strings ?? {
+    master_title: "Master Allocations",
+    search_placeholder: "Search NOC / IF code or continent…",
+    all_statuses: "All statuses",
+  };
   const [searchText, setSearchText]       = useState("");
   const [statusFilter, setStatusFilter]   = useState<StatusFilter>("all");
   const [showContinent, setShowContinent] = useState(true);
@@ -441,7 +454,7 @@ export function MasterAllocationClient({
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Master Allocation Dashboard</h1>
+        <h1 className="text-xl font-bold text-gray-900">{s.master_title}</h1>
         <p className="text-sm text-gray-500 mt-0.5">
           Live quota vs allocation across all NOCs, IFs, IOC Direct, and ENR — LA 2028
         </p>
@@ -459,7 +472,7 @@ export function MasterAllocationClient({
           type="text"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          placeholder="Search NOC / IF code or continent…"
+          placeholder={s.search_placeholder}
           className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-60"
         />
         <select
@@ -467,7 +480,7 @@ export function MasterAllocationClient({
           onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
           className="px-3 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue"
         >
-          <option value="all">All statuses</option>
+          <option value="all">{s.all_statuses}</option>
           <option value="not_started">Not Started</option>
           <option value="draft">Draft</option>
           <option value="noc_submitted">Submitted</option>

@@ -23,12 +23,40 @@ const CATEGORIES: { key: string; label: string; sub: string; access: string }[] 
   { key: "ec",  label: "EC",  sub: "Support staff",                   access: "MPC only" },
 ];
 
+export type DirectEntryStrings = {
+  org_section: string;
+  contact_section: string;
+  secondary_section: string;
+  accreditation_section: string;
+  notes_section: string;
+  org_name: string;
+  type: string;
+  country: string;
+  website: string;
+  full_name: string;
+  first_name: string;
+  last_name: string;
+  title_position: string;
+  phone: string;
+  cell_mobile: string;
+  add_secondary: string;
+  remove_secondary: string;
+  submit_accept: string;
+  notes_optional: string;
+  notes_placeholder: string;
+  select_prompt: string;
+  select_sport: string;
+  sport_field: string;
+  access_label: string;
+};
+
 interface Props {
   action: (formData: FormData) => Promise<void>;
   nocCode: string;
+  strings: DirectEntryStrings;
 }
 
-export default function DirectEntryForm({ action }: Props) {
+export default function DirectEntryForm({ action, strings: s }: Props) {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [showSecondary, setShowSecondary] = useState(false);
   const [selectedOrgType, setSelectedOrgType] = useState("");
@@ -47,11 +75,11 @@ export default function DirectEntryForm({ action }: Props) {
   return (
     <form action={action} className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Organisation</h2>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{s.org_section}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-xs text-gray-500 mb-1">
-              Organisation name <span className="text-red-500">*</span>
+              {s.org_name} <span className="text-red-500">*</span>
             </label>
             <input
               name="org_name" type="text" required
@@ -60,14 +88,14 @@ export default function DirectEntryForm({ action }: Props) {
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              Type <span className="text-red-500">*</span>
+              {s.type} <span className="text-red-500">*</span>
             </label>
             <select
               name="org_type" required
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
               onChange={(e) => setSelectedOrgType(e.target.value)}
             >
-              <option value="">— Select —</option>
+              <option value="">{s.select_prompt}</option>
               {ORG_TYPE_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
@@ -75,7 +103,7 @@ export default function DirectEntryForm({ action }: Props) {
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              Country{" "}
+              {s.country}{" "}
               {selectedOrgType === "enr"
                 ? <span className="text-gray-400">(optional — ENR orgs are non-geographic)</span>
                 : <span className="text-red-500">*</span>
@@ -94,7 +122,7 @@ export default function DirectEntryForm({ action }: Props) {
             </datalist>
           </div>
           <div className="col-span-2">
-            <label className="block text-xs text-gray-500 mb-1">Website</label>
+            <label className="block text-xs text-gray-500 mb-1">{s.website}</label>
             <input
               name="website" type="url" placeholder="https://" defaultValue="https://"
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
@@ -104,11 +132,11 @@ export default function DirectEntryForm({ action }: Props) {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Primary Contact</h2>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{s.contact_section}</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              Full name <span className="text-red-500">*</span>
+              {s.full_name} <span className="text-red-500">*</span>
             </label>
             <input
               name="contact_name" type="text" required
@@ -132,39 +160,39 @@ export default function DirectEntryForm({ action }: Props) {
             onClick={() => setShowSecondary(true)}
             className="text-sm text-brand-blue hover:underline"
           >
-            + Add Editor-in-Chief / Media Manager
+            {s.add_secondary}
           </button>
         )}
 
         {showSecondary && (
           <div className="space-y-4 pt-2 border-t border-gray-100">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Editor-in-Chief / Media Manager</h3>
+              <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{s.secondary_section}</h3>
               <button
                 type="button"
                 onClick={() => setShowSecondary(false)}
                 className="text-sm text-gray-400 hover:text-gray-600"
               >
-                − Remove
+                {s.remove_secondary}
               </button>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">First name</label>
+                <label className="block text-xs text-gray-500 mb-1">{s.first_name}</label>
                 <input
                   name="secondary_first_name" type="text"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Last name</label>
+                <label className="block text-xs text-gray-500 mb-1">{s.last_name}</label>
                 <input
                   name="secondary_last_name" type="text"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs text-gray-500 mb-1">Title / position</label>
+                <label className="block text-xs text-gray-500 mb-1">{s.title_position}</label>
                 <input
                   name="secondary_title" type="text"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
@@ -178,14 +206,14 @@ export default function DirectEntryForm({ action }: Props) {
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Phone</label>
+                <label className="block text-xs text-gray-500 mb-1">{s.phone}</label>
                 <input
                   name="secondary_phone" type="tel"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Cell / mobile</label>
+                <label className="block text-xs text-gray-500 mb-1">{s.cell_mobile}</label>
                 <input
                   name="secondary_cell" type="tel"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
@@ -197,7 +225,7 @@ export default function DirectEntryForm({ action }: Props) {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Accreditation Categories</h2>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{s.accreditation_section}</h2>
         <p className="text-xs text-gray-500">Select all that apply and enter requested slot quantities.</p>
         <div className="space-y-3">
           {CATEGORIES.map(({ key, label, sub, access }) => (
@@ -211,7 +239,7 @@ export default function DirectEntryForm({ action }: Props) {
                 <span className="flex-1">
                   <span className="text-sm font-medium text-gray-900">{label}</span>
                   <span className="text-xs text-gray-500 ml-2">{sub}</span>
-                  <span className="block text-[11px] text-gray-400 leading-snug mt-0.5">Access: {access}</span>
+                  <span className="block text-[11px] text-gray-400 leading-snug mt-0.5">{s.access_label}: {access}</span>
                 </span>
               </label>
               <input
@@ -230,13 +258,13 @@ export default function DirectEntryForm({ action }: Props) {
         {showSportPicker && (
           <div>
             <label className="block text-xs text-gray-500 mb-1">
-              Olympic sport (required for Es / EPs) <span className="text-red-500">*</span>
+              {s.sport_field} <span className="text-red-500">*</span>
             </label>
             <select
               name="sports_specific_sport"
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue"
             >
-              <option value="">— Select sport —</option>
+              <option value="">{s.select_sport}</option>
               {LA28_SPORTS.map((sport) => (
                 <option key={sport} value={sport}>{sport}</option>
               ))}
@@ -246,14 +274,14 @@ export default function DirectEntryForm({ action }: Props) {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Notes</h2>
+        <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">{s.notes_section}</h2>
         <div>
           <label className="block text-xs text-gray-500 mb-1">
-            Notes (optional)
+            {s.notes_optional}
           </label>
           <textarea
             name="about" rows={3}
-            placeholder="Internal context for this organisation (not shown to the applicant)"
+            placeholder={s.notes_placeholder}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue resize-none"
           />
         </div>
@@ -264,7 +292,7 @@ export default function DirectEntryForm({ action }: Props) {
           type="submit"
           className="px-5 py-2 bg-brand-blue text-white text-sm font-semibold rounded hover:bg-blue-800 transition-colors cursor-pointer"
         >
-          Submit &amp; Accept as Candidate
+          {s.submit_accept}
         </button>
         <span className="text-xs text-gray-400">
           This application will be immediately accepted as a candidate and added to the PbN queue.

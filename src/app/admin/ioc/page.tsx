@@ -9,6 +9,8 @@ import {
   detectInactiveNocs,
   detectCrossNocDuplicates,
 } from "@/lib/anomaly-detect";
+import { getAdminLang } from "@/lib/admin-lang";
+import { t } from "@/lib/i18n/admin";
 
 const STATUS_BADGE: Record<string, string> = {
   pending:     "bg-yellow-100 text-yellow-800",
@@ -18,12 +20,9 @@ const STATUS_BADGE: Record<string, string> = {
   rejected:    "bg-red-100 text-red-800",
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Pending", resubmitted: "Resubmitted", approved: "Candidate",
-  returned: "Returned", rejected: "Rejected",
-};
-
 export default async function IocDashboard() {
+  const lang = await getAdminLang();
+  const s = t(lang);
   // Three parallel aggregate queries replace one unbounded full-fetch
   const [statusCounts, nocBreakdown, recentApps, anomalyApps, quotas, openWindows] =
     await Promise.all([
@@ -143,11 +142,11 @@ export default async function IocDashboard() {
 
   // ── Stat cards ───────────────────────────────────────────────────────────────
   const statCards = [
-    { label: "Pending",     value: counts.pending     ?? 0, color: "text-yellow-700 bg-yellow-50 border-yellow-200" },
-    { label: "Resubmitted", value: counts.resubmitted ?? 0, color: "text-blue-700 bg-blue-50 border-blue-200" },
-    { label: "Candidate",   value: counts.approved    ?? 0, color: "text-green-700 bg-green-50 border-green-200" },
-    { label: "Returned",    value: counts.returned    ?? 0, color: "text-orange-700 bg-orange-50 border-orange-200" },
-    { label: "Rejected",    value: counts.rejected    ?? 0, color: "text-red-700 bg-red-50 border-red-200" },
+    { label: s.status.pending,      value: counts.pending     ?? 0, color: "text-yellow-700 bg-yellow-50 border-yellow-200" },
+    { label: s.status.submitted,    value: counts.resubmitted ?? 0, color: "text-blue-700 bg-blue-50 border-blue-200" },
+    { label: s.status.approved,     value: counts.approved    ?? 0, color: "text-green-700 bg-green-50 border-green-200" },
+    { label: s.status.returned,     value: counts.returned    ?? 0, color: "text-orange-700 bg-orange-50 border-orange-200" },
+    { label: s.status.rejected,     value: counts.rejected    ?? 0, color: "text-red-700 bg-red-50 border-red-200" },
   ];
 
   return (
@@ -163,7 +162,7 @@ export default async function IocDashboard() {
           href="/api/export/eoi"
           className="px-3 py-1.5 bg-white border border-gray-200 rounded text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
         >
-          Export all EoI CSV <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
+          {s.action.export_csv} <Icon name="download" className="inline w-3.5 h-3.5 ml-0.5 -mt-0.5" />
         </a>
       </div>
 
@@ -217,17 +216,17 @@ export default async function IocDashboard() {
       {/* NOC breakdown */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-700">By NOC</h2>
+          <h2 className="text-sm font-semibold text-gray-700">{s.ioc.col_noc}</h2>
         </div>
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-yellow-700 uppercase tracking-wide">Pending</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-blue-600 uppercase tracking-wide">Resubmitted</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-green-700 uppercase tracking-wide">Candidate</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-orange-700 uppercase tracking-wide">Returned</th>
-              <th className="text-right px-5 py-2 text-xs font-medium text-red-600 uppercase tracking-wide">Rejected</th>
+              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_noc}</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-yellow-700 uppercase tracking-wide">{s.status.pending}</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-blue-600 uppercase tracking-wide">{s.status.submitted}</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-green-700 uppercase tracking-wide">{s.status.approved}</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-orange-700 uppercase tracking-wide">{s.status.returned}</th>
+              <th className="text-right px-5 py-2 text-xs font-medium text-red-600 uppercase tracking-wide">{s.status.rejected}</th>
               <th className="text-right px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
             </tr>
           </thead>
@@ -253,18 +252,18 @@ export default async function IocDashboard() {
       {/* Recent applications */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">Recent Applications</h2>
+          <h2 className="text-sm font-semibold text-gray-700">{s.queue.title}</h2>
           <span className="text-xs text-gray-500">Showing latest 15</span>
         </div>
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Reference</th>
-              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Organization</th>
-              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">NOC</th>
+              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.queue.col_org}</th>
+              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.ioc.col_noc}</th>
               <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Category</th>
-              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
-              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">Submitted</th>
+              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.queue.col_status}</th>
+              <th className="text-left px-5 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">{s.queue.col_submitted}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -279,7 +278,7 @@ export default async function IocDashboard() {
                 <td className="px-5 py-2.5 text-gray-600">{categoryDisplayLabel(row.categoryE, row.categoryEs, row.categoryEp, row.categoryEps, row.categoryEt, row.categoryEc)}</td>
                 <td className="px-5 py-2.5">
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[row.status]}`}>
-                    {STATUS_LABEL[row.status]}
+                    {(s.status as Record<string, string>)[row.status] ?? row.status}
                   </span>
                 </td>
                 <td className="px-5 py-2.5 text-xs text-gray-500">

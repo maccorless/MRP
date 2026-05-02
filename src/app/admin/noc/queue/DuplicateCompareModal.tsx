@@ -56,6 +56,32 @@ type AppData = {
 
 type InlineAction = { type: "reject" | "return"; note: string } | null;
 
+export type DuplicateModalStrings = {
+  modal_title: string;
+  loading_label: string;
+  action_reject: string;
+  action_return: string;
+  confirm_reject: string;
+  confirm_return: string;
+  cancel_label: string;
+  resolve_not_duplicate: string;
+  resolving_label: string;
+  note_required_label: (type: "reject" | "return") => string;
+};
+
+const DEFAULT_MODAL_STRINGS: DuplicateModalStrings = {
+  modal_title:           "Possible Duplicate",
+  loading_label:         "Loading applications…",
+  action_reject:         "Reject",
+  action_return:         "Return for correction",
+  confirm_reject:        "Confirm reject",
+  confirm_return:        "Confirm return",
+  cancel_label:          "Cancel",
+  resolve_not_duplicate: "Resolve as not duplicate",
+  resolving_label:       "Resolving…",
+  note_required_label:   (type) => type === "reject" ? "Rejection" : "Return",
+};
+
 function CompareField({
   label,
   value1,
@@ -95,6 +121,7 @@ function AppActionPanel({
   onConfirm,
   onCancelAction,
   onReview,
+  s,
 }: {
   appRef: string;
   appId: string;
@@ -107,6 +134,7 @@ function AppActionPanel({
   onConfirm: () => void;
   onCancelAction: () => void;
   onReview: () => void;
+  s: DuplicateModalStrings;
 }) {
   const canAct = effectiveStatus === "pending" || effectiveStatus === "resubmitted";
 
@@ -125,14 +153,14 @@ function AppActionPanel({
             onClick={() => onSelectAction("reject")}
             className="w-full px-3 py-1.5 text-xs font-medium text-red-700 border border-red-200 rounded hover:bg-red-50 transition-colors cursor-pointer"
           >
-            Reject
+            {s.action_reject}
           </button>
           <button
             type="button"
             onClick={() => onSelectAction("return")}
             className="w-full px-3 py-1.5 text-xs font-medium text-orange-700 border border-orange-200 rounded hover:bg-orange-50 transition-colors cursor-pointer"
           >
-            Return for correction
+            {s.action_return}
           </button>
         </div>
       )}
@@ -140,7 +168,7 @@ function AppActionPanel({
       {canAct && action && (
         <div className="flex flex-col gap-1.5">
           <label className="text-xs text-gray-600 font-medium">
-            {action.type === "reject" ? "Rejection" : "Return"} note <span className="text-red-500">*</span>
+            {s.note_required_label(action.type)} note <span className="text-red-500">*</span>
           </label>
           <textarea
             value={action.note}
@@ -163,7 +191,7 @@ function AppActionPanel({
                   : "bg-orange-600 hover:bg-orange-700"
               }`}
             >
-              {isPending ? "Saving…" : action.type === "reject" ? "Confirm reject" : "Confirm return"}
+              {isPending ? "Saving…" : action.type === "reject" ? s.confirm_reject : s.confirm_return}
             </button>
             <button
               type="button"
@@ -171,7 +199,7 @@ function AppActionPanel({
               disabled={isPending}
               className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
             >
-              Cancel
+              {s.cancel_label}
             </button>
           </div>
         </div>
@@ -198,6 +226,7 @@ export function DuplicateCompareModal({
   onReviewApp1,
   onReviewApp2,
   onResolved,
+  strings = DEFAULT_MODAL_STRINGS,
 }: {
   appId1: string;
   appId2: string;
@@ -208,7 +237,9 @@ export function DuplicateCompareModal({
   onReviewApp1: () => void;
   onReviewApp2: () => void;
   onResolved: () => void;
+  strings?: DuplicateModalStrings;
 }) {
+  const ms = strings;
   const [data1, setData1] = useState<AppData | null>(null);
   const [data2, setData2] = useState<AppData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -315,7 +346,7 @@ export function DuplicateCompareModal({
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 shrink-0">
             <h2 id="compare-modal-title" className="font-semibold text-gray-900 flex items-center gap-2">
               <Icon name="warning" label="Warning" className="w-4 h-4 text-yellow-700" />
-              Possible Duplicate
+              {ms.modal_title}
             </h2>
             <button
               type="button"
@@ -329,7 +360,7 @@ export function DuplicateCompareModal({
 
           <div className="overflow-y-auto flex-1 p-5">
             {loading && (
-              <div className="py-12 text-center text-sm text-gray-400">Loading applications…</div>
+              <div className="py-12 text-center text-sm text-gray-400">{ms.loading_label}</div>
             )}
 
             {error && !loading && (
@@ -456,6 +487,7 @@ export function DuplicateCompareModal({
                     }
                     onCancelAction={() => { setAction1(null); setActionError1(null); }}
                     onReview={() => { onClose(); onReviewApp1(); }}
+                    s={ms}
                   />
                   <AppActionPanel
                     appRef={app2.referenceNumber}
@@ -471,6 +503,7 @@ export function DuplicateCompareModal({
                     }
                     onCancelAction={() => { setAction2(null); setActionError2(null); }}
                     onReview={() => { onClose(); onReviewApp2(); }}
+                    s={ms}
                   />
                 </div>
 
@@ -488,7 +521,7 @@ export function DuplicateCompareModal({
                       });
                     }}
                   >
-                    {isDismissPending ? "Resolving…" : "Resolve as not duplicate"}
+                    {isDismissPending ? ms.resolving_label : ms.resolve_not_duplicate}
                   </button>
                 </div>
               </>
