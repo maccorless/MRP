@@ -1,14 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useTransition } from "react";
 import { logout } from "@/app/admin/login/actions";
+import { setAdminLanguage } from "@/app/admin/set-lang/actions";
+import type { Lang } from "@/lib/i18n";
+
+const LANG_OPTIONS: { code: Lang; label: string }[] = [
+  { code: "en", label: "EN" },
+  { code: "fr", label: "FR" },
+  { code: "es", label: "ES" },
+];
 
 export default function AppHeader({
   displayName,
   roleLabel,
   additionalRoleLabels = [],
+  lang = "en",
+  showLangToggle = false,
   helpPath,
   helpAnchors,
   actions,
@@ -16,14 +26,23 @@ export default function AppHeader({
   displayName: string;
   roleLabel: string;
   additionalRoleLabels?: string[];
+  lang?: Lang;
+  showLangToggle?: boolean;
   helpPath?: string;
   helpAnchors?: Record<string, string>;
   actions?: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const anchor = helpAnchors?.[pathname] ?? "";
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [, startTransition] = useTransition();
+
+  async function handleLangChange(code: Lang) {
+    await setAdminLanguage(code);
+    startTransition(() => router.refresh());
+  }
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -88,6 +107,28 @@ export default function AppHeader({
                     <p key={r} className="text-xs font-medium text-gray-700">{r}</p>
                   ))}
                 </div>
+                {showLangToggle && (
+                  <div className="px-3 py-2 border-b border-gray-100">
+                    <p className="text-xs text-gray-500 mb-1.5">Language</p>
+                    <div className="flex gap-1">
+                      {LANG_OPTIONS.map(({ code, label }) => (
+                        <button
+                          key={code}
+                          type="button"
+                          onClick={() => handleLangChange(code)}
+                          className={`px-2 py-0.5 text-xs rounded transition-colors cursor-pointer ${
+                            lang === code
+                              ? "bg-brand-blue text-white font-medium"
+                              : "text-gray-600 hover:bg-gray-100"
+                          }`}
+                          aria-pressed={lang === code}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <form action={logout} className="px-1 pt-1">
                   <button
                     type="submit"

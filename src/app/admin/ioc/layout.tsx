@@ -1,5 +1,6 @@
 import AppHeader from "@/components/AppHeader";
 import { requireIocSession } from "@/lib/session";
+import { getAdminLang } from "@/lib/admin-lang";
 import { IocNav } from "./nav";
 import SudoModal from "./sudo/SudoModal";
 
@@ -18,6 +19,7 @@ export default async function IocLayout({
   children: React.ReactNode;
 }) {
   const session = await requireIocSession();
+  const lang = await getAdminLang();
   const showPrpAdmin = session.additionalRoles?.includes("prp_admin") ?? false;
   const additionalRoleLabels = (session.additionalRoles ?? []).map((r) =>
     r === "prp_admin" ? "PRP Admin" : r
@@ -28,6 +30,8 @@ export default async function IocLayout({
         displayName={session.displayName}
         roleLabel="IOC Admin"
         additionalRoleLabels={additionalRoleLabels}
+        lang={lang}
+        showLangToggle={true}
         helpPath="/admin/ioc/help"
         helpAnchors={HELP_ANCHORS}
         actions={<SudoModal />}

@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { adminUsers, auditLog, userRoles } from "@/db/schema";
 import { setSession } from "@/lib/session";
+import { setAdminLangCookie, dbLangToLang } from "@/lib/admin-lang";
 
 // Prototype only — replaced by D.TEC/DGP SSO at v1.0
 const PROTO_PASSWORD = "Password1!";
@@ -42,6 +43,7 @@ export async function login(formData: FormData) {
     canaryFlags: Array.isArray(user.canaryFlags) ? (user.canaryFlags as string[]) : [],
     additionalRoles: extraRoles.map((r) => r.role),
   });
+  await setAdminLangCookie(dbLangToLang(user.preferredLanguage));
 
   // Audit log
   const actorType =

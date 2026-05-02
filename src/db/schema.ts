@@ -311,6 +311,7 @@ export const adminUsers = pgTable("admin_users", {
   // v1.0: replaced by D.TEC/DGP SSO — no password stored in production
   passwordHash: text("password_hash"),         // prototype only
   canaryFlags: jsonb("canary_flags"),          // string[] of feature flag names; null = no canary memberships
+  preferredLanguage: preferredLangEnum("preferred_language").default("EN"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
